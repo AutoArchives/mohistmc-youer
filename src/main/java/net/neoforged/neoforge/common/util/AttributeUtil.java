@@ -5,14 +5,15 @@
 
 package net.neoforged.neoforge.common.util;
 
+import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.TreeMultimap;
 import com.mojang.datafixers.util.Pair;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceLinkedOpenHashMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.EnumMap;
-import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +36,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.alchemy.PotionContents;
-import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.client.event.AddAttributeTooltipsEvent;
 import net.neoforged.neoforge.client.event.GatherSkippedAttributeTooltipsEvent;
@@ -90,9 +91,8 @@ public class AttributeUtil {
      * @param tooltip A consumer to add the tooltip lines to.
      * @param ctx     The tooltip context.
      */
-    public static void addAttributeTooltips(ItemStack stack, Consumer<Component> tooltip, AttributeTooltipContext ctx) {
-        ItemAttributeModifiers modifiers = stack.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
-        if (modifiers.showInTooltip()) {
+    public static void addAttributeTooltips(ItemStack stack, Consumer<Component> tooltip, TooltipDisplay tooltipDisplay, AttributeTooltipContext ctx) {
+        if (tooltipDisplay.shows(DataComponents.ATTRIBUTE_MODIFIERS)) {
             applyModifierTooltips(stack, tooltip, ctx);
         }
         NeoForge.EVENT_BUS.post(new AddAttributeTooltipsEvent(stack, tooltip, ctx));
@@ -153,7 +153,7 @@ public class AttributeUtil {
         }
 
         // Collect all the base modifiers
-        Map<Holder<Attribute>, BaseModifier> baseModifs = new IdentityHashMap<>();
+        Map<Holder<Attribute>, BaseModifier> baseModifs = new Reference2ReferenceLinkedOpenHashMap<>();
 
         var it = modifierMap.entries().iterator();
         while (it.hasNext()) {
@@ -299,7 +299,7 @@ public class AttributeUtil {
      * @param slot  The slot group to query modifiers for.
      */
     public static Multimap<Holder<Attribute>, AttributeModifier> getSortedModifiers(ItemStack stack, EquipmentSlotGroup slot) {
-        Multimap<Holder<Attribute>, AttributeModifier> map = sortedMap();
+        Multimap<Holder<Attribute>, AttributeModifier> map = LinkedListMultimap.create();
         stack.forEachModifier(slot, (attr, modif) -> {
             if (attr != null && modif != null) {
                 map.put(attr, modif);

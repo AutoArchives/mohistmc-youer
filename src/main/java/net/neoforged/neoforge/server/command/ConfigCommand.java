@@ -65,14 +65,14 @@ public class ConfigCommand {
                 // Only provide click action for single player world owners calling this command from in-game.
                 ServerPlayer caller = context.getSource().getPlayer();
                 if (FMLLoader.getDist().isClient() && caller != null && caller.connection.getConnection().isMemoryConnection()) {
-                    fileComponent.withStyle((style) -> style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, f.getAbsolutePath())));
+                    fileComponent.withStyle((style) -> style.withClickEvent(new ClickEvent.OpenFile(f)));
                 }
 
-                context.getSource().sendSuccess(() -> Component.translatable("commands.config.getwithtype",
+                context.getSource().sendSuccess(() -> CommandUtils.makeTranslatableWithFallback("commands.config.getwithtype",
                         modId, type.toString(), fileComponent), true);
             }
             if (configFileNames.isEmpty()) {
-                context.getSource().sendSuccess(() -> Component.translatable("commands.config.noconfig", modId, type.toString()),
+                context.getSource().sendSuccess(() -> CommandUtils.makeTranslatableWithFallback("commands.config.noconfig", modId, type.toString()),
                         true);
             }
             return 0;

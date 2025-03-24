@@ -16,7 +16,6 @@ import java.util.UUID;
 import java.util.function.Function;
 import net.minecraft.DetectedVersion;
 import net.minecraft.advancements.critereon.EntitySubPredicate;
-import net.minecraft.advancements.critereon.ItemSubPredicate;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.commands.synchronization.ArgumentTypeInfos;
@@ -24,17 +23,22 @@ import net.minecraft.commands.synchronization.SingletonArgumentInfo;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryCodecs;
+import net.minecraft.core.component.predicates.DataComponentPredicate;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.random.Weighted;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.damagesource.DamageSources;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -79,6 +83,7 @@ import net.neoforged.neoforge.common.advancements.critereon.ItemAbilityPredicate
 import net.neoforged.neoforge.common.advancements.critereon.PiglinCurrencyItemPredicate;
 import net.neoforged.neoforge.common.advancements.critereon.PiglinNeutralArmorEntityPredicate;
 import net.neoforged.neoforge.common.advancements.critereon.SnowBootsEntityPredicate;
+import net.neoforged.neoforge.common.advancements.critereon.TridentEntityPredicate;
 import net.neoforged.neoforge.common.conditions.AlwaysCondition;
 import net.neoforged.neoforge.common.conditions.AndCondition;
 import net.neoforged.neoforge.common.conditions.FeatureFlagsEnabledCondition;
@@ -231,9 +236,9 @@ public class NeoForgeMod {
                             Biome.LIST_CODEC.fieldOf("biomes").forGetter(AddSpawnsBiomeModifier::biomes),
                             // Allow either a list or single spawner, attempting to decode the list format first.
                             // Uses the better EitherCodec that logs both errors if both formats fail to parse.
-                            Codec.either(SpawnerData.CODEC.listOf(), SpawnerData.CODEC).xmap(
-                                    either -> either.map(Function.identity(), List::of), // convert list/singleton to list when decoding
-                                    list -> list.size() == 1 ? Either.right(list.get(0)) : Either.left(list) // convert list to singleton/list when encoding
+                            Codec.either(WeightedList.codec(SpawnerData.CODEC), Weighted.codec(SpawnerData.CODEC)).xmap(
+                                    either -> either.map(Function.identity(), WeightedList::<SpawnerData>of), // convert list/singleton to list when decoding
+                                    list -> list.unwrap().size() == 1 ? Either.right(list.unwrap().get(0)) : Either.left(list) // convert list to singleton/list when encoding
                             ).fieldOf("spawners").forGetter(AddSpawnsBiomeModifier::spawners))
                     .apply(builder, AddSpawnsBiomeModifier::new)));
 
@@ -289,9 +294,9 @@ public class NeoForgeMod {
             RegistryCodecs.homogeneousList(Registries.STRUCTURE, Structure.DIRECT_CODEC).fieldOf("structures").forGetter(StructureModifiers.AddSpawnsStructureModifier::structures),
             // Allow either a list or single spawner, attempting to decode the list format first.
             // Uses the better EitherCodec that logs both errors if both formats fail to parse.
-            Codec.either(SpawnerData.CODEC.listOf(), SpawnerData.CODEC).xmap(
-                    either -> either.map(Function.identity(), List::of), // convert list/singleton to list when decoding
-                    list -> list.size() == 1 ? Either.right(list.get(0)) : Either.left(list) // convert list to singleton/list when encoding
+            Codec.either(WeightedList.codec(SpawnerData.CODEC), Weighted.codec(SpawnerData.CODEC)).xmap(
+                    either -> either.map(Function.identity(), WeightedList::<SpawnerData>of), // convert list/singleton to list when decoding
+                    list -> list.unwrap().size() == 1 ? Either.right(list.unwrap().get(0)) : Either.left(list) // convert list to singleton/list when encoding
             ).fieldOf("spawners").forGetter(StructureModifiers.AddSpawnsStructureModifier::spawners)).apply(builder, StructureModifiers.AddSpawnsStructureModifier::new)));
 
     /**
@@ -369,10 +374,19 @@ public class NeoForgeMod {
     private static final DeferredRegister<MapCodec<? extends EntitySubPredicate>> ENTITY_PREDICATE_CODECS = DeferredRegister.create(Registries.ENTITY_SUB_PREDICATE_TYPE, NeoForgeVersion.MOD_ID);
     public static final DeferredHolder<MapCodec<? extends EntitySubPredicate>, MapCodec<PiglinNeutralArmorEntityPredicate>> PIGLIN_NEUTRAL_ARMOR_PREDICATE = ENTITY_PREDICATE_CODECS.register("piglin_neutral_armor", () -> PiglinNeutralArmorEntityPredicate.CODEC);
     public static final DeferredHolder<MapCodec<? extends EntitySubPredicate>, MapCodec<SnowBootsEntityPredicate>> SNOW_BOOTS_PREDICATE = ENTITY_PREDICATE_CODECS.register("snow_boots", () -> SnowBootsEntityPredicate.CODEC);
+    public static final DeferredHolder<MapCodec<? extends EntitySubPredicate>, MapCodec<TridentEntityPredicate>> IS_TRIDENT_PREDICATE = ENTITY_PREDICATE_CODECS.register("is_trident", () -> TridentEntityPredicate.CODEC);
 
-    private static final DeferredRegister<ItemSubPredicate.Type<?>> ITEM_SUB_PREDICATES = DeferredRegister.create(Registries.ITEM_SUB_PREDICATE_TYPE, NeoForgeVersion.MOD_ID);
-    public static final DeferredHolder<ItemSubPredicate.Type<?>, ItemSubPredicate.Type<ItemAbilityPredicate>> ITEM_ABILITY_PREDICATE = ITEM_SUB_PREDICATES.register("item_ability", () -> ItemAbilityPredicate.TYPE);
-    public static final DeferredHolder<ItemSubPredicate.Type<?>, ItemSubPredicate.Type<PiglinCurrencyItemPredicate>> PIGLIN_CURRENCY_PREDICATE = ITEM_SUB_PREDICATES.register("piglin_currency", () -> PiglinCurrencyItemPredicate.TYPE);
+    private static final DeferredRegister<DataComponentPredicate.Type<?>> DATA_COMPONENT_PREDICATE_TYPES = DeferredRegister.create(Registries.DATA_COMPONENT_PREDICATE_TYPE, NeoForgeVersion.MOD_ID);
+    public static final DeferredHolder<DataComponentPredicate.Type<?>, DataComponentPredicate.Type<ItemAbilityPredicate>> ITEM_ABILITY_PREDICATE = DATA_COMPONENT_PREDICATE_TYPES.register("item_ability", () -> ItemAbilityPredicate.TYPE);
+    public static final DeferredHolder<DataComponentPredicate.Type<?>, DataComponentPredicate.Type<PiglinCurrencyItemPredicate>> PIGLIN_CURRENCY_PREDICATE = DATA_COMPONENT_PREDICATE_TYPES.register("piglin_currency", () -> PiglinCurrencyItemPredicate.TYPE);
+
+    private static final DeferredRegister<TicketType> TICKET_TYPES = DeferredRegister.create(Registries.TICKET_TYPE, NeoForgeVersion.MOD_ID);
+    public static final Holder<TicketType> GENERATE_FORCED_TICKET = TICKET_TYPES.register("generate_forced", () -> new TicketType(0L, false, TicketType.TicketUse.LOADING));
+    //Note: We don't persist the tickets via the TicketType, as we keep handle persisting multiple backing sources of the ticket at once and will reinstate any ones that are still valid
+    public static final Holder<TicketType> BLOCK_TICKET = TICKET_TYPES.register("block", () -> new TicketType(0L, false, TicketType.TicketUse.LOADING_AND_SIMULATION));
+    public static final Holder<TicketType> BLOCK_WITH_NATURAL_SPAWNING_TICKET = TICKET_TYPES.register("block_with_natural_spawning", () -> new TicketType(0L, false, TicketType.TicketUse.LOADING_AND_SIMULATION, true));
+    public static final Holder<TicketType> ENTITY_TICKET = TICKET_TYPES.register("entity", () -> new TicketType(0L, false, TicketType.TicketUse.LOADING_AND_SIMULATION));
+    public static final Holder<TicketType> ENTITY_WITH_NATURAL_SPAWNING_TICKET = TICKET_TYPES.register("entity_with_natural_spawning", () -> new TicketType(0L, false, TicketType.TicketUse.LOADING_AND_SIMULATION, true));
 
     private static final DeferredRegister<FluidType> VANILLA_FLUID_TYPES = DeferredRegister.create(NeoForgeRegistries.Keys.FLUID_TYPES, "minecraft");
 
@@ -450,6 +464,12 @@ public class NeoForgeMod {
             Vec3 vec3 = entity.getDeltaMovement();
             entity.setDeltaMovement(vec3.x * (double) 0.95F, vec3.y + (double) (vec3.y < (double) 0.06F ? 5.0E-4F : 0.0F), vec3.z * (double) 0.95F);
         }
+
+        @Override
+        public boolean move(FluidState state, LivingEntity entity, Vec3 movementVector, double gravity) {
+            // Prevent water movement logic (which is denoted by returning false) being used for lava
+            return true;
+        }
     });
 
     private static boolean enableProperFilenameValidation = false;
@@ -467,7 +487,7 @@ public class NeoForgeMod {
      * <p>
      * May also be used by mods providing poison-like effects.
      *
-     * @see {@link Tags.DamageTypes#IS_POISON}
+     * @see Tags.DamageTypes#IS_POISON
      */
     public static final ResourceKey<DamageType> POISON_DAMAGE = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath(NeoForgeVersion.MOD_ID, "poison"));
 
@@ -532,7 +552,8 @@ public class NeoForgeMod {
         HOLDER_SET_TYPES.register(modEventBus);
         VANILLA_FLUID_TYPES.register(modEventBus);
         ENTITY_PREDICATE_CODECS.register(modEventBus);
-        ITEM_SUB_PREDICATES.register(modEventBus);
+        DATA_COMPONENT_PREDICATE_TYPES.register(modEventBus);
+        TICKET_TYPES.register(modEventBus);
         SLOT_DISPLAY_TYPES.register(modEventBus);
         INGREDIENT_TYPES.register(modEventBus);
         FLUID_INGREDIENT_TYPES.register(modEventBus);
