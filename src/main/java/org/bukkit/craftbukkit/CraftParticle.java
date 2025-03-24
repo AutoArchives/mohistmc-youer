@@ -4,12 +4,14 @@ import com.google.common.base.Preconditions;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.DustColorTransitionOptions;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SculkChargeParticleOptions;
 import net.minecraft.core.particles.ShriekParticleOption;
 import net.minecraft.core.particles.SimpleParticleType;
@@ -220,14 +222,14 @@ public abstract class CraftParticle<D> implements Keyed {
         }
 
         @Override
-        public CraftParticle<?> createBukkit(NamespacedKey namespacedKey, net.minecraft.core.particles.ParticleType<?> particle) {
+        public CraftParticle<?> createBukkit(NamespacedKey namespacedKey, Holder<ParticleType<?>> particle) {
             if (particle == null) {
                 return null;
             }
 
             BiFunction<NamespacedKey, net.minecraft.core.particles.ParticleType<?>, CraftParticle<?>> function = CraftParticleRegistry.PARTICLE_MAP.getOrDefault(namespacedKey, CraftParticleRegistry.VOID_FUNCTION);
 
-            return function.apply(namespacedKey, particle);
+            return function.apply(namespacedKey, particle.value());
         }
     }
 }

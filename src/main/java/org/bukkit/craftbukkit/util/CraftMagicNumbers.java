@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.minecraft.SharedConstants;
@@ -65,6 +66,7 @@ import org.bukkit.damage.DamageSource;
 import org.bukkit.damage.DamageType;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Villager;
 import org.bukkit.inventory.CreativeCategory;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -420,6 +422,18 @@ public final class CraftMagicNumbers implements UnsafeValues {
         }
 
         return customBiome;
+    }
+
+    @Override
+    public Villager.ReputationType createReputationType(String key) {
+        return Optional.ofNullable(CraftVillager.CraftReputationType.BY_ID.get(key))
+                .orElseThrow(() -> new IllegalArgumentException("Invalid ReputationType key: " + key));
+    }
+
+    @Override
+    public Villager.ReputationEvent createReputationEvent(String key) {
+        return Optional.ofNullable(ReputationEventType.BY_ID.get(key)).map(CraftVillager.CraftReputationEvent::new)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid ReputationEvent key: " + key));
     }
 
     /**

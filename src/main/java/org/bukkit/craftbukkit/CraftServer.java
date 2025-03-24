@@ -1497,7 +1497,7 @@ public final class CraftServer implements Server {
         }
 
         // Call Bukkit event to check for matrix/result changes.
-        net.minecraft.world.item.ItemStack result = CraftEventFactory.callPreCraftEvent(inventoryCrafting, craftResult, itemstack, container.getBukkitView(), recipe.map(RecipeHolder::value).orElse(null) instanceof RepairItemRecipe);
+        net.minecraft.world.item.ItemStack result = CraftEventFactory.callPreCraftEvent(inventoryCrafting, craftResult, itemstack, container.getBukkitView(), recipe);
 
         return this.createItemCraftResult(recipe, CraftItemStack.asBukkitCopy(result), inventoryCrafting, craftWorld.getHandle());
     }
@@ -2100,6 +2100,11 @@ public final class CraftServer implements Server {
     @Override
     public Merchant createMerchant(String title) {
         return new CraftMerchantCustom(title == null ? InventoryType.MERCHANT.getDefaultTitle() : title);
+    }
+
+    @Override
+    public Merchant createMerchant() {
+        return new CraftMerchantCustom(""); // if opened with the old methods title won't render, but will be empty.
     }
 
     @Override

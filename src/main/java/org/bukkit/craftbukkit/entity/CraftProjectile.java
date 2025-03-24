@@ -5,7 +5,7 @@ import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Projectile;
 import org.bukkit.projectiles.ProjectileSource;
 
-public abstract class CraftProjectile extends AbstractProjectile implements Projectile {
+public abstract class CraftProjectile extends CraftProjectile implements Projectile {
     public CraftProjectile(CraftServer server, net.minecraft.world.entity.projectile.Projectile entity) {
         super(server, entity);
     }
@@ -24,6 +24,14 @@ public abstract class CraftProjectile extends AbstractProjectile implements Proj
         }
         this.getHandle().projectileSource = shooter;
     }
+
+    @Override
+    public boolean doesBounce() {
+        return false;
+    }
+
+    @Override
+    public void setBounce(boolean doesBounce) {}
 
     @Override
     public net.minecraft.world.entity.projectile.Projectile getHandle() {

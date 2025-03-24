@@ -14,10 +14,6 @@ import com.mojang.serialization.DynamicOps;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -65,6 +61,7 @@ import net.minecraft.world.item.JukeboxPlayable;
 import net.minecraft.world.item.JukeboxSongs;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.component.BlockItemStateProperties;
+import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.world.item.component.DamageResistant;
@@ -94,13 +91,14 @@ import org.bukkit.craftbukkit.attribute.CraftAttributeInstance;
 import org.bukkit.craftbukkit.block.CraftBlockType;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.enchantments.CraftEnchantment;
-import org.bukkit.craftbukkit.inventory.CraftMetaItem.ItemMetaKey.Specific;
+import org.bukkit.craftbukkit.inventory.ItemMetaKey.Specific;
 import org.bukkit.craftbukkit.inventory.components.CraftCustomModelDataComponent;
 import org.bukkit.craftbukkit.inventory.components.CraftEquippableComponent;
 import org.bukkit.craftbukkit.inventory.components.CraftFoodComponent;
 import org.bukkit.craftbukkit.inventory.components.CraftJukeboxComponent;
 import org.bukkit.craftbukkit.inventory.components.CraftToolComponent;
 import org.bukkit.craftbukkit.inventory.components.CraftUseCooldownComponent;
+import org.bukkit.craftbukkit.inventory.components.consumable.CraftConsumableComponent;
 import org.bukkit.craftbukkit.inventory.tags.DeprecatedCustomTagContainer;
 import org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer;
 import org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry;
@@ -125,6 +123,7 @@ import org.bukkit.inventory.meta.components.FoodComponent;
 import org.bukkit.inventory.meta.components.JukeboxPlayableComponent;
 import org.bukkit.inventory.meta.components.ToolComponent;
 import org.bukkit.inventory.meta.components.UseCooldownComponent;
+import org.bukkit.inventory.meta.components.consumable.ConsumableComponent;
 import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.tag.DamageTypeTags;
@@ -154,32 +153,6 @@ import org.bukkit.tag.DamageTypeTags;
 @DelegateDeserialization(SerializableMeta.class)
 // Important: ItemMeta needs to be the first interface see #applicableTo(Material)
 class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
-
-    static class ItemMetaKey {
-
-        @Retention(RetentionPolicy.SOURCE)
-        @Target(ElementType.FIELD)
-        @interface Specific {
-            enum To {
-                BUKKIT,
-                NBT,
-                ;
-            }
-            To value();
-        }
-
-        final String BUKKIT;
-        final String NBT;
-
-        ItemMetaKey(final String both) {
-            this(both, both);
-        }
-
-        ItemMetaKey(final String nbt, final String bukkit) {
-            this.NBT = nbt;
-            this.BUKKIT = bukkit;
-        }
-    }
 
     static final class ItemMetaKeyType<T> extends ItemMetaKey {
 
@@ -259,6 +232,8 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     @Specific(Specific.To.NBT)
     static final ItemMetaKeyType<FoodProperties> FOOD = new ItemMetaKeyType<>(DataComponents.FOOD, "food");
     @Specific(Specific.To.NBT)
+    static final ItemMetaKeyType<Consumable> CONSUMABLE = new ItemMetaKeyType<>(DataComponents.CONSUMABLE, "consumable");
+    @Specific(Specific.To.NBT)
     static final ItemMetaKeyType<Tool> TOOL = new ItemMetaKeyType<>(DataComponents.TOOL, "tool");
     @Specific(Specific.To.NBT)
     static final ItemMetaKeyType<Equippable> EQUIPPABLE = new ItemMetaKeyType<>(DataComponents.EQUIPPABLE, "equippable");
@@ -299,6 +274,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     private ItemStack useRemainder;
     private CraftUseCooldownComponent useCooldown;
     private CraftFoodComponent food;
+    private CraftConsumableComponent consumable;
     private CraftToolComponent tool;
     private CraftEquippableComponent equippable;
     private CraftJukeboxComponent jukebox;
@@ -360,6 +336,9 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         }
         if (meta.hasFood()) {
             this.food = new CraftFoodComponent(meta.food);
+        }
+        if (meta.hasConsumable()) {
+            this.consumable = new CraftConsumableComponent(meta.consumable);
         }
         if (meta.hasTool()) {
             this.tool = new CraftToolComponent(meta.tool);
@@ -466,6 +445,9 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         });
         CraftMetaItem.getOrEmpty(tag, CraftMetaItem.FOOD).ifPresent((foodInfo) -> {
             this.food = new CraftFoodComponent(foodInfo);
+        });
+        getOrEmpty(tag, CONSUMABLE).ifPresent((consumableInfo) -> {
+            consumable = new CraftConsumableComponent(consumableInfo);
         });
         CraftMetaItem.getOrEmpty(tag, CraftMetaItem.TOOL).ifPresent((toolInfo) -> {
             this.tool = new CraftToolComponent(toolInfo);
@@ -695,6 +677,11 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         CraftFoodComponent food = SerializableMeta.getObject(CraftFoodComponent.class, map, CraftMetaItem.FOOD.BUKKIT, true);
         if (food != null) {
             this.setFood(food);
+        }
+
+        CraftConsumableComponent consumable = SerializableMeta.getObject(CraftConsumableComponent.class, map, CONSUMABLE.BUKKIT, true);
+        if (consumable != null) {
+            setConsumable(consumable);
         }
 
         CraftToolComponent tool = SerializableMeta.getObject(CraftToolComponent.class, map, CraftMetaItem.TOOL.BUKKIT, true);
@@ -990,6 +977,10 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             itemTag.put(CraftMetaItem.FOOD, this.food.getHandle());
         }
 
+        if (hasConsumable()) {
+            itemTag.put(CONSUMABLE, consumable.getHandle());
+        }
+
         if (this.hasTool()) {
             itemTag.put(CraftMetaItem.TOOL, this.tool.getHandle());
         }
@@ -1100,7 +1091,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
     @Overridden
     boolean isEmpty() {
-        return !(this.hasDisplayName() || this.hasItemName() || this.hasLocalizedName() || this.hasEnchants() || (this.lore != null) || this.hasCustomModelData() || this.hasEnchantable() || this.hasBlockData() || this.hasRepairCost() || !this.unhandledTags.build().isEmpty() || !this.removedTags.isEmpty() || !this.persistentDataContainer.isEmpty() || this.hideFlag != 0 || this.isHideTooltip() || this.hasTooltipStyle() || this.hasItemModel() || this.isUnbreakable() || this.hasEnchantmentGlintOverride() || this.isGlider() || this.hasDamageResistant() || this.hasMaxStackSize() || this.hasRarity() || this.hasUseRemainder() || this.hasUseCooldown() || this.hasFood() || this.hasTool() || this.hasJukeboxPlayable() || this.hasEquippable() || this.hasDamage() || this.hasMaxDamage() || this.hasAttributeModifiers() || this.customTag != null);
+        return !(this.hasDisplayName() || this.hasItemName() || this.hasLocalizedName() || this.hasEnchants() || (this.lore != null) || this.hasCustomModelData() || this.hasEnchantable() || this.hasBlockData() || this.hasRepairCost() || !this.unhandledTags.build().isEmpty() || !this.removedTags.isEmpty() || !this.persistentDataContainer.isEmpty() || this.hideFlag != 0 || this.isHideTooltip() || this.hasTooltipStyle() || this.hasItemModel() || this.isUnbreakable() || this.hasEnchantmentGlintOverride() || this.isGlider() || this.hasDamageResistant() || this.hasMaxStackSize() || this.hasRarity() || this.hasUseRemainder() || this.hasUseCooldown() || hasConsumable() || this.hasFood() || this.hasTool() || this.hasJukeboxPlayable() || this.hasEquippable() || this.hasDamage() || this.hasMaxDamage() || this.hasAttributeModifiers() || this.customTag != null);
     }
 
     @Override
@@ -1527,6 +1518,21 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     }
 
     @Override
+    public boolean hasConsumable() {
+        return this.consumable != null;
+    }
+
+    @Override
+    public ConsumableComponent getConsumable() {
+        return (this.hasConsumable()) ? new CraftConsumableComponent(this.consumable) : new CraftConsumableComponent(new Consumable(Consumable.DEFAULT_CONSUME_SECONDS, ItemUseAnimation.EAT, SoundEffects.GENERIC_EAT, true, List.of()));
+    }
+
+    @Override
+    public void setConsumable(ConsumableComponent consumable) {
+        this.consumable = (consumable == null) ? null : new CraftConsumableComponent((CraftConsumableComponent) consumable);
+    }
+
+    @Override
     public boolean hasTool() {
         return this.tool != null;
     }
@@ -1829,6 +1835,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                 && (this.hasUseRemainder() ? that.hasUseRemainder() && this.useRemainder.equals(that.useRemainder) : !that.hasUseRemainder())
                 && (this.hasUseCooldown() ? that.hasUseCooldown() && this.useCooldown.equals(that.useCooldown) : !that.hasUseCooldown())
                 && (this.hasFood() ? that.hasFood() && this.food.equals(that.food) : !that.hasFood())
+                && (this.hasConsumable() ? that.hasConsumable() && this.consumable.equals(that.consumable) : !that.hasConsumable())
                 && (this.hasTool() ? that.hasTool() && this.tool.equals(that.tool) : !that.hasTool())
                 && (this.hasEquippable() ? that.hasEquippable() && this.equippable.equals(that.equippable) : !that.hasEquippable())
                 && (this.hasJukeboxPlayable() ? that.hasJukeboxPlayable() && this.jukebox.equals(that.jukebox) : !that.hasJukeboxPlayable())
@@ -1880,6 +1887,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         hash = 61 * hash + (this.hasUseRemainder() ? this.useRemainder.hashCode() : 0);
         hash = 61 * hash + (this.hasUseCooldown() ? this.useCooldown.hashCode() : 0);
         hash = 61 * hash + (this.hasFood() ? this.food.hashCode() : 0);
+        hash = 61 * hash + (hasConsumable() ? this.consumable.hashCode() : 0);
         hash = 61 * hash + (this.hasTool() ? this.tool.hashCode() : 0);
         hash = 61 * hash + (this.hasJukeboxPlayable() ? this.jukebox.hashCode() : 0);
         hash = 61 * hash + (this.hasEquippable() ? this.equippable.hashCode() : 0);
@@ -1932,6 +1940,9 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             }
             if (this.hasFood()) {
                 clone.food = new CraftFoodComponent(this.food);
+            }
+            if (this.hasConsumable()) {
+                clone.consumable = new CraftConsumableComponent(consumable);
             }
             if (this.hasTool()) {
                 clone.tool = new CraftToolComponent(this.tool);
@@ -2051,6 +2062,10 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
         if (this.hasFood()) {
             builder.put(CraftMetaItem.FOOD.BUKKIT, this.food);
+        }
+
+        if (hasConsumable()) {
+            builder.put(CONSUMABLE.BUKKIT, consumable);
         }
 
         if (this.hasTool()) {
@@ -2247,6 +2262,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                         CraftMetaItem.USE_REMAINDER.TYPE,
                         CraftMetaItem.USE_COOLDOWN.TYPE,
                         CraftMetaItem.FOOD.TYPE,
+                        CraftMetaItem.CONSUMABLE.TYPE,
                         CraftMetaItem.TOOL.TYPE,
                         CraftMetaItem.EQUIPPABLE.TYPE,
                         CraftMetaItem.JUKEBOX_PLAYABLE.TYPE,

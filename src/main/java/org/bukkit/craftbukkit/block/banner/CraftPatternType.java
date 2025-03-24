@@ -9,9 +9,10 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.block.banner.PatternType;
 import org.bukkit.craftbukkit.CraftRegistry;
+import org.bukkit.craftbukkit.registry.CraftOldEnumRegistryItem;
 import org.bukkit.craftbukkit.util.Handleable;
 
-public class CraftPatternType implements PatternType, Handleable<BannerPattern> {
+public class CraftPatternType extends CraftOldEnumRegistryItem<PatternType, BannerPattern> implements PatternType {
 
     private static int count = 0;
 
@@ -40,73 +41,13 @@ public class CraftPatternType implements PatternType, Handleable<BannerPattern> 
                 + ", this can happen if a plugin creates its own banner pattern without properly registering it.");
     }
 
-    private final NamespacedKey key;
-    private final BannerPattern bannerPatternType;
-    private final String name;
-    private final int ordinal;
-
-    public CraftPatternType(NamespacedKey key, BannerPattern bannerPatternType) {
-        this.key = key;
-        this.bannerPatternType = bannerPatternType;
-        // For backwards compatibility, minecraft values will stile return the uppercase name without the namespace,
-        // in case plugins use for example the name as key in a config file to receive pattern type specific values.
-        // Custom pattern types will return the key with namespace. For a plugin this should look than like a new pattern type
-        // (which can always be added in new minecraft versions and the plugin should therefore handle it accordingly).
-        if (NamespacedKey.MINECRAFT.equals(key.getNamespace())) {
-            this.name = key.getKey().toUpperCase(Locale.ROOT);
-        } else {
-            this.name = key.toString();
-        }
-        this.ordinal = CraftPatternType.count++;
-    }
-
-    @Override
-    public BannerPattern getHandle() {
-        return this.bannerPatternType;
+    public CraftPatternType(NamespacedKey key, Holder<BannerPattern> handle) {
+        super(key, handle, count++);
     }
 
     @Override
     public NamespacedKey getKey() {
-        return this.key;
-    }
-
-    @Override
-    public int compareTo(PatternType patternType) {
-        return this.ordinal - patternType.ordinal();
-    }
-
-    @Override
-    public String name() {
-        return this.name;
-    }
-
-    @Override
-    public int ordinal() {
-        return this.ordinal;
-    }
-
-    @Override
-    public String toString() {
-        // For backwards compatibility
-        return this.name();
-    }
-
-    @Override
-    public boolean equals(Object other) {
-        if (this == other) {
-            return true;
-        }
-
-        if (!(other instanceof CraftPatternType)) {
-            return false;
-        }
-
-        return this.getKey().equals(((PatternType) other).getKey());
-    }
-
-    @Override
-    public int hashCode() {
-        return this.getKey().hashCode();
+        return getKeyOrThrow();
     }
 
     @Override

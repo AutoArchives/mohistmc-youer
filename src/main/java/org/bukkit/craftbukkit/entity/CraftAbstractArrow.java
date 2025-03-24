@@ -11,7 +11,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.projectiles.ProjectileSource;
 
-public class CraftAbstractArrow extends AbstractProjectile implements AbstractArrow {
+public class CraftAbstractArrow extends CraftProjectile implements AbstractArrow {
 
     public CraftAbstractArrow(CraftServer server, net.minecraft.world.entity.projectile.AbstractArrow entity) {
         super(server, entity);

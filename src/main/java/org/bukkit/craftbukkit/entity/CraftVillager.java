@@ -1,8 +1,15 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
 import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.npc.VillagerProfession;
@@ -14,6 +21,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.craftbukkit.registry.CraftOldEnumRegistryItem;
 import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.entity.Villager;
@@ -126,6 +134,79 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
         return (entityzombievillager != null) ? (ZombieVillager) entityzombievillager.getBukkitEntity() : null;
     }
 
+    @Override
+    public int getReputation(UUID uuid, ReputationType reputationType) {
+        Preconditions.checkArgument(uuid != null, "UUID cannot be null");
+        Preconditions.checkArgument(reputationType != null, "Reputation type cannot be null");
+        return getHandle().getGossips().getReputation(uuid,
+                Predicate.isEqual(CraftReputationType.bukkitToMinecraft(reputationType)),
+                false);
+    }
+
+    @Override
+    public int getWeightedReputation(UUID uuid, ReputationType reputationType) {
+        Preconditions.checkArgument(uuid != null, "UUID cannot be null");
+        Preconditions.checkArgument(reputationType != null, "Reputation type cannot be null");
+        return getHandle().getGossips().getReputation(uuid,
+                Predicate.isEqual(CraftReputationType.bukkitToMinecraft(reputationType)),
+                true);
+    }
+
+    @Override
+    public int getReputation(UUID uuid) {
+        Preconditions.checkArgument(uuid != null, "UUID cannot be null");
+        return getHandle().getGossips().getReputation(uuid, reputationType -> true);
+    }
+
+    @Override
+    public void addReputation(UUID uuid, ReputationType reputationType, int amount) {
+        addReputation(uuid, reputationType, amount, ReputationEvent.UNSPECIFIED);
+    }
+
+    @Override
+    public void addReputation(UUID uuid, ReputationType reputationType, int amount, ReputationEvent changeReason) {
+        Preconditions.checkArgument(uuid != null, "UUID cannot be null");
+        Preconditions.checkArgument(reputationType != null, "Reputation type cannot be null");
+        Preconditions.checkArgument(changeReason != null, "Change reason cannot be null");
+        getHandle().getGossips().add(uuid, CraftReputationType.bukkitToMinecraft(reputationType), amount, changeReason);
+    }
+
+    @Override
+    public void removeReputation(UUID uuid, ReputationType reputationType, int amount) {
+        removeReputation(uuid, reputationType, amount, ReputationEvent.UNSPECIFIED);
+    }
+
+    @Override
+    public void removeReputation(UUID uuid, ReputationType reputationType, int amount, ReputationEvent changeReason) {
+        Preconditions.checkArgument(uuid != null, "UUID cannot be null");
+        Preconditions.checkArgument(reputationType != null, "Reputation type cannot be null");
+        Preconditions.checkArgument(changeReason != null, "Change reason cannot be null");
+        getHandle().getGossips().remove(uuid, CraftReputationType.bukkitToMinecraft(reputationType), amount, changeReason);
+    }
+
+    @Override
+    public void setReputation(UUID uuid, ReputationType reputationType, int amount) {
+        setReputation(uuid, reputationType, amount, ReputationEvent.UNSPECIFIED);
+    }
+
+    @Override
+    public void setReputation(UUID uuid, ReputationType reputationType, int amount, ReputationEvent changeReason) {
+        Preconditions.checkArgument(uuid != null, "UUID cannot be null");
+        Preconditions.checkArgument(reputationType != null, "Reputation type cannot be null");
+        Preconditions.checkArgument(changeReason != null, "Change reason cannot be null");
+        getHandle().getGossips().set(uuid, CraftReputationType.bukkitToMinecraft(reputationType), amount, changeReason);
+    }
+
+    @Override
+    public void setGossipDecayTime(long ticks) {
+        getHandle().gossipDecayInterval = ticks;
+    }
+
+    @Override
+    public long getGossipDecayTime() {
+        return getHandle().gossipDecayInterval;
+    }
+
     public static class CraftType implements Type, Handleable<VillagerType> {
         private static int count = 0;
 
@@ -137,77 +218,17 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
             return CraftRegistry.bukkitToMinecraft(bukkit);
         }
 
-        private final NamespacedKey key;
-        private final VillagerType villagerType;
-        private final String name;
-        private final int ordinal;
-
-        public CraftType(NamespacedKey key, VillagerType villagerType) {
-            this.key = key;
-            this.villagerType = villagerType;
-            // For backwards compatibility, minecraft values will still return the uppercase name without the namespace,
-            // in case plugins use for example the name as key in a config file to receive type specific values.
-            // Custom types will return the key with namespace. For a plugin this should look than like a new type
-            // (which can always be added in new minecraft versions and the plugin should therefore handle it accordingly).
-            if (NamespacedKey.MINECRAFT.equals(key.getNamespace())) {
-                this.name = key.getKey().toUpperCase(Locale.ROOT);
-            } else {
-                this.name = key.toString();
-            }
-            this.ordinal = CraftType.count++;
-        }
-
-        @Override
-        public VillagerType getHandle() {
-            return this.villagerType;
+        public CraftType(NamespacedKey key, Holder<VillagerType> handle) {
+            super(key, handle, count++);
         }
 
         @Override
         public NamespacedKey getKey() {
-            return this.key;
-        }
-
-        @Override
-        public int compareTo(Type type) {
-            return this.ordinal - type.ordinal();
-        }
-
-        @Override
-        public String name() {
-            return this.name;
-        }
-
-        @Override
-        public int ordinal() {
-            return this.ordinal;
-        }
-
-        @Override
-        public String toString() {
-            // For backwards compatibility
-            return this.name();
-        }
-
-        @Override
-        public boolean equals(Object other) {
-            if (this == other) {
-                return true;
-            }
-
-            if (!(other instanceof CraftType)) {
-                return false;
-            }
-
-            return this.getKey().equals(((Type) other).getKey());
-        }
-
-        @Override
-        public int hashCode() {
-            return this.getKey().hashCode();
+            return getKeyOrThrow();
         }
     }
 
-    public static class CraftProfession implements Profession, Handleable<VillagerProfession> {
+    public static class CraftProfession extends CraftOldEnumRegistryItem<Profession, VillagerProfession> implements Profession {
         private static int count = 0;
 
         public static Profession minecraftToBukkit(VillagerProfession minecraft) {
@@ -218,73 +239,86 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
             return CraftRegistry.bukkitToMinecraft(bukkit);
         }
 
-        private final NamespacedKey key;
-        private final VillagerProfession villagerProfession;
-        private final String name;
-        private final int ordinal;
-
-        public CraftProfession(NamespacedKey key, VillagerProfession villagerProfession) {
-            this.key = key;
-            this.villagerProfession = villagerProfession;
-            // For backwards compatibility, minecraft values will still return the uppercase name without the namespace,
-            // in case plugins use for example the name as key in a config file to receive profession specific values.
-            // Custom professions will return the key with namespace. For a plugin this should look than like a new profession
-            // (which can always be added in new minecraft versions and the plugin should therefore handle it accordingly).
-            if (NamespacedKey.MINECRAFT.equals(key.getNamespace())) {
-                this.name = key.getKey().toUpperCase(Locale.ROOT);
-            } else {
-                this.name = key.toString();
-            }
-            this.ordinal = CraftProfession.count++;
+        public CraftProfession(NamespacedKey key, Holder<VillagerProfession> handle) {
+            super(key, handle, count++);
         }
-
-        @Override
-        public VillagerProfession getHandle() {
-            return this.villagerProfession;
-        }
-
         @Override
         public NamespacedKey getKey() {
-            return this.key;
+            return getKeyOrThrow();
+        }
+    }
+
+    public static class CraftReputationType implements ReputationType, Handleable<net.minecraft.world.entity.ai.gossip.GossipType> {
+
+        public static final Map<String, CraftReputationType> BY_ID = Stream
+                .of(net.minecraft.world.entity.ai.gossip.GossipType.values())
+                .collect(Collectors.toMap(reputationType -> reputationType.id, CraftReputationType::new));
+        private final net.minecraft.world.entity.ai.gossip.GossipType handle;
+
+        public CraftReputationType(net.minecraft.world.entity.ai.gossip.GossipType handle) {
+            this.handle = handle;
         }
 
         @Override
-        public int compareTo(Profession profession) {
-            return this.ordinal - profession.ordinal();
+        public net.minecraft.world.entity.ai.gossip.GossipType getHandle() {
+            return handle;
         }
 
         @Override
-        public String name() {
-            return this.name;
+        public int getMaxValue() {
+            return handle.max;
         }
 
         @Override
-        public int ordinal() {
-            return this.ordinal;
+        public int getWeight() {
+            return handle.weight;
+        }
+
+        public static net.minecraft.world.entity.ai.gossip.GossipType bukkitToMinecraft(ReputationType bukkit) {
+            Preconditions.checkArgument(bukkit != null);
+
+            return ((CraftReputationType) bukkit).getHandle();
+        }
+
+        public static ReputationType minecraftToBukkit(net.minecraft.world.entity.ai.gossip.GossipType minecraft) {
+            Preconditions.checkArgument(minecraft != null);
+
+            return switch (minecraft) {
+                case MAJOR_NEGATIVE -> ReputationType.MAJOR_NEGATIVE;
+                case MINOR_NEGATIVE -> ReputationType.MINOR_NEGATIVE;
+                case MINOR_POSITIVE -> ReputationType.MINOR_POSITIVE;
+                case MAJOR_POSITIVE -> ReputationType.MAJOR_POSITIVE;
+                case TRADING -> ReputationType.TRADING;
+            };
+        }
+    }
+
+    public static class CraftReputationEvent implements ReputationEvent, Handleable<net.minecraft.world.entity.ai.village.ReputationEventType> {
+
+        private static final Map<String, ReputationEvent> ALL = Maps.newHashMap();
+        private final net.minecraft.world.entity.ai.village.ReputationEventType handle;
+
+        public CraftReputationEvent(net.minecraft.world.entity.ai.village.ReputationEventType handle) {
+            this.handle = handle;
+            ALL.put(handle.toString(), this);
         }
 
         @Override
-        public String toString() {
-            // For backwards compatibility
-            return this.name();
+        public net.minecraft.world.entity.ai.village.ReputationEventType getHandle() {
+            return handle;
         }
 
-        @Override
-        public boolean equals(Object other) {
-            if (this == other) {
-                return true;
-            }
+        public static net.minecraft.world.entity.ai.village.ReputationEventType bukkitToMinecraft(ReputationEvent bukkit) {
+            Preconditions.checkArgument(bukkit != null);
 
-            if (!(other instanceof CraftProfession)) {
-                return false;
-            }
-
-            return this.getKey().equals(((Profession) other).getKey());
+            return ((CraftReputationEvent) bukkit).getHandle();
         }
 
-        @Override
-        public int hashCode() {
-            return this.getKey().hashCode();
+        public static ReputationEvent minecraftToBukkit(net.minecraft.world.entity.ai.village.ReputationEventType minecraft) {
+            Preconditions.checkArgument(minecraft != null);
+
+            ReputationEvent bukkit = ALL.get(minecraft.toString());
+            return bukkit == null ? new CraftReputationEvent(minecraft) : bukkit;
         }
     }
 }

@@ -274,7 +274,7 @@ public final class CraftPlayerProfile implements PlayerProfile {
             map.put("uniqueId", this.uniqueId.toString());
         }
         if (this.name != null) {
-            map.put("name", this.getName());
+            map.put("name", this.name);
         }
         this.rebuildDirtyProperties();
         if (!this.properties.isEmpty()) {

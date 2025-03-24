@@ -6,25 +6,17 @@ import net.minecraft.core.registries.Registries;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.craftbukkit.CraftRegistry;
+import org.bukkit.craftbukkit.registry.CraftRegistryItem;
 import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.damage.DamageEffect;
 import org.bukkit.damage.DamageScaling;
 import org.bukkit.damage.DamageType;
 import org.bukkit.damage.DeathMessageType;
 
-public class CraftDamageType implements DamageType, Handleable<net.minecraft.world.damagesource.DamageType> {
+public class CraftDamageType extends CraftRegistryItem<net.minecraft.world.damagesource.DamageType> implements DamageType {
 
-    private final NamespacedKey key;
-    private final net.minecraft.world.damagesource.DamageType damageType;
-
-    public CraftDamageType(NamespacedKey key, net.minecraft.world.damagesource.DamageType damageType) {
-        this.key = key;
-        this.damageType = damageType;
-    }
-
-    @Override
-    public net.minecraft.world.damagesource.DamageType getHandle() {
-        return this.damageType;
+    public CraftDamageType(NamespacedKey key, Holder<net.minecraft.world.damagesource.DamageType> handle) {
+        super(key, handle);
     }
 
     @Override
@@ -54,12 +46,7 @@ public class CraftDamageType implements DamageType, Handleable<net.minecraft.wor
 
     @Override
     public NamespacedKey getKey() {
-        return this.key;
-    }
-
-    @Override
-    public String toString() {
-        return "CraftDamageType{" + "key=" + this.getKey() + ",damageScaling=" + this.getDamageScaling() + ",damageEffect=" + this.getDamageEffect() + ",deathMessageType=" + this.getDeathMessageType() + ",exhaustion=" + this.getExhaustion() + "}";
+        return getKeyOrThrow();
     }
 
     public static DeathMessageType deathMessageTypeToBukkit(net.minecraft.world.damagesource.DeathMessageType deathMessageType) {
