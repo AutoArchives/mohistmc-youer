@@ -5,7 +5,7 @@ plugins {
 
 apply plugin: 'net.neoforged.gradleutils'
 
-project.version = '1.21.4-dev'
+project.version = '1.21.5-dev'
 
 // Print version, generally useful to know - also appears on CI
 System.out.println("NeoForge version ${project.version}")
