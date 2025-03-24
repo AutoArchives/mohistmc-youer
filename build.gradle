@@ -1,6 +1,5 @@
 plugins {
     id 'net.neoforged.gradleutils' version '3.0.0' apply false
-    id 'com.diffplug.spotless' version '6.22.0' apply false
 }
 
 apply plugin: 'net.neoforged.gradleutils'
@@ -18,7 +17,7 @@ allprojects {
 
     tasks.withType(JavaCompile).configureEach {
         options.encoding = 'UTF-8'
-        options.compilerArgs << '-Xlint:-dep-ann' << '-Xlint:-removal' << '-Xdiags:verbose'
+        options.warnings = false
     }
 
     java.toolchain.languageVersion.set(JavaLanguageVersion.of(project.java_version))
