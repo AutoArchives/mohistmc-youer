@@ -35,6 +35,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.inventory.meta.SpawnEggMeta;
 import org.bukkit.inventory.meta.SuspiciousStewMeta;
 import org.bukkit.inventory.meta.TropicalFishBucketMeta;
+import org.bukkit.registry.RegistryAware;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -47,7 +48,7 @@ import org.jetbrains.annotations.Nullable;
  * changes may occur. Do not use this API in plugins.
  */
 @ApiStatus.Internal
-public interface ItemType extends Keyed, Translatable {
+public interface ItemType extends Keyed, Translatable, RegistryAware {
 
     /**
      * Typed represents a subtype of {@link ItemType}s that have a known item meta type
@@ -2399,6 +2400,18 @@ public interface ItemType extends Keyed, Translatable {
      * @return true if this ItemType can be used in this World.
      */
     boolean isEnabledByFeature(@NotNull World world);
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see #getKeyOrThrow()
+     * @see #isRegistered()
+     * @deprecated A key might not always be present, use {@link #getKeyOrThrow()} instead.
+     */
+    @NotNull
+    @Override
+    @Deprecated(since = "1.21.4")
+    NamespacedKey getKey();
 
     /**
      * Tries to convert this ItemType into a Material

@@ -9,6 +9,7 @@ import org.bukkit.Keyed;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.packs.DataPack;
+import org.bukkit.registry.RegistryAware;
 import org.bukkit.util.OldEnum;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,7 +21,7 @@ import org.jetbrains.annotations.NotNull;
  * There may be additional biomes present in the server, for example from a {@link DataPack}
  * which can be accessed via {@link Registry#BIOME}.
  */
-public interface Biome extends OldEnum<Biome>, Keyed {
+public interface Biome extends OldEnum<Biome>, Keyed, RegistryAware {
 
     Biome OCEAN = getBiome("ocean");
     Biome PLAINS = getBiome("plains");
@@ -100,6 +101,18 @@ public interface Biome extends OldEnum<Biome>, Keyed {
     private static Biome getBiome(@NotNull String key) {
         return Registry.BIOME.getOrThrow(NamespacedKey.minecraft(key));
     }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see #getKeyOrThrow()
+     * @see #isRegistered()
+     * @deprecated A key might not always be present, use {@link #getKeyOrThrow()} instead.
+     */
+    @NotNull
+    @Override
+    @Deprecated(since = "1.21.4")
+    NamespacedKey getKey();
 
     /**
      * @param name of the biome.

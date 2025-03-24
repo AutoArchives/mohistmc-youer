@@ -102,4 +102,5 @@ public interface LightningStrike extends Entity {
     @Override
     Spigot spigot();
     // Spigot end
+
 }

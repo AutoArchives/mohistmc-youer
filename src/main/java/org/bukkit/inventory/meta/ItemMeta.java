@@ -23,6 +23,7 @@ import org.bukkit.inventory.meta.components.FoodComponent;
 import org.bukkit.inventory.meta.components.JukeboxPlayableComponent;
 import org.bukkit.inventory.meta.components.ToolComponent;
 import org.bukkit.inventory.meta.components.UseCooldownComponent;
+import org.bukkit.inventory.meta.components.consumable.ConsumableComponent;
 import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
 import org.bukkit.persistence.PersistentDataHolder;
 import org.bukkit.tag.DamageTypeTags;
@@ -103,7 +104,7 @@ public interface ItemMeta extends Cloneable, ConfigurationSerializable, Persiste
      * @return true if this has a localized name
      * @deprecated meta no longer exists
      */
-    @Deprecated(forRemoval = true)
+    @Deprecated(since = "1.20.5", forRemoval = true)
     boolean hasLocalizedName();
 
     /**
@@ -116,7 +117,7 @@ public interface ItemMeta extends Cloneable, ConfigurationSerializable, Persiste
      * @deprecated meta no longer exists
      */
     @NotNull
-    @Deprecated(forRemoval = true)
+    @Deprecated(since = "1.20.5", forRemoval = true)
     String getLocalizedName();
 
     /**
@@ -125,7 +126,7 @@ public interface ItemMeta extends Cloneable, ConfigurationSerializable, Persiste
      * @param name the name to set
      * @deprecated meta no longer exists
      */
-    @Deprecated(forRemoval = true)
+    @Deprecated(since = "1.20.5", forRemoval = true)
     void setLocalizedName(@Nullable String name);
 
     /**
@@ -455,7 +456,7 @@ public interface ItemMeta extends Cloneable, ConfigurationSerializable, Persiste
      * @deprecated use {@link #getDamageResistant()} and
      * {@link DamageTypeTags#IS_FIRE}
      */
-    @Deprecated
+    @Deprecated(since = "1.21.2")
     boolean isFireResistant();
 
     /**
@@ -466,7 +467,7 @@ public interface ItemMeta extends Cloneable, ConfigurationSerializable, Persiste
      * @deprecated use {@link #setDamageResistant(org.bukkit.Tag)} and
      * {@link DamageTypeTags#IS_FIRE}
      */
-    @Deprecated
+    @Deprecated(since = "1.21.2")
     void setFireResistant(boolean fireResistant);
 
     /**
@@ -624,6 +625,33 @@ public interface ItemMeta extends Cloneable, ConfigurationSerializable, Persiste
      * @param food new food
      */
     void setFood(@Nullable FoodComponent food);
+
+    /**
+     * Checks if the consumable is set.
+     *
+     * @return if a consumable is set
+     */
+    boolean hasConsumable();
+
+    /**
+     * Gets the consumable set on this item, or creates an empty consumable instance.
+     * <p>
+     * The returned component is a snapshot of its current state and does not
+     * reflect a live view of what is on an item. After changing any value on
+     * this component, it must be set with {@link #setConsumable(ConsumableComponent)} to
+     * apply the changes.
+     *
+     * @return food
+     */
+    @NotNull
+    ConsumableComponent getConsumable();
+
+    /**
+     * Sets the item consumable.
+     *
+     * @param consumable new consumable
+     */
+    void setConsumable(@Nullable ConsumableComponent consumable);
 
     /**
      * Checks if the tool is set.
@@ -892,7 +920,7 @@ public interface ItemMeta extends Cloneable, ConfigurationSerializable, Persiste
      * Please use {@link PersistentDataHolder#getPersistentDataContainer()} instead of this.
      */
     @NotNull
-    @Deprecated
+    @Deprecated(since = "1.14")
     CustomItemTagContainer getCustomTagContainer();
 
     /**

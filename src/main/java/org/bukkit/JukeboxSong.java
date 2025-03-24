@@ -1,5 +1,6 @@
 package org.bukkit;
 
+import org.bukkit.registry.RegistryAware;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
@@ -7,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
  * Represents a song which may play in a Jukebox.
  */
 @ApiStatus.Experimental
-public interface JukeboxSong extends Keyed, Translatable {
+public interface JukeboxSong extends Keyed, Translatable, RegistryAware {
 
     public static final JukeboxSong THIRTEEN = get("13");
     public static final JukeboxSong CAT = get("cat");
@@ -33,4 +34,16 @@ public interface JukeboxSong extends Keyed, Translatable {
     private static JukeboxSong get(@NotNull String key) {
         return Registry.JUKEBOX_SONG.getOrThrow(NamespacedKey.minecraft(key));
     }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see #getKeyOrThrow()
+     * @see #isRegistered()
+     * @deprecated A key might not always be present, use {@link #getKeyOrThrow()} instead.
+     */
+    @NotNull
+    @Override
+    @Deprecated(since = "1.21.4")
+    NamespacedKey getKey();
 }

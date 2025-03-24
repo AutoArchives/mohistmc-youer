@@ -4,6 +4,7 @@ import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
 public interface AdvancementRequirement {
+
     /**
      * Get all required criteria.
      *

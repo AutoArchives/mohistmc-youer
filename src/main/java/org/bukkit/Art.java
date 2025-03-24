@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import java.util.Locale;
 import org.bukkit.packs.DataPack;
+import org.bukkit.registry.RegistryAware;
 import org.bukkit.util.OldEnum;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -16,7 +17,7 @@ import org.jetbrains.annotations.Nullable;
  * There may be additional arts present in the server, for example from a {@link DataPack}
  * which can be accessed via {@link Registry#ART}.
  */
-public interface Art extends OldEnum<Art>, Keyed {
+public interface Art extends OldEnum<Art>, Keyed, RegistryAware {
 
     Art KEBAB = getArt("kebab");
     Art AZTEC = getArt("aztec");
@@ -87,6 +88,18 @@ public interface Art extends OldEnum<Art>, Keyed {
      * @return The height of the painting, in blocks
      */
     int getBlockHeight();
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see #getKeyOrThrow()
+     * @see #isRegistered()
+     * @deprecated A key might not always be present, use {@link #getKeyOrThrow()} instead.
+     */
+    @NotNull
+    @Override
+    @Deprecated(since = "1.21.4")
+    NamespacedKey getKey();
 
     /**
      * Get the ID of this painting.

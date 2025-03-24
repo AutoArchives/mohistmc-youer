@@ -3,10 +3,12 @@ package org.bukkit;
 import com.google.common.base.Preconditions;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.registry.RegistryAware;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public enum Particle implements Keyed {
+public enum Particle implements Keyed, RegistryAware {
     POOF("poof"),
     EXPLOSION("explosion"),
     EXPLOSION_EMITTER("explosion_emitter"),
@@ -198,12 +200,34 @@ public enum Particle implements Keyed {
 
     @NotNull
     @Override
-    public NamespacedKey getKey() {
-        if (key == null) {
-            throw new UnsupportedOperationException("Cannot get key from legacy particle");
-        }
+    public NamespacedKey getKeyOrThrow() {
+        Preconditions.checkState(isRegistered(), "Cannot get key of this registry item, because it is not registered. Use #isRegistered() before calling this method.");
+        return this.key;
+    }
 
-        return key;
+    @Nullable
+    @Override
+    public NamespacedKey getKeyOrNull() {
+        return this.key;
+    }
+
+    @Override
+    public boolean isRegistered() {
+        return this.key != null;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see #getKeyOrThrow()
+     * @see #isRegistered()
+     * @deprecated A key might not always be present, use {@link #getKeyOrThrow()} instead.
+     */
+    @NotNull
+    @Override
+    @Deprecated(since = "1.21.4")
+    public NamespacedKey getKey() {
+        return getKeyOrThrow();
     }
 
     /**

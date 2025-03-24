@@ -1,12 +1,10 @@
 package org.bukkit.tag;
 
-import java.util.Objects;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Tag;
 import org.bukkit.damage.DamageType;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**

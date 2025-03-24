@@ -117,6 +117,7 @@ import org.bukkit.block.data.type.WallHangingSign;
 import org.bukkit.block.data.type.WallSign;
 import org.bukkit.block.data.type.WallSkull;
 import org.bukkit.inventory.ItemType;
+import org.bukkit.registry.RegistryAware;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -129,7 +130,7 @@ import org.jetbrains.annotations.Nullable;
  * changes may occur. Do not use this API in plugins.
  */
 @ApiStatus.Internal
-public interface BlockType extends Keyed, Translatable {
+public interface BlockType extends Keyed, Translatable, RegistryAware {
 
     /**
      * Typed represents a subtype of {@link BlockType}s that have a known block
@@ -3601,6 +3602,18 @@ public interface BlockType extends Keyed, Translatable {
      * @return true if this BlockType can be used in this World.
      */
     boolean isEnabledByFeature(@NotNull World world);
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see #getKeyOrThrow()
+     * @see #isRegistered()
+     * @deprecated A key might not always be present, use {@link #getKeyOrThrow()} instead.
+     */
+    @NotNull
+    @Override
+    @Deprecated(since = "1.21.4")
+    NamespacedKey getKey();
 
     /**
      * Tries to convert this BlockType into a Material

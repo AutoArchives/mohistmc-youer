@@ -16,7 +16,7 @@ public interface UseCooldownComponent extends ConfigurationSerializable {
      * Gets the time in seconds it will take for an item in this cooldown group
      * to be available to use again.
      *
-     * @return cooldown  time
+     * @return cooldown time
      */
     float getCooldownSeconds();
 

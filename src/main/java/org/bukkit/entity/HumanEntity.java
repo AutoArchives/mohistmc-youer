@@ -11,6 +11,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.MainHand;
+import org.bukkit.inventory.MenuType;
 import org.bukkit.inventory.Merchant;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.FireworkMeta;
@@ -118,7 +119,10 @@ public interface HumanEntity extends LivingEntity, AnimalTamer, InventoryHolder 
      *     no inventory will be opened and null will be returned.
      * @return The newly opened inventory view, or null if it could not be
      *     opened.
+     * @deprecated This method should be replaced by {@link MenuType#CRAFTING}
+     * see {@link MenuType.Typed#builder()} and its options for more information.
      */
+    @Deprecated(since = "1.21.4")
     @Nullable
     public InventoryView openWorkbench(@Nullable Location location, boolean force);
 
@@ -132,7 +136,10 @@ public interface HumanEntity extends LivingEntity, AnimalTamer, InventoryHolder 
      *     location, no inventory will be opened and null will be returned.
      * @return The newly opened inventory view, or null if it could not be
      *     opened.
+     * @deprecated This method should be replaced by {@link MenuType#ENCHANTMENT}
+     * see {@link MenuType.Typed#builder()} and its options for more information.
      */
+    @Deprecated(since = "1.21.4")
     @Nullable
     public InventoryView openEnchanting(@Nullable Location location, boolean force);
 
@@ -159,7 +166,10 @@ public interface HumanEntity extends LivingEntity, AnimalTamer, InventoryHolder 
      * @param force whether to force the trade even if another player is trading
      * @return The newly opened inventory view, or null if it could not be
      * opened.
+     * @deprecated This method can be replaced by using {@link MenuType#MERCHANT}
+     * in conjunction with {@link #openInventory(InventoryView)}.
      */
+    @Deprecated(since = "1.21.4")
     @Nullable
     public InventoryView openMerchant(@NotNull Villager trader, boolean force);
 
@@ -173,7 +183,10 @@ public interface HumanEntity extends LivingEntity, AnimalTamer, InventoryHolder 
      * @param force whether to force the trade even if another player is trading
      * @return The newly opened inventory view, or null if it could not be
      * opened.
+     * @deprecated This method can be replaced by using {@link MenuType#MERCHANT}
+     * in conjunction with {@link #openInventory(InventoryView)}.
      */
+    @Deprecated(since = "1.21.4")
     @Nullable
     public InventoryView openMerchant(@NotNull Merchant merchant, boolean force);
 
@@ -189,7 +202,7 @@ public interface HumanEntity extends LivingEntity, AnimalTamer, InventoryHolder 
      * @deprecated Humans may now dual wield in their off hand, use explicit
      * methods in {@link PlayerInventory}.
      */
-    @Deprecated
+    @Deprecated(since = "1.9")
     @NotNull
     public ItemStack getItemInHand();
 
@@ -201,7 +214,7 @@ public interface HumanEntity extends LivingEntity, AnimalTamer, InventoryHolder 
      * @deprecated Humans may now dual wield in their off hand, use explicit
      * methods in {@link PlayerInventory}.
      */
-    @Deprecated
+    @Deprecated(since = "1.9")
     public void setItemInHand(@Nullable ItemStack item);
 
     /**
@@ -461,7 +474,7 @@ public interface HumanEntity extends LivingEntity, AnimalTamer, InventoryHolder 
      * @deprecated There are currently no well defined semantics regarding
      * serialized entities in Bukkit. Use with care.
      */
-    @Deprecated
+    @Deprecated(since = "1.12")
     @Nullable
     public Entity getShoulderEntityLeft();
 
@@ -479,7 +492,7 @@ public interface HumanEntity extends LivingEntity, AnimalTamer, InventoryHolder 
      * @deprecated There are currently no well defined semantics regarding
      * serialized entities in Bukkit. Use with care.
      */
-    @Deprecated
+    @Deprecated(since = "1.12")
     public void setShoulderEntityLeft(@Nullable Entity entity);
 
     /**
@@ -493,7 +506,7 @@ public interface HumanEntity extends LivingEntity, AnimalTamer, InventoryHolder 
      * @deprecated There are currently no well defined semantics regarding
      * serialized entities in Bukkit. Use with care.
      */
-    @Deprecated
+    @Deprecated(since = "1.12")
     @Nullable
     public Entity getShoulderEntityRight();
 
@@ -511,7 +524,7 @@ public interface HumanEntity extends LivingEntity, AnimalTamer, InventoryHolder 
      * @deprecated There are currently no well defined semantics regarding
      * serialized entities in Bukkit. Use with care.
      */
-    @Deprecated
+    @Deprecated(since = "1.12")
     public void setShoulderEntityRight(@Nullable Entity entity);
 
     /**

@@ -7,7 +7,6 @@ import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.Keyed;
 import org.bukkit.Location;
-import org.bukkit.MinecraftExperimental;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Translatable;
 import org.bukkit.World;
@@ -40,12 +39,12 @@ import org.bukkit.entity.minecart.SpawnerMinecart;
 import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
-import org.jetbrains.annotations.ApiStatus;
+import org.bukkit.registry.RegistryAware;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public enum EntityType implements Keyed, Translatable {
+public enum EntityType implements Keyed, Translatable, RegistryAware {
 
     // These strings MUST match the strings in nms.EntityTypes and are case sensitive.
     /**
@@ -384,18 +383,24 @@ public enum EntityType implements Keyed, Translatable {
      * @return the entity type's name
      * @deprecated Magic value
      */
-    @Deprecated
+    @Deprecated(since = "1.6.2")
     @Nullable
     public String getName() {
         return name;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @see #getKeyOrThrow()
+     * @see #isRegistered()
+     * @deprecated A key might not always be present, use {@link #getKeyOrThrow()} instead.
+     */
     @NotNull
     @Override
+    @Deprecated(since = "1.21.4")
     public NamespacedKey getKey() {
-        Preconditions.checkArgument(key != null, "EntityType doesn't have key! Is it UNKNOWN?");
-
-        return key;
+        return getKeyOrThrow();
     }
 
     @Nullable
@@ -409,7 +414,7 @@ public enum EntityType implements Keyed, Translatable {
      * @return the raw type id
      * @deprecated Magic value
      */
-    @Deprecated
+    @Deprecated(since = "1.6.2")
     public short getTypeId() {
         return typeId;
     }
@@ -421,7 +426,7 @@ public enum EntityType implements Keyed, Translatable {
      * @return the matching entity type or null
      * @deprecated Magic value
      */
-    @Deprecated
+    @Deprecated(since = "1.6.2")
     @Contract("null -> null")
     @Nullable
     public static EntityType fromName(@Nullable String name) {
@@ -438,7 +443,7 @@ public enum EntityType implements Keyed, Translatable {
      * @return the matching entity type or null
      * @deprecated Magic value
      */
-    @Deprecated
+    @Deprecated(since = "1.6.2")
     @Nullable
     public static EntityType fromId(int id) {
         if (id > Short.MAX_VALUE) {
@@ -477,5 +482,23 @@ public enum EntityType implements Keyed, Translatable {
      */
     public boolean isEnabledByFeature(@NotNull World world) {
         return Bukkit.getDataPackManager().isEnabledByFeature(this, world);
+    }
+
+    @NotNull
+    @Override
+    public NamespacedKey getKeyOrThrow() {
+        Preconditions.checkState(isRegistered(), "Cannot get key of this registry item, because it is not registered. Use #isRegistered() before calling this method.");
+        return this.key;
+    }
+
+    @Nullable
+    @Override
+    public NamespacedKey getKeyOrNull() {
+        return this.key;
+    }
+
+    @Override
+    public boolean isRegistered() {
+        return this != UNKNOWN;
     }
 }

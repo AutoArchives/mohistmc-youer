@@ -30,6 +30,7 @@ import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.MenuType;
 import org.bukkit.inventory.meta.trim.TrimMaterial;
 import org.bukkit.inventory.meta.trim.TrimPattern;
+import org.bukkit.loot.LootTable;
 import org.bukkit.loot.LootTables;
 import org.bukkit.map.MapCursor;
 import org.bukkit.potion.PotionEffectType;
@@ -51,7 +52,9 @@ public interface Registry<T extends Keyed> extends Iterable<T> {
      *
      * @see Bukkit#getAdvancement(org.bukkit.NamespacedKey)
      * @see Bukkit#advancementIterator()
+     * @deprecated Advancement has no real server-side registry.
      */
+    @Deprecated(since = "1.21.4")
     Registry<Advancement> ADVANCEMENT = new Registry<Advancement>() {
 
         @Nullable
@@ -119,7 +122,9 @@ public interface Registry<T extends Keyed> extends Iterable<T> {
      *
      * @see Bukkit#getBossBar(org.bukkit.NamespacedKey)
      * @see Bukkit#getBossBars()
+     * @deprecated BossBar has no real server-side registry.
      */
+    @Deprecated(since = "1.21.4")
     Registry<KeyedBossBar> BOSS_BARS = new Registry<KeyedBossBar>() {
 
         @Nullable
@@ -186,7 +191,9 @@ public interface Registry<T extends Keyed> extends Iterable<T> {
      * Default server loot tables.
      *
      * @see LootTables
+     * @deprecated LootTables, not to be confused with the {@link LootTable} class, has no real server-side registry.
      */
+    @Deprecated(since = "1.21.4")
     Registry<LootTables> LOOT_TABLES = new SimpleRegistry<>(LootTables.class);
     /**
      * Server materials.

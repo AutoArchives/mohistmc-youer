@@ -1,7 +1,6 @@
 package org.bukkit.advancement;
 
 import java.util.Collection;
-import net.minecraft.advancements.AdvancementRequirements;
 import org.bukkit.Keyed;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

@@ -3,13 +3,14 @@ package org.bukkit;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import java.util.Locale;
+import org.bukkit.registry.RegistryAware;
 import org.bukkit.util.OldEnum;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * Represents a fluid type.
  */
-public interface Fluid extends OldEnum<Fluid>, Keyed {
+public interface Fluid extends OldEnum<Fluid>, Keyed, RegistryAware {
 
     /**
      * No fluid.
@@ -36,6 +37,18 @@ public interface Fluid extends OldEnum<Fluid>, Keyed {
     private static Fluid getFluid(@NotNull String key) {
         return Registry.FLUID.getOrThrow(NamespacedKey.minecraft(key));
     }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see #getKeyOrThrow()
+     * @see #isRegistered()
+     * @deprecated A key might not always be present, use {@link #getKeyOrThrow()} instead.
+     */
+    @NotNull
+    @Override
+    @Deprecated(since = "1.21.4")
+    NamespacedKey getKey();
 
     /**
      * @param name of the fluid.

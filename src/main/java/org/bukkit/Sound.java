@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import java.util.Locale;
 import org.bukkit.packs.DataPack;
+import org.bukkit.registry.RegistryAware;
 import org.bukkit.util.OldEnum;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,7 +21,7 @@ import org.jetbrains.annotations.NotNull;
  * guarantee values will not be removed from this interface. As such, you should not
  * depend on the ordinal values of this class.
  */
-public interface Sound extends OldEnum<Sound>, Keyed {
+public interface Sound extends OldEnum<Sound>, Keyed, RegistryAware {
 
     Sound AMBIENT_BASALT_DELTAS_ADDITIONS = getSound("ambient.basalt_deltas.additions");
     Sound AMBIENT_BASALT_DELTAS_LOOP = getSound("ambient.basalt_deltas.loop");
@@ -1678,6 +1679,18 @@ public interface Sound extends OldEnum<Sound>, Keyed {
     private static Sound getSound(@NotNull String key) {
         return Registry.SOUNDS.getOrThrow(NamespacedKey.minecraft(key));
     }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see #getKeyOrThrow()
+     * @see #isRegistered()
+     * @deprecated A key might not always be present, use {@link #getKeyOrThrow()} instead.
+     */
+    @NotNull
+    @Override
+    @Deprecated(since = "1.21.4")
+    NamespacedKey getKey();
 
     /**
      * @param name of the sound.

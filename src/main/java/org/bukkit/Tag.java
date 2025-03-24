@@ -1251,11 +1251,11 @@ public interface Tag<T extends Keyed> extends Keyed {
      * Vanilla item tag representing all items enchantable with mace enchantments.
      */
     Tag<Material> ITEMS_ENCHANTABLE_MACE = Bukkit.getTag(REGISTRY_ITEMS, NamespacedKey.minecraft("enchantable/mace"), Material.class);
-    /**
+        /**
      * Vanilla item tag representing all items which when equipped will hide the entity from maps.
      */
     Tag<Material> ITEMS_MAP_INVISIBILITY_EQUIPMENT = Bukkit.getTag(REGISTRY_ITEMS, NamespacedKey.minecraft("map_invisibility_equipment"), Material.class);
-    /**
+        /**
      * Vanilla item tag representing all items which disguise the wearer's gaze from other entities.
      */
     Tag<Material> ITEMS_GAZE_DISGUISE_EQUIPMENT = Bukkit.getTag(REGISTRY_ITEMS, NamespacedKey.minecraft("gaze_disguise_equipment"), Material.class);

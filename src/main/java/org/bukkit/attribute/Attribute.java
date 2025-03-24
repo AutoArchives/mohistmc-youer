@@ -8,13 +8,14 @@ import org.bukkit.Keyed;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.Translatable;
+import org.bukkit.registry.RegistryAware;
 import org.bukkit.util.OldEnum;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * Types of attributes which may be present on an {@link Attributable}.
  */
-public interface Attribute extends OldEnum<Attribute>, Keyed, Translatable {
+public interface Attribute extends OldEnum<Attribute>, Keyed, Translatable, RegistryAware {
 
     /**
      * Maximum health of an Entity.
@@ -89,7 +90,7 @@ public interface Attribute extends OldEnum<Attribute>, Keyed, Translatable {
      */
     Attribute JUMP_STRENGTH = getAttribute("jump_strength");
     /**
-     * How long an entity remains burning after ingition.
+     * How long an entity remains burning after ignition.
      */
     Attribute BURNING_TIME = getAttribute("burning_time");
     /**
@@ -149,6 +150,18 @@ public interface Attribute extends OldEnum<Attribute>, Keyed, Translatable {
     private static Attribute getAttribute(@NotNull String key) {
         return Registry.ATTRIBUTE.getOrThrow(NamespacedKey.minecraft(key));
     }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see #getKeyOrThrow()
+     * @see #isRegistered()
+     * @deprecated A key might not always be present, use {@link #getKeyOrThrow()} instead.
+     */
+    @NotNull
+    @Override
+    @Deprecated(since = "1.21.4")
+    NamespacedKey getKey();
 
     /**
      * @param name of the attribute.
