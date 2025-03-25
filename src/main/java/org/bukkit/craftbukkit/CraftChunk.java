@@ -315,7 +315,7 @@ public class CraftChunk implements Chunk {
             CompoundTag data = new CompoundTag();
 
             data.put("block_states", SerializableChunkData.BLOCK_STATE_CODEC.encodeStart(NbtOps.INSTANCE, cs[i].getStates()).getOrThrow());
-            sectionBlockIDs[i] = SerializableChunkData.BLOCK_STATE_CODEC.parse(NbtOps.INSTANCE, data.getCompound("block_states")).getOrThrow(SerializableChunkData.ChunkReadException::new);
+            sectionBlockIDs[i] = SerializableChunkData.BLOCK_STATE_CODEC.parse(NbtOps.INSTANCE, data.getCompoundOrEmpty("block_states")).getOrThrow(SerializableChunkData.ChunkReadException::new);
             sectionEmpty[i] = cs[i].hasOnlyAir();
 
             LevelLightEngine lightengine = this.worldServer.getLightEngine();
@@ -336,7 +336,7 @@ public class CraftChunk implements Chunk {
 
             if (biome != null) {
                 data.put("biomes", biomeCodec.encodeStart(NbtOps.INSTANCE, cs[i].getBiomes()).getOrThrow());
-                biome[i] = biomeCodec.parse(NbtOps.INSTANCE, data.getCompound("biomes")).getOrThrow(SerializableChunkData.ChunkReadException::new);
+                biome[i] = biomeCodec.parse(NbtOps.INSTANCE, data.getCompoundOrEmpty("biomes")).getOrThrow(SerializableChunkData.ChunkReadException::new);
             }
         }
 
