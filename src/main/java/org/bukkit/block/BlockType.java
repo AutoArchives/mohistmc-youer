@@ -70,6 +70,7 @@ import org.bukkit.block.data.type.Jigsaw;
 import org.bukkit.block.data.type.Jukebox;
 import org.bukkit.block.data.type.Ladder;
 import org.bukkit.block.data.type.Lantern;
+import org.bukkit.block.data.type.LeafLitter;
 import org.bukkit.block.data.type.Leaves;
 import org.bukkit.block.data.type.Lectern;
 import org.bukkit.block.data.type.Light;
@@ -106,6 +107,7 @@ import org.bukkit.block.data.type.StructureBlock;
 import org.bukkit.block.data.type.Switch;
 import org.bukkit.block.data.type.TNT;
 import org.bukkit.block.data.type.TechnicalPiston;
+import org.bukkit.block.data.type.TestBlock;
 import org.bukkit.block.data.type.TrapDoor;
 import org.bukkit.block.data.type.TrialSpawner;
 import org.bukkit.block.data.type.Tripwire;
@@ -578,6 +580,9 @@ public interface BlockType extends Keyed, Translatable, RegistryAware {
     BlockType.Typed<BlockData> SHORT_GRASS = getBlockType("short_grass");
     BlockType.Typed<BlockData> FERN = getBlockType("fern");
     BlockType.Typed<BlockData> DEAD_BUSH = getBlockType("dead_bush");
+    BlockType.Typed<BlockData> BUSH = getBlockType("bush");
+    BlockType.Typed<BlockData> SHORT_DRY_GRASS = getBlockType("short_dry_grass");
+    BlockType.Typed<BlockData> TALL_DRY_GRASS = getBlockType("tall_dry_grass");
     BlockType.Typed<BlockData> SEAGRASS = getBlockType("seagrass");
     /**
      * BlockData: {@link Bisected}
@@ -958,6 +963,7 @@ public interface BlockType extends Keyed, Translatable, RegistryAware {
      * BlockData: {@link Ageable}
      */
     BlockType.Typed<Ageable> CACTUS = getBlockType("cactus");
+    BlockType.Typed<BlockData> CACTUS_FLOWER = getBlockType("cactus_flower");
     BlockType.Typed<BlockData> CLAY = getBlockType("clay");
     /**
      * BlockData: {@link Ageable}
@@ -2739,6 +2745,11 @@ public interface BlockType extends Keyed, Translatable, RegistryAware {
      */
     BlockType.Typed<Jigsaw> JIGSAW = getBlockType("jigsaw");
     /**
+     * BlockData: {@link TestBlock}
+     */
+    BlockType.Typed<TestBlock> TEST_BLOCK = getBlockType("test_block");
+    BlockType.Typed<BlockData> TEST_INSTANCE_BLOCK = getBlockType("test_instance_block");
+    /**
      * BlockData: {@link Levelled}
      */
     BlockType.Typed<Levelled> COMPOSTER = getBlockType("composter");
@@ -3282,6 +3293,14 @@ public interface BlockType extends Keyed, Translatable, RegistryAware {
      * BlockData: {@link PinkPetals}
      */
     BlockType.Typed<PinkPetals> PINK_PETALS = getBlockType("pink_petals");
+    /**
+     * BlockData: {@link PinkPetals}
+     */
+    BlockType.Typed<PinkPetals> WILDFLOWERS = getBlockType("wildflowers");
+    /**
+     * BlockData: {@link LeafLitter}
+     */
+    BlockType.Typed<LeafLitter> LEAF_LITTER = getBlockType("leaf_litter");
     BlockType.Typed<BlockData> MOSS_CARPET = getBlockType("moss_carpet");
     BlockType.Typed<BlockData> MOSS_BLOCK = getBlockType("moss_block");
     /**
@@ -3418,6 +3437,7 @@ public interface BlockType extends Keyed, Translatable, RegistryAware {
     BlockType.Typed<BlockData> CLOSED_EYEBLOSSOM = getBlockType("closed_eyeblossom");
     BlockType.Typed<BlockData> POTTED_OPEN_EYEBLOSSOM = getBlockType("potted_open_eyeblossom");
     BlockType.Typed<BlockData> POTTED_CLOSED_EYEBLOSSOM = getBlockType("potted_closed_eyeblossom");
+    BlockType.Typed<BlockData> FIREFLY_BUSH = getBlockType("firefly_bush");
     //</editor-fold>
 
     @NotNull

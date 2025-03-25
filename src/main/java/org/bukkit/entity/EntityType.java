@@ -113,7 +113,11 @@ public enum EntityType implements Keyed, Translatable, RegistryAware {
     /**
      * A flying splash potion.
      */
-    POTION("potion", ThrownPotion.class, 16),
+    SPLASH_POTION("splash_potion", SplashPotion.class, 16),
+    /**
+     * A flying lingering splash potion.
+     */
+    LINGERING_POTION("lingering_potion", LingeringPotion.class, -1),
     /**
      * A flying experience bottle.
      */

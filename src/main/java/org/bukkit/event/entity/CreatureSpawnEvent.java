@@ -76,6 +76,10 @@ public class CreatureSpawnEvent extends EntitySpawnEvent {
          */
         SPAWNER_EGG,
         /**
+         * When a creature spawns from a mob bucket
+         */
+        BUCKET,
+        /**
          * When a creature spawns because of a lightning strike
          */
         LIGHTNING,

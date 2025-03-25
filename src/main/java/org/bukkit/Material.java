@@ -76,6 +76,7 @@ import org.bukkit.block.data.type.Jigsaw;
 import org.bukkit.block.data.type.Jukebox;
 import org.bukkit.block.data.type.Ladder;
 import org.bukkit.block.data.type.Lantern;
+import org.bukkit.block.data.type.LeafLitter;
 import org.bukkit.block.data.type.Leaves;
 import org.bukkit.block.data.type.Lectern;
 import org.bukkit.block.data.type.Light;
@@ -112,6 +113,7 @@ import org.bukkit.block.data.type.StructureBlock;
 import org.bukkit.block.data.type.Switch;
 import org.bukkit.block.data.type.TNT;
 import org.bukkit.block.data.type.TechnicalPiston;
+import org.bukkit.block.data.type.TestBlock;
 import org.bukkit.block.data.type.TrapDoor;
 import org.bukkit.block.data.type.TrialSpawner;
 import org.bukkit.block.data.type.Tripwire;
@@ -645,9 +647,13 @@ public enum Material implements Keyed, Translatable, RegistryAware {
     COBWEB(9469),
     SHORT_GRASS(16335),
     FERN(15794),
+    BUSH(17693),
     AZALEA(29386),
     FLOWERING_AZALEA(28270),
     DEAD_BUSH(22888),
+    FIREFLY_BUSH(26077),
+    SHORT_DRY_GRASS(6637),
+    TALL_DRY_GRASS(14832),
     SEAGRASS(23942),
     /**
      * BlockData: {@link SeaPickle}
@@ -717,6 +723,14 @@ public enum Material implements Keyed, Translatable, RegistryAware {
      * BlockData: {@link PinkPetals}
      */
     PINK_PETALS(10420, PinkPetals.class),
+    /**
+     * BlockData: {@link PinkPetals}
+     */
+    WILDFLOWERS(27608, PinkPetals.class),
+    /**
+     * BlockData: {@link LeafLitter}
+     */
+    LEAF_LITTER(22095, LeafLitter.class),
     MOSS_CARPET(8221),
     MOSS_BLOCK(9175),
     /**
@@ -938,6 +952,7 @@ public enum Material implements Keyed, Translatable, RegistryAware {
      * BlockData: {@link Ageable}
      */
     CACTUS(12191, Ageable.class),
+    CACTUS_FLOWER(29751),
     CLAY(27880),
     /**
      * BlockData: {@link Jukebox}
@@ -2394,6 +2409,11 @@ public enum Material implements Keyed, Translatable, RegistryAware {
      * BlockData: {@link Jigsaw}
      */
     JIGSAW(17398, Jigsaw.class),
+    /**
+     * BlockData: {@link TestBlock}
+     */
+    TEST_BLOCK(30798, TestBlock.class),
+    TEST_INSTANCE_BLOCK(16508),
     TURTLE_HELMET(30120, 1, 275),
     TURTLE_SCUTE(6766),
     ARMADILLO_SCUTE(11497),
@@ -2605,6 +2625,8 @@ public enum Material implements Keyed, Translatable, RegistryAware {
     BOOK(23097),
     SLIME_BALL(5242),
     EGG(21603, 16),
+    BLUE_EGG(11157, 16),
+    BROWN_EGG(14373, 16),
     COMPASS(24139),
     RECOVERY_COMPASS(12710),
     BUNDLE(16835, 1),
@@ -5538,6 +5560,8 @@ public enum Material implements Keyed, Translatable, RegistryAware {
             case WOLF_ARMOR:
             case YELLOW_CARPET:
                 return EquipmentSlot.BODY;
+            case SADDLE:
+                return EquipmentSlot.SADDLE;
             default:
                 return EquipmentSlot.HAND;
             // </editor-fold>

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Sound;
 import org.bukkit.Tag;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
@@ -17,12 +18,14 @@ import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemRarity;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.components.BlocksAttacksComponent;
 import org.bukkit.inventory.meta.components.CustomModelDataComponent;
 import org.bukkit.inventory.meta.components.EquippableComponent;
 import org.bukkit.inventory.meta.components.FoodComponent;
 import org.bukkit.inventory.meta.components.JukeboxPlayableComponent;
 import org.bukkit.inventory.meta.components.ToolComponent;
 import org.bukkit.inventory.meta.components.UseCooldownComponent;
+import org.bukkit.inventory.meta.components.WeaponComponent;
 import org.bukkit.inventory.meta.components.consumable.ConsumableComponent;
 import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
 import org.bukkit.persistence.PersistentDataHolder;
@@ -681,6 +684,61 @@ public interface ItemMeta extends Cloneable, ConfigurationSerializable, Persiste
     void setTool(@Nullable ToolComponent tool);
 
     /**
+     * Checks if the weapon is set.
+     *
+     * @return if a weapon is set
+     */
+    boolean hasWeapon();
+
+    /**
+     * Gets the weapon set on this item, or creates an empty weapon instance.
+     * <p>
+     * The returned component is a snapshot of its current state and does not
+     * reflect a live view of what is on an item. After changing any value on
+     * this component, it must be set with {@link #setWeapon(WeaponComponent)} to
+     * apply the changes.
+     *
+     * @return weapon
+     */
+    @NotNull
+    WeaponComponent getWeapon();
+
+    /**
+     * Sets the item weapon.
+     *
+     * @param weapon new weapon
+     */
+    void setWeapon(@Nullable WeaponComponent weapon);
+
+    /**
+     * Checks if the {@link BlocksAttacksComponent} is set.
+     *
+     * @return if a {@link BlocksAttacksComponent} is set
+     */
+    boolean hasBlocksAttacks();
+
+    /**
+     * Gets the {@link BlocksAttacksComponent} set on this item, or creates an
+     * empty {@link BlocksAttacksComponent} instance.
+     * <p>
+     * The returned component is a snapshot of its current state and does not
+     * reflect a live view of what is on an item. After changing any value on
+     * this component, it must be set with
+     * {@link #setBlocksAttacks(BlocksAttacksComponent)} to apply the changes.
+     *
+     * @return component
+     */
+    @NotNull
+    BlocksAttacksComponent getBlocksAttacks();
+
+    /**
+     * Sets the item {@link BlocksAttacksComponent}.
+     *
+     * @param blocksAttacks new component
+     */
+    void setBlocksAttacks(@Nullable BlocksAttacksComponent blocksAttacks);
+
+    /**
      * Checks if the equippable is set.
      *
      * @return if a equippable is set
@@ -735,6 +793,30 @@ public interface ItemMeta extends Cloneable, ConfigurationSerializable, Persiste
      * @param jukeboxPlayable new component
      */
     void setJukeboxPlayable(@Nullable JukeboxPlayableComponent jukeboxPlayable);
+
+    /**
+     * Gets if the break sound is set.
+     *
+     * @return if break sound is set
+     */
+    boolean hasBreakSound();
+
+    /**
+     * Gets the sound to play when the item is broken.
+     *
+     * Plugins should check {@link #hasBreakSound()} before calling this method.
+     *
+     * @return the sound
+     */
+    @Nullable
+    Sound getBreakSound();
+
+    /**
+     * Sets the sound to play when the item is broken.
+     *
+     * @param sound sound
+     */
+    void setBreakSound(@Nullable Sound sound);
 
     /**
      * Checks for the existence of any AttributeModifiers.

@@ -19,8 +19,11 @@ import org.bukkit.boss.KeyedBossBar;
 import org.bukkit.damage.DamageType;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Cat;
+import org.bukkit.entity.Chicken;
+import org.bukkit.entity.Cow;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Frog;
+import org.bukkit.entity.Pig;
 import org.bukkit.entity.Villager;
 import org.bukkit.entity.Wolf;
 import org.bukkit.entity.memory.MemoryKey;
@@ -161,6 +164,24 @@ public interface Registry<T extends Keyed> extends Iterable<T> {
      * @see Cat.Type
      */
     Registry<Cat.Type> CAT_VARIANT = Objects.requireNonNull(Bukkit.getRegistry(Cat.Type.class), "No registry present for Cat Type. This is a bug.");
+    /**
+     * Server pig variants.
+     *
+     * @see Pig.Variant
+     */
+    Registry<Pig.Variant> PIG_VARIANT = Objects.requireNonNull(Bukkit.getRegistry(Pig.Variant.class), "No registry present for Pig Variant. This is a bug.");
+    /**
+     * Server cow variants.
+     *
+     * @see Cow.Variant
+     */
+    Registry<Cow.Variant> COW_VARIANT = Objects.requireNonNull(Bukkit.getRegistry(Cow.Variant.class), "No registry present for Cow Variant. This is a bug.");
+    /**
+     * Server chicken variants.
+     *
+     * @see Chicken.Variant
+     */
+    Registry<Chicken.Variant> CHICKEN_VARIANT = Objects.requireNonNull(Bukkit.getRegistry(Chicken.Variant.class), "No registry present for Chicken Variant. This is a bug.");
     /**
      * Server enchantments.
      *

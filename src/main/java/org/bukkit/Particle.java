@@ -129,6 +129,10 @@ public enum Particle implements Keyed, RegistryAware {
     SHRIEK("shriek", Integer.class),
     CHERRY_LEAVES("cherry_leaves"),
     PALE_OAK_LEAVES("pale_oak_leaves"),
+    /**
+     * Uses {@link Color} as DataType
+     */
+    TINTED_LEAVES("tinted_leaves", Color.class),
     EGG_CRACK("egg_crack"),
     DUST_PLUME("dust_plume"),
     WHITE_SMOKE("white_smoke"),
@@ -161,7 +165,9 @@ public enum Particle implements Keyed, RegistryAware {
     /**
      * Uses {@link BlockData} as DataType
      */
-    BLOCK_MARKER("block_marker", BlockData.class);
+    BLOCK_MARKER("block_marker", BlockData.class),
+    FIREFLY("firefly"),
+    ;
 
     private final NamespacedKey key;
     private final Class<?> dataType;

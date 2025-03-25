@@ -26,6 +26,7 @@ public final class EquipmentSlotGroup implements Predicate<EquipmentSlot> {
     public static final EquipmentSlotGroup CHEST = get("chest", EquipmentSlot.CHEST);
     public static final EquipmentSlotGroup HEAD = get("head", EquipmentSlot.HEAD);
     public static final EquipmentSlotGroup ARMOR = get("armor", (test) -> test == EquipmentSlot.FEET || test == EquipmentSlot.LEGS || test == EquipmentSlot.CHEST || test == EquipmentSlot.HEAD, EquipmentSlot.CHEST);
+    public static final EquipmentSlotGroup SADDLE = get("saddle", EquipmentSlot.SADDLE);
     //
     private final String key;
     private final Predicate<EquipmentSlot> predicate;

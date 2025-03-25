@@ -56,6 +56,11 @@ public final class GameRule<T> {
     public static final GameRule<Boolean> DO_FIRE_TICK = new GameRule<>("doFireTick", Boolean.class);
 
     /**
+     * Whether fire should spread and naturally extinguish when there are no players nearby.
+     */
+    public static final GameRule<Boolean> ALLOW_FIRE_TICKS_AWAY_FROM_PLAYER = new GameRule<>("allowFireTicksAwayFromPlayer", Boolean.class);
+
+    /**
      * Whether players should only be able to craft recipes they've unlocked
      * first.
      */
@@ -220,6 +225,10 @@ public final class GameRule<T> {
      * Whether ender pearls will vanish on player death.
      */
     public static final GameRule<Boolean> ENDER_PEARLS_VANISH_ON_DEATH = new GameRule<>("enderPearlsVanishOnDeath", Boolean.class);
+    /**
+     * Whether TNT explodes.
+     */
+    public static final GameRule<Boolean> TNT_EXPLODES = new GameRule<>("tntExplodes", Boolean.class);
 
     // Numerical rules
     /**

@@ -304,8 +304,12 @@ public interface ItemType extends Keyed, Translatable, RegistryAware {
     ItemType.Typed<ItemMeta> SHORT_GRASS = getItemType("short_grass");
     ItemType.Typed<ItemMeta> FERN = getItemType("fern");
     ItemType.Typed<ItemMeta> AZALEA = getItemType("azalea");
+    ItemType.Typed<ItemMeta> BUSH = getItemType("bush");
     ItemType.Typed<ItemMeta> FLOWERING_AZALEA = getItemType("flowering_azalea");
     ItemType.Typed<ItemMeta> DEAD_BUSH = getItemType("dead_bush");
+    ItemType.Typed<ItemMeta> FIREFLY_BUSH = getItemType("firefly_bush");
+    ItemType.Typed<ItemMeta> SHORT_DRY_GRASS = getItemType("short_dry_grass");
+    ItemType.Typed<ItemMeta> TALL_DRY_GRASS = getItemType("tall_dry_grass");
     ItemType.Typed<ItemMeta> SEAGRASS = getItemType("seagrass");
     ItemType.Typed<ItemMeta> SEA_PICKLE = getItemType("sea_pickle");
     ItemType.Typed<ItemMeta> WHITE_WOOL = getItemType("white_wool");
@@ -354,6 +358,8 @@ public interface ItemType extends Keyed, Translatable, RegistryAware {
     ItemType.Typed<ItemMeta> SUGAR_CANE = getItemType("sugar_cane");
     ItemType.Typed<ItemMeta> KELP = getItemType("kelp");
     ItemType.Typed<ItemMeta> PINK_PETALS = getItemType("pink_petals");
+    ItemType.Typed<ItemMeta> WILDFLOWERS = getItemType("wildflowers");
+    ItemType.Typed<ItemMeta> LEAF_LITTER = getItemType("leaf_litter");
     ItemType.Typed<ItemMeta> MOSS_CARPET = getItemType("moss_carpet");
     ItemType.Typed<ItemMeta> MOSS_BLOCK = getItemType("moss_block");
     ItemType.Typed<ItemMeta> PALE_MOSS_CARPET = getItemType("pale_moss_carpet");
@@ -440,6 +446,7 @@ public interface ItemType extends Keyed, Translatable, RegistryAware {
     ItemType.Typed<ItemMeta> ICE = getItemType("ice");
     ItemType.Typed<ItemMeta> SNOW_BLOCK = getItemType("snow_block");
     ItemType.Typed<ItemMeta> CACTUS = getItemType("cactus");
+    ItemType.Typed<ItemMeta> CACTUS_FLOWER = getItemType("cactus_flower");
     ItemType.Typed<ItemMeta> CLAY = getItemType("clay");
     /**
      * ItemMeta: {@link BlockStateMeta}
@@ -1054,6 +1061,14 @@ public interface ItemType extends Keyed, Translatable, RegistryAware {
      */
     ItemType.Typed<BlockStateMeta> JIGSAW = getItemType("jigsaw");
     /**
+     * ItemMeta: {@link BlockStateMeta}
+     */
+    ItemType.Typed<BlockStateMeta> TEST_BLOCK = getItemType("test_block");
+    /**
+     * ItemMeta: {@link BlockStateMeta}
+     */
+    ItemType.Typed<BlockStateMeta> TEST_INSTANCE_BLOCK = getItemType("test_instance_block");
+    /**
      * ItemMeta: {@link ArmorMeta}
      */
     ItemType.Typed<ArmorMeta> TURTLE_HELMET = getItemType("turtle_helmet");
@@ -1345,6 +1360,8 @@ public interface ItemType extends Keyed, Translatable, RegistryAware {
     ItemType.Typed<ItemMeta> BOOK = getItemType("book");
     ItemType.Typed<ItemMeta> SLIME_BALL = getItemType("slime_ball");
     ItemType.Typed<ItemMeta> EGG = getItemType("egg");
+    ItemType.Typed<ItemMeta> BLUE_EGG = getItemType("blue_egg");
+    ItemType.Typed<ItemMeta> BROWN_EGG = getItemType("brown_egg");
     /**
      * ItemMeta: {@link CompassMeta}
      */
