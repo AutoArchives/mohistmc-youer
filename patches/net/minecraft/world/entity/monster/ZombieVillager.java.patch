@@ -1,5 +1,26 @@
 --- a/net/minecraft/world/entity/monster/ZombieVillager.java
 +++ b/net/minecraft/world/entity/monster/ZombieVillager.java
+@@ -51,7 +_,7 @@
+ import net.minecraft.world.level.block.state.BlockState;
+ 
+ public class ZombieVillager extends Zombie implements VillagerDataHolder {
+-    private static final EntityDataAccessor<Boolean> DATA_CONVERTING_ID = SynchedEntityData.defineId(ZombieVillager.class, EntityDataSerializers.BOOLEAN);
++    public static final EntityDataAccessor<Boolean> DATA_CONVERTING_ID = SynchedEntityData.defineId(ZombieVillager.class, EntityDataSerializers.BOOLEAN);
+     private static final EntityDataAccessor<VillagerData> DATA_VILLAGER_DATA = SynchedEntityData.defineId(
+         ZombieVillager.class, EntityDataSerializers.VILLAGER_DATA
+     );
+@@ -61,9 +_,9 @@
+     private static final int SPECIAL_BLOCK_RADIUS = 4;
+     private static final int NOT_CONVERTING = -1;
+     private static final int DEFAULT_XP = 0;
+-    private int villagerConversionTime;
++    public int villagerConversionTime;
+     @Nullable
+-    private UUID conversionStarter;
++    public UUID conversionStarter;
+     @Nullable
+     private GossipContainer gossips;
+     @Nullable
 @@ -118,7 +_,7 @@
          if (!this.level().isClientSide && this.isAlive() && this.isConverting()) {
              int i = this.getConversionProgress();
@@ -9,6 +30,15 @@
                  this.finishConversion((ServerLevel)this.level());
              }
          }
+@@ -159,7 +_,7 @@
+         return this.getEntityData().get(DATA_CONVERTING_ID);
+     }
+ 
+-    private void startConverting(@Nullable UUID p_34384_, int p_34385_) {
++    public void startConverting(@Nullable UUID p_34384_, int p_34385_) {
+         this.conversionStarter = p_34384_;
+         this.villagerConversionTime = p_34385_;
+         this.getEntityData().set(DATA_CONVERTING_ID, true);
 @@ -225,6 +_,8 @@
                  if (!this.isSilent()) {
                      p_34399_.levelEvent(null, 1027, this.blockPosition(), 0);

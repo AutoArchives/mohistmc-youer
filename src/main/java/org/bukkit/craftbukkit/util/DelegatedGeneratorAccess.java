@@ -54,6 +54,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.ticks.LevelTickAccess;
+import net.minecraft.world.ticks.ScheduledTick;
 import net.minecraft.world.ticks.TickPriority;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 
@@ -75,13 +76,13 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public boolean ensureCanWrite(BlockPos pos) {
-        return this.handle.ensureCanWrite(pos);
+    public boolean ensureCanWrite(BlockPos blockposition) {
+        return this.handle.ensureCanWrite(blockposition);
     }
 
     @Override
-    public void setCurrentlyGenerating(Supplier<String> structureName) {
-        this.handle.setCurrentlyGenerating(structureName);
+    public void setCurrentlyGenerating(Supplier<String> supplier) {
+        this.handle.setCurrentlyGenerating(supplier);
     }
 
     @Override
@@ -95,16 +96,6 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public void addFreshEntityWithPassengers(Entity entity, CreatureSpawnEvent.SpawnReason reason) {
-        this.handle.addFreshEntityWithPassengers(entity, reason);
-    }
-
-    @Override
-    public ServerLevel getMinecraftWorld() {
-        return this.handle.getMinecraftWorld();
-    }
-
-    @Override
     public long dayTime() {
         return this.handle.dayTime();
     }
@@ -115,33 +106,13 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public LevelTickAccess<Block> getBlockTicks() {
-        return this.handle.getBlockTicks();
+    public <T> ScheduledTick<T> createTick(BlockPos blockposition, T t0, int i, TickPriority ticklistpriority) {
+        return handle.createTick(blockposition, t0, i, ticklistpriority);
     }
 
     @Override
-    public void scheduleTick(BlockPos pos, Block block, int delay, TickPriority priority) {
-        this.handle.scheduleTick(pos, block, delay, priority);
-    }
-
-    @Override
-    public void scheduleTick(BlockPos pos, Block block, int delay) {
-        this.handle.scheduleTick(pos, block, delay);
-    }
-
-    @Override
-    public LevelTickAccess<Fluid> getFluidTicks() {
-        return this.handle.getFluidTicks();
-    }
-
-    @Override
-    public void scheduleTick(BlockPos pos, Fluid fluid, int delay, TickPriority priority) {
-        this.handle.scheduleTick(pos, fluid, delay, priority);
-    }
-
-    @Override
-    public void scheduleTick(BlockPos pos, Fluid fluid, int delay) {
-        this.handle.scheduleTick(pos, fluid, delay);
+    public <T> ScheduledTick<T> createTick(BlockPos blockposition, T t0, int i) {
+        return handle.createTick(blockposition, t0, i);
     }
 
     @Override
@@ -180,8 +151,8 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public void blockUpdated(BlockPos pos, Block block) {
-        this.handle.blockUpdated(pos, block);
+    public void updateNeighborsAt(BlockPos blockposition, Block block) {
+        handle.updateNeighborsAt(blockposition, block);
     }
 
     @Override
@@ -190,13 +161,13 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public void playSound(Player except, BlockPos pos, SoundEvent sound, SoundSource category) {
-        this.handle.playSound(except, pos, sound, category);
+    public void playSound(Entity entity, BlockPos pos, SoundEvent sound, SoundSource category) {
+        this.handle.playSound(entity, pos, sound, category);
     }
 
     @Override
-    public void playSound(Player source, BlockPos pos, SoundEvent sound, SoundSource category, float volume, float pitch) {
-        this.handle.playSound(source, pos, sound, category, volume, pitch);
+    public void playSound(Entity entity, BlockPos pos, SoundEvent sound, SoundSource category, float volume, float pitch) {
+        this.handle.playSound(entity, pos, sound, category, volume, pitch);
     }
 
     @Override
@@ -205,8 +176,8 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public void levelEvent(Player player, int eventId, BlockPos pos, int data) {
-        this.handle.levelEvent(player, eventId, pos, data);
+    public void levelEvent(Entity entity, int eventId, BlockPos pos, int data) {
+        this.handle.levelEvent(entity, eventId, pos, data);
     }
 
     @Override
@@ -240,8 +211,8 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public <T extends BlockEntity> Optional<T> getBlockEntity(BlockPos pos, BlockEntityType<T> type) {
-        return this.handle.getBlockEntity(pos, type);
+    public <T extends BlockEntity> Optional<T> getBlockEntity(BlockPos blockposition, BlockEntityType<T> tileentitytypes) {
+        return this.handle.getBlockEntity(blockposition, tileentitytypes);
     }
 
     @Override
@@ -255,8 +226,8 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public BlockPos getHeightmapPos(Heightmap.Types heightmap, BlockPos pos) {
-        return this.handle.getHeightmapPos(heightmap, pos);
+    public BlockPos getHeightmapPos(Heightmap.Types heightmap_type, BlockPos blockposition) {
+        return this.handle.getHeightmapPos(heightmap_type, blockposition);
     }
 
     @Override
@@ -610,11 +581,6 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public BlockHitResult clip(ClipContext raytrace1, BlockPos blockposition) {
-        return this.handle.clip(raytrace1, blockposition);
-    }
-
-    @Override
     public BlockHitResult clip(ClipContext context) {
         return this.handle.clip(context);
     }
@@ -725,11 +691,6 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public boolean addFreshEntity(Entity entity, CreatureSpawnEvent.SpawnReason reason) {
-        return this.handle.addFreshEntity(entity, reason);
-    }
-
-    @Override
     public int getMaxY() {
         return this.handle.getMaxY();
     }
@@ -777,6 +738,35 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
     @Override
     public int getSectionYFromSectionIndex(int index) {
         return this.handle.getSectionYFromSectionIndex(index);
+    }
+
+    public LevelTickAccess<Block> getBlockTicks() {
+        return handle.getBlockTicks();
+    }
+
+    @Override
+    public void scheduleTick(BlockPos blockposition, Block block, int i, TickPriority ticklistpriority) {
+        handle.scheduleTick(blockposition, block, i, ticklistpriority);
+    }
+
+    @Override
+    public void scheduleTick(BlockPos blockposition, Block block, int i) {
+        handle.scheduleTick(blockposition, block, i);
+    }
+
+    @Override
+    public LevelTickAccess<Fluid> getFluidTicks() {
+        return handle.getFluidTicks();
+    }
+
+    @Override
+    public void scheduleTick(BlockPos blockposition, Fluid fluidtype, int i, TickPriority ticklistpriority) {
+        handle.scheduleTick(blockposition, fluidtype, i, ticklistpriority);
+    }
+
+    @Override
+    public void scheduleTick(BlockPos blockposition, Fluid fluidtype, int i) {
+        handle.scheduleTick(blockposition, fluidtype, i);
     }
 
     @Override

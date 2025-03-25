@@ -248,11 +248,7 @@ public class CraftEntityEquipment implements EntityEquipment {
     private void setDropChance(net.minecraft.world.entity.EquipmentSlot slot, float chance) {
         Preconditions.checkArgument(this.entity.getHandle() instanceof Mob, "Cannot set drop chance for non-Mob entity");
 
-        if (slot == net.minecraft.world.entity.EquipmentSlot.MAINHAND || slot == net.minecraft.world.entity.EquipmentSlot.OFFHAND) {
-            ((Mob) this.entity.getHandle()).handDropChances[slot.getIndex()] = chance;
-        } else {
-            ((Mob) this.entity.getHandle()).armorDropChances[slot.getIndex()] = chance;
-        }
+        ((Mob) entity.getHandle()).setDropChance(slot, chance);
     }
 
     private float getDropChance(net.minecraft.world.entity.EquipmentSlot slot) {
@@ -260,10 +256,6 @@ public class CraftEntityEquipment implements EntityEquipment {
             return 1;
         }
 
-        if (slot == net.minecraft.world.entity.EquipmentSlot.MAINHAND || slot == net.minecraft.world.entity.EquipmentSlot.OFFHAND) {
-            return ((Mob) this.entity.getHandle()).handDropChances[slot.getIndex()];
-        } else {
-            return ((Mob) this.entity.getHandle()).armorDropChances[slot.getIndex()];
-        }
+        return ((Mob) entity.getHandle()).getDropChances().byEquipment(slot);
     }
 }

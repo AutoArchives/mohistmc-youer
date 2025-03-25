@@ -1,5 +1,24 @@
 --- a/net/minecraft/world/entity/projectile/AbstractArrow.java
 +++ b/net/minecraft/world/entity/projectile/AbstractArrow.java
+@@ -70,15 +_,15 @@
+     public AbstractArrow.Pickup pickup = AbstractArrow.Pickup.DISALLOWED;
+     public int shakeTime = 0;
+     private int life = 0;
+-    private double baseDamage = 2.0;
++    public double baseDamage = 2.0;
+     private SoundEvent soundEvent = this.getDefaultHitGroundSoundEvent();
+     @Nullable
+     private IntOpenHashSet piercingIgnoreEntityIds;
+     @Nullable
+     private List<Entity> piercedAndKilledEntities;
+-    private ItemStack pickupItemStack = this.getDefaultPickupItem();
++    public ItemStack pickupItemStack = this.getDefaultPickupItem();
+     @Nullable
+-    private ItemStack firedFromWeapon = null;
++    public ItemStack firedFromWeapon = null;
+ 
+     protected AbstractArrow(EntityType<? extends AbstractArrow> p_331098_, Level p_331626_) {
+         super(p_331098_, p_331626_);
 @@ -192,7 +_,7 @@
              this.shakeTime--;
          }
@@ -26,3 +45,21 @@
                  ProjectileDeflection projectiledeflection = this.hitTargetOrDeflectSelf(entityhitresult);
                  this.hasImpulse = true;
                  if (this.getPierceLevel() > 0 && projectiledeflection == ProjectileDeflection.NONE) {
+@@ -328,7 +_,7 @@
+         this.life = 0;
+     }
+ 
+-    protected boolean isInGround() {
++    public boolean isInGround() {
+         return this.entityData.get(IN_GROUND);
+     }
+ 
+@@ -659,7 +_,7 @@
+         this.setFlag(1, p_36763_);
+     }
+ 
+-    private void setPierceLevel(byte p_36768_) {
++    public void setPierceLevel(byte p_36768_) {
+         this.entityData.set(PIERCE_LEVEL, p_36768_);
+     }
+ 

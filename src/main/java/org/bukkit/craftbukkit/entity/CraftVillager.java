@@ -54,36 +54,36 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
 
     @Override
     public Profession getProfession() {
-        return CraftProfession.minecraftToBukkit(this.getHandle().getVillagerData().getProfession());
+        return CraftProfession.minecraftHolderToBukkit(this.getHandle().getVillagerData().profession());
     }
 
     @Override
     public void setProfession(Profession profession) {
         Preconditions.checkArgument(profession != null, "Profession cannot be null");
-        this.getHandle().setVillagerData(this.getHandle().getVillagerData().setProfession(CraftProfession.bukkitToMinecraft(profession)));
+        this.getHandle().setVillagerData(this.getHandle().getVillagerData().withProfession(CraftProfession.bukkitToMinecraftHolder(profession)));
     }
 
     @Override
     public Type getVillagerType() {
-        return CraftType.minecraftToBukkit(this.getHandle().getVillagerData().getType());
+        return CraftType.minecraftHolderToBukkit(this.getHandle().getVillagerData().type());
     }
 
     @Override
     public void setVillagerType(Type type) {
         Preconditions.checkArgument(type != null, "Type cannot be null");
-        this.getHandle().setVillagerData(this.getHandle().getVillagerData().setType(CraftType.bukkitToMinecraft(type)));
+        this.getHandle().setVillagerData(this.getHandle().getVillagerData().withType(CraftType.bukkitToMinecraftHolder(type)));
     }
 
     @Override
     public int getVillagerLevel() {
-        return this.getHandle().getVillagerData().getLevel();
+        return this.getHandle().getVillagerData().level();
     }
 
     @Override
     public void setVillagerLevel(int level) {
         Preconditions.checkArgument(1 <= level && level <= 5, "level (%s) must be between [1, 5]", level);
 
-        this.getHandle().setVillagerData(this.getHandle().getVillagerData().setLevel(level));
+        this.getHandle().setVillagerData(this.getHandle().getVillagerData().withLevel(level));
     }
 
     @Override
@@ -214,8 +214,25 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
             return CraftRegistry.minecraftToBukkit(minecraft, Registries.VILLAGER_TYPE, Registry.VILLAGER_TYPE);
         }
 
+        public static Type minecraftHolderToBukkit(Holder<VillagerType> minecraft) {
+            return minecraftToBukkit(minecraft.value());
+        }
+
         public static VillagerType bukkitToMinecraft(Type bukkit) {
             return CraftRegistry.bukkitToMinecraft(bukkit);
+        }
+
+        public static Holder<VillagerType> bukkitToMinecraftHolder(Type bukkit) {
+            Preconditions.checkArgument(bukkit != null);
+
+            net.minecraft.core.Registry<VillagerType> registry = CraftRegistry.getMinecraftRegistry(Registries.VILLAGER_TYPE);
+
+            if (registry.wrapAsHolder(bukkitToMinecraft(bukkit)) instanceof Holder.Reference<VillagerType> holder) {
+                return holder;
+            }
+
+            throw new IllegalArgumentException("No Reference holder found for " + bukkit
+                    + ", this can happen if a plugin creates its own villager type without properly registering it.");
         }
 
         public CraftType(NamespacedKey key, Holder<VillagerType> handle) {
@@ -235,8 +252,25 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
             return CraftRegistry.minecraftToBukkit(minecraft, Registries.VILLAGER_PROFESSION, Registry.VILLAGER_PROFESSION);
         }
 
+        public static Profession minecraftHolderToBukkit(Holder<VillagerProfession> minecraft) {
+            return minecraftToBukkit(minecraft.value());
+        }
+
         public static VillagerProfession bukkitToMinecraft(Profession bukkit) {
             return CraftRegistry.bukkitToMinecraft(bukkit);
+        }
+
+        public static Holder<VillagerProfession> bukkitToMinecraftHolder(Profession bukkit) {
+            Preconditions.checkArgument(bukkit != null);
+
+            net.minecraft.core.Registry<VillagerProfession> registry = CraftRegistry.getMinecraftRegistry(Registries.VILLAGER_PROFESSION);
+
+            if (registry.wrapAsHolder(bukkitToMinecraft(bukkit)) instanceof Holder.Reference<VillagerProfession> holder) {
+                return holder;
+            }
+
+            throw new IllegalArgumentException("No Reference holder found for " + bukkit
+                    + ", this can happen if a plugin creates its own villager profession without properly registering it.");
         }
 
         public CraftProfession(NamespacedKey key, Holder<VillagerProfession> handle) {

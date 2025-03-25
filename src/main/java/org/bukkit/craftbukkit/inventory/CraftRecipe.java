@@ -9,8 +9,10 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.TransmuteResult;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.util.CraftNamespacedKey;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.recipe.CookingBookCategory;
@@ -44,6 +46,12 @@ public interface CraftRecipe extends Recipe {
         return stack;
     }
 
+    default TransmuteResult toNMS(ItemStack stack) {
+        net.minecraft.world.item.ItemStack nms = CraftItemStack.asNMSCopy(stack);
+
+        return new TransmuteResult(nms.getItemHolder(), nms.getCount(), nms.getComponentsPatch());
+    }
+
     public static RecipeChoice toBukkit(Optional<Ingredient> list) {
         return list.map(CraftRecipe::toBukkit).orElse(null);
     }
@@ -65,6 +73,12 @@ public interface CraftRecipe extends Recipe {
 
             return new RecipeChoice.MaterialChoice(choices);
         }
+    }
+
+    public static ItemStack toBukkit(TransmuteResult transmute) {
+        net.minecraft.world.item.ItemStack nms = new net.minecraft.world.item.ItemStack(transmute.item(), transmute.count(), transmute.components());
+
+        return CraftItemStack.asBukkitCopy(nms);
     }
 
     public static net.minecraft.world.item.crafting.CraftingBookCategory getCategory(CraftingBookCategory bukkit) {

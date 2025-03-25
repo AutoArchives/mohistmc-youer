@@ -42,10 +42,6 @@ public class CraftMetaArmor extends CraftMetaItem implements ArmorMeta {
             TrimPattern trimPattern = CraftTrimPattern.minecraftHolderToBukkit(trimCompound.pattern());
 
             this.trim = new ArmorTrim(trimMaterial, trimPattern);
-
-            if (!trimCompound.showInTooltip()) {
-                this.addItemFlags(ItemFlag.HIDE_ARMOR_TRIM);
-            }
         });
     }
 
@@ -78,7 +74,7 @@ public class CraftMetaArmor extends CraftMetaItem implements ArmorMeta {
         super.applyToItem(itemTag);
 
         if (this.hasTrim()) {
-            itemTag.put(CraftMetaArmor.TRIM, new net.minecraft.world.item.equipment.trim.ArmorTrim(CraftTrimMaterial.bukkitToMinecraftHolder(this.trim.getMaterial()), CraftTrimPattern.bukkitToMinecraftHolder(this.trim.getPattern()), !this.hasItemFlag(ItemFlag.HIDE_ARMOR_TRIM)));
+            itemTag.put(CraftMetaArmor.TRIM, new net.minecraft.world.item.equipment.trim.ArmorTrim(CraftTrimMaterial.bukkitToMinecraftHolder(this.trim.getMaterial()), CraftTrimPattern.bukkitToMinecraftHolder(this.trim.getPattern())));
         }
     }
 

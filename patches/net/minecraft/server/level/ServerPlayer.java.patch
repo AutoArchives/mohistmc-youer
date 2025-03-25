@@ -40,6 +40,17 @@
          boolean flag = this.serverLevel().getGameRules().getBoolean(GameRules.RULE_SHOWDEATHMESSAGES);
          if (flag) {
              Component component = this.getCombatTracker().getDeathMessage();
+@@ -947,8 +_,8 @@
+         }
+     }
+ 
+-    private static Optional<ServerPlayer.RespawnPosAngle> findRespawnAndUseSpawnBlock(
+-        ServerLevel p_348505_, ServerPlayer.RespawnConfig p_404800_, boolean p_348513_
++    public static Optional<ServerPlayer.RespawnPosAngle> findRespawnAndUseSpawnBlock(
++            ServerLevel p_348505_, ServerPlayer.RespawnConfig p_404800_, boolean p_348513_
+     ) {
+         BlockPos blockpos = p_404800_.pos;
+         float f = p_404800_.angle;
 @@ -966,7 +_,7 @@
              return BedBlock.findStandUpPosition(EntityType.PLAYER, p_348505_, blockpos, blockstate.getValue(BedBlock.FACING), f)
                  .map(p_348148_ -> ServerPlayer.RespawnPosAngle.of(p_348148_, blockpos));

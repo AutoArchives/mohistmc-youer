@@ -6,15 +6,17 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.Instrument;
+import net.minecraft.world.item.component.InstrumentComponent;
 import org.bukkit.MusicInstrument;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.craftbukkit.CraftMusicInstrument;
+import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.inventory.meta.MusicInstrumentMeta;
 
 @DelegateDeserialization(SerializableMeta.class)
 public class CraftMetaMusicInstrument extends CraftMetaItem implements MusicInstrumentMeta {
 
-    static final ItemMetaKeyType<Holder<Instrument>> GOAT_HORN_INSTRUMENT = new ItemMetaKeyType<>(DataComponents.INSTRUMENT, "instrument");
+    static final ItemMetaKeyType<InstrumentComponent> GOAT_HORN_INSTRUMENT = new ItemMetaKeyType<>(DataComponents.INSTRUMENT, "instrument");
     private MusicInstrument instrument;
 
     CraftMetaMusicInstrument(CraftMetaItem meta) {
@@ -30,7 +32,9 @@ public class CraftMetaMusicInstrument extends CraftMetaItem implements MusicInst
         super(tag);
 
         getOrEmpty(tag, CraftMetaMusicInstrument.GOAT_HORN_INSTRUMENT).ifPresent((instrument) -> {
-            this.instrument = CraftMusicInstrument.minecraftHolderToBukkit(instrument);
+            instrument.instrument().unwrap(CraftRegistry.getMinecraftRegistry()).ifPresent((holder) -> {
+                this.instrument = CraftMusicInstrument.minecraftHolderToBukkit(holder);
+            });
         });
     }
 
@@ -48,7 +52,7 @@ public class CraftMetaMusicInstrument extends CraftMetaItem implements MusicInst
         super.applyToItem(tag);
 
         if (this.instrument != null) {
-            tag.put(CraftMetaMusicInstrument.GOAT_HORN_INSTRUMENT, CraftMusicInstrument.bukkitToMinecraftHolder(this.instrument));
+            tag.put(CraftMetaMusicInstrument.GOAT_HORN_INSTRUMENT, new InstrumentComponent(CraftMusicInstrument.bukkitToMinecraftHolder(instrument)));
         }
     }
 

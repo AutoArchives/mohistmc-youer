@@ -81,8 +81,8 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
             CompoundTag nbt = blockTag.copyTag();
 
             this.blockEntityTag = CraftMetaBlockState.getBlockState(material, nbt);
-            if (nbt.contains("x", CraftMagicNumbers.NBT.TAG_ANY_NUMBER) && nbt.contains("y", CraftMagicNumbers.NBT.TAG_ANY_NUMBER) && nbt.contains("z", CraftMagicNumbers.NBT.TAG_ANY_NUMBER)) {
-                this.position = new BlockVector(nbt.getInt("x"), nbt.getInt("y"), nbt.getInt("z"));
+            if (nbt.contains("x") && nbt.contains("y") && nbt.contains("z")) {
+                position = new BlockVector(nbt.getIntOr("x", 0), nbt.getIntOr("y", 0), nbt.getIntOr("z", 0));
             }
         });
 
@@ -160,9 +160,7 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
     void deserializeInternal(CompoundTag tag, Object context) {
         super.deserializeInternal(tag, context);
 
-        if (tag.contains(CraftMetaBlockState.BLOCK_ENTITY_TAG.NBT, CraftMagicNumbers.NBT.TAG_COMPOUND)) {
-            this.internalTag = tag.getCompound(CraftMetaBlockState.BLOCK_ENTITY_TAG.NBT);
-        }
+        this.internalTag = tag.getCompound(BLOCK_ENTITY_TAG.NBT).orElse(this.internalTag);
     }
 
     @Override
@@ -256,7 +254,7 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
                 blockEntityTag.putString("id", "minecraft:shulker_box");
             }
 
-            pos = BlockEntity.getPosFromTag(blockEntityTag);
+            pos = BlockEntity.getPosFromTag(null, blockEntityTag);
         }
 
         // This is expected to always return a CraftBlockEntityState for the passed material:
@@ -276,14 +274,10 @@ public class CraftMetaBlockState extends CraftMetaItem implements BlockStateMeta
 
     private static Material shieldToBannerHack(CompoundTag tag) {
         if (tag != null) {
-            if (tag.contains("components", CraftMagicNumbers.NBT.TAG_COMPOUND)) {
-                CompoundTag components = tag.getCompound("components");
-                if (components.contains("minecraft:base_color", CraftMagicNumbers.NBT.TAG_STRING)) {
-                    DyeColor color = DyeColor.getByWoolData((byte) net.minecraft.world.item.DyeColor.byName(components.getString("minecraft:base_color"), net.minecraft.world.item.DyeColor.WHITE).getId());
-
-                    return CraftMetaShield.shieldToBannerHack(color);
-                }
-            }
+            tag.getCompound("components").flatMap((components) -> components.getString("minecraft:base_color").map((baseColor) -> {
+                DyeColor color = DyeColor.getByWoolData((byte) DyeColor.byName(baseColor, DyeColor.WHITE).getId());
+                return CraftMetaShield.shieldToBannerHack(color);
+            })).orElse(Material.WHITE_BANNER);
         }
 
         return Material.WHITE_BANNER;

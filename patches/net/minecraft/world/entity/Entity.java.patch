@@ -28,6 +28,15 @@
      private final Set<TagKey<Fluid>> fluidOnEyes = new HashSet<>();
      public int invulnerableTime;
      protected boolean firstTick = true;
+@@ -252,7 +_,7 @@
+     private boolean onGroundNoBlocks = false;
+     private float crystalSoundIntensity;
+     private int lastCrystalSoundPlayTick;
+-    private boolean hasVisualFire;
++    public boolean hasVisualFire;
+     @Nullable
+     private BlockState inBlockState = null;
+     private final List<List<Entity.Movement>> movementThisTick = new ObjectArrayList<>();
 @@ -280,7 +_,10 @@
          this.defineSynchedData(synchedentitydata$builder);
          this.entityData = synchedentitydata$builder.build();

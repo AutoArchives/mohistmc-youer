@@ -14,8 +14,8 @@ import org.bukkit.entity.ThrownPotion;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 
-public class CraftThrownPotion extends CraftThrowableProjectile implements ThrownPotion {
-    public CraftThrownPotion(CraftServer server, net.minecraft.world.entity.projectile.ThrownPotion entity) {
+public abstract class CraftThrownPotion extends CraftThrowableProjectile implements ThrownPotion {
+    public CraftThrownPotion(CraftServer server, net.minecraft.world.entity.projectile.AbstractThrownPotion entity) {
         super(server, entity);
     }
 
@@ -42,7 +42,7 @@ public class CraftThrownPotion extends CraftThrowableProjectile implements Throw
     }
 
     @Override
-    public net.minecraft.world.entity.projectile.ThrownPotion getHandle() {
-        return (net.minecraft.world.entity.projectile.ThrownPotion) this.entity;
+    public net.minecraft.world.entity.projectile.AbstractThrownPotion getHandle() {
+        return (net.minecraft.world.entity.projectile.AbstractThrownPotion) this.entity;
     }
 }

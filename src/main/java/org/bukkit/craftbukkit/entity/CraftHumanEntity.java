@@ -440,7 +440,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
             mcMerchant = ((CraftAbstractVillager) merchant).getHandle();
             name = ((CraftAbstractVillager) merchant).getHandle().getDisplayName();
             if (merchant instanceof CraftVillager) {
-                level = ((CraftVillager) merchant).getHandle().getVillagerData().getLevel();
+                level = ((CraftVillager) merchant).getHandle().getVillagerData().level();
             }
         } else if (merchant instanceof CraftMerchantCustom) {
             mcMerchant = ((CraftMerchantCustom) merchant).getMerchant();
@@ -533,7 +533,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         }
 
         ItemCooldowns.CooldownInstance cooldown = this.getHandle().getCooldowns().cooldowns.get(group);
-        return (cooldown == null) ? 0 : Math.max(0, cooldown.endTime - this.getHandle().getCooldowns().tickCount);
+        return (cooldown == null) ? 0 : Math.max(0, cooldown.endTime() - this.getHandle().getCooldowns().tickCount);
     }
 
     @Override

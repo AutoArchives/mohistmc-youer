@@ -1,5 +1,14 @@
 --- a/net/minecraft/world/level/block/entity/BeaconBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/BeaconBlockEntity.java
+@@ -75,7 +_,7 @@
+     Holder<MobEffect> secondaryPower;
+     @Nullable
+     private Component name;
+-    private LockCode lockKey = LockCode.NO_LOCK;
++    public LockCode lockKey = LockCode.NO_LOCK;
+     private final ContainerData dataAccess = new ContainerData() {
+         @Override
+         public int get(int p_58711_) {
 @@ -140,8 +_,8 @@
  
          for (int i1 = 0; i1 < 10 && blockpos.getY() <= l; i1++) {

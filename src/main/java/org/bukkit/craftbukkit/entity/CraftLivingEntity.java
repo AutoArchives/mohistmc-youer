@@ -390,7 +390,8 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
 
     @Override
     public Player getKiller() {
-        return this.getHandle().lastHurtByPlayer == null ? null : (Player) this.getHandle().lastHurtByPlayer.getBukkitEntity();
+        net.minecraft.world.entity.player.Player lastHurtByPlayer = getHandle().getLastHurtByPlayer();
+        return lastHurtByPlayer == null ? null : (Player) lastHurtByPlayer.getBukkitEntity();
     }
 
     @Override
@@ -474,9 +475,9 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
             ((net.minecraft.world.entity.projectile.AbstractArrow) launch).shootFromRotation(this.getHandle(), this.getHandle().getXRot(), this.getHandle().getYRot(), 0.0F, 3.0F, 1.0F); // ItemBow
         } else if (ThrownPotion.class.isAssignableFrom(projectile)) {
             if (LingeringPotion.class.isAssignableFrom(projectile)) {
-                launch = new net.minecraft.world.entity.projectile.ThrownPotion(world, this.getHandle(), new net.minecraft.world.item.ItemStack(Items.LINGERING_POTION));
+                launch = new net.minecraft.world.entity.projectile.ThrownLingeringPotion(world, this.getHandle(), new net.minecraft.world.item.ItemStack(Items.LINGERING_POTION));
             } else {
-                launch = new net.minecraft.world.entity.projectile.ThrownPotion(world, this.getHandle(), new net.minecraft.world.item.ItemStack(Items.SPLASH_POTION));
+                launch = new net.minecraft.world.entity.projectile.ThrownLingeringPotion(world, this.getHandle(), new net.minecraft.world.item.ItemStack(Items.SPLASH_POTION));
             }
             ((ThrowableProjectile) launch).shootFromRotation(this.getHandle(), this.getHandle().getXRot(), this.getHandle().getYRot(), -20.0F, 0.5F, 1.0F); // ItemSplashPotion
         } else if (ThrownExpBottle.class.isAssignableFrom(projectile)) {
@@ -509,7 +510,7 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
             }
 
             ((AbstractHurtingProjectile) launch).projectileSource = this;
-            launch.moveTo(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
+            launch.snapTo(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
         } else if (LlamaSpit.class.isAssignableFrom(projectile)) {
             Location location = this.getEyeLocation();
             Vector direction = location.getDirection();
@@ -518,17 +519,17 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
 
             ((net.minecraft.world.entity.projectile.LlamaSpit) launch).setOwner(this.getHandle());
             ((net.minecraft.world.entity.projectile.LlamaSpit) launch).shoot(direction.getX(), direction.getY(), direction.getZ(), 1.5F, 10.0F); // EntityLlama
-            launch.moveTo(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
+            launch.snapTo(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
         } else if (ShulkerBullet.class.isAssignableFrom(projectile)) {
             Location location = this.getEyeLocation();
 
             launch = new net.minecraft.world.entity.projectile.ShulkerBullet(world, this.getHandle(), null, null);
-            launch.moveTo(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
+            launch.snapTo(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
         } else if (Firework.class.isAssignableFrom(projectile)) {
             Location location = this.getEyeLocation();
 
             launch = new FireworkRocketEntity(world, net.minecraft.world.item.ItemStack.EMPTY, this.getHandle());
-            launch.moveTo(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
+            launch.snapTo(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
         }
 
         Preconditions.checkArgument(launch != null, "Projectile (%s) not supported", projectile.getName());

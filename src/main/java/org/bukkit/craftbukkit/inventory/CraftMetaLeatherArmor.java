@@ -125,10 +125,6 @@ class CraftMetaLeatherArmor extends CraftMetaItem implements LeatherArmorMeta {
 
     static void readColor(LeatherArmorMeta meta, DataComponentPatch tag) {
         getOrEmpty(tag, CraftMetaLeatherArmor.COLOR).ifPresent((dyedItemColor) -> {
-            if (!dyedItemColor.showInTooltip()) {
-                meta.addItemFlags(ItemFlag.HIDE_DYE);
-            }
-
             try {
                 meta.setColor(Color.fromRGB(dyedItemColor.rgb()));
             } catch (IllegalArgumentException ex) {
@@ -147,7 +143,7 @@ class CraftMetaLeatherArmor extends CraftMetaItem implements LeatherArmorMeta {
 
     static void applyColor(LeatherArmorMeta meta, CraftMetaItem.Applicator tag) {
         if (CraftMetaLeatherArmor.hasColor(meta)) {
-            tag.put(CraftMetaLeatherArmor.COLOR, new DyedItemColor(meta.getColor().asRGB(), !meta.hasItemFlag(ItemFlag.HIDE_DYE)));
+            tag.put(CraftMetaLeatherArmor.COLOR, new DyedItemColor(meta.getColor().asRGB()));
         }
     }
 

@@ -8,6 +8,15 @@
      public static final HumanoidArm DEFAULT_MAIN_HAND = HumanoidArm.RIGHT;
      public static final int DEFAULT_MODEL_CUSTOMIZATION = 0;
      public static final int MAX_HEALTH = 20;
+@@ -192,7 +_,7 @@
+     public int experienceLevel = 0;
+     public int totalExperience = 0;
+     public float experienceProgress = 0.0F;
+-    protected int enchantmentSeed = 0;
++    public int enchantmentSeed = 0;
+     protected final float defaultFlySpeed = 0.02F;
+     private int lastLevelUpTime;
+     private final GameProfile gameProfile;
 @@ -209,6 +_,11 @@
      public Entity currentExplosionCause;
      private boolean ignoreFallDamageFromCurrentImpulse = false;

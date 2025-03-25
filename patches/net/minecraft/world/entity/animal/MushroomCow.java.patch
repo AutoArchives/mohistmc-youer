@@ -1,5 +1,14 @@
 --- a/net/minecraft/world/entity/animal/MushroomCow.java
 +++ b/net/minecraft/world/entity/animal/MushroomCow.java
+@@ -53,7 +_,7 @@
+     private static final int MUTATE_CHANCE = 1024;
+     private static final String TAG_STEW_EFFECTS = "stew_effects";
+     @Nullable
+-    private SuspiciousStewEffects stewEffects;
++    public SuspiciousStewEffects stewEffects;
+     @Nullable
+     private UUID lastLightningBoltUUID;
+ 
 @@ -170,11 +_,19 @@
      @Override
      public void shear(ServerLevel p_376375_, SoundSource p_28924_, ItemStack p_373092_) {
@@ -21,3 +30,12 @@
                  }
              });
          });
+@@ -204,7 +_,7 @@
+         return suspiciouseffectholder != null ? Optional.of(suspiciouseffectholder.getSuspiciousEffects()) : Optional.empty();
+     }
+ 
+-    private void setVariant(MushroomCow.Variant p_360882_) {
++    public void setVariant(MushroomCow.Variant p_360882_) {
+         this.entityData.set(DATA_TYPE, p_360882_.id);
+     }
+ 

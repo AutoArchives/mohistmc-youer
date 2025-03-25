@@ -1,6 +1,8 @@
 package org.bukkit.craftbukkit.entity;
 
 import java.util.UUID;
+import net.minecraft.world.entity.EntityReference;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.AnimalTamer;
@@ -18,15 +20,12 @@ public class CraftTameableAnimal extends CraftAnimals implements Tameable, Creat
     }
 
     public UUID getOwnerUUID() {
-        try {
-            return this.getHandle().getOwnerUUID();
-        } catch (IllegalArgumentException ex) {
-            return null;
-        }
+        EntityReference<LivingEntity> owner = getHandle().getOwnerReference();
+        return (owner != null) ? owner.getUUID() : null;
     }
 
     public void setOwnerUUID(UUID uuid) {
-        this.getHandle().setOwnerUUID(uuid);
+        getHandle().setOwnerReference(new EntityReference<>(uuid));
     }
 
     @Override

@@ -1,0 +1,23 @@
+--- a/net/minecraft/world/entity/vehicle/MinecartTNT.java
++++ b/net/minecraft/world/entity/vehicle/MinecartTNT.java
+@@ -35,9 +_,9 @@
+     private static final int NO_FUSE = -1;
+     @Nullable
+     private DamageSource ignitionSource;
+-    private int fuse = -1;
++    public int fuse = -1;
+     private float explosionPowerBase = 4.0F;
+-    private float explosionSpeedFactor = 1.0F;
++    public float explosionSpeedFactor = 1.0F;
+ 
+     public MinecartTNT(EntityType<? extends MinecartTNT> p_38649_, Level p_38650_) {
+         super(p_38649_, p_38650_);
+@@ -99,7 +_,7 @@
+         return new ItemStack(Items.TNT_MINECART);
+     }
+ 
+-    protected void explode(double p_38689_) {
++    public void explode(double p_38689_) {
+         this.explode(null, p_38689_);
+     }
+ 

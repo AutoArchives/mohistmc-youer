@@ -13,6 +13,8 @@ import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.UserWhiteListEntry;
 import net.minecraft.stats.ServerStatsCounter;
 import net.minecraft.world.level.storage.PlayerDataStorage;
@@ -29,6 +31,7 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.craftbukkit.entity.memory.CraftMemoryMapper;
 import org.bukkit.craftbukkit.profile.CraftPlayerProfile;
+import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.MetadataValue;
@@ -69,7 +72,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
 
         if (data != null) {
             if (data.contains("lastKnownName")) {
-                return data.getString("lastKnownName");
+                return data.getStringOr("lastKnownName", "");
             }
         }
 
@@ -209,7 +212,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
             if (!result.contains("bukkit")) {
                 result.put("bukkit", new CompoundTag());
             }
-            result = result.getCompound("bukkit");
+            result = result.getCompoundOrEmpty("bukkit");
         }
 
         return result;
@@ -228,7 +231,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
 
         if (data != null) {
             if (data.contains("firstPlayed")) {
-                return data.getLong("firstPlayed");
+                return data.getLongOr("firstPlayed", 0);
             } else {
                 File file = this.getDataFile();
                 return file.lastModified();
@@ -247,7 +250,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
 
         if (data != null) {
             if (data.contains("lastPlayed")) {
-                return data.getLong("lastPlayed");
+                return data.getLongOr("lastPlayed", 0);
             } else {
                 File file = this.getDataFile();
                 return file.lastModified();
@@ -264,7 +267,7 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
 
     @Override
     public Location getLastDeathLocation() {
-        if (this.getData().contains("LastDeathLocation", 10)) {
+        if (this.getData().contains("LastDeathLocation")) {
             return GlobalPos.CODEC.parse(NbtOps.INSTANCE, this.getData().get("LastDeathLocation")).result().map(CraftMemoryMapper::fromNms).orElse(null);
         }
         return null;
@@ -281,14 +284,14 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
             ListTag position = (ListTag) data.get("Pos");
             ListTag rotation = (ListTag) data.get("Rotation");
 
-            UUID uuid = new UUID(data.getLong("WorldUUIDMost"), data.getLong("WorldUUIDLeast"));
+            UUID uuid = new UUID(data.getLongOr("WorldUUIDMost", 0), data.getLongOr("WorldUUIDLeast", 0));
 
             return new Location(this.server.getWorld(uuid),
-                position.getDouble(0),
-                position.getDouble(1),
-                position.getDouble(2),
-                rotation.getFloat(0),
-                rotation.getFloat(1)
+                position.getDoubleOr(0, 0),
+                position.getDoubleOr(1, 0),
+                position.getDoubleOr(2, 0),
+                rotation.getFloatOr(0, 0),
+                rotation.getFloatOr(1, 0)
             );
         }
 
@@ -305,12 +308,22 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
         CompoundTag data = this.getData();
         if (data == null) return null;
 
+        ServerPlayer.RespawnConfig respawn = data.read("respawn", ServerPlayer.RespawnConfig.CODEC).orElse(null);
+        if (respawn != null) {
+            ServerLevel world = server.getServer().getLevel(respawn.dimension());
+            if (world == null) {
+                world = server.getServer().overworld();
+            }
+
+            return CraftLocation.toBukkit(respawn.pos(), world.getWorld(), respawn.angle(), 0.0F);
+        }
+
         if (data.contains("SpawnX") && data.contains("SpawnY") && data.contains("SpawnZ")) {
-            String spawnWorld = data.getString("SpawnWorld");
+            String spawnWorld = data.getStringOr("SpawnWorld", "");
             if (spawnWorld.equals("")) {
                 spawnWorld = this.server.getWorlds().get(0).getName();
             }
-            return new Location(this.server.getWorld(spawnWorld), data.getInt("SpawnX"), data.getInt("SpawnY"), data.getInt("SpawnZ"));
+            return new Location(this.server.getWorld(spawnWorld), data.getIntOr("SpawnX", 0), data.getIntOr("SpawnY", 0), data.getIntOr("SpawnZ", 0));
         }
         return null;
     }

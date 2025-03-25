@@ -287,11 +287,6 @@ public class CustomChunkGenerator extends InternalChunkGenerator {
     }
 
     @Override
-    public WeightedRandomList<MobSpawnSettings.SpawnerData> getMobsAt(Holder<net.minecraft.world.level.biome.Biome> biome, StructureManager accessor, MobCategory group, BlockPos pos) {
-        return this.delegate.getMobsAt(biome, accessor, group, pos);
-    }
-
-    @Override
     public void applyBiomeDecoration(WorldGenLevel world, ChunkAccess chunk, StructureManager structureAccessor) {
         WorldgenRandom random = CustomChunkGenerator.getSeededRandom();
         int x = chunk.getPos().x;

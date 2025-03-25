@@ -18,9 +18,11 @@ import org.bukkit.entity.Raider;
 public final class CraftRaid implements Raid {
 
     private final net.minecraft.world.entity.raid.Raid handle;
+    private final Level world;
 
-    public CraftRaid(net.minecraft.world.entity.raid.Raid handle) {
+    public CraftRaid(net.minecraft.world.entity.raid.Raid handle, Level world) {
         this.handle = handle;
+        this.world = world;
     }
 
     @Override
@@ -48,7 +50,6 @@ public final class CraftRaid implements Raid {
     @Override
     public Location getLocation() {
         BlockPos pos = this.handle.getCenter();
-        Level world = this.handle.getLevel();
         return CraftLocation.toBukkit(pos, world.getWorld());
     }
 

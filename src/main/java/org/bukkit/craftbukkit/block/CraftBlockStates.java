@@ -346,6 +346,8 @@ public final class CraftBlockStates {
         register(Material.CRAFTER, CraftCrafter.class, CraftCrafter::new, CrafterBlockEntity::new);
         register(Material.TRIAL_SPAWNER, CraftTrialSpawner.class, CraftTrialSpawner::new, TrialSpawnerBlockEntity::new);
         register(Material.VAULT, CraftVault.class, CraftVault::new, VaultBlockEntity::new);
+        register(Material.TEST_BLOCK, CraftTestBlock.class, CraftTestBlock::new, TestBlockEntity::new);
+        register(Material.TEST_INSTANCE_BLOCK, CraftTestInstance.class, CraftTestInstance::new, TestInstanceBlockEntity::new);
     }
 
     private static void register(Material blockType, BlockStateFactory<?> factory) {

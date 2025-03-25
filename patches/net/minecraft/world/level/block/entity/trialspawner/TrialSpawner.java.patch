@@ -1,5 +1,14 @@
 --- a/net/minecraft/world/level/block/entity/trialspawner/TrialSpawner.java
 +++ b/net/minecraft/world/level/block/entity/trialspawner/TrialSpawner.java
+@@ -56,7 +_,7 @@
+     private Holder<TrialSpawnerConfig> normalConfig;
+     private Holder<TrialSpawnerConfig> ominousConfig;
+     private final TrialSpawnerData data;
+-    private final int requiredPlayerRange;
++    public int requiredPlayerRange;
+     private final int targetCooldownLength;
+     private final TrialSpawner.StateAccessor stateAccessor;
+     private PlayerDetector playerDetector;
 @@ -234,9 +_,9 @@
                              }
  

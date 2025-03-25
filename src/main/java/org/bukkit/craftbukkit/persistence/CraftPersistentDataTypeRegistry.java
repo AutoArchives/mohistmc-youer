@@ -141,40 +141,40 @@ public final class CraftPersistentDataTypeRegistry {
         if (Objects.equals(Byte.class, type)) {
             return this.createAdapter(
                     Byte.class, ByteTag.class, Tag.TAG_BYTE,
-                    ByteTag::valueOf, ByteTag::getAsByte
+                    ByteTag::valueOf, ByteTag::byteValue
             );
         }
         if (Objects.equals(Short.class, type)) {
             return this.createAdapter(
-                    Short.class, ShortTag.class, Tag.TAG_SHORT, ShortTag::valueOf, ShortTag::getAsShort
+                    Short.class, ShortTag.class, Tag.TAG_SHORT, ShortTag::valueOf, ShortTag::shortValue
             );
         }
         if (Objects.equals(Integer.class, type)) {
             return this.createAdapter(
-                    Integer.class, IntTag.class, Tag.TAG_INT, IntTag::valueOf, IntTag::getAsInt
+                    Integer.class, IntTag.class, Tag.TAG_INT, IntTag::valueOf, IntTag::intValue
             );
         }
         if (Objects.equals(Long.class, type)) {
             return this.createAdapter(
-                    Long.class, LongTag.class, Tag.TAG_LONG, LongTag::valueOf, LongTag::getAsLong
+                    Long.class, LongTag.class, Tag.TAG_LONG, LongTag::valueOf, LongTag::longValue
             );
         }
         if (Objects.equals(Float.class, type)) {
             return this.createAdapter(
                     Float.class, FloatTag.class, Tag.TAG_FLOAT,
-                    FloatTag::valueOf, FloatTag::getAsFloat
+                    FloatTag::valueOf, FloatTag::floatValue
             );
         }
         if (Objects.equals(Double.class, type)) {
             return this.createAdapter(
                     Double.class, DoubleTag.class, Tag.TAG_DOUBLE,
-                    DoubleTag::valueOf, DoubleTag::getAsDouble
+                    DoubleTag::valueOf, DoubleTag::doubleValue
             );
         }
         if (Objects.equals(String.class, type)) {
             return this.createAdapter(
                     String.class, StringTag.class, Tag.TAG_STRING,
-                    StringTag::valueOf, StringTag::getAsString
+                    StringTag::valueOf, StringTag::value
             );
         }
 
@@ -216,8 +216,8 @@ public final class CraftPersistentDataTypeRegistry {
                         final PersistentDataContainer[] containerArray = new CraftPersistentDataContainer[tag.size()];
                         for (int i = 0; i < tag.size(); i++) {
                             final CraftPersistentDataContainer container = new CraftPersistentDataContainer(this);
-                            final CompoundTag compound = tag.getCompound(i);
-                            for (final String key : compound.getAllKeys()) {
+                            final CompoundTag compound = tag.getCompoundOrEmpty(i);
+                            for (final String key : compound.keySet()) {
                                 container.put(key, compound.get(key));
                             }
                             containerArray[i] = container;
@@ -236,7 +236,7 @@ public final class CraftPersistentDataTypeRegistry {
                     CraftPersistentDataContainer::toTagCompound,
                     tag -> {
                         final CraftPersistentDataContainer container = new CraftPersistentDataContainer(this);
-                        for (final String key : tag.getAllKeys()) {
+                        for (final String key : tag.keySet()) {
                             container.put(key, tag.get(key));
                         }
                         return container;
@@ -365,14 +365,12 @@ public final class CraftPersistentDataTypeRegistry {
         Preconditions.checkArgument(type instanceof ListPersistentDataType<?, ?>, "The passed list cannot be written to the PDC with a %s (expected a list data type)", type.getClass().getSimpleName());
         final ListPersistentDataType<P, ?> listPersistentDataType = (ListPersistentDataType<P, ?>) type;
 
-        final TagAdapter<P, Tag> elementAdapter = this.getOrCreateAdapter(listPersistentDataType.elementType());
-
         final List<Tag> values = Lists.newArrayListWithCapacity(list.size());
         for (final P primitiveValue : list) {
             values.add(this.wrap(listPersistentDataType.elementType(), primitiveValue));
         }
 
-        return new ListTag(values, values.isEmpty() ? ListTag.TAG_END : elementAdapter.nmsTypeByte());
+        return new ListTag(values);
     }
 
     /**
@@ -424,7 +422,7 @@ public final class CraftPersistentDataTypeRegistry {
             return false;
         }
 
-        final byte elementType = listTag.getElementType();
+        final byte elementType = listTag.identifyRawElementType();
         final TagAdapter elementAdapter = this.getOrCreateAdapter(listPersistentDataType.elementType());
 
         return elementAdapter.nmsTypeByte() == elementType || elementType == ListTag.TAG_END;

@@ -43,9 +43,7 @@ public class CraftMetaArmorStand extends CraftMetaItem {
     void deserializeInternal(CompoundTag tag, Object context) {
         super.deserializeInternal(tag, context);
 
-        if (tag.contains(CraftMetaArmorStand.ENTITY_TAG.NBT)) {
-            this.entityTag = tag.getCompound(CraftMetaArmorStand.ENTITY_TAG.NBT);
-        }
+        entityTag = tag.getCompound(ENTITY_TAG.NBT).orElse(entityTag);
     }
 
     @Override

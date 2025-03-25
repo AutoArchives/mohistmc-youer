@@ -1,0 +1,20 @@
+--- a/net/minecraft/nbt/ListTag.java
++++ b/net/minecraft/nbt/ListTag.java
+@@ -144,7 +_,7 @@
+         this(new ArrayList<>());
+     }
+ 
+-    ListTag(List<Tag> p_128721_) {
++    public ListTag(List<Tag> p_128721_) {
+         this.list = p_128721_;
+     }
+ 
+@@ -187,7 +_,7 @@
+     }
+ 
+     @VisibleForTesting
+-    byte identifyRawElementType() {
++    public byte identifyRawElementType() {
+         byte b0 = 0;
+ 
+         for (Tag tag : this.list) {

@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/level/block/entity/trialspawner/TrialSpawnerData.java
++++ b/net/minecraft/world/level/block/entity/trialspawner/TrialSpawnerData.java
+@@ -62,7 +_,7 @@
+     protected long cooldownEndsAt;
+     protected long nextMobSpawnsAt;
+     protected int totalMobsSpawned;
+-    protected Optional<SpawnData> nextSpawnData;
++    public Optional<SpawnData> nextSpawnData;
+     protected Optional<ResourceKey<LootTable>> ejectingLootTable;
+     @Nullable
+     protected Entity displayEntity;

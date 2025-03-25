@@ -267,7 +267,7 @@ import org.bukkit.util.Vector;
 public class CraftEventFactory {
 
     // helper methods
-    private static boolean canBuild(ServerLevel world, Player player, int x, int z) {
+    private static boolean canBuild(Level world, Player player, int x, int z) {
         int spawnSize = Bukkit.getServer().getSpawnRadius();
 
         if (world.dimension() != Level.OVERWORLD) return true;
@@ -488,15 +488,15 @@ public class CraftEventFactory {
     /**
      * Bucket methods
      */
-    public static PlayerBucketEmptyEvent callPlayerBucketEmptyEvent(ServerLevel world, net.minecraft.world.entity.player.Player who, BlockPos changed, BlockPos clicked, Direction clickedFace, ItemStack itemInHand, InteractionHand enumhand) {
+    public static PlayerBucketEmptyEvent callPlayerBucketEmptyEvent(Level world, ServerPlayer who, BlockPos changed, BlockPos clicked, Direction clickedFace, ItemStack itemInHand, InteractionHand enumhand) {
         return (PlayerBucketEmptyEvent) CraftEventFactory.getPlayerBucketEvent(false, world, who, changed, clicked, clickedFace, itemInHand, Items.BUCKET, enumhand);
     }
 
-    public static PlayerBucketFillEvent callPlayerBucketFillEvent(ServerLevel world, net.minecraft.world.entity.player.Player who, BlockPos changed, BlockPos clicked, Direction clickedFace, ItemStack itemInHand, net.minecraft.world.item.Item bucket, InteractionHand enumhand) {
+    public static PlayerBucketFillEvent callPlayerBucketFillEvent(Level world, net.minecraft.world.entity.player.Player who, BlockPos changed, BlockPos clicked, Direction clickedFace, ItemStack itemInHand, net.minecraft.world.item.Item bucket, InteractionHand enumhand) {
         return (PlayerBucketFillEvent) CraftEventFactory.getPlayerBucketEvent(true, world, who, clicked, changed, clickedFace, itemInHand, bucket, enumhand);
     }
 
-    private static PlayerEvent getPlayerBucketEvent(boolean isFilling, ServerLevel world, net.minecraft.world.entity.player.Player who, BlockPos changed, BlockPos clicked, Direction clickedFace, ItemStack itemstack, net.minecraft.world.item.Item item, InteractionHand enumhand) {
+    private static PlayerEvent getPlayerBucketEvent(boolean isFilling, Level world, net.minecraft.world.entity.player.Player who, BlockPos changed, BlockPos clicked, Direction clickedFace, ItemStack itemstack, net.minecraft.world.item.Item item, InteractionHand enumhand) {
         Player player = (Player) who.getBukkitEntity();
         CraftItemStack itemInHand = CraftItemStack.asNewCraftStack(item);
         Material bucket = CraftItemType.minecraftToBukkit(itemstack.getItem());
@@ -1778,29 +1778,29 @@ public class CraftEventFactory {
     /**
      * Raid events
      */
-    public static boolean callRaidTriggerEvent(Raid raid, ServerPlayer player) {
-        RaidTriggerEvent event = new RaidTriggerEvent(new CraftRaid(raid), raid.getLevel().getWorld(), player.getBukkitEntity());
+    public static boolean callRaidTriggerEvent(Raid raid, Level world, ServerPlayer player) {
+        RaidTriggerEvent event = new RaidTriggerEvent(new CraftRaid(raid, world), world.getWorld(), player.getBukkitEntity());
         Bukkit.getPluginManager().callEvent(event);
         return !event.isCancelled();
     }
 
-    public static void callRaidFinishEvent(Raid raid, List<Player> players) {
-        RaidFinishEvent event = new RaidFinishEvent(new CraftRaid(raid), raid.getLevel().getWorld(), players);
+    public static void callRaidFinishEvent(Raid raid, Level world, List<Player> players) {
+        RaidFinishEvent event = new RaidFinishEvent(new CraftRaid(raid, world), world.getWorld(), players);
         Bukkit.getPluginManager().callEvent(event);
     }
 
-    public static void callRaidStopEvent(Raid raid, RaidStopEvent.Reason reason) {
-        RaidStopEvent event = new RaidStopEvent(new CraftRaid(raid), raid.getLevel().getWorld(), reason);
+    public static void callRaidStopEvent(Raid raid, Level world, RaidStopEvent.Reason reason) {
+        RaidStopEvent event = new RaidStopEvent(new CraftRaid(raid, world), world.getWorld(), reason);
         Bukkit.getPluginManager().callEvent(event);
     }
 
-    public static void callRaidSpawnWaveEvent(Raid raid, net.minecraft.world.entity.raid.Raider leader, List<net.minecraft.world.entity.raid.Raider> raiders) {
+    public static void callRaidSpawnWaveEvent(Raid raid, Level world, net.minecraft.world.entity.raid.Raider leader, List<net.minecraft.world.entity.raid.Raider> raiders) {
         Raider craftLeader = (CraftRaider) leader.getBukkitEntity();
         List<Raider> craftRaiders = new ArrayList<>();
         for (net.minecraft.world.entity.raid.Raider entityRaider : raiders) {
             craftRaiders.add((Raider) entityRaider.getBukkitEntity());
         }
-        RaidSpawnWaveEvent event = new RaidSpawnWaveEvent(new CraftRaid(raid), raid.getLevel().getWorld(), craftLeader, craftRaiders);
+        RaidSpawnWaveEvent event = new RaidSpawnWaveEvent(new CraftRaid(raid, world), world.getWorld(), craftLeader, craftRaiders);
         Bukkit.getPluginManager().callEvent(event);
     }
 

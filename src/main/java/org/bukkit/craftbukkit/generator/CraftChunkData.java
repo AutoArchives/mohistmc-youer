@@ -3,6 +3,7 @@ package org.bukkit.craftbukkit.generator;
 import com.google.common.base.Preconditions;
 import java.lang.ref.WeakReference;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -165,7 +166,7 @@ public final class CraftChunkData implements ChunkGenerator.ChunkData {
 
         ChunkAccess access = this.getHandle();
         BlockPos blockPosition = new BlockPos(access.getPos().getMinBlockX() + x, y, access.getPos().getMinBlockZ() + z);
-        BlockState oldBlockData = access.setBlockState(blockPosition, type, false);
+        BlockState oldBlockData = access.setBlockState(blockPosition, type, Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS);
 
         if (type.hasBlockEntity()) {
             BlockEntity tileEntity = ((EntityBlock) type.getBlock()).newBlockEntity(blockPosition, type);

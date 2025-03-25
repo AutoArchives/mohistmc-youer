@@ -382,7 +382,7 @@ public final class CraftServer implements Server {
         this.overrideSpawnLimits();
         console.autosavePeriod = this.configuration.getInt("ticks-per.autosave");
         this.warningState = WarningState.value(this.configuration.getString("settings.deprecated-verbose"));
-        TicketType.PLUGIN.timeout = this.configuration.getInt("chunk-gc.period-in-ticks");
+        TicketType.pluginTimeout = this.configuration.getInt("chunk-gc.period-in-ticks");
         this.minimumAPI = ApiVersion.getOrCreateVersion(this.configuration.getString("settings.minimum-api"));
         this.loadIcon();
         this.loadCompatibilities();
@@ -947,7 +947,7 @@ public final class CraftServer implements Server {
         this.console.setMotd(config.motd);
         this.overrideSpawnLimits();
         this.warningState = WarningState.value(this.configuration.getString("settings.deprecated-verbose"));
-        TicketType.PLUGIN.timeout = this.configuration.getInt("chunk-gc.period-in-ticks");
+        TicketType.pluginTimeout = this.configuration.getInt("chunk-gc.period-in-ticks");
         this.minimumAPI = ApiVersion.getOrCreateVersion(this.configuration.getString("settings.minimum-api"));
         this.printSaveWarning = false;
         this.console.autosavePeriod = this.configuration.getInt("ticks-per.autosave");
@@ -1222,7 +1222,7 @@ public final class CraftServer implements Server {
         worlddata.setModdedInfo(this.console.getServerModName(), this.console.getModdedStatus().shouldReportAsModified());
 
         if (this.console.options.has("forceUpgrade")) {
-            net.minecraft.server.Main.forceUpgrade(worldSession, DataFixers.getDataFixer(), this.console.options.has("eraseCache"), () -> true, iregistrycustom_dimension, this.console.options.has("recreateRegionFiles"));
+            net.minecraft.server.Main.forceUpgrade(worldSession, worlddata, DataFixers.getDataFixer(), this.console.options.has("eraseCache"), () -> true, iregistrycustom_dimension, this.console.options.has("recreateRegionFiles"));
         }
 
         long j = BiomeManager.obfuscateSeed(creator.seed());
@@ -1763,7 +1763,7 @@ public final class CraftServer implements Server {
     public CraftMapView createMap(World world) {
         Preconditions.checkArgument(world != null, "World cannot be null");
 
-        net.minecraft.world.level.Level minecraftWorld = ((CraftWorld) world).getHandle();
+        ServerLevel minecraftWorld = ((CraftWorld) world).getHandle();
         // creates a new map at world spawn with the scale of 3, with out tracking position and unlimited tracking
         BlockPos spawn = minecraftWorld.getLevelData().getSpawnPos();
         MapId newId = MapItem.createNewSavedData(minecraftWorld, spawn.getX(), spawn.getZ(), 3, false, false, minecraftWorld.dimension());

@@ -60,6 +60,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.TicketStorage;
 import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ImposterProtoChunk;
@@ -285,7 +286,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
     public boolean unloadChunkRequest(int x, int z) {
         org.spigotmc.AsyncCatcher.catchOp("chunk unload"); // Spigot
         if (this.isChunkLoaded(x, z)) {
-            this.world.getChunkSource().removeRegionTicket(TicketType.PLUGIN, new ChunkPos(x, z), 1, Unit.INSTANCE);
+            this.world.getChunkSource().removeTicketWithRadius(TicketType.PLUGIN, new ChunkPos(x, z), 1);
         }
 
         return true;
@@ -397,7 +398,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
         }
 
         if (chunk instanceof net.minecraft.world.level.chunk.LevelChunk) {
-            this.world.getChunkSource().addRegionTicket(TicketType.PLUGIN, new ChunkPos(x, z), 1, Unit.INSTANCE);
+            this.world.getChunkSource().addTicketWithRadius(TicketType.PLUGIN, new ChunkPos(x, z), 1);
             return true;
         }
 
@@ -423,9 +424,9 @@ public class CraftWorld extends CraftRegionAccessor implements World {
         Preconditions.checkArgument(plugin != null, "null plugin");
         Preconditions.checkArgument(plugin.isEnabled(), "plugin is not enabled");
 
-        DistanceManager chunkDistanceManager = this.world.getChunkSource().chunkMap.distanceManager;
+        TicketStorage chunkDistanceManager = this.world.getChunkSource().ticketStorage;
 
-        if (chunkDistanceManager.addRegionTicketAtDistance(TicketType.PLUGIN_TICKET, new ChunkPos(x, z), 2, plugin)) { // keep in-line with force loading, add at level 31
+        if (chunkDistanceManager.addTicket(new ChunkPos(x, z), Ticket.of(TicketType.PLUGIN_TICKET, ChunkMap.FORCED_TICKET_LEVEL, plugin))) { // keep in-line with force loading, add at level 31
             this.getChunkAt(x, z); // ensure loaded
             return true;
         }
@@ -437,29 +438,29 @@ public class CraftWorld extends CraftRegionAccessor implements World {
     public boolean removePluginChunkTicket(int x, int z, Plugin plugin) {
         Preconditions.checkNotNull(plugin, "null plugin");
 
-        DistanceManager chunkDistanceManager = this.world.getChunkSource().chunkMap.distanceManager;
-        return chunkDistanceManager.removeRegionTicketAtDistance(TicketType.PLUGIN_TICKET, new ChunkPos(x, z), 2, plugin); // keep in-line with force loading, remove at level 31
+        TicketStorage chunkDistanceManager = this.world.getChunkSource().ticketStorage;
+        return chunkDistanceManager.removeTicket(new ChunkPos(x, z), Ticket.of(TicketType.PLUGIN_TICKET, ChunkMap.FORCED_TICKET_LEVEL, plugin)); // keep in-line with force loading, remove at level 31
     }
 
     @Override
     public void removePluginChunkTickets(Plugin plugin) {
         Preconditions.checkNotNull(plugin, "null plugin");
 
-        DistanceManager chunkDistanceManager = this.world.getChunkSource().chunkMap.distanceManager;
-        chunkDistanceManager.removeAllTicketsFor(TicketType.PLUGIN_TICKET, 31, plugin); // keep in-line with force loading, remove at level 31
+        TicketStorage chunkDistanceManager = this.world.getChunkSource().ticketStorage;
+        chunkDistanceManager.removeTicketIf((ticket) -> ticket.getType() == TicketType.PLUGIN_TICKET && Objects.equals(ticket.key, plugin), null);
     }
 
     @Override
     public Collection<Plugin> getPluginChunkTickets(int x, int z) {
-        DistanceManager chunkDistanceManager = this.world.getChunkSource().chunkMap.distanceManager;
-        SortedArraySet<Ticket<?>> tickets = chunkDistanceManager.tickets.get(ChunkPos.asLong(x, z));
+        TicketStorage chunkDistanceManager = this.world.getChunkSource().ticketStorage;
+        List<Ticket> tickets = chunkDistanceManager.getTickets(ChunkPos.asLong(x, z));
 
         if (tickets == null) {
             return Collections.emptyList();
         }
 
         ImmutableList.Builder<Plugin> ret = ImmutableList.builder();
-        for (Ticket<?> ticket : tickets) {
+        for (Ticket ticket : tickets) {
             if (ticket.getType() == TicketType.PLUGIN_TICKET) {
                 ret.add((Plugin) ticket.key);
             }
@@ -471,14 +472,14 @@ public class CraftWorld extends CraftRegionAccessor implements World {
     @Override
     public Map<Plugin, Collection<Chunk>> getPluginChunkTickets() {
         Map<Plugin, ImmutableList.Builder<Chunk>> ret = new HashMap<>();
-        DistanceManager chunkDistanceManager = this.world.getChunkSource().chunkMap.distanceManager;
+        TicketStorage chunkDistanceManager = this.world.getChunkSource().ticketStorage;
 
-        for (Long2ObjectMap.Entry<SortedArraySet<Ticket<?>>> chunkTickets : chunkDistanceManager.tickets.long2ObjectEntrySet()) {
+        for (Long2ObjectMap.Entry<List<Ticket>> chunkTickets : chunkDistanceManager.tickets.long2ObjectEntrySet()) {
             long chunkKey = chunkTickets.getLongKey();
-            SortedArraySet<Ticket<?>> tickets = chunkTickets.getValue();
+            List<Ticket> tickets = chunkTickets.getValue();
 
             Chunk chunk = null;
-            for (Ticket<?> ticket : tickets) {
+            for (Ticket ticket : tickets) {
                 if (ticket.getType() != TicketType.PLUGIN_TICKET) {
                     continue;
                 }
@@ -515,7 +516,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
     @Override
     public boolean isChunkForceLoaded(int x, int z) {
-        return this.getHandle().getForcedChunks().contains(ChunkPos.asLong(x, z));
+        return this.getHandle().getForceLoadedChunks().contains(ChunkPos.asLong(x, z));
     }
 
     @Override
@@ -527,7 +528,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
     public Collection<Chunk> getForceLoadedChunks() {
         Set<Chunk> chunks = new HashSet<>();
 
-        for (long coord : this.getHandle().getForcedChunks()) {
+        for (long coord : this.getHandle().getForceLoadedChunks()) {
             chunks.add(this.getChunkAt(ChunkPos.getX(coord), ChunkPos.getZ(coord)));
         }
 
@@ -598,7 +599,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
             arrow = EntityType.ARROW.create(this.world, EntitySpawnReason.COMMAND);
         }
 
-        arrow.moveTo(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
+        arrow.snapTo(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
         arrow.shoot(velocity.getX(), velocity.getY(), velocity.getZ(), speed, spread);
         this.world.addFreshEntity(arrow);
         return (T) arrow.getBukkitEntity();
@@ -618,7 +619,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
         Preconditions.checkArgument(loc != null, "Location cannot be null");
 
         LightningBolt lightning = EntityType.LIGHTNING_BOLT.create(this.world, EntitySpawnReason.COMMAND);
-        lightning.moveTo(loc.getX(), loc.getY(), loc.getZ());
+        lightning.snapTo(loc.getX(), loc.getY(), loc.getZ());
         lightning.setVisualOnly(isVisual);
         this.world.strikeLightning(lightning, LightningStrikeEvent.Cause.CUSTOM);
         return (LightningStrike) lightning.getBukkitEntity();
@@ -2030,13 +2031,13 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
         Raids persistentRaid = this.world.getRaids();
         net.minecraft.world.entity.raid.Raid raid = persistentRaid.getNearbyRaid(CraftLocation.toBlockPosition(location), radius * radius);
-        return (raid == null) ? null : new CraftRaid(raid);
+        return (raid == null) ? null : new CraftRaid(raid, world);
     }
 
     @Override
     public List<Raid> getRaids() {
         Raids persistentRaid = this.world.getRaids();
-        return persistentRaid.raidMap.values().stream().map(CraftRaid::new).collect(Collectors.toList());
+        return persistentRaid.raidMap.values().stream().map((raid) -> new CraftRaid(raid, world)).collect(Collectors.toList());
     }
 
     @Override

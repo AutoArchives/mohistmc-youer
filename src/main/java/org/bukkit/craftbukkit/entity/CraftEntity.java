@@ -210,7 +210,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
         }
 
         // entity.setLocation() throws no event, and so cannot be cancelled
-        this.entity.absMoveTo(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
+        this.entity.absSnapTo(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
         // SPIGOT-619: Force sync head rotation also
         this.entity.setYHeadRot(location.getYaw());
 
@@ -386,7 +386,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
 
     @Override
     public float getFallDistance() {
-        return this.getHandle().fallDistance;
+        return (float) this.getHandle().fallDistance;
     }
 
     @Override
@@ -791,7 +791,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
             return null;
         }
 
-        return tag.getAsString();
+        return tag.toString();
     }
 
     @Override

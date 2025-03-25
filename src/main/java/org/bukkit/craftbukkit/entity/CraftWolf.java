@@ -3,7 +3,7 @@ package org.bukkit.craftbukkit.entity;
 import com.google.common.base.Preconditions;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.world.entity.animal.WolfVariant;
+import net.minecraft.world.entity.animal.wolf.WolfVariant;
 import org.bukkit.DyeColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
@@ -14,7 +14,7 @@ import org.bukkit.craftbukkit.util.Handleable;
 import org.bukkit.entity.Wolf;
 
 public class CraftWolf extends CraftTameableAnimal implements Wolf {
-    public CraftWolf(CraftServer server, net.minecraft.world.entity.animal.Wolf wolf) {
+    public CraftWolf(CraftServer server, net.minecraft.world.entity.animal.wolf.Wolf wolf) {
         super(server, wolf);
     }
 
@@ -33,8 +33,8 @@ public class CraftWolf extends CraftTameableAnimal implements Wolf {
     }
 
     @Override
-    public net.minecraft.world.entity.animal.Wolf getHandle() {
-        return (net.minecraft.world.entity.animal.Wolf) this.entity;
+    public net.minecraft.world.entity.animal.wolf.Wolf getHandle() {
+        return (net.minecraft.world.entity.animal.wolf.Wolf) this.entity;
     }
 
     @Override

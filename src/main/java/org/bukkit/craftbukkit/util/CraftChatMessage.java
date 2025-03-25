@@ -3,6 +3,7 @@ package org.bukkit.craftbukkit.util;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.gson.JsonParseException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -11,6 +12,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.minecraft.ChatFormatting;
+import net.minecraft.Util;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.ClickEvent.Action;
 import net.minecraft.network.chat.Component;
@@ -125,7 +127,10 @@ public final class CraftChatMessage {
                         if (!(match.startsWith("http://") || match.startsWith("https://"))) {
                             match = "http://" + match;
                         }
-                        this.modifier = this.modifier.withClickEvent(new ClickEvent(Action.OPEN_URL, match));
+                        try {
+                            modifier = modifier.withClickEvent(new ClickEvent.OpenUrl(Util.parseAndValidateUntrustedUri(match)));
+                        } catch (URISyntaxException ex) {
+                        }
                         this.appendNewComponent(matcher.end(groupId));
                         this.modifier = this.modifier.withClickEvent((ClickEvent) null);
                     }
@@ -344,8 +349,11 @@ public final class CraftChatMessage {
                     extras.add(prev);
 
                     MutableComponent link = Component.literal(matcher.group());
-                    Style linkModi = modifier.withClickEvent(new ClickEvent(Action.OPEN_URL, match));
-                    link.setStyle(linkModi);
+                    try {
+                        Style linkModi = modifier.withClickEvent(new ClickEvent.OpenUrl(Util.parseAndValidateUntrustedUri(match)));
+                        link.setStyle(linkModi);
+                    } catch (URISyntaxException ex) {
+                    }
                     extras.add(link);
 
                     pos = matcher.end();

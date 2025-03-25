@@ -1,5 +1,23 @@
 --- a/net/minecraft/world/entity/animal/horse/AbstractHorse.java
 +++ b/net/minecraft/world/entity/animal/horse/AbstractHorse.java
+@@ -108,7 +_,7 @@
+     public int tailCounter;
+     public int sprintCounter;
+     protected boolean isJumping;
+-    protected SimpleContainer inventory;
++    public SimpleContainer inventory;
+     protected int temper = 0;
+     protected float playerJumpPendingScale;
+     protected boolean allowStandSliding;
+@@ -121,7 +_,7 @@
+     protected boolean canGallop = true;
+     protected int gallopSoundCounter;
+     @Nullable
+-    private EntityReference<LivingEntity> owner;
++    public EntityReference<LivingEntity> owner;
+ 
+     protected AbstractHorse(EntityType<? extends AbstractHorse> p_30531_, Level p_30532_) {
+         super(p_30531_, p_30532_);
 @@ -347,9 +_,9 @@
      protected void playStepSound(BlockPos p_30584_, BlockState p_30585_) {
          if (!p_30585_.liquid()) {

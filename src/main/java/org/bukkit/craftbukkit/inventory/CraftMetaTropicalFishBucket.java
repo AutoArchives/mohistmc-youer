@@ -44,16 +44,16 @@ class CraftMetaTropicalFishBucket extends CraftMetaItem implements TropicalFishB
         getOrEmpty(tag, CraftMetaTropicalFishBucket.ENTITY_TAG).ifPresent((nbt) -> {
             this.entityTag = nbt.copyTag();
 
-            if (this.entityTag.contains(CraftMetaTropicalFishBucket.VARIANT.NBT, CraftMagicNumbers.NBT.TAG_INT)) {
-                this.variant = this.entityTag.getInt(CraftMetaTropicalFishBucket.VARIANT.NBT);
-            }
+            entityTag.getInt(VARIANT.NBT).ifPresent((variant) -> {
+                this.variant = variant;
+            });
         });
         getOrEmpty(tag, CraftMetaTropicalFishBucket.BUCKET_ENTITY_TAG).ifPresent((nbt) -> {
             this.bucketEntityTag = nbt.copyTag();
 
-            if (this.bucketEntityTag.contains(CraftMetaTropicalFishBucket.VARIANT.NBT, CraftMagicNumbers.NBT.TAG_INT)) {
-                this.variant = this.bucketEntityTag.getInt(CraftMetaTropicalFishBucket.VARIANT.NBT);
-            }
+            bucketEntityTag.getInt(VARIANT.NBT).ifPresent((variant) -> {
+                this.variant = variant;
+            });
         });
     }
 
@@ -70,12 +70,8 @@ class CraftMetaTropicalFishBucket extends CraftMetaItem implements TropicalFishB
     void deserializeInternal(CompoundTag tag, Object context) {
         super.deserializeInternal(tag, context);
 
-        if (tag.contains(CraftMetaTropicalFishBucket.ENTITY_TAG.NBT)) {
-            this.entityTag = tag.getCompound(CraftMetaTropicalFishBucket.ENTITY_TAG.NBT);
-        }
-        if (tag.contains(CraftMetaTropicalFishBucket.BUCKET_ENTITY_TAG.NBT)) {
-            this.bucketEntityTag = tag.getCompound(CraftMetaTropicalFishBucket.BUCKET_ENTITY_TAG.NBT);
-        }
+        entityTag = tag.getCompound(ENTITY_TAG.NBT).orElse(entityTag);
+        bucketEntityTag = tag.getCompound(BUCKET_ENTITY_TAG.NBT).orElse(bucketEntityTag);
     }
 
     @Override

@@ -40,8 +40,10 @@ import org.bukkit.craftbukkit.util.BlockStateListPopulator;
 import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.craftbukkit.util.RandomSourceWrapper;
 import org.bukkit.entity.AbstractArrow;
+import org.bukkit.entity.AbstractCow;
 import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Cow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Fireball;
@@ -474,17 +476,14 @@ public abstract class CraftRegionAccessor implements RegionAccessor {
             clazz = Arrow.class;
         } else if (clazz == AbstractHorse.class) {
             clazz = Horse.class;
+        } else if (clazz == AbstractCow.class) {
+            clazz = Cow.class;
         } else if (clazz == Fireball.class) {
             clazz = LargeFireball.class;
-        } else if (clazz == LingeringPotion.class) {
-            clazz = ThrownPotion.class;
-            runOld = other -> ((net.minecraft.world.entity.projectile.ThrownPotion) other).setItem(CraftItemStack.asNMSCopy(new ItemStack(org.bukkit.Material.LINGERING_POTION, 1)));
         } else if (clazz == Minecart.class) {
             clazz = RideableMinecart.class;
         } else if (clazz == SizedFireball.class) {
             clazz = LargeFireball.class;
-        } else if (clazz == SplashPotion.class) {
-            clazz = ThrownPotion.class;
         } else if (clazz == TippedArrow.class) {
             clazz = Arrow.class;
             runOld = other -> ((Arrow) other.getBukkitEntity()).setBasePotionType(PotionType.WATER);
