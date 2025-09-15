@@ -1,6 +1,9 @@
 --- a/net/minecraft/world/level/block/state/BlockBehaviour.java
 +++ b/net/minecraft/world/level/block/state/BlockBehaviour.java
-@@ -3,7 +_,6 @@
+@@ -1,9 +_,9 @@
+ package net.minecraft.world.level.block.state;
+ 
++import ca.spottedleaf.moonrise.patches.starlight.blockstate.StarlightAbstractBlockState;
  import com.mojang.serialization.Codec;
  import com.mojang.serialization.MapCodec;
  import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -111,10 +114,11 @@
      protected SoundType getSoundType(BlockState p_320941_) {
          return this.soundType;
      }
-@@ -393,6 +_,13 @@
+@@ -393,7 +_,14 @@
          return this.properties.destroyTime;
      }
  
+-    public abstract static class BlockStateBase extends StateHolder<Block, BlockState> {
 +    protected boolean isAir(BlockState state) {
 +        return ((BlockStateBase)state).isAir;
 +    }
@@ -122,14 +126,28 @@
 +    // Neo: Holds the loot table for this block's drops. Used for getLootTable method.
 +    private final java.util.function.Supplier<ResourceKey<LootTable>> lootTableSupplier;
 +
-     public abstract static class BlockStateBase extends StateHolder<Block, BlockState> {
++    public abstract static class BlockStateBase extends StateHolder<Block, BlockState> implements StarlightAbstractBlockState {
          private final int lightEmission;
          private final boolean useShapeForLightOcclusion;
-@@ -421,6 +_,7 @@
+         private final boolean isAir;
+@@ -421,6 +_,20 @@
          protected BlockBehaviour.BlockStateBase.Cache cache;
          private FluidState fluidState = Fluids.EMPTY.defaultFluidState();
          private boolean isRandomlyTicking;
++        // Paper start - rewrite chunk system
++        private int opacityIfCached;
 +        private boolean isConditionallyFullOpaque;
++
++        @Override
++        public final boolean starlight$isConditionallyFullOpaque() {
++            return this.isConditionallyFullOpaque;
++        }
++
++        @Override
++        public final int starlight$getOpacityIfCached() {
++            return this.opacityIfCached;
++        }
++        // Paper end - rewrite chunk system
  
          protected BlockStateBase(Block p_60608_, Reference2ObjectArrayMap<Property<?>, Comparable<?>> p_326208_, MapCodec<BlockState> p_60610_) {
              super(p_60608_, p_326208_, p_60610_);
@@ -150,11 +168,14 @@
          private boolean calculateSolid() {
              if (this.owner.properties.forceSolidOn) {
                  return true;
-@@ -472,6 +_,7 @@
+@@ -472,6 +_,10 @@
              }
  
              this.legacySolid = this.calculateSolid();
++            // Paper start - rewrite chunk system
 +            this.isConditionallyFullOpaque = this.canOcclude & this.useShapeForLightOcclusion;
++            this.opacityIfCached = this.cache == null || this.isConditionallyFullOpaque ? -1 : this.cache.lightBlock;
++            // Paper end - rewrite chunk system
          }
  
          public Block getBlock() {
@@ -214,6 +235,31 @@
          public SoundType getSoundType() {
              return this.getBlock().getSoundType(this.asState());
          }
+@@ -859,11 +_,11 @@
+             return this.instrument;
+         }
+ 
+-        static final class Cache {
++        public static final class Cache {
+             private static final Direction[] DIRECTIONS = Direction.values();
+             private static final int SUPPORT_TYPE_COUNT = SupportType.values().length;
+             protected final boolean solidRender;
+-            final boolean propagatesSkylightDown;
++            boolean propagatesSkylightDown;
+             final int lightBlock;
+             @Nullable
+             final VoxelShape[] occlusionShapes;
+@@ -872,6 +_,10 @@
+             private final boolean[] faceSturdy;
+             protected final boolean isCollisionShapeFullBlock;
+ 
++            public void propagatesSkylightDown(boolean propagatesSkylightDown) {
++                this.propagatesSkylightDown = propagatesSkylightDown;
++            }
++
+             Cache(BlockState p_60853_) {
+                 Block block = p_60853_.getBlock();
+                 this.solidRender = p_60853_.isSolidRender(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
 @@ -959,11 +_,12 @@
          PushReaction pushReaction = PushReaction.NORMAL;
          boolean spawnTerrainParticles = true;

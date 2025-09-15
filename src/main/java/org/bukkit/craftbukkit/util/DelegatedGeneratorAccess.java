@@ -811,6 +811,7 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
         return this.handle.getMoonPhase();
     }
 
+    // Paper start
     @Nullable
     @Override
     public BlockState getBlockStateIfLoaded(final BlockPos blockposition) {
@@ -819,8 +820,21 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
 
     @Nullable
     @Override
+    public FluidState getFluidIfLoaded(final BlockPos blockposition) {
+        return this.handle.getFluidIfLoaded(blockposition);
+    }
+
+    @Nullable
+    @Override
     public ChunkAccess getChunkIfLoadedImmediately(final int x, final int z) {
         return this.handle.getChunkIfLoadedImmediately(x, z);
     }
+
+    // Paper start - rewrite chunk system
+    @Override
+    public java.util.List<net.minecraft.world.entity.Entity> moonrise$getHardCollidingEntities(final net.minecraft.world.entity.Entity entity, final net.minecraft.world.phys.AABB box, final java.util.function.Predicate<? super net.minecraft.world.entity.Entity> predicate) {
+        return this.handle.moonrise$getHardCollidingEntities(entity, box, predicate);
+    }
+    // Paper end - rewrite chunk system
     // Paper end
 }

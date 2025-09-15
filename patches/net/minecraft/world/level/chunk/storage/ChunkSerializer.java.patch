@@ -48,6 +48,14 @@
      public static ProtoChunk read(ServerLevel p_188231_, PoiManager p_188232_, RegionStorageInfo p_352213_, ChunkPos p_188233_, CompoundTag p_188234_) {
          ChunkPos chunkpos = new ChunkPos(p_188234_.getInt("xPos"), p_188234_.getInt("zPos"));
          if (!Objects.equals(p_188233_, chunkpos)) {
+@@ -131,7 +_,6 @@
+                 LevelChunkSection levelchunksection = new LevelChunkSection(palettedcontainer, palettedcontainerro);
+                 alevelchunksection[l] = levelchunksection;
+                 SectionPos sectionpos = SectionPos.of(p_188233_, k);
+-                p_188232_.checkConsistencyWithBlocks(sectionpos, levelchunksection);
+             }
+ 
+             boolean flag3 = compoundtag.contains("BlockLight", 7);
 @@ -183,6 +_,8 @@
                  postLoadChunk(p_188231_, p_188234_),
                  blendingdata
@@ -73,8 +81,11 @@
          chunkaccess.setLightCorrect(flag);
          CompoundTag compoundtag2 = p_188234_.getCompound("Heightmaps");
          EnumSet<Heightmap.Types> enumset = EnumSet.noneOf(Heightmap.Types.class);
-@@ -241,6 +_,7 @@
+@@ -239,8 +_,10 @@
+                 chunkaccess.addPackedPostProcess(listtag1.getShort(i1), l1);
+             }
          }
++        ca.spottedleaf.moonrise.patches.starlight.util.SaveUtil.loadLightHook(p_188231_, p_188233_, p_188234_, chunkaccess); // Paper - rewrite chunk system - note: it's ok to pass the raw value instead of wrapped
  
          if (chunktype == ChunkType.LEVELCHUNK) {
 +            net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.level.ChunkDataEvent.Load(chunkaccess, p_188234_, chunktype));
@@ -143,10 +154,19 @@
 +            compoundtag.put("ChunkBukkitValues", p_63456_.persistentDataContainer.toTagCompound());
 +        }
 +        // CraftBukkit end
-+
++        ca.spottedleaf.moonrise.patches.starlight.util.SaveUtil.saveLightHook(p_63455_, p_63456_, compoundtag); // Paper - rewrite chunk system
          return compoundtag;
      }
  
+@@ -409,7 +_,7 @@
+         ListTag listtag1 = getListOfCompoundsOrNull(p_196892_, "block_entities");
+         return listtag == null && listtag1 == null ? null : p_196904_ -> {
+             if (listtag != null) {
+-                p_196891_.addLegacyChunkEntities(EntityType.loadEntitiesRecursive(listtag, p_196891_));
++                p_196891_.addLegacyChunkEntities(EntityType.loadEntitiesRecursive(listtag, p_196891_), p_196904_.getPos()); // Paper - rewrite chunk system
+             }
+ 
+             if (listtag1 != null) {
 @@ -475,6 +_,12 @@
              } else {
                  StructureStart structurestart = StructureStart.loadStaticStart(p_188255_, compoundtag.getCompound(s), p_188257_);

@@ -27,12 +27,17 @@
      }
  
      @Override
-@@ -36,6 +_,11 @@
+@@ -36,6 +_,16 @@
      }
  
      @Override
 +    public @org.jetbrains.annotations.Nullable BlockState getBlockStateIfLoaded(BlockPos blockposition) {
 +        return Blocks.AIR.defaultBlockState();
++    }
++
++    @Override
++    public @org.jetbrains.annotations.Nullable FluidState getFluidIfLoaded(BlockPos blockposition) {
++        return null;
 +    }
 +
 +    @Override

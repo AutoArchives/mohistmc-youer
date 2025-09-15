@@ -20,6 +20,8 @@ import static org.objectweb.asm.Opcodes.ARETURN;
 
 public class PluginFixManager {
 
+    public static String className = "com.mohistmc.youer.bukkit.pluginfix.PluginFixManager";
+
     public static byte[] injectPluginFix(String plugin, String className, byte[] clazz) {
         if (plugin.equals("WorldEdit")) {
             String adapter = System.getProperty("worldedit.bukkit.adapter");
@@ -33,9 +35,6 @@ public class PluginFixManager {
             }
             case "com.fastasyncworldedit.bukkit.util.MinecraftVersion" -> {
                 return patch(clazz, PluginFixManager::fawe);
-            }
-            case "com.bgsoftware.superiorskyblock.external.ProvidersManagerImpl" -> {
-                return patch(clazz, PluginFixManager::removePaper);
             }
             case "com.onarandombox.MultiverseCore.utils.WorldManager" -> {
                 return patch(clazz, MultiverseCore::fix);
@@ -63,13 +62,11 @@ public class PluginFixManager {
             case "cn.lunadeer.dominion.utils.Misc" ->
                     node -> helloWorld(node, "io.papermc.paper.threadedregions.scheduler.ScheduledTask", Youer.modid);
             case "com.sk89q.worldedit.bukkit.paperlib.PaperLib" -> node -> {
-                removePaper0(node);
                 String adapter = System.getProperty("paperlib.shown-benefits");
                 if (adapter == null) {
                     System.setProperty("paperlib.shown-benefits", "1");
                 }
             };
-            case "org.mvplugins.multiverse.external.paperlib.PaperLib", "com.plotsquared.bukkit.paperlib.PaperLib" -> PluginFixManager::removePaper0;
             default -> null;
         };
 

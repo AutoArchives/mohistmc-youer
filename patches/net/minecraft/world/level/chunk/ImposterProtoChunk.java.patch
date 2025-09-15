@@ -1,5 +1,22 @@
 --- a/net/minecraft/world/level/chunk/ImposterProtoChunk.java
 +++ b/net/minecraft/world/level/chunk/ImposterProtoChunk.java
+@@ -1,5 +_,7 @@
+ package net.minecraft.world.level.chunk;
+ 
++import ca.spottedleaf.moonrise.patches.starlight.chunk.StarlightChunk;
++import ca.spottedleaf.moonrise.patches.starlight.light.SWMRNibbleArray;
+ import it.unimi.dsi.fastutil.longs.LongSet;
+ import java.util.Map;
+ import java.util.function.BiConsumer;
+@@ -31,7 +_,7 @@
+ import net.minecraft.world.ticks.BlackholeTickAccess;
+ import net.minecraft.world.ticks.TickContainerAccess;
+ 
+-public class ImposterProtoChunk extends ProtoChunk {
++public class ImposterProtoChunk extends ProtoChunk implements StarlightChunk {
+     private final LevelChunk wrapped;
+     private final boolean allowWrites;
+ 
 @@ -219,6 +_,15 @@
      }
  
@@ -16,7 +33,7 @@
      public TickContainerAccess<Block> getBlockTicks() {
          return this.allowWrites ? this.wrapped.getBlockTicks() : BlackholeTickAccess.emptyContainer();
      }
-@@ -291,5 +_,10 @@
+@@ -291,5 +_,50 @@
      @Override
      public ChunkSkyLightSources getSkyLightSources() {
          return this.wrapped.getSkyLightSources();
@@ -25,5 +42,45 @@
 +    @Override
 +    public net.neoforged.neoforge.attachment.AttachmentHolder.AsField getAttachmentHolder() {
 +        return wrapped.getAttachmentHolder();
++    }
++
++    @Override
++    public SWMRNibbleArray[] starlight$getBlockNibbles() {
++        return ((StarlightChunk)this.wrapped).starlight$getBlockNibbles();
++    }
++
++    @Override
++    public void starlight$setBlockNibbles(final SWMRNibbleArray[] nibbles) {
++        ((StarlightChunk)this.wrapped).starlight$setBlockNibbles(nibbles);
++    }
++
++    @Override
++    public SWMRNibbleArray[] starlight$getSkyNibbles() {
++        return ((StarlightChunk)this.wrapped).starlight$getSkyNibbles();
++    }
++
++    @Override
++    public void starlight$setSkyNibbles(final SWMRNibbleArray[] nibbles) {
++        ((StarlightChunk)this.wrapped).starlight$setSkyNibbles(nibbles);
++    }
++
++    @Override
++    public boolean[] starlight$getSkyEmptinessMap() {
++        return ((StarlightChunk)this.wrapped).starlight$getSkyEmptinessMap();
++    }
++
++    @Override
++    public void starlight$setSkyEmptinessMap(final boolean[] emptinessMap) {
++        ((StarlightChunk)this.wrapped).starlight$setSkyEmptinessMap(emptinessMap);
++    }
++
++    @Override
++    public boolean[] starlight$getBlockEmptinessMap() {
++        return ((StarlightChunk)this.wrapped).starlight$getBlockEmptinessMap();
++    }
++
++    @Override
++    public void starlight$setBlockEmptinessMap(final boolean[] emptinessMap) {
++        ((StarlightChunk)this.wrapped).starlight$setBlockEmptinessMap(emptinessMap);
      }
  }
