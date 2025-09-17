@@ -1,9 +1,12 @@
 --- a/net/minecraft/world/level/Level.java
 +++ b/net/minecraft/world/level/Level.java
-@@ -1,17 +_,26 @@
+@@ -1,17 +_,29 @@
  package net.minecraft.world.level;
  
++import ca.spottedleaf.concurrentutil.map.ConcurrentLong2ReferenceChainedHashTable;
++import ca.spottedleaf.moonrise.common.util.CoordinateUtils;
 +import ca.spottedleaf.moonrise.common.util.TickThread;
++import ca.spottedleaf.moonrise.patches.chunk_system.level.chunk.ChunkData;
 +import ca.spottedleaf.moonrise.patches.chunk_system.level.entity.EntityLookup;
 +import ca.spottedleaf.moonrise.patches.chunk_system.world.ChunkSystemEntityGetter;
  import com.google.common.collect.Lists;
@@ -98,7 +101,7 @@
      protected final NeighborUpdater neighborUpdater;
      private final List<TickingBlockEntity> pendingBlockEntityTickers = Lists.newArrayList();
      private boolean tickingBlockEntities;
-@@ -114,6 +_,186 @@
+@@ -114,6 +_,241 @@
      private final RegistryAccess registryAccess;
      private final DamageSources damageSources;
      private long subTickCount;
@@ -139,6 +142,7 @@
 +    }
 +    public java.util.function.Function<org.spigotmc.SpigotWorldConfig, io.papermc.paper.configuration.WorldConfiguration> paperWorldConfigCreator;
 +    private EntityLookup entityLookup;
++    private final ConcurrentLong2ReferenceChainedHashTable<ChunkData> chunkData = new ConcurrentLong2ReferenceChainedHashTable<>();
 +
 +    @Override
 +    public final ca.spottedleaf.moonrise.patches.chunk_system.level.entity.EntityLookup moonrise$getEntityLookup() {
@@ -192,16 +196,51 @@
 +    public void moonrise$midTickTasks() {
 +        // no-op on ClientLevel
 +    }
-+    /**
-+     * @reason Turn all getChunk(x, z, status) calls into virtual invokes, instead of interface invokes:
-+     *         1. The interface invoke is expensive
-+     *         2. The method makes other interface invokes (again, expensive)
-+     *         Instead, we just directly call getChunk(x, z, status, true) which avoids the interface invokes entirely.
-+     * @author Spottedleaf
-+     */
++
 +    @Override
-+    public ChunkAccess getChunk(final int x, final int z, final ChunkStatus status) {
-+        return ((Level)(Object)this).getChunk(x, z, status, true);
++    public final ChunkData moonrise$getChunkData(final long chunkKey) {
++        return this.chunkData.get(chunkKey);
++    }
++
++    @Override
++    public final ChunkData moonrise$getChunkData(final int chunkX, final int chunkZ) {
++        return this.chunkData.get(CoordinateUtils.getChunkKey(chunkX, chunkZ));
++    }
++
++    @Override
++    public final ChunkData moonrise$requestChunkData(final long chunkKey) {
++        return this.chunkData.compute(chunkKey, (final long keyInMap, final ChunkData valueInMap) -> {
++            if (valueInMap == null) {
++                final ChunkData ret = new ChunkData();
++                ret.increaseRef();
++                return ret;
++            }
++
++            valueInMap.increaseRef();
++            return valueInMap;
++        });
++    }
++
++    @Override
++    public final ChunkData moonrise$releaseChunkData(final long chunkKey) {
++        return this.chunkData.compute(chunkKey, (final long keyInMap, final ChunkData chunkData) -> {
++            return chunkData.decreaseRef() == 0 ? null : chunkData;
++        });
++    }
++
++    @Override
++    public boolean moonrise$areChunksLoaded(final int fromX, final int fromZ, final int toX, final int toZ) {
++        final ChunkSource chunkSource = this.getChunkSource();
++
++        for (int currZ = fromZ; currZ <= toZ; ++currZ) {
++            for (int currX = fromX; currX <= toX; ++currX) {
++                if (!chunkSource.hasChunk(currX, currZ)) {
++                    return false;
++                }
++            }
++        }
++
++        return true;
 +    }
 +
 +    @Override
@@ -272,6 +311,25 @@
 +        return getChunkSource().hasChunk(chunkX, chunkZ);
 +    }
 +    // Paper end - Use getChunkIfLoadedImmediately
++
++    @Override
++    public boolean hasChunksAt(final int minBlockX, final int minBlockZ, final int maxBlockX, final int maxBlockZ) {
++        return this.moonrise$areChunksLoaded(
++                minBlockX >> 4, minBlockZ >> 4, maxBlockX >> 4, maxBlockZ >> 4
++        );
++    }
++
++    /**
++     * @reason Turn all getChunk(x, z, status) calls into virtual invokes, instead of interface invokes:
++     *         1. The interface invoke is expensive
++     *         2. The method makes other interface invokes (again, expensive)
++     *         Instead, we just directly call getChunk(x, z, status, true) which avoids the interface invokes entirely.
++     * @author Spottedleaf
++     */
++    @Override
++    public ChunkAccess getChunk(final int x, final int z, final ChunkStatus status) {
++        return ((Level)(Object)this).getChunk(x, z, status, true);
++    }
 +
 +    public ResourceKey<LevelStem> getTypeKey() {
 +        return Registries.levelToLevelStem(dimension);
@@ -469,15 +527,15 @@
          return this.setBlock(p_46601_, p_46602_, p_46603_, 512);
      }
  
++    AtomicBoolean captured = new AtomicBoolean(false);
      @Override
      public boolean setBlock(BlockPos p_46605_, BlockState p_46606_, int p_46607_, int p_46608_) {
++        this.captured.set(false);
 +        {
 +            if (SetBlockEvent.getHandlerList().getRegisteredListeners().length > 0 && this.getWorld() != null) {
 +                SetBlockEvent event = new SetBlockEvent(new Location(this.getWorld(), p_46605_.getX(), p_46605_.getY(), p_46605_.getZ()));
 +                Bukkit.getPluginManager().callEvent(event);
 +                if (event.isCancelled()) {
-+                    org.bukkit.block.Block block = event.getLocation().getBlock();
-+                    block.getState().update();
 +                    return false;
 +                }
 +            }
@@ -498,7 +556,7 @@
          if (this.isOutsideBuildHeight(p_46605_)) {
              return false;
          } else if (!this.isClientSide && this.isDebug()) {
-@@ -216,11 +_,61 @@
+@@ -216,11 +_,60 @@
          } else {
              LevelChunk levelchunk = this.getChunkAt(p_46605_);
              Block block = p_46606_.getBlock();
@@ -511,12 +569,11 @@
 +            }
 +
 +            // CraftBukkit start - capture blockstates
-+            boolean captured = false;
 +            if (this.captureBlockStates && !this.capturedBlockStates.containsKey(p_46605_)) {
 +                CraftBlockState blockstate = (CraftBlockState) world.getBlockAt(p_46605_.getX(), p_46605_.getY(), p_46605_.getZ()).getState(); // Paper - use CB getState to get a suitable snapshot
 +                blockstate.setFlag(p_46607_); // Paper - set flag
 +                this.capturedBlockStates.put(p_46605_.immutable(), blockstate);
-+                captured = true;
++                this.captured.set(true);
 +            }
 +            // CraftBukkit end
 +
@@ -528,7 +585,7 @@
              if (blockstate == null) {
 +                if (blockSnapshot != null) this.capturedBlockSnapshots.remove(blockSnapshot);
 +                // CraftBukkit start - remove blockstate if failed (or the same)
-+                if (this.captureBlockStates && captured) {
++                if (this.captureBlockStates && this.captured.getAndSet(false)) {
 +                    this.capturedBlockStates.remove(p_46605_);
 +                }
 +                // CraftBukkit end

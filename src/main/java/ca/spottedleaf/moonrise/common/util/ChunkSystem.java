@@ -5,6 +5,8 @@ import ca.spottedleaf.moonrise.patches.chunk_system.level.ChunkSystemServerLevel
 import ca.spottedleaf.moonrise.patches.chunk_system.level.chunk.ChunkSystemLevelChunk;
 import ca.spottedleaf.moonrise.patches.chunk_system.player.RegionizedPlayerChunkLoader;
 import ca.spottedleaf.moonrise.patches.chunk_system.world.ChunkSystemServerChunkCache;
+import ca.spottedleaf.moonrise.patches.chunk_tick_iteration.ChunkTickServerLevel;
+import com.mohistmc.youer.plugins.ban.bans.BanEntity;
 import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.function.Consumer;
@@ -12,6 +14,7 @@ import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.FullChunkStatus;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.progress.ChunkProgressListener;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -70,7 +73,7 @@ public final class ChunkSystem {
     }
 
     public static boolean screenEntity(final ServerLevel world, final Entity entity, final boolean fromDisk, final boolean event) {
-        if (event && NeoForge.EVENT_BUS.post(new EntityJoinLevelEvent(entity, entity.level(), fromDisk)).isCanceled()) {
+        if (BanEntity.check(entity) || event && NeoForge.EVENT_BUS.post(new EntityJoinLevelEvent(entity, entity.level(), fromDisk)).isCanceled()) {
             return false;
         }
         return true;
@@ -81,7 +84,13 @@ public final class ChunkSystem {
     }
 
     public static void onChunkHolderDelete(final ServerLevel level, final ChunkHolder holder) {
-
+        // Update progress listener for LevelLoadingScreen
+        final ChunkProgressListener progressListener = level.getChunkSource().chunkMap.progressListener;
+        if (progressListener != null) {
+            ChunkSystem.scheduleChunkTask(level, holder.getPos().x, holder.getPos().z, () -> {
+                progressListener.onStatusChange(holder.getPos(), null);
+            });
+        }
     }
 
     public static void onChunkPreBorder(final LevelChunk chunk, final ChunkHolder holder) {
@@ -117,12 +126,14 @@ public final class ChunkSystem {
         }
         ((ServerLevel)chunk.getLevel()).startTickingChunk(chunk);
         ((ServerLevel)chunk.getLevel()).getChunkSource().chunkMap.tickingGenerated.incrementAndGet();
+        ((ChunkTickServerLevel)(ServerLevel)chunk.getLevel()).moonrise$markChunkForPlayerTicking(chunk); // Moonrise - chunk tick iteration
     }
 
     public static void onChunkNotTicking(final LevelChunk chunk, final ChunkHolder holder) {
         ((ChunkSystemServerLevel)((ServerLevel)chunk.getLevel())).moonrise$getTickingChunks().remove(
                 ((ChunkSystemLevelChunk)chunk).moonrise$getChunkAndHolder()
         );
+        ((ChunkTickServerLevel)(ServerLevel)chunk.getLevel()).moonrise$removeChunkForPlayerTicking(chunk); // Moonrise - chunk tick iteration
     }
 
     public static void onChunkEntityTicking(final LevelChunk chunk, final ChunkHolder holder) {
@@ -143,6 +154,10 @@ public final class ChunkSystem {
 
     public static int getSendViewDistance(final ServerPlayer player) {
         return RegionizedPlayerChunkLoader.getAPISendViewDistance(player);
+    }
+
+    public static int getViewDistance(final ServerPlayer player) {
+        return RegionizedPlayerChunkLoader.getAPIViewDistance(player);
     }
 
     public static int getLoadViewDistance(final ServerPlayer player) {

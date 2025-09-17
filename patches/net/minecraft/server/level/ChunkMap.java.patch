@@ -1,8 +1,10 @@
 --- a/net/minecraft/server/level/ChunkMap.java
 +++ b/net/minecraft/server/level/ChunkMap.java
-@@ -1,5 +_,8 @@
+@@ -1,5 +_,10 @@
  package net.minecraft.server.level;
  
++import ca.spottedleaf.moonrise.common.list.ReferenceList;
++import ca.spottedleaf.moonrise.common.misc.NearbyPlayers;
 +import ca.spottedleaf.moonrise.patches.chunk_system.entity.ChunkSystemEntity;
 +import ca.spottedleaf.moonrise.patches.chunk_system.level.ChunkSystemServerLevel;
 +import ca.spottedleaf.moonrise.patches.entity_tracker.EntityTrackerTrackedEntity;
@@ -855,7 +857,7 @@
      }
  
      private static String printFuture(CompletableFuture<ChunkResult<LevelChunk>> p_140279_) {
-@@ -907,19 +_,46 @@
+@@ -907,36 +_,75 @@
      }
  
      private CompletableFuture<Optional<CompoundTag>> readChunk(ChunkPos p_214964_) {
@@ -874,9 +876,21 @@
 +        this.generatoraccess = level;
          return this.upgradeChunkTag(this.level.dimension(), this.overworldDataStorage, p_214948_, this.generator().getTypeNameForDataFixer());
      }
-+    // CraftBukkit end
- 
+-
 -    boolean anyPlayerCloseEnoughForSpawning(ChunkPos p_183880_) {
+-        if (!this.distanceManager.hasPlayersNearby(p_183880_.toLong())) {
+-            return false;
+-        } else {
+-            for (ServerPlayer serverplayer : this.playerMap.getAllPlayers()) {
+-                if (this.playerIsCloseEnoughForSpawning(serverplayer, p_183880_)) {
+-                    return true;
+-                }
+-            }
+-
+-            return false;
+-        }
++    // CraftBukkit end
++
 +    AtomicBoolean reducedRange = new AtomicBoolean(false);
 +    public boolean anyPlayerCloseEnoughForSpawning(ChunkPos p_183880_) {
 +        int chunkRange = level.spigotConfig.mobSpawnRange;
@@ -886,41 +900,51 @@
 +        //double blockRange = (reducedRange) ? Math.pow(chunkRange << 4, 2) : 16384.0D; // Paper - use from event
 +        double blockRange = 16384.0D; // Paper
 +        // Spigot end
-         if (!this.distanceManager.hasPlayersNearby(p_183880_.toLong())) {
-             return false;
-         } else {
-             for (ServerPlayer serverplayer : this.playerMap.getAllPlayers()) {
--                if (this.playerIsCloseEnoughForSpawning(serverplayer, p_183880_)) {
-+                // Paper start - PlayerNaturallySpawnCreaturesEvent
-+                com.destroystokyo.paper.event.entity.PlayerNaturallySpawnCreaturesEvent event;
-+                blockRange = 16384.0D;
-+                if (reducedRange.getAndSet(false)) {
-+                    event = serverplayer.playerNaturallySpawnedEvent;
-+                    if (event == null || event.isCancelled()) return false;
-+                    blockRange = (double) ((event.getSpawnRadius() << 4) * (event.getSpawnRadius() << 4));
-+                }
-+                // Paper end - PlayerNaturallySpawnCreaturesEvent
-+                if (this.playerIsCloseEnoughForSpawning(serverplayer, p_183880_, blockRange)) {
-                     return true;
-                 }
-             }
-@@ -928,6 +_,11 @@
-         }
-     }
- 
++
++        final ReferenceList<ServerPlayer> players = ((ChunkSystemServerLevel) this.level).moonrise$getNearbyPlayers().getPlayers(
++                pos, NearbyPlayers.NearbyMapType.SPAWN_RANGE
++        );
++        if (players == null) {
++            return false;
++        }
++        for (ServerPlayer serverplayer : players.getRawDataUnchecked()) {
++            // Paper start - PlayerNaturallySpawnCreaturesEvent
++            com.destroystokyo.paper.event.entity.PlayerNaturallySpawnCreaturesEvent event;
++            blockRange = 16384.0D;
++            if (reducedRange.getAndSet(false)) {
++                event = serverplayer.playerNaturallySpawnedEvent;
++                if (event == null || event.isCancelled()) return false;
++                blockRange = (double) ((event.getSpawnRadius() << 4) * (event.getSpawnRadius() << 4));
++            }
++            // Paper end - PlayerNaturallySpawnCreaturesEvent
++            if (this.playerIsCloseEnoughForSpawning(serverplayer, p_183880_, blockRange)) {
++                return true;
++            }
++        }
++
++        return false;
++
++    }
++
 +    boolean anyPlayerCloseEnoughForSpawning(ChunkPos p_183880_, boolean reducedRange) {
 +        this.reducedRange.set(reducedRange);
 +        return this.anyPlayerCloseEnoughForSpawning(p_183880_);
-+    }
-+
+     }
+ 
      public List<ServerPlayer> getPlayersCloseForSpawning(ChunkPos p_183889_) {
++        final ReferenceList<ServerPlayer> players = ((ChunkSystemServerLevel)this.level).moonrise$getNearbyPlayers().getPlayers(
++                pos, NearbyPlayers.NearbyMapType.SPAWN_RANGE
++        );
          long i = p_183889_.toLong();
-         if (!this.distanceManager.hasPlayersNearby(i)) {
-@@ -936,7 +_,7 @@
+-        if (!this.distanceManager.hasPlayersNearby(i)) {
++        if (players == null) {
+             return List.of();
+         } else {
              Builder<ServerPlayer> builder = ImmutableList.builder();
  
-             for (ServerPlayer serverplayer : this.playerMap.getAllPlayers()) {
+-            for (ServerPlayer serverplayer : this.playerMap.getAllPlayers()) {
 -                if (this.playerIsCloseEnoughForSpawning(serverplayer, p_183889_)) {
++            for (ServerPlayer serverplayer : players.getRawDataUnchecked()) {
 +                if (this.playerIsCloseEnoughForSpawning(serverplayer, p_183889_, 16384.0D)) { // Spigot
                      builder.add(serverplayer);
                  }
@@ -931,7 +955,7 @@
  
 -    private boolean playerIsCloseEnoughForSpawning(ServerPlayer p_183752_, ChunkPos p_183753_) {
 +    private double playerIsCloseEnoughForSpawning$range = 16384.0D;
-+    private boolean playerIsCloseEnoughForSpawning(ServerPlayer p_183752_, ChunkPos p_183753_) { // Spigot
++    public boolean playerIsCloseEnoughForSpawning(ServerPlayer p_183752_, ChunkPos p_183753_) { // Spigot
          if (p_183752_.isSpectator()) {
              return false;
          } else {
@@ -1108,7 +1132,7 @@
 +            if (tracker == null) {
 +                continue;
 +            }
-+            tracker.moonrise$tick(nearbyPlayers.getChunk(entity.chunkPosition()));
++            tracker.moonrise$tick(((ChunkSystemEntity)entity).moonrise$getChunkData().nearbyPlayers);
 +            if (tracker.moonrise$hasPlayers() || ((ChunkSystemEntity)entity).moonrise$getChunkStatus().isOrAfter(FullChunkStatus.ENTITY_TICKING)) {
 +                tracker.serverEntity.sendChanges();
 +            }

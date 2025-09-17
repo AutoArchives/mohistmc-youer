@@ -2,6 +2,7 @@ package ca.spottedleaf.moonrise.patches.chunk_system.level.entity;
 
 import ca.spottedleaf.moonrise.common.list.EntityList;
 import ca.spottedleaf.moonrise.patches.chunk_system.entity.ChunkSystemEntity;
+import ca.spottedleaf.moonrise.patches.chunk_system.level.chunk.ChunkData;
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
@@ -43,6 +44,7 @@ public final class ChunkEntitySlices {
     private final EntityList entities = new EntityList();
 
     public FullChunkStatus status;
+    public final ChunkData chunkData;
 
     private boolean isTransient;
 
@@ -55,7 +57,7 @@ public final class ChunkEntitySlices {
     }
 
     public ChunkEntitySlices(final Level world, final int chunkX, final int chunkZ, final FullChunkStatus status,
-                             final int minSection, final int maxSection) { // inclusive, inclusive
+                             final ChunkData chunkData, final int minSection, final int maxSection) { // inclusive, inclusive
         this.minSection = minSection;
         this.maxSection = maxSection;
         this.chunkX = chunkX;
@@ -68,6 +70,7 @@ public final class ChunkEntitySlices {
         this.entitiesByType = new Reference2ObjectOpenHashMap<>();
 
         this.status = status;
+        this.chunkData = chunkData;
     }
 
     public static List<Entity> readEntities(final ServerLevel world, final CompoundTag compoundTag) {
@@ -262,6 +265,7 @@ public final class ChunkEntitySlices {
             return false;
         }
         ((ChunkSystemEntity)entity).moonrise$setChunkStatus(this.status);
+        ((ChunkSystemEntity)entity).moonrise$setChunkData(this.chunkData);
         final int sectionIndex = chunkSection - this.minSection;
 
         this.allEntities.addEntity(entity, sectionIndex);
@@ -295,6 +299,7 @@ public final class ChunkEntitySlices {
             return false;
         }
         ((ChunkSystemEntity)entity).moonrise$setChunkStatus(null);
+        ((ChunkSystemEntity)entity).moonrise$setChunkData(null);
         final int sectionIndex = chunkSection - this.minSection;
 
         this.allEntities.removeEntity(entity, sectionIndex);

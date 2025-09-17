@@ -1,12 +1,13 @@
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -1,12 +_,28 @@
+@@ -1,12 +_,29 @@
  package net.minecraft.server.level;
  
 +import ca.spottedleaf.moonrise.common.list.ReferenceList;
 +import ca.spottedleaf.moonrise.common.util.CoordinateUtils;
 +import ca.spottedleaf.moonrise.common.util.TickThread;
 +import ca.spottedleaf.moonrise.patches.chunk_system.level.ChunkSystemServerLevel;
++import ca.spottedleaf.moonrise.patches.chunk_system.level.chunk.ChunkSystemChunkHolder;
 +import ca.spottedleaf.moonrise.patches.chunk_system.level.chunk.ChunkSystemLevelChunk;
 +import ca.spottedleaf.moonrise.patches.chunk_system.scheduling.NewChunkHolder;
 +import ca.spottedleaf.moonrise.patches.chunk_tick_iteration.ChunkTickServerLevel;
@@ -1457,7 +1458,7 @@
              ServerLevel.this.getChunkSource().removeEntity(p_143375_);
              if (p_143375_ instanceof ServerPlayer serverplayer) {
                  ServerLevel.this.players.remove(serverplayer);
-@@ -1730,27 +_,408 @@
+@@ -1730,27 +_,464 @@
              }
  
              if (p_143375_ instanceof Mob mob) {
@@ -1617,9 +1618,11 @@
 +    private long tickedBlocksOrFluids;
 +    private final ca.spottedleaf.moonrise.common.misc.NearbyPlayers nearbyPlayers = new ca.spottedleaf.moonrise.common.misc.NearbyPlayers(this);
 +    private static final ServerChunkCache.ChunkAndHolder[] EMPTY_CHUNK_AND_HOLDERS = new ServerChunkCache.ChunkAndHolder[0];
++    private static final ChunkHolder[] EMPTY_CHUNK_HOLDERS = new ChunkHolder[0];
 +    private final ca.spottedleaf.moonrise.common.list.ReferenceList<net.minecraft.server.level.ServerChunkCache.ChunkAndHolder> loadedChunks = new ca.spottedleaf.moonrise.common.list.ReferenceList<>(EMPTY_CHUNK_AND_HOLDERS);
 +    private final ca.spottedleaf.moonrise.common.list.ReferenceList<net.minecraft.server.level.ServerChunkCache.ChunkAndHolder> tickingChunks = new ca.spottedleaf.moonrise.common.list.ReferenceList<>(EMPTY_CHUNK_AND_HOLDERS);
 +    private final ca.spottedleaf.moonrise.common.list.ReferenceList<net.minecraft.server.level.ServerChunkCache.ChunkAndHolder> entityTickingChunks = new ca.spottedleaf.moonrise.common.list.ReferenceList<>(EMPTY_CHUNK_AND_HOLDERS);
++    private final ReferenceList<ChunkHolder> unsyncedChunks = new ReferenceList<>(EMPTY_CHUNK_HOLDERS);
 +
 +    @Override
 +    public final LevelChunk moonrise$getFullChunkIfLoaded(final int chunkX, final int chunkZ) {
@@ -1792,6 +1795,60 @@
 +    @Override
 +    public final ca.spottedleaf.moonrise.common.list.ReferenceList<net.minecraft.server.level.ServerChunkCache.ChunkAndHolder> moonrise$getEntityTickingChunks() {
 +        return this.entityTickingChunks;
++    }
++
++    @Override
++    public final ReferenceList<ChunkHolder> moonrise$getUnsyncedChunks() {
++        return this.unsyncedChunks;
++    }
++
++    @Override
++    public final void moonrise$addUnsyncedChunk(final ChunkHolder chunkHolder) {
++        if (((ChunkSystemChunkHolder)chunkHolder).moonrise$isMarkedDirtyForPlayers()) {
++            return;
++        }
++
++        ((ChunkSystemChunkHolder)chunkHolder).moonrise$markDirtyForPlayers(true);
++        this.unsyncedChunks.add(chunkHolder);
++    }
++
++    @Override
++    public final void moonrise$removeUnsyncedChunk(final ChunkHolder chunkHolder) {
++        if (!((ChunkSystemChunkHolder)chunkHolder).moonrise$isMarkedDirtyForPlayers()) {
++            return;
++        }
++
++        ((ChunkSystemChunkHolder)chunkHolder).moonrise$markDirtyForPlayers(false);
++        this.unsyncedChunks.remove(chunkHolder);
++    }
++
++    @Override
++    public final void moonrise$clearUnsyncedChunks() {
++        final ChunkHolder[] chunkHolders = this.unsyncedChunks.getRawDataUnchecked();
++        final int totalUnsyncedChunks = this.unsyncedChunks.size();
++
++        Objects.checkFromToIndex(0, totalUnsyncedChunks, chunkHolders.length);
++        for (int i = 0; i < totalUnsyncedChunks; ++i) {
++            final ChunkHolder chunkHolder = chunkHolders[i];
++
++            ((ChunkSystemChunkHolder)chunkHolder).moonrise$markDirtyForPlayers(false);
++        }
++        this.unsyncedChunks.clear();
++    }
++
++    @Override
++    public final boolean moonrise$areChunksLoaded(final int fromX, final int fromZ, final int toX, final int toZ) {
++        final ServerChunkCache chunkSource = this.chunkSource;
++
++        for (int currZ = fromZ; currZ <= toZ; ++currZ) {
++            for (int currX = fromX; currX <= toX; ++currX) {
++                if (!chunkSource.hasChunk(currX, currZ)) {
++                    return false;
++                }
++            }
++        }
++
++        return true;
 +    }
 +    // Paper end - rewrite chunk system
 +

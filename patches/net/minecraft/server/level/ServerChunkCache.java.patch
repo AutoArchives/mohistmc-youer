@@ -1,12 +1,18 @@
 --- a/net/minecraft/server/level/ServerChunkCache.java
 +++ b/net/minecraft/server/level/ServerChunkCache.java
-@@ -1,5 +_,11 @@
+@@ -1,5 +_,17 @@
  package net.minecraft.server.level;
  
 +import ca.spottedleaf.concurrentutil.executor.standard.PrioritisedExecutor;
++import ca.spottedleaf.moonrise.common.list.ReferenceList;
++import ca.spottedleaf.moonrise.common.misc.NearbyPlayers;
 +import ca.spottedleaf.moonrise.common.util.CoordinateUtils;
++import ca.spottedleaf.moonrise.common.util.SimpleRandom;
 +import ca.spottedleaf.moonrise.common.util.TickThread;
 +import ca.spottedleaf.moonrise.patches.chunk_system.level.ChunkSystemServerLevel;
++import ca.spottedleaf.moonrise.patches.chunk_system.level.chunk.ChunkData;
++import ca.spottedleaf.moonrise.patches.chunk_system.level.chunk.ChunkSystemChunkHolder;
++import ca.spottedleaf.moonrise.patches.chunk_system.level.chunk.ChunkSystemLevelChunk;
 +import ca.spottedleaf.moonrise.patches.chunk_system.scheduling.NewChunkHolder;
 +import ca.spottedleaf.moonrise.patches.chunk_system.world.ChunkSystemServerChunkCache;
  import com.google.common.annotations.VisibleForTesting;
@@ -36,7 +42,7 @@
      public final ChunkMap chunkMap;
      private final DimensionDataStorage dataStorage;
      private long lastInhabitedUpdate;
-@@ -65,6 +_,77 @@
+@@ -65,6 +_,78 @@
      @VisibleForDebug
      private NaturalSpawner.SpawnState lastSpawnState;
  
@@ -107,7 +113,8 @@
 +    }
 +    // Paper end - rewrite chunk system- Incremental chunk and player saving
 +    private ServerChunkCache.ChunkAndHolder[] iterationCopy; // Paper - chunk tick iteration optimisations
-+
++    private int iterationCopyLen;
++    private final SimpleRandom shuffleRandom = new SimpleRandom(0L);
 +    public boolean firstRunSpawnCounts = true; // Pufferfish
 +    public final java.util.concurrent.atomic.AtomicBoolean _pufferfish_spawnCountsReady = new java.util.concurrent.atomic.AtomicBoolean(false); // Pufferfish - optimize countmobs
 +
@@ -436,7 +443,7 @@
          long i = this.level.getGameTime();
          long j = i - this.lastInhabitedUpdate;
          this.lastInhabitedUpdate = i;
-@@ -331,14 +_,25 @@
+@@ -331,14 +_,26 @@
              ProfilerFiller profilerfiller = this.level.getProfiler();
              profilerfiller.push("pollingChunks");
              profilerfiller.push("filteringLoadedChunks");
@@ -458,6 +465,7 @@
 +                if (this.iterationCopy == null || this.iterationCopy.length < size) {
 +                    this.iterationCopy = new ServerChunkCache.ChunkAndHolder[raw.length];
                  }
++                this.iterationCopyLen = size;
 +                System.arraycopy(raw, 0, this.iterationCopy, 0, size);
 +
 +                list = it.unimi.dsi.fastutil.objects.ObjectArrayList.wrap(
@@ -468,14 +476,17 @@
  
              if (this.level.tickRateManager().runsNormally()) {
                  profilerfiller.popPush("naturalSpawnCount");
-@@ -348,22 +_,37 @@
+@@ -348,22 +_,40 @@
                  );
                  this.lastSpawnState = naturalspawner$spawnstate;
                  profilerfiller.popPush("spawnAndTick");
 -                boolean flag1 = this.level.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING);
 -                Util.shuffle(list, this.level.random);
 +                boolean flag1 = this.level.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING) && !this.level.players().isEmpty(); // CraftBukkit
-+                if (!this.level.paperConfig().entities.spawning.perPlayerMobSpawns) Util.shuffle(list, this.level.random);
++                if (!this.level.paperConfig().entities.spawning.perPlayerMobSpawns){
++                    this.shuffleRandom.setSeed(this.level.random.nextLong());
++                    Util.shuffle(list, shuffleRandom);
++                }
 +                // Paper start - PlayerNaturallySpawnCreaturesEvent
 +                int chunkRange = level.spigotConfig.mobSpawnRange;
 +                chunkRange = (chunkRange > level.spigotConfig.viewDistance) ? (byte) level.spigotConfig.viewDistance : chunkRange;
@@ -494,7 +505,7 @@
                      ChunkPos chunkpos = levelchunk1.getPos();
 -                    if (this.level.isNaturalSpawningAllowed(chunkpos) && this.chunkMap.anyPlayerCloseEnoughForSpawning(chunkpos)) {
 +                    this.chunkMap.reducedRange.set(true); // Youer
-+                    if ((true && this.chunkMap.anyPlayerCloseEnoughForSpawning(chunkpos))) {
++                    if (useNearbyCache(this.chunkMap, chunkpos, levelchunk1)) {
                          levelchunk1.incrementInhabitedTime(j);
                          if (flag1 && (this.spawnEnemies || this.spawnFriendlies) && this.level.getWorldBorder().isWithinBounds(chunkpos)) {
                              NaturalSpawner.spawnForChunk(this.level, levelchunk1, naturalspawner$spawnstate, this.spawnFriendlies, this.spawnEnemies, flag);
@@ -512,27 +523,45 @@
                          }
                      }
                  }
-@@ -375,17 +_,31 @@
-             }
+@@ -376,16 +_,47 @@
  
              profilerfiller.popPush("broadcast");
--            list.forEach(p_184022_ -> p_184022_.holder.broadcastChanges(p_184022_.chunk));
-+            {
-+                final it.unimi.dsi.fastutil.objects.ObjectArrayList<net.minecraft.server.level.ServerChunkCache.ChunkAndHolder> chunks = (it.unimi.dsi.fastutil.objects.ObjectArrayList<net.minecraft.server.level.ServerChunkCache.ChunkAndHolder>)list;
-+                final ServerChunkCache.ChunkAndHolder[] raw = chunks.elements();
-+                final int size = chunks.size();
+             list.forEach(p_184022_ -> p_184022_.holder.broadcastChanges(p_184022_.chunk));
+-            profilerfiller.pop();
+-            profilerfiller.pop();
+-        }
++            Arrays.fill(this.iterationCopy, 0, this.iterationCopyLen, null);
++            profilerfiller.pop();
++            profilerfiller.pop();
++        }
++    }
 +
-+                Objects.checkFromToIndex(0, size, raw.length);
-+                for (int idx = 0; idx < size; ++idx) {
-+                    final ServerChunkCache.ChunkAndHolder holder = raw[idx];
-+                    raw[idx] = null;
++    private boolean useNearbyCache(final ChunkMap instance, final ChunkPos chunkPos, final LevelChunk levelChunk) {
++        final ChunkData chunkData =
++                ((ChunkSystemChunkHolder)((ChunkSystemLevelChunk)levelChunk).moonrise$getChunkAndHolder().holder())
++                        .moonrise$getRealChunkHolder().holderData;
++        final NearbyPlayers.TrackedChunk nearbyPlayers = chunkData.nearbyPlayers;
++        if (nearbyPlayers == null) {
++            return false;
++        }
 +
-+                    holder.holder().broadcastChanges(holder.chunk());
-+                }
++        final ReferenceList<ServerPlayer> players = nearbyPlayers.getPlayers(NearbyPlayers.NearbyMapType.SPAWN_RANGE);
++
++        if (players == null) {
++            return false;
++        }
++
++        final ServerPlayer[] raw = players.getRawDataUnchecked();
++        final int len = players.size();
++
++        Objects.checkFromIndexSize(0, len, raw.length);
++        for (int i = 0; i < len; ++i) {
++            if (instance.playerIsCloseEnoughForSpawning(raw[i], chunkPos)) {
++                return true;
 +            }
-             profilerfiller.pop();
-             profilerfiller.pop();
-         }
++        }
++
++        return false;
      }
  
      private void getFullChunk(long p_8371_, Consumer<LevelChunk> p_8372_) {

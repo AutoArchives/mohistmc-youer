@@ -53,7 +53,7 @@
  
      public ChunkHolder(
          ChunkPos p_142986_,
-@@ -62,69 +_,81 @@
+@@ -62,69 +_,96 @@
          super(p_142986_);
          this.levelHeightAccessor = p_142988_;
          this.lightEngine = p_142989_;
@@ -148,23 +148,58 @@
 -            this.saveSync = this.saveSync.thenCombine((CompletionStage<? extends Object>)p_200418_, (p_300767_, p_300768_) -> null);
 -        }
 +        throw new UnsupportedOperationException();
++    }
++
++    private LevelChunk redirectBlockUpdate() {
++        if (this.playersSentChunkTo.size() == 0) {
++            // no players to sent to, so don't need to update anything
++            return null;
++        }
++        final LevelChunk ret = this.getChunkToSend();
++
++        if (ret != null) {
++            this.getChunkMap().level.moonrise$addUnsyncedChunk((ChunkHolder)(Object)this);
++            return ret;
++        }
++
++        return ret;
      }
  
      public void blockChanged(BlockPos p_140057_) {
 -        LevelChunk levelchunk = this.getTickingChunk();
-+        LevelChunk levelchunk = this.playersSentChunkTo.size() == 0 ? null : this.getChunkToSend(); // Paper - rewrite chunk system
++        LevelChunk levelchunk = redirectBlockUpdate(); // Paper - rewrite chunk system
          if (levelchunk != null) {
              int i = this.levelHeightAccessor.getSectionIndex(p_140057_.getY());
 +            if (i < 0 || i >= this.changedBlocksPerSection.length) return; // CraftBukkit - SPIGOT-6086, SPIGOT-6296
              if (this.changedBlocksPerSection[i] == null) {
                  this.hasChangedSections = true;
                  this.changedBlocksPerSection[i] = new ShortOpenHashSet();
-@@ -138,7 +_,7 @@
+@@ -133,12 +_,27 @@
+             this.changedBlocksPerSection[i].add(SectionPos.sectionRelativePos(p_140057_));
+         }
+     }
++    private LevelChunk redirectLightUpdate() {
++        if (this.playersSentChunkTo.size() == 0) {
++            // no players to sent to, so don't need to update anything
++            return null;
++        }
++        final LevelChunk ret = this.getChunkToSend();
++
++        if (ret != null) {
++            ((ChunkSystemServerLevel)this.getChunkMap().level).moonrise$addUnsyncedChunk((ChunkHolder)(Object)this);
++            return ret;
++        }
++
++        return ret;
++    }
++
+ 
+     public void sectionLightChanged(LightLayer p_140037_, int p_140038_) {
          ChunkAccess chunkaccess = this.getChunkIfPresent(ChunkStatus.INITIALIZE_LIGHT);
          if (chunkaccess != null) {
              chunkaccess.setUnsaved(true);
 -            LevelChunk levelchunk = this.getTickingChunk();
-+            LevelChunk levelchunk = this.getChunkToSend(); // Paper - rewrite chunk system
++            LevelChunk levelchunk = this.redirectLightUpdate(); // Paper - rewrite chunk system
              if (levelchunk != null) {
                  int i = this.lightEngine.getMinLightSection();
                  int j = this.lightEngine.getMaxLightSection();
@@ -293,7 +328,7 @@
      }
  
      @FunctionalInterface
-@@ -328,4 +_,96 @@
+@@ -328,4 +_,107 @@
      public interface PlayerProvider {
          List<ServerPlayer> getPlayers(ChunkPos p_183717_, boolean p_183718_);
      }
@@ -301,6 +336,7 @@
 +    private NewChunkHolder newChunkHolder;
 +    private static final ServerPlayer[] EMPTY_PLAYER_ARRAY = new ServerPlayer[0];
 +    private final ReferenceList<ServerPlayer> playersSentChunkTo = new ReferenceList<>(EMPTY_PLAYER_ARRAY);
++    private boolean isMarkedDirtyForPlayers;
 +
 +    @Unique
 +    private ChunkMap getChunkMap() {
@@ -354,6 +390,16 @@
 +        }
 +
 +        return ret;
++    }
++
++    @Override
++    public final boolean moonrise$isMarkedDirtyForPlayers() {
++        return this.isMarkedDirtyForPlayers;
++    }
++
++    @Override
++    public final void moonrise$markDirtyForPlayers(final boolean value) {
++        this.isMarkedDirtyForPlayers = value;
 +    }
 +
 +    @Override
