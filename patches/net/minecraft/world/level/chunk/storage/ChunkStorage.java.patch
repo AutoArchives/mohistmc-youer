@@ -87,14 +87,14 @@
 +        return false;
 +    }
 +    // CraftBukkit end
-+    public ChunkPos pos; // CraftBukkit
++    public ChunkPos upgradeChunkTag$pos; // CraftBukkit
 +    public @Nullable LevelAccessor generatoraccess; // CraftBukkit
 +
 +    public CompoundTag upgradeChunkTag(ResourceKey<Level> p_188289_,
 +                                       Supplier<DimensionDataStorage> p_188290_,
 +                                       CompoundTag p_188291_,
 +                                       Optional<ResourceKey<MapCodec<? extends ChunkGenerator>>> p_188292_, ChunkPos pos, @Nullable LevelAccessor generatoraccess) {
-+        this.pos = pos;
++        this.upgradeChunkTag$pos = pos;
 +        this.generatoraccess = generatoraccess;
 +        return this.upgradeChunkTag(p_188289_, p_188290_, p_188291_, p_188292_);
      }
@@ -105,11 +105,11 @@
          } else {
              try {
 +                // CraftBukkit start
-+                if (i < 1466 && pos != null) { // Paper - no longer needed, data converter system / DFU handles it now
++                if (i < 1466 && upgradeChunkTag$pos != null) { // Paper - no longer needed, data converter system / DFU handles it now
 +                    CompoundTag level = p_188291_.getCompound("Level");
 +                    if (level.getBoolean("TerrainPopulated") && !level.getBoolean("LightPopulated")) {
 +                        ServerChunkCache cps = (generatoraccess == null) ? null : ((ServerLevel) generatoraccess).getChunkSource();
-+                        if (this.check(cps, pos.x - 1, pos.z) && this.check(cps, pos.x - 1, pos.z - 1) && this.check(cps, pos.x, pos.z - 1)) {
++                        if (this.check(cps, upgradeChunkTag$pos.x - 1, upgradeChunkTag$pos.z) && this.check(cps, upgradeChunkTag$pos.x - 1, upgradeChunkTag$pos.z - 1) && this.check(cps, upgradeChunkTag$pos.x, upgradeChunkTag$pos.z - 1)) {
 +                            level.putBoolean("LightPopulated", true);
 +                        }
 +                    }

@@ -149,7 +149,7 @@
      public static final BlockPos END_SPAWN_POINT = new BlockPos(100, 50, 0);
      public static final IntProvider RAIN_DELAY = UniformInt.of(12000, 180000);
      public static final IntProvider RAIN_DURATION = UniformInt.of(12000, 24000);
-@@ -176,12 +_,12 @@
+@@ -176,7 +_,7 @@
      private static final int EMPTY_TIME_NO_TICK = 300;
      private static final int MAX_SCHEDULED_TICKS_PER_TICK = 65536;
      final List<ServerPlayer> players = Lists.newArrayList();
@@ -158,12 +158,6 @@
      private final MinecraftServer server;
      public final ServerLevelData serverLevelData;
      private int lastSpawnChunkRadius;
-     final EntityTickList entityTickList = new EntityTickList();
--    public final PersistentEntitySectionManager<Entity> entityManager;
-+    // public final PersistentEntitySectionManager<Entity> entityManager;
-     private final GameEventDispatcher gameEventDispatcher;
-     public boolean noSave;
-     private final SleepStatus sleepStatus;
 @@ -199,12 +_,83 @@
      private final List<CustomSpawner> customSpawners;
      @Nullable
@@ -319,12 +313,10 @@
          boolean flag = p_214999_.forceSynchronousWrites();
          DataFixer datafixer = p_214999_.getFixerUpper();
          EntityPersistentStorage<Entity> entitypersistentstorage = new EntityStorage(
-@@ -248,19 +_,26 @@
-             this,
+@@ -249,18 +_,25 @@
              p_214999_
          );
--        this.entityManager = new PersistentEntitySectionManager<>(Entity.class, new ServerLevel.EntityCallbacks(), entitypersistentstorage);
-+        // this.entityManager = new PersistentEntitySectionManager<>(Entity.class, new ServerLevel.EntityCallbacks(), entitypersistentstorage);
+         this.entityManager = new PersistentEntitySectionManager<>(Entity.class, new ServerLevel.EntityCallbacks(), entitypersistentstorage);
 +
 +        // Paper - rewrite chunk system
 +        StructureTemplateManager structuretemplatemanager = p_214999_.getStructureManager();
@@ -362,7 +354,7 @@
              this.dragonFight = new EndDragonFight(this, i, p_214999_.getWorldData().endDragonFightData());
          } else {
              this.dragonFight = null;
-@@ -298,6 +_,65 @@
+@@ -298,6 +_,66 @@
          this.randomSequences = Objects.requireNonNullElseGet(
              p_288977_, () -> this.getDataStorage().computeIfAbsent(RandomSequences.factory(i), "random_sequences")
          );
@@ -372,6 +364,10 @@
 +        // Providing a fully initialized ServerLevel instance for the ServerLevelEvent.CustomSpawners
 +        this.customSpawners = net.neoforged.neoforge.event.EventHooks.getCustomSpawners(this, p_215008_);
 +        this.world = new CraftWorld(this, generator, biomeProvider, environment);
++        this.getCraftServer().addWorld(this.getWorld()); // CraftBukkit
++        this.K.setWorld(this);
++
++        ConfigByWorlds.initMods(this);
 +        // Paper start - rewrite chunk system
 +        this.entityDataController = new ca.spottedleaf.moonrise.patches.chunk_system.io.datacontroller.EntityDataController(
 +                new ca.spottedleaf.moonrise.patches.chunk_system.io.datacontroller.EntityDataController.EntityRegionFileStorage(
@@ -385,8 +381,6 @@
 +        this.moonrise$setEntityLookup(new ca.spottedleaf.moonrise.patches.chunk_system.level.entity.server.ServerEntityLookup(this, new EntityCallbacks()));
 +        this.chunkTaskScheduler = new ca.spottedleaf.moonrise.patches.chunk_system.scheduling.ChunkTaskScheduler(this, ca.spottedleaf.moonrise.common.util.MoonriseCommon.WORKER_POOL);
 +        // Paper end - rewrite chunk system
-+        this.getCraftServer().addWorld(this.getWorld()); // CraftBukkit
-+        this.K.setWorld(this);
 +        // CraftBukkit start
 +        getWorldBorder().world = this;
 +        // From PlayerList.setPlayerFileData
@@ -424,7 +418,6 @@
 +            public void onBorderSetDamageSafeZOne(WorldBorder pBorder, double pDamageSafeZone) { }
 +        });
 +        // CraftBukkit end
-+        ConfigByWorlds.initMods(this);
      }
  
      @Deprecated
@@ -521,7 +514,7 @@
 +                            } catch (Throwable throwable) {
 +                                if (throwable instanceof ThreadDeath) throw throwable; // Paper
 +                                // Paper start - Prevent tile entity and entity crashes
-+                                final String msg = String.format("Entity threw exception at %s:%s,%s,%s", p_308566_.level().getWorld().getName(), entity.getX(), entity.getY(), entity.getZ());
++                                final String msg = String.format("Entity threw exception at %s:%s,%s,%s", p_308566_.level().getWorld().getName(), p_308566_.getX(), p_308566_.getY(), p_308566_.getZ());
 +                                MinecraftServer.LOGGER.error(msg, throwable);
 +                                getCraftServer().getPluginManager().callEvent(new com.destroystokyo.paper.event.server.ServerExceptionEvent(new com.destroystokyo.paper.exception.ServerInternalException(msg, throwable)));
 +                                p_308566_.discard(org.bukkit.event.entity.EntityRemoveEvent.Cause.DISCARD);
@@ -1090,10 +1083,15 @@
          this.server
              .getPlayerList()
              .broadcast(
-@@ -1019,6 +_,7 @@
+@@ -1019,6 +_,12 @@
  
      @Override
      public void gameEvent(Holder<GameEvent> p_316597_, Vec3 p_215042_, GameEvent.Context p_215043_) {
++        // Paper start - Prevent GameEvents being fired from unloaded chunks
++        if (this.getChunkIfLoadedImmediately((Mth.floor(p_215042_.x) >> 4), (Mth.floor(p_215042_.z) >> 4)) == null) {
++            return;
++        }
++        // Paper end - Prevent GameEvents being fired from unloaded chunks
 +        if (!net.neoforged.neoforge.common.CommonHooks.onVanillaGameEvent(this, p_316597_, p_215042_, p_215043_)) return;
          this.gameEventDispatcher.post(p_316597_, p_215042_, p_215043_);
      }

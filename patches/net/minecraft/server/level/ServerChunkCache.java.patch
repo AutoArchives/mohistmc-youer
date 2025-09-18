@@ -357,7 +357,7 @@
      }
  
      public Level getLevel() {
-@@ -270,38 +_,48 @@
+@@ -270,49 +_,60 @@
          return this.mainThreadProcessor.pollTask();
      }
  
@@ -427,7 +427,12 @@
  
      @Override
      public void tick(BooleanSupplier p_201913_, boolean p_201914_) {
-@@ -313,6 +_,7 @@
+         this.level.getProfiler().push("purge");
+-        if (this.level.tickRateManager().runsNormally() || !p_201914_) {
++        if (this.level.tickRateManager().runsNormally() || !p_201914_ || this.level.spigotConfig.unloadFrozenChunks) { // Spigot
+             this.distanceManager.purgeStaleTickets();
+         }
+ 
          this.runDistanceManagerUpdates();
          this.level.getProfiler().popPush("chunks");
          if (p_201914_) {

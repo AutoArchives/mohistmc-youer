@@ -1,20 +1,20 @@
 package ca.spottedleaf.moonrise.common.misc;
 
 import ca.spottedleaf.moonrise.common.list.ReferenceList;
+import ca.spottedleaf.moonrise.common.util.ChunkSystem;
 import ca.spottedleaf.moonrise.common.util.CoordinateUtils;
 import ca.spottedleaf.moonrise.common.util.MoonriseConstants;
-import ca.spottedleaf.moonrise.common.util.ChunkSystem;
 import ca.spottedleaf.moonrise.patches.chunk_system.level.ChunkSystemLevel;
 import ca.spottedleaf.moonrise.patches.chunk_system.level.chunk.ChunkData;
 import ca.spottedleaf.moonrise.patches.chunk_tick_iteration.ChunkTickConstants;
 import ca.spottedleaf.moonrise.patches.chunk_tick_iteration.ChunkTickServerLevel;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import java.util.ArrayList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ChunkPos;
-import java.util.ArrayList;
 
 public final class NearbyPlayers {
 

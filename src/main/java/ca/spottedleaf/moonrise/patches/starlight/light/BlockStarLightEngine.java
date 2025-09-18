@@ -5,7 +5,6 @@ import ca.spottedleaf.moonrise.patches.starlight.chunk.StarlightChunk;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.Level;

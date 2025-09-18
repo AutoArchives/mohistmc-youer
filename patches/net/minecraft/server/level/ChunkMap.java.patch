@@ -857,11 +857,11 @@
      }
  
      private static String printFuture(CompletableFuture<ChunkResult<LevelChunk>> p_140279_) {
-@@ -907,36 +_,75 @@
+@@ -907,51 +_,110 @@
      }
  
      private CompletableFuture<Optional<CompoundTag>> readChunk(ChunkPos p_214964_) {
-+        this.pos = p_214964_;
++        this.upgradeChunkTag$pos = p_214964_;
          return this.read(p_214964_).thenApplyAsync(p_214907_ -> p_214907_.map(this::upgradeChunkTag), Util.backgroundExecutor());
      }
  
@@ -902,15 +902,20 @@
 +        // Spigot end
 +
 +        final ReferenceList<ServerPlayer> players = ((ChunkSystemServerLevel) this.level).moonrise$getNearbyPlayers().getPlayers(
-+                pos, NearbyPlayers.NearbyMapType.SPAWN_RANGE
++                p_183880_, NearbyPlayers.NearbyMapType.SPAWN_RANGE
 +        );
 +        if (players == null) {
 +            return false;
 +        }
-+        for (ServerPlayer serverplayer : players.getRawDataUnchecked()) {
++        final ServerPlayer[] raw = players.getRawDataUnchecked();
++        final int len = players.size();
++
++        Objects.checkFromIndexSize(0, len, raw.length);
++        for (int i = 0; i < len; ++i) {
 +            // Paper start - PlayerNaturallySpawnCreaturesEvent
 +            com.destroystokyo.paper.event.entity.PlayerNaturallySpawnCreaturesEvent event;
 +            blockRange = 16384.0D;
++            ServerPlayer serverplayer = raw[i];
 +            if (reducedRange.getAndSet(false)) {
 +                event = serverplayer.playerNaturallySpawnedEvent;
 +                if (event == null || event.isCancelled()) return false;
@@ -932,25 +937,43 @@
      }
  
      public List<ServerPlayer> getPlayersCloseForSpawning(ChunkPos p_183889_) {
-+        final ReferenceList<ServerPlayer> players = ((ChunkSystemServerLevel)this.level).moonrise$getNearbyPlayers().getPlayers(
-+                pos, NearbyPlayers.NearbyMapType.SPAWN_RANGE
-+        );
-         long i = p_183889_.toLong();
+-        long i = p_183889_.toLong();
 -        if (!this.distanceManager.hasPlayersNearby(i)) {
-+        if (players == null) {
-             return List.of();
-         } else {
-             Builder<ServerPlayer> builder = ImmutableList.builder();
- 
+-            return List.of();
+-        } else {
+-            Builder<ServerPlayer> builder = ImmutableList.builder();
+-
 -            for (ServerPlayer serverplayer : this.playerMap.getAllPlayers()) {
 -                if (this.playerIsCloseEnoughForSpawning(serverplayer, p_183889_)) {
-+            for (ServerPlayer serverplayer : players.getRawDataUnchecked()) {
-+                if (this.playerIsCloseEnoughForSpawning(serverplayer, p_183889_, 16384.0D)) { // Spigot
-                     builder.add(serverplayer);
+-                    builder.add(serverplayer);
++        final ReferenceList<ServerPlayer> players = ((ChunkSystemServerLevel)this.level).moonrise$getNearbyPlayers().getPlayers(
++                p_183889_, NearbyPlayers.NearbyMapType.SPAWN_RANGE
++        );
++        if (players == null) {
++            return new ArrayList<>();
++        }
++
++        List<ServerPlayer> ret = null;
++
++        final ServerPlayer[] raw = players.getRawDataUnchecked();
++        final int len = players.size();
++
++        Objects.checkFromIndexSize(0, len, raw.length);
++        for (int i = 0; i < len; ++i) {
++            final ServerPlayer player = raw[i];
++            if (this.playerIsCloseEnoughForSpawning(player, p_183889_)) {
++                if (ret == null) {
++                    ret = new ArrayList<>(len - i);
++                    ret.add(player);
++                } else {
++                    ret.add(player);
                  }
              }
-@@ -945,13 +_,19 @@
+-
+-            return builder.build();
          }
++
++        return ret == null ? new ArrayList<>() : ret;
      }
  
 -    private boolean playerIsCloseEnoughForSpawning(ServerPlayer p_183752_, ChunkPos p_183753_) {
@@ -1111,7 +1134,7 @@
                      chunkmap$trackedentity.updatePlayers(this.level.players());
                      if (p_140200_ instanceof ServerPlayer serverplayer) {
                          this.updatePlayerStatus(serverplayer, true);
-@@ -1107,13 +_,50 @@
+@@ -1107,9 +_,51 @@
          if (chunkmap$trackedentity1 != null) {
              chunkmap$trackedentity1.broadcastRemoved();
          }
@@ -1154,18 +1177,16 @@
 +    // Paper end - optimise entity tracker
  
      protected void tick() {
--        for (ServerPlayer serverplayer : this.playerMap.getAllPlayers()) {
--            this.updateChunkTracking(serverplayer);
 +        // Paper start - optimise entity tracker
 +        if (true) {
 +            this.newTrackerTick();
 +            return;
-         }
--
++        }
 +        // Paper end - optimise entity tracker
-         List<ServerPlayer> list = Lists.newArrayList();
-         List<ServerPlayer> list1 = this.level.players();
- 
++        // Paper - rewrite chunk system
+         for (ServerPlayer serverplayer : this.playerMap.getAllPlayers()) {
+             this.updateChunkTracking(serverplayer);
+         }
 @@ -1190,23 +_,37 @@
      }
  

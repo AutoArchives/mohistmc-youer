@@ -13,7 +13,7 @@
  import com.google.common.annotations.VisibleForTesting;
  import com.google.common.collect.ImmutableList;
  import com.google.common.collect.ImmutableSet;
-@@ -27,68 +_,66 @@
+@@ -27,68 +_,64 @@
  import java.util.Set;
  import java.util.concurrent.CompletableFuture;
  import java.util.concurrent.Executor;
@@ -46,10 +46,10 @@
 -    final LongSet ticketsToRelease = new LongOpenHashSet();
 -    final Executor mainThreadExecutor;
      private long ticketTickCounter;
-     public int simulationDistance = 10;
- 
-+    private final Long2ObjectOpenHashMap<SortedArraySet<Ticket<?>>> forcedTickets = new Long2ObjectOpenHashMap<>();
+-    public int simulationDistance = 10;
 +
++    private final Long2ObjectOpenHashMap<SortedArraySet<Ticket<?>>> forcedTickets = new Long2ObjectOpenHashMap<>();
+ 
      protected DistanceManager(Executor p_140774_, Executor p_140775_) {
          ProcessorHandle<Runnable> processorhandle = ProcessorHandle.of("player ticket throttler", p_140775_::execute);
          ChunkTaskPriorityQueueSorter chunktaskpriorityqueuesorter = new ChunkTaskPriorityQueueSorter(ImmutableList.of(processorhandle), p_140774_, 4);
@@ -58,7 +58,6 @@
 -        this.ticketThrottlerReleaser = chunktaskpriorityqueuesorter.getReleaseProcessor(processorhandle);
 -        this.mainThreadExecutor = p_140775_;
 -    }
-+        this.simulationDistance = -1;
 +    }
 +
 +    // Paper start - rewrite chunk system
@@ -314,7 +313,7 @@
          }
      }
  
-@@ -209,164 +_,85 @@
+@@ -209,164 +_,82 @@
          ChunkPos chunkpos = p_140803_.chunk();
          long i = chunkpos.toLong();
          this.playersPerChunk.computeIfAbsent(i, p_183921_ -> new ObjectOpenHashSet<>()).add(p_140804_);
@@ -372,10 +371,7 @@
 -            this.simulationDistance = p_183912_;
 -            this.tickingTicketsTracker.replacePlayerTicketsLevel(this.getPlayerTicketLevel());
 -        }
-+        // note: vanilla does not clamp to 0, but we do simply because we need a min of 0
-+        final int clamped = Mth.clamp(simulationDistance, 0, MoonriseConstants.MAX_VIEW_DISTANCE);
-+
-+        ((ChunkSystemServerLevel)this.moonrise$getChunkMap().level).moonrise$getPlayerChunkLoader().setTickDistance(clamped);
++        ((ChunkSystemServerLevel)this.moonrise$getChunkMap().level).moonrise$getPlayerChunkLoader().setTickDistance(p_183912_);
      }
  
      public int getNaturalSpawnChunkCount() {

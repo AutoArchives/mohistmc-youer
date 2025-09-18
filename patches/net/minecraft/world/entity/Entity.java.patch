@@ -715,7 +715,14 @@
              }
          }
      }
-@@ -812,9 +_,7 @@
+@@ -806,15 +_,13 @@
+     }
+ 
+     protected BlockPos getOnPos(float p_216987_) {
+-        if (this.mainSupportingBlockPos.isPresent()) {
++        if (this.mainSupportingBlockPos.isPresent() && this.level().getChunkIfLoadedImmediately(this.mainSupportingBlockPos.get()) != null) { // Paper - ensure no loads
+             BlockPos blockpos = this.mainSupportingBlockPos.get();
+             if (!(p_216987_ > 1.0E-5F)) {
                  return blockpos;
              } else {
                  BlockState blockstate = this.level().getBlockState(blockpos);

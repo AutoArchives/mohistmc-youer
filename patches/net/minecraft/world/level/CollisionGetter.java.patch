@@ -1,0 +1,10 @@
+--- a/net/minecraft/world/level/CollisionGetter.java
++++ b/net/minecraft/world/level/CollisionGetter.java
+@@ -49,7 +_,6 @@
+                 return false;
+             }
+         }
+-
+         if (!this.getEntityCollisions(p_45757_, p_45758_).isEmpty()) {
+             return false;
+         } else if (p_45757_ == null) {

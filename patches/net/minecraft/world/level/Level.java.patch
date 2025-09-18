@@ -163,7 +163,7 @@
 +        final List<T> ret = new java.util.ArrayList<>();
 +
 +        ((ca.spottedleaf.moonrise.patches.chunk_system.level.ChunkSystemLevel)this).moonrise$getEntityLookup().getEntities(entityClass, null, boundingBox, ret, predicate);
-+
++        addToGetEntities(this, EntityTypeTest.forClass(entityClass), boundingBox, predicate, ret, Integer.MAX_VALUE);
 +        return ret;
 +    }
 +
@@ -421,7 +421,7 @@
  
      @Override
      public boolean isClientSide() {
-@@ -167,6 +_,13 @@
+@@ -167,8 +_,15 @@
          return null;
      }
  
@@ -433,8 +433,11 @@
 +    // Paper end
 +
      public boolean isInWorldBounds(BlockPos p_46740_) {
-         return !this.isOutsideBuildHeight(p_46740_) && isInWorldBoundsHorizontal(p_46740_);
+-        return !this.isOutsideBuildHeight(p_46740_) && isInWorldBoundsHorizontal(p_46740_);
++        return p_46740_.isInsideBuildHeightAndWorldBoundsHorizontal(this); // Paper - use better/optimized check
      }
+ 
+     public static boolean isInSpawnableBounds(BlockPos p_46742_) {
 @@ -183,12 +_,73 @@
          return p_46725_ < -20000000 || p_46725_ >= 20000000;
      }

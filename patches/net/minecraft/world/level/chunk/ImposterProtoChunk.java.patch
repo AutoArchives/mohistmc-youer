@@ -17,6 +17,19 @@
      private final LevelChunk wrapped;
      private final boolean allowWrites;
  
+@@ -57,6 +_,12 @@
+     public BlockState getBlockState(BlockPos p_62749_) {
+         return this.wrapped.getBlockState(p_62749_);
+     }
++    // Paper start
++    @Override
++    public final BlockState getBlockState(final int x, final int y, final int z) {
++        return this.wrapped.getBlockStateFinal(x, y, z);
++    }
++    // Paper end
+ 
+     @Override
+     public FluidState getFluidState(BlockPos p_62736_) {
 @@ -219,6 +_,15 @@
      }
  

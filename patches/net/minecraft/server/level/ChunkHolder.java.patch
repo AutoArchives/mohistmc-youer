@@ -14,19 +14,17 @@
  import java.util.BitSet;
  import java.util.List;
  import java.util.concurrent.CompletableFuture;
-@@ -17,6 +_,7 @@
- import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
- import net.minecraft.network.protocol.game.ClientboundLightUpdatePacket;
- import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket;
-+import net.minecraft.server.MinecraftServer;
- import net.minecraft.world.level.ChunkPos;
- import net.minecraft.world.level.Level;
- import net.minecraft.world.level.LevelHeightAccessor;
-@@ -28,28 +_,18 @@
- import net.minecraft.world.level.chunk.LevelChunkSection;
+@@ -10,7 +_,6 @@
+ import java.util.function.IntConsumer;
+ import java.util.function.IntSupplier;
+ import javax.annotation.Nullable;
+-import net.minecraft.Util;
+ import net.minecraft.core.BlockPos;
+ import net.minecraft.core.SectionPos;
+ import net.minecraft.network.protocol.Packet;
+@@ -29,27 +_,16 @@
  import net.minecraft.world.level.chunk.status.ChunkStatus;
  import net.minecraft.world.level.lighting.LevelLightEngine;
-+import org.spongepowered.asm.mixin.Unique;
  
 -public class ChunkHolder extends GenerationChunkHolder {
 +public class ChunkHolder extends GenerationChunkHolder implements ChunkSystemChunkHolder {
@@ -328,7 +326,7 @@
      }
  
      @FunctionalInterface
-@@ -328,4 +_,107 @@
+@@ -328,4 +_,106 @@
      public interface PlayerProvider {
          List<ServerPlayer> getPlayers(ChunkPos p_183717_, boolean p_183718_);
      }
@@ -338,7 +336,6 @@
 +    private final ReferenceList<ServerPlayer> playersSentChunkTo = new ReferenceList<>(EMPTY_PLAYER_ARRAY);
 +    private boolean isMarkedDirtyForPlayers;
 +
-+    @Unique
 +    private ChunkMap getChunkMap() {
 +        return (ChunkMap)this.playerProvider;
 +    }

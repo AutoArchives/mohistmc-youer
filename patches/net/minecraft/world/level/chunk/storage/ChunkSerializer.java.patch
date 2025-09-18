@@ -92,6 +92,21 @@
              return new ImposterProtoChunk((LevelChunk)chunkaccess, false);
          } else {
              ProtoChunk protochunk1 = (ProtoChunk)chunkaccess;
+@@ -254,6 +_,14 @@
+ 
+             for (int j1 = 0; j1 < listtag4.size(); j1++) {
+                 CompoundTag compoundtag1 = listtag4.getCompound(j1);
++
++                // Paper start - do not read tile entities positioned outside the chunk
++                BlockPos blockposition = BlockEntity.getPosFromTag(compoundtag1);
++                if ((blockposition.getX() >> 4) != p_188233_.x || (blockposition.getZ() >> 4) != p_188233_.z) {
++                    continue;
++                }
++                // Paper end - do not read tile entities positioned outside the chunk
++
+                 chunkaccess.setBlockEntityNbt(compoundtag1);
+             }
+ 
 @@ -264,11 +_,13 @@
                  protochunk1.setCarvingMask(generationstep$carving, new CarvingMask(compoundtag4.getLongArray(s1), chunkaccess.getMinBuildHeight()));
              }
@@ -158,7 +173,7 @@
          return compoundtag;
      }
  
-@@ -409,7 +_,7 @@
+@@ -409,17 +_,25 @@
          ListTag listtag1 = getListOfCompoundsOrNull(p_196892_, "block_entities");
          return listtag == null && listtag1 == null ? null : p_196904_ -> {
              if (listtag != null) {
@@ -167,6 +182,25 @@
              }
  
              if (listtag1 != null) {
+                 for (int i = 0; i < listtag1.size(); i++) {
+                     CompoundTag compoundtag = listtag1.getCompound(i);
+                     boolean flag = compoundtag.getBoolean("keepPacked");
++
++                    // Paper start - do not read tile entities positioned outside the chunk
++                    BlockPos blockpos = BlockEntity.getPosFromTag(compoundtag); // moved up
++                    ChunkPos chunkPos = p_196904_.getPos();
++                    if ((blockpos.getX() >> 4) != chunkPos.x || (blockpos.getZ() >> 4) != chunkPos.z) {
++                        continue;
++                    }
++                    // Paper end - do not read tile entities positioned outside the chunk
+                     if (flag) {
+                         p_196904_.setBlockEntityNbt(compoundtag);
+                     } else {
+-                        BlockPos blockpos = BlockEntity.getPosFromTag(compoundtag);
++                        // Paper - do not read tile entities positioned outside the chunk; move up
+                         BlockEntity blockentity = BlockEntity.loadStatic(blockpos, p_196904_.getBlockState(blockpos), compoundtag, p_196891_.registryAccess());
+                         if (blockentity != null) {
+                             p_196904_.setBlockEntity(blockentity);
 @@ -475,6 +_,12 @@
              } else {
                  StructureStart structurestart = StructureStart.loadStaticStart(p_188255_, compoundtag.getCompound(s), p_188257_);
