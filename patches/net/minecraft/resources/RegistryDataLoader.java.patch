@@ -61,35 +61,101 @@
          list.forEach(p_396495_ -> {
              Registry<?> registry = p_396495_.registry();
  
-@@ -274,11 +_,16 @@
+@@ -202,11 +_,21 @@
+         final Map<ResourceKey<? extends Registry<?>>, RegistryOps.RegistryInfo<?>> map = new HashMap<>();
+         p_255821_.forEach(p_359481_ -> map.put(p_359481_.key(), createInfoForContextRegistry((HolderLookup.RegistryLookup<?>)p_359481_)));
+         p_360285_.forEach(p_367838_ -> map.put(p_367838_.registry.key(), createInfoForNewRegistry(p_367838_.registry)));
++        // this creates a HolderLookup.Provider to be used exclusively to obtain real instances of values to pre-populate builders
++        // for the Registry Modification API. This concatenates the context registry lookups and the empty registries about to be filled.
++        final HolderLookup.Provider providerForBuilders = HolderLookup.Provider.create(java.util.stream.Stream.concat(p_255821_.stream(), p_360285_.stream().map(Loader::registry))); // Paper - add method to get the value for pre-filling builders in the reg mod API
+         return new RegistryOps.RegistryInfoLookup() {
+             @Override
+             public <T> Optional<RegistryOps.RegistryInfo<T>> lookup(ResourceKey<? extends Registry<? extends T>> p_256014_) {
+                 return Optional.ofNullable((RegistryOps.RegistryInfo<T>)map.get(p_256014_));
+             }
++
++            // Paper start - add method to get the value for pre-filling builders in the reg mod API
++            @Override
++            public HolderLookup.Provider lookupForValueCopyViaBuilders() {
++                return providerForBuilders;
++            }
++            // Paper end - add method to get the value for pre-filling builders in the reg mod API
+         };
+     }
+ 
+@@ -272,13 +_,19 @@
+         RegistryOps<JsonElement> p_325932_,
+         ResourceKey<E> p_326054_,
          Resource p_326141_,
-         RegistrationInfo p_326033_
+-        RegistrationInfo p_326033_
++        RegistrationInfo p_326033_,
++        io.papermc.paper.registry.data.util.Conversions conversions // Paper - pass conversions
      ) throws IOException {
 +        Decoder<Optional<E>> decoder = net.neoforged.neoforge.common.conditions.ConditionalOps.createConditionalCodec(net.neoforged.neoforge.common.util.NeoForgeExtraCodecs.decodeOnly(p_326476_));
          try (Reader reader = p_326141_.openAsReader()) {
              JsonElement jsonelement = StrictJsonParser.parse(reader);
 -            DataResult<E> dataresult = p_326476_.parse(p_325932_, jsonelement);
 -            E e = dataresult.getOrThrow();
+-            p_326195_.register(p_326054_, e, p_326033_);
 +            DataResult<Optional<E>> dataresult = decoder.parse(p_325932_, jsonelement);
 +            Optional<E> candidate = dataresult.getOrThrow();
 +            candidate.ifPresentOrElse(e -> {
-             p_326195_.register(p_326054_, e, p_326033_);
++            io.papermc.paper.registry.PaperRegistryListenerManager.INSTANCE.registerWithListeners(p_326195_, p_326054_, e, p_326033_, conversions); // Paper - register with listeners
 +            }, () -> {
 +                LOGGER.debug("Skipping loading registry entry {} as its conditions were not met", p_326054_);
 +            });
          }
      }
  
-@@ -290,7 +_,7 @@
+@@ -290,8 +_,9 @@
          Map<ResourceKey<?>, Exception> p_321649_
      ) {
          FileToIdConverter filetoidconverter = FileToIdConverter.registry(p_321557_.key());
 -        RegistryOps<JsonElement> registryops = RegistryOps.create(JsonOps.INSTANCE, p_321612_);
 +        RegistryOps<JsonElement> registryops = new net.neoforged.neoforge.common.conditions.ConditionalOps<>(RegistryOps.create(JsonOps.INSTANCE, p_321612_), net.neoforged.neoforge.common.conditions.ICondition.IContext.TAGS_INVALID);
  
++        final io.papermc.paper.registry.data.util.Conversions conversions = new io.papermc.paper.registry.data.util.Conversions(p_321612_); // Paper - create conversions
          for (Entry<ResourceLocation, Resource> entry : filetoidconverter.listMatchingResources(p_321535_).entrySet()) {
              ResourceLocation resourcelocation = entry.getKey();
-@@ -379,13 +_,20 @@
+             ResourceKey<E> resourcekey = ResourceKey.create(p_321557_.key(), filetoidconverter.fileToId(resourcelocation));
+@@ -299,7 +_,7 @@
+             RegistrationInfo registrationinfo = REGISTRATION_INFO_CACHE.apply(resource.knownPackInfo());
+ 
+             try {
+-                loadElementFromResource(p_321557_, p_321820_, registryops, resourcekey, resource, registrationinfo);
++                loadElementFromResource(p_321557_, p_321820_, registryops, resourcekey, resource, registrationinfo, conversions); // Paper - pass conversions
+             } catch (Exception exception) {
+                 p_321649_.put(
+                     resourcekey,
+@@ -310,7 +_,9 @@
+             }
+         }
+ 
+-        TagLoader.loadTagsForRegistry(p_321535_, p_321557_);
++        io.papermc.paper.registry.PaperRegistryAccess.instance().lockReferenceHolders(p_321557_.key()); // Paper - lock reference holders
++        io.papermc.paper.registry.PaperRegistryListenerManager.INSTANCE.runFreezeListeners(p_321557_.key(), conversions); // Paper - run pre-freeze listeners
++        TagLoader.loadTagsForRegistry(p_321535_, p_321557_, io.papermc.paper.plugin.lifecycle.event.registrar.ReloadableRegistrarEvent.Cause.INITIAL); // Paper - tag lifecycle - add cause
+     }
+ 
+     static <E> void loadContentsFromNetwork(
+@@ -327,6 +_,7 @@
+             RegistryOps<JsonElement> registryops1 = RegistryOps.create(JsonOps.INSTANCE, p_321801_);
+             FileToIdConverter filetoidconverter = FileToIdConverter.registry(p_321671_.key());
+ 
++            final io.papermc.paper.registry.data.util.Conversions conversions = new io.papermc.paper.registry.data.util.Conversions(p_321801_); // Paper - create conversions
+             for (RegistrySynchronization.PackedRegistryEntry registrysynchronization$packedregistryentry : registrydataloader$networkedregistrydata.elements) {
+                 ResourceKey<E> resourcekey = ResourceKey.create(p_321671_.key(), registrysynchronization$packedregistryentry.id());
+                 Optional<Tag> optional = registrysynchronization$packedregistryentry.data();
+@@ -346,7 +_,7 @@
+ 
+                     try {
+                         Resource resource = p_326020_.getResourceOrThrow(resourcelocation);
+-                        loadElementFromResource(p_321671_, p_321718_, registryops1, resourcekey, resource, NETWORK_REGISTRATION_INFO);
++                        loadElementFromResource(p_321671_, p_321718_, registryops1, resourcekey, resource, NETWORK_REGISTRATION_INFO, conversions); // Paper - pass conversions
+                     } catch (Exception exception1) {
+                         p_321625_.put(resourcekey, new IllegalStateException("Failed to parse local data", exception1));
+                     }
+@@ -379,13 +_,21 @@
      public record NetworkedRegistryData(List<RegistrySynchronization.PackedRegistryEntry> elements, TagNetworkSerialization.NetworkPayload tags) {
      }
  
@@ -109,6 +175,7 @@
 +            registryBuilderConsumer.accept(registryBuilder);
 +
 +            WritableRegistry<T> writableregistry = (WritableRegistry<T>) registryBuilder.disableRegistrationCheck().create();
++            io.papermc.paper.registry.PaperRegistryAccess.instance().registerRegistry(writableregistry); // Paper - initialize API registry
              return new RegistryDataLoader.Loader<>(this, writableregistry, p_251565_);
          }
  

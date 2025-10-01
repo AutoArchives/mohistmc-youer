@@ -1,6 +1,11 @@
 --- a/net/minecraft/server/WorldLoader.java
 +++ b/net/minecraft/server/WorldLoader.java
-@@ -41,7 +_,7 @@
+@@ -37,11 +_,11 @@
+             CloseableResourceManager closeableresourcemanager = pair.getSecond();
+             LayeredRegistryAccess<RegistryLayer> layeredregistryaccess = RegistryLayer.createRegistryAccess();
+             List<Registry.PendingTags<?>> list = TagLoader.loadTagsForExistingRegistries(
+-                closeableresourcemanager, layeredregistryaccess.getLayer(RegistryLayer.STATIC)
++                closeableresourcemanager, layeredregistryaccess.getLayer(RegistryLayer.STATIC), io.papermc.paper.plugin.lifecycle.event.registrar.ReloadableRegistrarEvent.Cause.INITIAL // Paper - tag lifecycle - add cause
              );
              RegistryAccess.Frozen registryaccess$frozen = layeredregistryaccess.getAccessForLoading(RegistryLayer.WORLDGEN);
              List<HolderLookup.RegistryLookup<?>> list1 = TagLoader.buildUpdatedLookups(registryaccess$frozen, list);

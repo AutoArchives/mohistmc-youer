@@ -11,7 +11,8 @@
 +
          private static CompoundTag loadCompound(DataInput p_302338_, NbtAccounter p_302362_) throws IOException {
              p_302362_.accountBytes(48L);
-             Map<String, Tag> map = Maps.newHashMap();
+-            Map<String, Tag> map = Maps.newHashMap();
++            it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<String, Tag> map = new it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<>(8, 0.8f); // Paper - Reduce memory footprint of CompoundTag
  
              byte b0;
 -            while ((b0 = p_302338_.readByte()) != 0) {
@@ -22,10 +23,14 @@
                  Tag tag = CompoundTag.readNamedTagData(TagTypes.getType(b0), s, p_302338_, p_302362_);
                  if (map.put(s, tag) == null) {
                      p_302362_.accountBytes(36L);
-@@ -173,6 +_,17 @@
-         this(new HashMap<>());
+@@ -170,7 +_,18 @@
      }
  
+     public CompoundTag() {
+-        this(new HashMap<>());
++        this(new it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<>(8, 0.8f)); // Paper - Reduce memory footprint of CompoundTag
++    }
++
 +    /**
 +     * Neo: create a compound tag that is generally suitable to hold the given amount of entries
 +     * without needing to resize the internal map.
@@ -35,11 +40,9 @@
 +     */
 +    public CompoundTag(int expectedEntries) {
 +        this(HashMap.newHashMap(expectedEntries));
-+    }
-+
+     }
+ 
      @Override
-     public void write(DataOutput p_128341_) throws IOException {
-         for (String s : this.tags.keySet()) {
 @@ -228,6 +_,7 @@
  
      @Nullable
@@ -48,3 +51,53 @@
          return this.tags.put(p_128366_, p_128367_);
      }
  
+@@ -400,9 +_,16 @@
+     }
+ 
+     public CompoundTag copy() {
+-        HashMap<String, Tag> hashmap = new HashMap<>();
+-        this.tags.forEach((p_411026_, p_411027_) -> hashmap.put(p_411026_, p_411027_.copy()));
+-        return new CompoundTag(hashmap);
++        // Paper start - Reduce memory footprint of CompoundTag
++        it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<String, Tag> ret = new it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<>(this.tags.size(), 0.8f);
++        java.util.Iterator<java.util.Map.Entry<String, Tag>> iterator = (this.tags instanceof it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap) ? ((it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap)this.tags).object2ObjectEntrySet().fastIterator() : this.tags.entrySet().iterator();
++        while (iterator.hasNext()) {
++            Map.Entry<String, Tag> entry = iterator.next();
++            ret.put(entry.getKey(), entry.getValue().copy());
++        }
++
++        return new CompoundTag(ret);
++        // Paper end - Reduce memory footprint of CompoundTag
+     }
+ 
+     @Override
+@@ -542,4 +_,29 @@
+         return p_401418_.decode(p_401213_, p_401213_.getMap(this).getOrThrow())
+             .resultOrPartial(p_400884_ -> LOGGER.error("Failed to read value ({}): {}", this, p_400884_));
+     }
++
++    // Paper start - option to read via codec without logging errors
++    // The below methods are 1 to 1 copies of the above-defined read methods without the logging part.
++    // Copying was chosen over overloading the read methods as a boolean parameter to mark a method as quiet
++    // is not intuitive and would require even more overloads.
++    // Not a lot of diff in these methods is expected
++    public <T> Optional<T> readQuiet(String key, Codec<T> codec) {
++        return this.readQuiet(key, codec, NbtOps.INSTANCE);
++    }
++
++    public <T> Optional<T> readQuiet(String key, Codec<T> codec, DynamicOps<Tag> ops) {
++        Tag tag = this.get(key);
++        return tag == null
++                ? Optional.empty()
++                : codec.parse(ops, tag).resultOrPartial();
++    }
++
++    public <T> Optional<T> readQuiet(MapCodec<T> mapCodec) {
++        return this.readQuiet(mapCodec, NbtOps.INSTANCE);
++    }
++
++    public <T> Optional<T> readQuiet(MapCodec<T> mapCodec, DynamicOps<Tag> ops) {
++        return mapCodec.decode(ops, ops.getMap(this).getOrThrow()).resultOrPartial();
++    }
++    // Paper end - option to read via codec without logging errors
+ }

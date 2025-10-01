@@ -1,0 +1,43 @@
+--- a/net/minecraft/server/players/UserBanListEntry.java
++++ b/net/minecraft/server/players/UserBanListEntry.java
+@@ -19,7 +_,7 @@
+     }
+ 
+     public UserBanListEntry(JsonObject p_11434_) {
+-        super(NameAndId.fromJson(p_11434_), p_11434_);
++        super(parseNameAndId(p_11434_), p_11434_);
+     }
+ 
+     @Override
+@@ -35,4 +_,31 @@
+         NameAndId nameandid = this.getUser();
+         return (Component)(nameandid != null ? Component.literal(nameandid.name()) : MESSAGE_UNKNOWN_USER);
+     }
++
++    // Spigot start
++    // This is a modified version of NameAndId.fromJson specifically for UserBanListEntry
++    @Nullable
++    private static NameAndId parseNameAndId(JsonObject json) {
++        // this whole method has to be reworked to account for the fact Bukkit only accepts UUID bans and gives no way for usernames to be stored!
++        java.util.UUID uuid = null;
++        String name = null;
++        if (json.has("uuid")) {
++            String asString = json.get("uuid").getAsString();
++
++            try {
++                uuid = java.util.UUID.fromString(asString);
++            } catch (Throwable var4) {
++            }
++
++        }
++        if (json.has("name")) {
++            name = json.get("name").getAsString();
++        }
++        if (uuid != null || name != null) {
++            return new NameAndId(uuid, name);
++        } else {
++            return null;
++        }
++    }
++    // Spigot end
+ }

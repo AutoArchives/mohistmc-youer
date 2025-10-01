@@ -1,0 +1,26 @@
+--- a/net/minecraft/server/players/UserWhiteList.java
++++ b/net/minecraft/server/players/UserWhiteList.java
+@@ -20,6 +_,11 @@
+     }
+ 
+     public boolean add(UserWhiteListEntry p_442730_) {
++        // Paper start - Add whitelist events
++        if (!new io.papermc.paper.event.server.WhitelistStateUpdateEvent(com.destroystokyo.paper.profile.CraftPlayerProfile.asBukkitCopy(p_442730_.getUser().toUncompletedGameProfile()), io.papermc.paper.event.server.WhitelistStateUpdateEvent.WhitelistStatus.ADDED).callEvent()) {
++            return false;
++        }
++        // Paper end - Add whitelist events
+         if (super.add(p_442730_)) {
+             if (p_442730_.getUser() != null) {
+                 this.notificationService.playerAddedToAllowlist(p_442730_.getUser());
+@@ -32,6 +_,11 @@
+     }
+ 
+     public boolean remove(NameAndId p_442801_) {
++        // Paper start - Add whitelist events
++        if (!new io.papermc.paper.event.server.WhitelistStateUpdateEvent(com.destroystokyo.paper.profile.CraftPlayerProfile.asBukkitCopy(p_442801_.toUncompletedGameProfile()), io.papermc.paper.event.server.WhitelistStateUpdateEvent.WhitelistStatus.REMOVED).callEvent()) {
++            return false;
++        }
++        // Paper end - Add whitelist events
+         if (super.remove(p_442801_)) {
+             this.notificationService.playerRemovedFromAllowlist(p_442801_);
+             return true;

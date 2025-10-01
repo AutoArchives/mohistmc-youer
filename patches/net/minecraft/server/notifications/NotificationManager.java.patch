@@ -1,0 +1,13 @@
+--- a/net/minecraft/server/notifications/NotificationManager.java
++++ b/net/minecraft/server/notifications/NotificationManager.java
+@@ -87,8 +_,8 @@
+     }
+ 
+     @Override
+-    public void onGameRuleChanged(String p_443555_, GameRules.Value<?> p_442833_) {
+-        this.notificationServices.forEach(p_442488_ -> p_442488_.onGameRuleChanged(p_443555_, p_442833_));
++    public void onGameRuleChanged(net.minecraft.server.level.ServerLevel level, String gamerule, GameRules.Value<?> value) { // Paper - per-world game rules (add level param)
++        this.notificationServices.forEach(notificationService -> notificationService.onGameRuleChanged(level, gamerule, value)); // Paper - per-world game rules (add level param)
+     }
+ 
+     @Override

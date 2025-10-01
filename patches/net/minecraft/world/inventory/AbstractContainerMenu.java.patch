@@ -1,5 +1,88 @@
 --- a/net/minecraft/world/inventory/AbstractContainerMenu.java
 +++ b/net/minecraft/world/inventory/AbstractContainerMenu.java
+@@ -67,6 +_,36 @@
+     @Nullable
+     private ContainerSynchronizer synchronizer;
+     private boolean suppressRemoteUpdates;
++    // CraftBukkit start
++    public boolean checkReachable = true;
++    public abstract org.bukkit.inventory.InventoryView getBukkitView();
++
++    public void transferTo(AbstractContainerMenu other, org.bukkit.craftbukkit.entity.CraftHumanEntity player) {
++        org.bukkit.inventory.InventoryView source = this.getBukkitView(), destination = other.getBukkitView();
++        ((org.bukkit.craftbukkit.inventory.CraftInventory) source.getTopInventory()).getInventory().onClose(player);
++        ((org.bukkit.craftbukkit.inventory.CraftInventory) source.getBottomInventory()).getInventory().onClose(player);
++        ((org.bukkit.craftbukkit.inventory.CraftInventory) destination.getTopInventory()).getInventory().onOpen(player);
++        ((org.bukkit.craftbukkit.inventory.CraftInventory) destination.getBottomInventory()).getInventory().onOpen(player);
++    }
++
++    @Nullable
++    private net.minecraft.network.chat.Component title;
++    public final net.minecraft.network.chat.Component getTitle() {
++        // Paper start - return chat component with empty text instead of throwing error
++        if (this.title == null) {
++            return net.minecraft.network.chat.Component.empty();
++        }
++        // Paper end - return chat component with empty text instead of throwing error
++        return this.title;
++    }
++
++    public final void setTitle(net.minecraft.network.chat.Component title) {
++        com.google.common.base.Preconditions.checkState(this.title == null, "Title already set");
++        this.title = title;
++    }
++
++    public void startOpen() {}
++    // CraftBukkit end
+ 
+     protected AbstractContainerMenu(@Nullable MenuType<?> p_38851_, int p_38852_) {
+         this.menuType = p_38851_;
+@@ -180,8 +_,43 @@
+ 
+         if (this.synchronizer != null) {
+             this.synchronizer.sendInitialData(this, list, itemstack1.copy(), this.remoteDataSlots.toIntArray());
+-        }
+-    }
++            this.synchronizer.sendOffHandSlotChange(); // Paper - Sync offhand slot in menus; update player's offhand since the offhand slot is not added to the slots for menus but can be changed by swapping from a menu slot
++        }
++    }
++
++    // Paper start
++    public void forceHeldSlot(final net.minecraft.world.InteractionHand hand) {
++        this.sendAllDataToRemote();
++    }
++
++    public void forceHeldSlotAndArmor(final net.minecraft.world.InteractionHand hand) {
++        this.sendAllDataToRemote();
++    }
++
++    public void forceSlot(final Container container, final int slot) {
++        final int slotsIndex = this.findSlot(container, slot).orElse(-1);
++        if (slotsIndex == -1) {
++            return;
++        }
++
++        final ItemStack item = this.slots.get(slotsIndex).getItem();
++        this.remoteSlots.get(slotsIndex).force(item);
++
++        if (this.synchronizer != null) {
++            this.synchronizer.sendSlotChange(this, slotsIndex, item.copy());
++        }
++    }
++    // Paper end
++
++    // CraftBukkit start - from synchronizeCarriedToRemote
++    public void broadcastCarriedItem() {
++        ItemStack carried = this.getCarried();
++        this.remoteCarried.force(carried);
++        if (this.synchronizer != null) {
++            this.synchronizer.sendCarriedChange(this, carried.copy());
++        }
++    }
++    // CraftBukkit end
+ 
+     public void removeSlotListener(ContainerListener p_38944_) {
+         this.containerListeners.remove(p_38944_);
 @@ -567,6 +_,12 @@
      }
  

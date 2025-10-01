@@ -1,0 +1,11 @@
+--- a/net/minecraft/server/notifications/EmptyNotificationService.java
++++ b/net/minecraft/server/notifications/EmptyNotificationService.java
+@@ -65,7 +_,7 @@
+     }
+ 
+     @Override
+-    public void onGameRuleChanged(String p_443089_, GameRules.Value<?> p_443446_) {
++    public void onGameRuleChanged(net.minecraft.server.level.ServerLevel level, String p_443089_, GameRules.Value<?> p_443446_) {
+     }
+ 
+     @Override

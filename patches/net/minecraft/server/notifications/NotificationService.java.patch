@@ -1,0 +1,11 @@
+--- a/net/minecraft/server/notifications/NotificationService.java
++++ b/net/minecraft/server/notifications/NotificationService.java
+@@ -36,7 +_,7 @@
+ 
+     void playerUnbanned(NameAndId p_442719_);
+ 
+-    void onGameRuleChanged(String p_442703_, GameRules.Value<?> p_442950_);
++    void onGameRuleChanged(net.minecraft.server.level.ServerLevel level, String p_442703_, GameRules.Value<?> p_442950_); // Paper - per-world game rules (add level param)
+ 
+     void statusHeartbeat();
+ }

@@ -1,0 +1,35 @@
+--- a/net/minecraft/stats/ServerRecipeBook.java
++++ b/net/minecraft/stats/ServerRecipeBook.java
+@@ -65,17 +_,21 @@
+         for (RecipeHolder<?> recipeholder : p_12792_) {
+             ResourceKey<Recipe<?>> resourcekey = recipeholder.id();
+             if (!this.known.contains(resourcekey) && !recipeholder.value().isSpecial()) {
++                // Paper start - PlayerRecipeDiscoverEvent event
++                final org.bukkit.event.player.PlayerRecipeDiscoverEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callPlayerRecipeListUpdateEvent(p_12793_, recipeholder);
++                if (event.isCancelled()) continue;
++                // Paper end - PlayerRecipeDiscoverEvent event
+                 this.add(resourcekey);
+                 this.addHighlight(resourcekey);
+                 this.displayResolver
+                     .displaysForRecipe(
+-                        resourcekey, p_379913_ -> list.add(new ClientboundRecipeBookAddPacket.Entry(p_379913_, recipeholder.value().showNotification(), true))
++                        resourcekey, p_379913_ -> list.add(new ClientboundRecipeBookAddPacket.Entry(p_379913_, event.shouldShowNotification(), true))
+                     );
+                 CriteriaTriggers.RECIPE_UNLOCKED.trigger(p_12793_, recipeholder);
+             }
+         }
+ 
+-        if (!list.isEmpty()) {
++        if (!list.isEmpty() && p_12793_.connection != null) { // SPIGOT-4478 during PlayerLoginEvent
+             p_12793_.connection.send(new ClientboundRecipeBookAddPacket(list, false));
+         }
+ 
+@@ -93,7 +_,7 @@
+             }
+         }
+ 
+-        if (!list.isEmpty()) {
++        if (!list.isEmpty() && p_12808_.connection != null) { // SPIGOT-4478 during PlayerLoginEvent
+             p_12808_.connection.send(new ClientboundRecipeBookRemovePacket(list));
+         }
+ 

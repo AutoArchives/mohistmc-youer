@@ -1,5 +1,36 @@
 --- a/net/minecraft/world/damagesource/CombatTracker.java
 +++ b/net/minecraft/world/damagesource/CombatTracker.java
+@@ -29,19 +_,28 @@
+     private int combatEndTime;
+     public boolean inCombat;
+     public boolean takingDamage;
++    public final io.papermc.paper.world.damagesource.PaperCombatTrackerWrapper paperCombatTracker; // Paper - Combat tracker API
+ 
+     public CombatTracker(LivingEntity p_19285_) {
+         this.mob = p_19285_;
++        this.paperCombatTracker = new io.papermc.paper.world.damagesource.PaperCombatTrackerWrapper(this); // Paper - Combat tracker API
+     }
+ 
+     public void recordDamage(DamageSource p_289533_, float p_289559_) {
+         this.recheckStatus();
+         FallLocation falllocation = FallLocation.getCurrentFallLocation(this.mob);
+         CombatEntry combatentry = new CombatEntry(p_289533_, p_289559_, falllocation, (float)this.mob.fallDistance);
+-        this.entries.add(combatentry);
++        // Paper start - Combat tracker API
++        recordDamageAndCheckCombatState(combatentry);
++    }
++
++    public void recordDamageAndCheckCombatState(final CombatEntry combatEntry) {
++        final DamageSource source = combatEntry.source();
++        // Paper end - Combat tracker API
++        this.entries.add(combatEntry);
+         this.lastDamageTime = this.mob.tickCount;
+         this.takingDamage = true;
+-        if (!this.inCombat && this.mob.isAlive() && shouldEnterCombat(p_289533_)) {
++        if (!this.inCombat && this.mob.isAlive() && shouldEnterCombat(source)) {
+             this.inCombat = true;
+             this.combatStartTime = this.mob.tickCount;
+             this.combatEndTime = this.combatStartTime;
 @@ -92,6 +_,11 @@
              DamageSource damagesource = combatentry.source();
              CombatEntry combatentry1 = this.getMostSignificantFall();
@@ -12,3 +43,17 @@
              if (deathmessagetype == DeathMessageType.FALL_VARIANTS && combatentry1 != null) {
                  return this.getFallMessage(combatentry1, damagesource.getEntity());
              } else if (deathmessagetype == DeathMessageType.INTENTIONAL_GAME_DESIGN) {
+@@ -147,6 +_,13 @@
+     public void recheckStatus() {
+         int i = this.inCombat ? 300 : 100;
+         if (this.takingDamage && (!this.mob.isAlive() || this.mob.tickCount - this.lastDamageTime > i)) {
++            // Paper start - Combat tracker API
++            resetCombatState();
++        }
++    }
++
++    public void resetCombatState() {{
++        // Paper end - Combat tracker API
+             boolean flag = this.inCombat;
+             this.takingDamage = false;
+             this.inCombat = false;

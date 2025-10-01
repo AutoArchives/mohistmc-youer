@@ -1,11 +1,63 @@
 --- a/net/minecraft/util/SpawnUtil.java
 +++ b/net/minecraft/util/SpawnUtil.java
-@@ -45,7 +_,7 @@
+@@ -27,6 +_,24 @@
+         SpawnUtil.Strategy p_216411_,
+         boolean p_382971_
+     ) {
++        // CraftBukkit start
++        return trySpawnMob(p_216404_, p_364255_, p_216406_, p_216407_, p_216408_, p_216409_, p_216410_, p_216411_, p_382971_, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.DEFAULT, null); // Paper - pre creature spawn event
++    }
++
++    public static <T extends Mob> Optional<T> trySpawnMob(
++            EntityType<T> p_216404_,
++            EntitySpawnReason p_364255_,
++            ServerLevel p_216406_,
++            BlockPos p_216407_,
++            int p_216408_,
++            int p_216409_,
++            int p_216410_,
++            SpawnUtil.Strategy p_216411_,
++            boolean p_382971_,
++            org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason reason,
++            @javax.annotation.Nullable Runnable onAbort // Paper - pre creature spawn event
++    ) {
++        // CraftBukkit end
+         BlockPos.MutableBlockPos blockpos$mutableblockpos = p_216407_.mutable();
+ 
+         for (int i = 0; i < p_216408_; i++) {
+@@ -43,15 +_,32 @@
+                             )
+                         )
                  )) {
++                // Paper start - PreCreatureSpawnEvent
++                final com.destroystokyo.paper.event.entity.PreCreatureSpawnEvent event = new com.destroystokyo.paper.event.entity.PreCreatureSpawnEvent(
++                        org.bukkit.craftbukkit.util.CraftLocation.toBukkit(p_216407_, p_216406_),
++                        org.bukkit.craftbukkit.entity.CraftEntityType.minecraftToBukkit(p_216404_),
++                        reason
++                );
++                if (!event.callEvent()) {
++                    if (event.shouldAbortSpawn()) {
++                        if (onAbort != null) {
++                            onAbort.run();
++                        }
++                        return Optional.empty();
++                    }
++                    break;
++                }
++                // Paper end - PreCreatureSpawnEvent
                  T t = (T)p_216404_.create(p_216406_, null, blockpos$mutableblockpos, p_364255_, false, false);
                  if (t != null) {
 -                    if (t.checkSpawnRules(p_216406_, p_364255_) && t.checkSpawnObstruction(p_216406_)) {
+-                        p_216406_.addFreshEntityWithPassengers(t);
 +                    if (net.neoforged.neoforge.event.EventHooks.checkSpawnPosition(t, p_216406_, p_364255_)) {
-                         p_216406_.addFreshEntityWithPassengers(t);
++                        p_216406_.addFreshEntityWithPassengers(t, reason); // CraftBukkit
++                        if (t.isRemoved()) return Optional.empty(); // CraftBukkit
                          t.playAmbientSound();
                          return Optional.of(t);
+                     }
+ 
+-                    t.discard();
++                    t.discard(null); // CraftBukkit - add Bukkit remove cause
+                 }
+             }
+         }

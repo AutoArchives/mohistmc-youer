@@ -21,12 +21,31 @@
          );
          WorldLoader.PackConfig worldloader$packconfig = new WorldLoader.PackConfig(p_206609_, worlddataconfiguration, false, true);
          WorldLoader.InitConfig worldloader$initconfig = new WorldLoader.InitConfig(worldloader$packconfig, Commands.CommandSelection.DEDICATED, 4);
-@@ -153,10 +_,12 @@
+@@ -145,18 +_,28 @@
+         Optional<String> p_397483_,
+         boolean p_397578_
+     ) {
+-        super(p_206597_, p_206598_, p_206599_, p_206600_, Proxy.NO_PROXY, DataFixers.getDataFixer(), NO_SERVICES, LoggingLevelLoadListener.forDedicatedServer());
++        super(null, null, p_206597_, p_206598_, p_206599_, p_206600_, Proxy.NO_PROXY, DataFixers.getDataFixer(), NO_SERVICES, LoggingLevelLoadListener.forDedicatedServer());
+         this.testSelection = p_397483_;
+         this.verify = p_397578_;
+     }
+ 
      @Override
      public boolean initServer() {
-         this.setPlayerList(new PlayerList(this, this.registries(), this.playerDataStorage, new EmptyNotificationService()) {});
+-        this.setPlayerList(new PlayerList(this, this.registries(), this.playerDataStorage, new EmptyNotificationService()) {});
+-        this.loadLevel();
++        // Paper start
++        this.setPlayerList(new PlayerList(this, this.registries(), this.playerDataStorage, new EmptyNotificationService()) {
++            @Override
++            public void loadAndSaveFiles() {
++                throw new UnsupportedOperationException("Should not be called in a GameTestServer");
++            }
++        });
++        this.loadLevel("blah");
++        this.initPostWorld();
++        // Paper end
 +        net.neoforged.neoforge.server.ServerLifecycleHooks.handleServerAboutToStart(this);
-         this.loadLevel();
          ServerLevel serverlevel = this.overworld();
          this.testBatches = this.evaluateTestsToRun(serverlevel);
          LOGGER.info("Started game test server");
@@ -64,3 +83,34 @@
          }
      }
  
+@@ -352,6 +_,13 @@
+         return false;
+     }
+ 
++    // Paper start
++    @Override
++    public org.bukkit.command.CommandSender getBukkitSender(final net.minecraft.commands.CommandSourceStack wrapper) {
++        throw new UnsupportedOperationException("Not supported.");
++    }
++    // Paper end
++
+     @Override
+     public boolean isSingleplayerOwner(NameAndId p_436045_) {
+         return false;
+@@ -403,5 +_,16 @@
+         @Override
+         public void save() {
+         }
++
++        // Paper start
++        @Override
++        public void save(final boolean async) {
++        }
++
++        @Override
++        public @Nullable NameAndId getIfCached(final String name) {
++            return this.get(name).orElse(null);
++        }
++        // Paper end
+     }
+ }

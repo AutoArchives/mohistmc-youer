@@ -1,5 +1,13 @@
 --- a/net/minecraft/world/entity/LivingEntity.java
 +++ b/net/minecraft/world/entity/LivingEntity.java
+@@ -137,6 +_,7 @@
+ import net.minecraft.world.scores.Scoreboard;
+ import net.minecraft.world.waypoints.Waypoint;
+ import net.minecraft.world.waypoints.WaypointTransmitter;
++import org.bukkit.event.entity.EntityRegainHealthEvent;
+ import org.jetbrains.annotations.Contract;
+ import org.slf4j.Logger;
+ 
 @@ -190,13 +_,19 @@
      protected static final EntityDimensions SLEEPING_DIMENSIONS = EntityDimensions.fixed(0.2F, 0.2F).withEyeHeight(0.2F);
      public static final float EXTRA_RENDER_CULLING_SIZE_WITH_BIG_HAT = 0.5F;
@@ -182,15 +190,39 @@
          MobEffectInstance mobeffectinstance = this.removeEffectNoUpdate(p_316570_);
          if (mobeffectinstance != null) {
              this.onEffectsRemoved(List.of(mobeffectinstance));
-@@ -1133,6 +_,8 @@
+@@ -1133,9 +_,31 @@
      }
  
      public void heal(float p_21116_) {
++        // CraftBukkit start - Delegate so we can handle providing a reason for health being regained
++        this.heal(p_21116_, EntityRegainHealthEvent.RegainReason.CUSTOM);
++    }
++
++    public void heal(float healAmount, EntityRegainHealthEvent.RegainReason regainReason) {
++        // Paper start - Forward
++        this.heal(healAmount, regainReason, false);
++    }
++
++    public void heal(float p_21116_, EntityRegainHealthEvent.RegainReason regainReason, boolean isFastRegen) {
++        // Paper end - Forward
 +        p_21116_ = net.neoforged.neoforge.event.EventHooks.onLivingHeal(this, p_21116_);
 +        if (p_21116_ <= 0) return;
          float f = this.getHealth();
          if (f > 0.0F) {
-             this.setHealth(f + p_21116_);
+-            this.setHealth(f + p_21116_);
++            EntityRegainHealthEvent event = new EntityRegainHealthEvent(this.getBukkitEntity(), p_21116_, regainReason, isFastRegen); // Paper
++            // Suppress during worldgen
++            if (this.valid) {
++                this.level().getCraftServer().getPluginManager().callEvent(event);
++            }
++
++            if (!event.isCancelled()) {
++                this.setHealth((float) (this.getHealth() + event.getAmount()));
++            }
++            // CraftBukkit end
+         }
+     }
+ 
 @@ -1160,11 +_,14 @@
          } else if (p_376460_.is(DamageTypeTags.IS_FIRE) && this.hasEffect(MobEffects.FIRE_RESISTANCE)) {
              return false;

@@ -374,3 +374,14 @@
      }
  
      @Override
+@@ -2299,4 +_,10 @@
+         );
+         public static final ServerPlayer.SavedPosition EMPTY = new ServerPlayer.SavedPosition(Optional.empty(), Optional.empty(), Optional.empty());
+     }
++
++    @Override
++    public org.bukkit.craftbukkit.entity.CraftPlayer getBukkitEntity() {
++        return (org.bukkit.craftbukkit.entity.CraftPlayer) super.getBukkitEntity();
++    }
++    // CraftBukkit end
+ }

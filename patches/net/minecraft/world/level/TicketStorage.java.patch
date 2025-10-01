@@ -18,7 +18,7 @@
      }
  
      public TicketStorage() {
-@@ -174,6 +_,7 @@
+@@ -174,13 +_,14 @@
          if (p_394469_.getType().equals(TicketType.FORCED)) {
              this.chunksWithForcedTickets.add(p_394247_);
          }
@@ -26,6 +26,15 @@
  
          this.setDirty();
          return true;
+     }
+ 
+-    private static boolean isTicketSameTypeAndLevel(Ticket p_394344_, Ticket p_394181_) {
+-        return p_394181_.getType() == p_394344_.getType() && p_394181_.getTicketLevel() == p_394344_.getTicketLevel();
++    private static boolean isTicketSameTypeAndLevel(Ticket first, Ticket second) {
++        return second.getType() == first.getType() && second.getTicketLevel() == first.getTicketLevel() && java.util.Objects.equals(second.getIdentifier(), first.getIdentifier()); // Paper - add identifier
+     }
+ 
+     public int getTicketLevelAt(long p_393578_, boolean p_393891_) {
 @@ -261,6 +_,7 @@
                  if (p_394054_.getType().equals(TicketType.FORCED)) {
                      this.updateForcedChunks();
@@ -34,12 +43,21 @@
  
                  this.setDirty();
                  return true;
-@@ -303,11 +_,14 @@
+@@ -269,7 +_,7 @@
+     }
+ 
+     private void updateForcedChunks() {
+-        this.chunksWithForcedTickets = this.getAllChunksWithTicketThat(p_393889_ -> p_393889_.getType().equals(TicketType.FORCED));
++        throw new UnsupportedOperationException(); // Paper - rewrite chunk system
+     }
+ 
+     public String getTicketDebugString(long p_393749_, boolean p_394364_) {
+@@ -302,12 +_,13 @@
+     }
  
      public void deactivateTicketsOnClosing() {
-         this.removeTicketIf((p_394604_, p_435717_) -> p_394604_.getType() != TicketType.UNKNOWN, this.deactivatedTickets);
-+        blockForcedChunks.deactivateTicketsOnClosing();
-+        entityForcedChunks.deactivateTicketsOnClosing();
+-        this.removeTicketIf((p_394604_, p_435717_) -> p_394604_.getType() != TicketType.UNKNOWN, this.deactivatedTickets);
++        // Paper - rewrite chunk system
      }
  
      public void removeTicketIf(TicketStorage.TicketPredicate p_435606_, @Nullable Long2ObjectOpenHashMap<List<Ticket>> p_393746_) {
@@ -65,11 +83,27 @@
      }
  
      public void replaceTicketLevelOfType(int p_393875_, TicketType p_394261_) {
-@@ -411,5 +_,26 @@
+@@ -411,5 +_,42 @@
  
      public interface TicketPredicate {
          boolean test(Ticket p_434782_, long p_434387_);
 +    }
++
++    // Paper start
++    public boolean addPluginRegionTicket(final ChunkPos pos, final org.bukkit.plugin.Plugin value) {
++        // Keep inline with force loading
++        return addTicket(pos.toLong(), new Ticket(TicketType.PLUGIN_TICKET, ChunkMap.FORCED_TICKET_LEVEL, value));
++    }
++
++    public boolean removePluginRegionTicket(final ChunkPos pos, final org.bukkit.plugin.Plugin value) {
++        // Keep inline with force loading
++        return removeTicket(pos.toLong(), new Ticket(TicketType.PLUGIN_TICKET, ChunkMap.FORCED_TICKET_LEVEL, value));
++    }
++
++    public void removeAllPluginRegionTickets(TicketType ticketType, int ticketLevel, org.bukkit.plugin.Plugin ticketIdentifier) {
++        this.chunkMap.level.moonrise$getChunkTaskScheduler().chunkHolderManager.removeAllTicketsFor(ticketType, ticketLevel, ticketIdentifier); // Paper - rewrite chunk system
++    }
++    // Paper end
 +
 +    // Neo: Keep track of forced loaded chunks caused by entities or blocks.
 +    private final net.neoforged.neoforge.common.world.chunk.ForcedChunkManager.TicketTracker<net.minecraft.core.BlockPos> blockForcedChunks = new net.neoforged.neoforge.common.world.chunk.ForcedChunkManager.TicketTracker<>(this, net.neoforged.neoforge.common.NeoForgeMod.BLOCK_TICKET, net.neoforged.neoforge.common.NeoForgeMod.BLOCK_WITH_NATURAL_SPAWNING_TICKET);

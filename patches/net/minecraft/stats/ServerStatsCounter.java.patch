@@ -1,0 +1,33 @@
+--- a/net/minecraft/stats/ServerStatsCounter.java
++++ b/net/minecraft/stats/ServerStatsCounter.java
+@@ -69,9 +_,21 @@
+                 LOGGER.error("Couldn't parse statistics file {}", p_12817_, jsonparseexception);
+             }
+         }
++        // Paper start - Moved after stat fetching for player state file
++        // Moves the loading after vanilla loading, so it overrides the values.
++        // Disables saving any forced stats, so it stays at the same value (without enabling disableStatSaving)
++        // Fixes stat initialization to not cause a NullPointerException
++        // Spigot start
++        for (Map.Entry<net.minecraft.resources.ResourceLocation, Integer> entry : org.spigotmc.SpigotConfig.forcedStats.entrySet()) {
++            Stat<net.minecraft.resources.ResourceLocation> wrapper = Stats.CUSTOM.get(java.util.Objects.requireNonNull(BuiltInRegistries.CUSTOM_STAT.getValue(entry.getKey()))); // Paper - ensured by SpigotConfig#stats
++            this.stats.put(wrapper, entry.getValue().intValue());
++        }
++        // Spigot end
++        // Paper end - Moved after stat fetching for player state file
+     }
+ 
+     public void save() {
++        if (org.spigotmc.SpigotConfig.disableStatSaving) return; // Spigot
+         try {
+             FileUtils.writeStringToFile(this.file, this.toJson());
+         } catch (IOException ioexception) {
+@@ -81,6 +_,8 @@
+ 
+     @Override
+     public void setValue(Player p_12827_, Stat<?> p_12828_, int p_12829_) {
++        if (org.spigotmc.SpigotConfig.disableStatSaving) return; // Spigot
++        if (p_12828_.getType() == Stats.CUSTOM && p_12828_.getValue() instanceof final net.minecraft.resources.ResourceLocation resourceLocation && org.spigotmc.SpigotConfig.forcedStats.get(resourceLocation) != null) return; // Paper - disable saving forced stats
+         super.setValue(p_12827_, p_12828_, p_12829_);
+         this.dirty.add(p_12828_);
+     }
