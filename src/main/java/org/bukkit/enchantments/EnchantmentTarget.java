@@ -6,14 +6,17 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * Represents the applicable target for a {@link Enchantment}
+ *
+ * @deprecated enchantment groupings are now managed by tags, not categories
  */
+@Deprecated(since = "1.20.5", forRemoval = true)
 public enum EnchantmentTarget {
     /**
      * Allows the Enchantment to be placed on all items
      *
      * @deprecated this target no longer exists in Vanilla
      */
-    @Deprecated(since = "1.16.1")
+    @Deprecated(since = "1.16.1", forRemoval = true)
     ALL {
         @Override
         public boolean includes(@NotNull Material item) {
@@ -48,7 +51,6 @@ public enum EnchantmentTarget {
         public boolean includes(@NotNull Material item) {
             return item.equals(Material.LEATHER_BOOTS)
                 || item.equals(Material.CHAINMAIL_BOOTS)
-                || item.equals(Material.COPPER_BOOTS)
                 || item.equals(Material.IRON_BOOTS)
                 || item.equals(Material.DIAMOND_BOOTS)
                 || item.equals(Material.GOLDEN_BOOTS)
@@ -64,7 +66,6 @@ public enum EnchantmentTarget {
         public boolean includes(@NotNull Material item) {
             return item.equals(Material.LEATHER_LEGGINGS)
                 || item.equals(Material.CHAINMAIL_LEGGINGS)
-                || item.equals(Material.COPPER_LEGGINGS)
                 || item.equals(Material.IRON_LEGGINGS)
                 || item.equals(Material.DIAMOND_LEGGINGS)
                 || item.equals(Material.GOLDEN_LEGGINGS)
@@ -95,7 +96,6 @@ public enum EnchantmentTarget {
         public boolean includes(@NotNull Material item) {
             return item.equals(Material.LEATHER_HELMET)
                 || item.equals(Material.CHAINMAIL_HELMET)
-                || item.equals(Material.COPPER_HELMET)
                 || item.equals(Material.DIAMOND_HELMET)
                 || item.equals(Material.IRON_HELMET)
                 || item.equals(Material.GOLDEN_HELMET)
@@ -113,7 +113,6 @@ public enum EnchantmentTarget {
             return item.equals(Material.WOODEN_SWORD)
                 || item.equals(Material.STONE_SWORD)
                 || item.equals(Material.IRON_SWORD)
-                || item.equals(Material.COPPER_SWORD)
                 || item.equals(Material.DIAMOND_SWORD)
                 || item.equals(Material.GOLDEN_SWORD)
                 || item.equals(Material.NETHERITE_SWORD);
@@ -129,28 +128,24 @@ public enum EnchantmentTarget {
             return item.equals(Material.WOODEN_SHOVEL)
                 || item.equals(Material.STONE_SHOVEL)
                 || item.equals(Material.IRON_SHOVEL)
-                || item.equals(Material.COPPER_SHOVEL)
                 || item.equals(Material.DIAMOND_SHOVEL)
                 || item.equals(Material.GOLDEN_SHOVEL)
                 || item.equals(Material.NETHERITE_SHOVEL)
                 || item.equals(Material.WOODEN_PICKAXE)
                 || item.equals(Material.STONE_PICKAXE)
                 || item.equals(Material.IRON_PICKAXE)
-                || item.equals(Material.COPPER_PICKAXE)
                 || item.equals(Material.DIAMOND_PICKAXE)
                 || item.equals(Material.GOLDEN_PICKAXE)
                 || item.equals(Material.NETHERITE_PICKAXE)
                 || item.equals(Material.WOODEN_AXE)
                 || item.equals(Material.STONE_AXE)
                 || item.equals(Material.IRON_AXE)
-                || item.equals(Material.COPPER_AXE)
                 || item.equals(Material.DIAMOND_AXE)
                 || item.equals(Material.GOLDEN_AXE)
                 || item.equals(Material.NETHERITE_AXE)
                 || item.equals(Material.WOODEN_HOE)
                 || item.equals(Material.STONE_HOE)
                 || item.equals(Material.IRON_HOE)
-                || item.equals(Material.COPPER_HOE)
                 || item.equals(Material.DIAMOND_HOE)
                 || item.equals(Material.GOLDEN_HOE)
                 || item.equals(Material.NETHERITE_HOE);

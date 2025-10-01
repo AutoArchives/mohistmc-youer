@@ -1,11 +1,9 @@
 package org.bukkit.block;
 
-import org.bukkit.loot.Lootable;
-
 /**
  * Represents a captured state of a crafter.
  */
-public interface Crafter extends Container, Lootable {
+public interface Crafter extends Container, com.destroystokyo.paper.loottable.LootableBlockInventory { // Paper - LootTable API
 
     /**
      * Gets the number of ticks which this block will remain in the crafting

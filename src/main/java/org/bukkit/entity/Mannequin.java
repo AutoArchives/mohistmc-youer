@@ -1,114 +1,106 @@
 package org.bukkit.entity;
 
-import org.bukkit.entity.model.PlayerModelPart;
+import com.destroystokyo.paper.SkinParts;
+import io.papermc.paper.InternalAPIBridge;
+import io.papermc.paper.datacomponent.item.ResolvableProfile;
+import net.kyori.adventure.text.Component;
+import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.MainHand;
-import org.bukkit.profile.PlayerProfile;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
-/**
- * Represents a mannequin.
- */
+@NullMarked
 public interface Mannequin extends LivingEntity {
 
     /**
-     * Gets the mannequin's main hand.
+     * Returns the default mannequin profile.
      *
-     * @return the mannequin's main hand
+     * @return the default mannequin profile
      */
-    @NotNull
-    MainHand getMainHand();
+    static ResolvableProfile defaultProfile() {
+        return InternalAPIBridge.get().defaultMannequinProfile();
+    }
 
     /**
-     * Gets the mannequin's main hand.
+     * Returns the default mannequin description.
      *
-     * @param hand the mannequin's main hand
+     * @return the default mannequin description
      */
-    void setMainHand(@NotNull MainHand hand);
+    static Component defaultDescription() {
+        return InternalAPIBridge.get().defaultMannequinDescription();
+    }
 
     /**
-     * Gets whether a part of the mannequin model is shown.
+     * Gets the resolvable profile for this mannequin.
      *
-     * @param part model part
-     * @return if it is shown
+     * @return the resolvable profile
      */
-    boolean isModelPartShown(@NotNull PlayerModelPart part);
+    ResolvableProfile getProfile();
 
     /**
-     * Sets whether a part of the mannequin model is shown.
+     * Sets the resolvable profile for this mannequin.
      *
-     * @param part model part
-     * @param shown whether it is shown
+     * @param profile the new resolvable profile
      */
-    void setModelPartShown(@NotNull PlayerModelPart part, boolean shown);
+    void setProfile(ResolvableProfile profile);
 
     /**
-     * Gets the profile of the player used to texture the mannequin.
+     * Gets a copy of the current skin part options for this mannequin.
      *
-     * @return the profile of the owning player
+     * @return a copy of the current skin part options
      */
-    @Nullable
-    PlayerProfile getPlayerProfile();
+    SkinParts.Mutable getSkinParts();
 
     /**
-     * Sets the profile of the player used to texture the mannequin.
-     * <p>
-     * The profile must already contain a skin texture for it to be displayed.
+     * Sets the skin part options for this mannequin.
      *
-     * @param profile the profile of the player texture.
-     * @throws IllegalArgumentException if the profile does not contain the
-     * necessary information
+     * @param parts the new skin part options
      */
-    void setPlayerProfile(@Nullable PlayerProfile profile);
+    void setSkinParts(SkinParts parts);
 
     /**
-     * Set the mannequin pose.
+     * Checks if this mannequin is immovable.
      *
-     * @param pose new pose
-     * @throws IllegalArgumentException if the pose is not valid for a mannequin
-     */
-    void setPose(@NotNull Pose pose);
-
-    /**
-     * Gets whether this mannequin can be moved/pushed.
-     *
-     * @return whether immovable
+     * @return whether this mannequin is immovable
      */
     boolean isImmovable();
 
     /**
-     * Sets whether this mannequin can be moved/pushed.
+     * Sets whether this mannequin is immovable.
      *
-     * @param immovable new state
+     * @param immovable new immovable state
      */
     void setImmovable(boolean immovable);
 
     /**
-     * Gets the description which shows as part of the mannequin's name.
+     * Gets the description text for this mannequin (appears below the name).
      *
-     * @return description the description text
+     * @return the description, or null if none is set
      */
-    @Nullable
-    String getDescripion();
+    @Nullable Component getDescription();
 
     /**
-     * Sets the description which shows as part of the mannequin's name.
+     * Sets the description text for this mannequin (appears below the name).
+     * Setting the description to null will remove it.
      *
-     * @param description the description to show or null for default
+     * @param description the new description, or null to remove it
      */
-    void setDescription(@Nullable String description);
+    void setDescription(@Nullable Component description);
 
     /**
-     * Gets whether the mannequin description is hidden.
+     * Gets the main hand of this mannequin.
      *
-     * @return hide description status
+     * @return the main hand
      */
-    boolean isHideDescription();
+    MainHand getMainHand();
 
     /**
-     * Sets whether the mannequin description is hidden.
+     * Sets the main hand of this mannequin.
      *
-     * @param hide whether to hide description
+     * @param hand the new main hand
      */
-    void setHideDescription(boolean hide);
+    void setMainHand(MainHand hand);
+
+    @Override
+    EntityEquipment getEquipment();
 }

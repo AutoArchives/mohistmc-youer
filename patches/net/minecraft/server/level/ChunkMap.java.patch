@@ -1,5 +1,14 @@
 --- a/net/minecraft/server/level/ChunkMap.java
 +++ b/net/minecraft/server/level/ChunkMap.java
+@@ -146,7 +_,7 @@
+     private final Queue<Runnable> unloadQueue = Queues.newConcurrentLinkedQueue();
+     private final AtomicInteger activeChunkWrites = new AtomicInteger();
+     public int serverViewDistance;
+-    private final WorldGenContext worldGenContext;
++    public final WorldGenContext worldGenContext;
+ 
+     public ChunkMap(
+         ServerLevel p_214836_,
 @@ -400,6 +_,7 @@
                  this.modified = true;
              }

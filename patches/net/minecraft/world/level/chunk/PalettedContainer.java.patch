@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/level/chunk/PalettedContainer.java
++++ b/net/minecraft/world/level/chunk/PalettedContainer.java
+@@ -146,7 +_,7 @@
+         return this.get(this.strategy.getIndex(p_63088_, p_63089_, p_63090_));
+     }
+ 
+-    protected T get(int p_63086_) {
++    public T get(int p_63086_) {
+         PalettedContainer.Data<T> data = this.data;
+         return data.palette.valueFor(data.storage.get(p_63086_));
+     }

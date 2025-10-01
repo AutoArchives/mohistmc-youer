@@ -1,8 +1,11 @@
 package org.bukkit;
 
+import org.jetbrains.annotations.ApiStatus;
+
 /**
  * Represents the outcome of an explosion.
  */
+@ApiStatus.Experimental
 public enum ExplosionResult {
 
     /**
