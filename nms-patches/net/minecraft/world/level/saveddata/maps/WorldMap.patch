@@ -1,7 +1,7 @@
 --- a/net/minecraft/world/level/saveddata/maps/WorldMap.java
 +++ b/net/minecraft/world/level/saveddata/maps/WorldMap.java
 @@ -41,6 +41,16 @@
- import net.minecraft.world.level.saveddata.SavedDataType;
+ import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
 +// CraftBukkit start
@@ -104,7 +104,7 @@
          }
  
          for (WorldMapFrame worldmapframe : list1) {
-@@ -400,7 +462,7 @@
+@@ -396,7 +458,7 @@
  
              if (!this.isTrackedCountOverLimit(256)) {
                  this.bannerMarkers.put(mapiconbanner.getId(), mapiconbanner);
@@ -113,7 +113,7 @@
                  this.setDirty();
                  return true;
              }
-@@ -551,7 +613,7 @@
+@@ -547,7 +609,7 @@
              this.player = entityhuman;
          }
  
@@ -122,7 +122,7 @@
              int i = this.minDirtyX;
              int j = this.minDirtyY;
              int k = this.maxDirtyX + 1 - this.minDirtyX;
-@@ -560,7 +622,7 @@
+@@ -556,7 +618,7 @@
  
              for (int i1 = 0; i1 < k; ++i1) {
                  for (int j1 = 0; j1 < l; ++j1) {
@@ -131,7 +131,7 @@
                  }
              }
  
-@@ -570,19 +632,29 @@
+@@ -566,19 +628,29 @@
          @Nullable
          Packet<?> nextUpdatePacket(MapId mapid) {
              WorldMap.c worldmap_c;

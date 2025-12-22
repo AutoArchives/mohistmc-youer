@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/level/block/BlockWitherSkull.java
 +++ b/net/minecraft/world/level/block/BlockWitherSkull.java
 @@ -24,6 +24,10 @@
- import net.minecraft.world.level.block.state.pattern.ShapeDetectorBuilder;
  import net.minecraft.world.level.block.state.predicate.BlockStatePredicate;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
@@ -11,7 +11,7 @@
  public class BlockWitherSkull extends BlockSkull {
  
      public static final MapCodec<BlockWitherSkull> CODEC = simpleCodec(BlockWitherSkull::new);
-@@ -56,6 +60,7 @@
+@@ -54,6 +58,7 @@
      }
  
      public static void checkSpawn(World world, BlockPosition blockposition, TileEntitySkull tileentityskull) {
@@ -19,7 +19,7 @@
          if (!world.isClientSide()) {
              IBlockData iblockdata = tileentityskull.getBlockState();
              boolean flag = iblockdata.is(Blocks.WITHER_SKELETON_SKULL) || iblockdata.is(Blocks.WITHER_SKELETON_WALL_SKULL);
-@@ -67,18 +72,24 @@
+@@ -65,18 +70,24 @@
                      EntityWither entitywither = EntityTypes.WITHER.create(world, EntitySpawnReason.TRIGGERED);
  
                      if (entitywither != null) {

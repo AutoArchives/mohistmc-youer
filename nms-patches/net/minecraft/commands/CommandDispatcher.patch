@@ -1,7 +1,7 @@
 --- a/net/minecraft/commands/CommandDispatcher.java
 +++ b/net/minecraft/commands/CommandDispatcher.java
-@@ -147,6 +147,15 @@
- import net.minecraft.world.level.GameRules;
+@@ -156,6 +156,15 @@
+ import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
 +// CraftBukkit start
@@ -16,7 +16,7 @@
  public class CommandDispatcher {
  
      public static final String COMMAND_PREFIX = "/";
-@@ -190,6 +199,7 @@
+@@ -195,6 +204,7 @@
      private final com.mojang.brigadier.CommandDispatcher<CommandListenerWrapper> dispatcher = new com.mojang.brigadier.CommandDispatcher();
  
      public CommandDispatcher(CommandDispatcher.ServerType commanddispatcher_servertype, CommandBuildContext commandbuildcontext) {
@@ -24,7 +24,7 @@
          CommandAdvancement.register(this.dispatcher);
          CommandAttribute.register(this.dispatcher, commandbuildcontext);
          CommandExecute.register(this.dispatcher, commandbuildcontext);
-@@ -299,6 +309,11 @@
+@@ -305,6 +315,11 @@
              CommandPublish.register(this.dispatcher);
          }
  
@@ -36,7 +36,7 @@
          this.dispatcher.setConsumer(ExecutionCommandSource.resultConsumer());
      }
  
-@@ -309,9 +324,52 @@
+@@ -315,9 +330,52 @@
          return new ParseResults(commandcontextbuilder1, parseresults.getReader(), parseresults.getExceptions());
      }
  
@@ -90,7 +90,7 @@
      }
  
      public static String trimOptionalPrefix(String s) {
-@@ -319,12 +377,16 @@
+@@ -325,12 +383,16 @@
      }
  
      public void performCommand(ParseResults<CommandListenerWrapper> parseresults, String s) {
@@ -108,16 +108,16 @@
  
          try {
              if (contextchain != null) {
-@@ -358,7 +420,7 @@
+@@ -363,7 +425,7 @@
+ 
      }
  
-     @Nullable
--    private static ContextChain<CommandListenerWrapper> finishParsing(ParseResults<CommandListenerWrapper> parseresults, String s, CommandListenerWrapper commandlistenerwrapper) {
-+    private static ContextChain<CommandListenerWrapper> finishParsing(ParseResults<CommandListenerWrapper> parseresults, String s, CommandListenerWrapper commandlistenerwrapper, String label) { // CraftBukkit
+-    private static @Nullable ContextChain<CommandListenerWrapper> finishParsing(ParseResults<CommandListenerWrapper> parseresults, String s, CommandListenerWrapper commandlistenerwrapper) {
++    private static @Nullable ContextChain<CommandListenerWrapper> finishParsing(ParseResults<CommandListenerWrapper> parseresults, String s, CommandListenerWrapper commandlistenerwrapper, String label) { // CraftBukkit
          try {
              validateParseResults(parseresults);
              return (ContextChain) ContextChain.tryFlatten(parseresults.getContext().build(s)).orElseThrow(() -> {
-@@ -369,7 +431,7 @@
+@@ -374,7 +436,7 @@
              if (commandsyntaxexception.getInput() != null && commandsyntaxexception.getCursor() >= 0) {
                  int i = Math.min(commandsyntaxexception.getInput().length(), commandsyntaxexception.getCursor());
                  IChatMutableComponent ichatmutablecomponent = IChatBaseComponent.empty().withStyle(EnumChatFormat.GRAY).withStyle((chatmodifier) -> {
@@ -126,7 +126,7 @@
                  });
  
                  if (i > 10) {
-@@ -419,7 +481,7 @@
+@@ -424,7 +486,7 @@
  
                  executioncontext1.close();
              } finally {
@@ -135,7 +135,7 @@
              }
          } else {
              consumer.accept(executioncontext);
-@@ -428,11 +490,36 @@
+@@ -433,11 +495,36 @@
      }
  
      public void sendCommands(EntityPlayer entityplayer) {

@@ -1,7 +1,7 @@
 --- a/net/minecraft/server/level/EntityTrackerEntry.java
 +++ b/net/minecraft/server/level/EntityTrackerEntry.java
 @@ -49,6 +49,12 @@
- import net.minecraft.world.phys.Vec3D;
+ import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
 +// CraftBukkit start
@@ -13,10 +13,10 @@
  public class EntityTrackerEntry {
  
      private static final Logger LOGGER = LogUtils.getLogger();
-@@ -73,8 +79,12 @@
+@@ -72,8 +78,12 @@
+     private boolean wasRiding;
      private boolean wasOnGround;
-     @Nullable
-     private List<DataWatcher.c<?>> trackedDataValues;
+     private @Nullable List<DataWatcher.c<?>> trackedDataValues;
 +    // CraftBukkit start
 +    private final Set<ServerPlayerConnection> trackedPlayers;
  
@@ -84,9 +84,9 @@
              this.entity.hurtMarked = false;
              this.synchronizer.sendToTrackingPlayersAndSelf(new PacketPlayOutEntityVelocity(this.entity));
          }
-@@ -283,7 +315,10 @@
- 
+@@ -284,7 +316,10 @@
      public void sendPairingData(EntityPlayer entityplayer, Consumer<Packet<PacketListenerPlayOut>> consumer) {
+         this.entity.updateDataBeforeSync();
          if (this.entity.isRemoved()) {
 -            EntityTrackerEntry.LOGGER.warn("Fetching packet for removed entity {}", this.entity);
 +            // CraftBukkit start - Remove useless error spam, just return
@@ -96,7 +96,7 @@
          }
  
          Packet<PacketListenerPlayOut> packet = this.entity.getAddEntityPacket(this);
-@@ -298,6 +333,12 @@
+@@ -299,6 +334,12 @@
          if (entity instanceof EntityLiving entityliving) {
              Collection<AttributeModifiable> collection = entityliving.getAttributes().getSyncableAttributes();
  
@@ -109,7 +109,7 @@
              if (!collection.isEmpty()) {
                  consumer.accept(new PacketPlayOutUpdateAttributes(this.entity.getId(), collection));
              }
-@@ -318,6 +359,7 @@
+@@ -319,6 +360,7 @@
              if (!list.isEmpty()) {
                  consumer.accept(new PacketPlayOutEntityEquipment(this.entity.getId(), list));
              }
@@ -117,7 +117,7 @@
          }
  
          if (!this.entity.getPassengers().isEmpty()) {
-@@ -370,6 +412,11 @@
+@@ -371,6 +413,11 @@
              Set<AttributeModifiable> set = ((EntityLiving) this.entity).getAttributes().getAttributesToSync();
  
              if (!set.isEmpty()) {
@@ -129,7 +129,7 @@
                  this.synchronizer.sendToTrackingPlayersAndSelf(new PacketPlayOutUpdateAttributes(this.entity.getId(), set));
              }
  
-@@ -385,5 +432,7 @@
+@@ -386,5 +433,7 @@
          void sendToTrackingPlayersAndSelf(Packet<? super PacketListenerPlayOut> packet);
  
          void sendToTrackingPlayersFiltered(Packet<? super PacketListenerPlayOut> packet, Predicate<EntityPlayer> predicate);

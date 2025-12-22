@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/EntityLightning.java
 +++ b/net/minecraft/world/entity/EntityLightning.java
-@@ -29,6 +29,11 @@
- import net.minecraft.world.phys.AxisAlignedBB;
+@@ -30,6 +30,11 @@
  import net.minecraft.world.phys.Vec3D;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
@@ -12,7 +12,7 @@
  public class EntityLightning extends Entity {
  
      private static final int START_LIFE = 2;
-@@ -113,7 +118,7 @@
+@@ -112,7 +117,7 @@
                      }
                  }
  
@@ -21,7 +21,7 @@
              } else if (this.life < -this.random.nextInt(10)) {
                  --this.flashes;
                  this.life = 1;
-@@ -122,7 +127,7 @@
+@@ -121,7 +126,7 @@
              }
          }
  
@@ -30,33 +30,33 @@
              if (!(this.level() instanceof WorldServer)) {
                  this.level().setSkyFlashTime(2);
              } else if (!this.visualOnly) {
-@@ -159,8 +164,12 @@
-                     IBlockData iblockdata = BlockFireAbstract.getState(this.level(), blockposition);
+@@ -161,8 +166,12 @@
+                 IBlockData iblockdata = BlockFireAbstract.getState(worldserver, blockposition);
  
-                     if (this.level().getBlockState(blockposition).isAir() && iblockdata.canSurvive(this.level(), blockposition)) {
--                        this.level().setBlockAndUpdate(blockposition, iblockdata);
+                 if (worldserver.getBlockState(blockposition).isAir() && iblockdata.canSurvive(worldserver, blockposition)) {
+-                    worldserver.setBlockAndUpdate(blockposition, iblockdata);
+-                    ++this.blocksSetOnFire;
++                    // CraftBukkit start - add "!visualOnly"
++                    if (!visualOnly && !CraftEventFactory.callBlockIgniteEvent(worldserver, blockposition, this).isCancelled()) {
++                        worldserver.setBlockAndUpdate(blockposition, iblockdata);
++                        ++this.blocksSetOnFire;
++                    }
++                    // CraftBukkit end
+                 }
+ 
+                 for (int j = 0; j < i; ++j) {
+@@ -170,8 +179,12 @@
+ 
+                     iblockdata = BlockFireAbstract.getState(worldserver, blockposition1);
+                     if (worldserver.getBlockState(blockposition1).isAir() && iblockdata.canSurvive(worldserver, blockposition1)) {
+-                        worldserver.setBlockAndUpdate(blockposition1, iblockdata);
 -                        ++this.blocksSetOnFire;
 +                        // CraftBukkit start - add "!visualOnly"
-+                        if (!visualOnly && !CraftEventFactory.callBlockIgniteEvent(this.level(), blockposition, this).isCancelled()) {
-+                            this.level().setBlockAndUpdate(blockposition, iblockdata);
++                        if (!visualOnly && !CraftEventFactory.callBlockIgniteEvent(worldserver, blockposition1, this).isCancelled()) {
++                            worldserver.setBlockAndUpdate(blockposition1, iblockdata);
 +                            ++this.blocksSetOnFire;
 +                        }
 +                        // CraftBukkit end
                      }
- 
-                     for (int j = 0; j < i; ++j) {
-@@ -168,8 +177,12 @@
- 
-                         iblockdata = BlockFireAbstract.getState(this.level(), blockposition1);
-                         if (this.level().getBlockState(blockposition1).isAir() && iblockdata.canSurvive(this.level(), blockposition1)) {
--                            this.level().setBlockAndUpdate(blockposition1, iblockdata);
--                            ++this.blocksSetOnFire;
-+                            // CraftBukkit start - add "!visualOnly"
-+                            if (!visualOnly && !CraftEventFactory.callBlockIgniteEvent(this.level(), blockposition1, this).isCancelled()) {
-+                                this.level().setBlockAndUpdate(blockposition1, iblockdata);
-+                                ++this.blocksSetOnFire;
-+                            }
-+                            // CraftBukkit end
-                         }
-                     }
+                 }
  

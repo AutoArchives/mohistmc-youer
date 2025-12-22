@@ -14,7 +14,7 @@
      public ItemFishingRod(Item.Info item_info) {
 @@ -34,13 +39,24 @@
              world.playSound((Entity) null, entityhuman.getX(), entityhuman.getY(), entityhuman.getZ(), SoundEffects.FISHING_BOBBER_RETRIEVE, SoundCategory.NEUTRAL, 1.0F, 0.4F / (world.getRandom().nextFloat() * 0.4F + 0.8F));
-             entityhuman.gameEvent(GameEvent.ITEM_INTERACT_FINISH);
+             itemstack.causeUseVibration(entityhuman, GameEvent.ITEM_INTERACT_FINISH);
          } else {
 -            world.playSound((Entity) null, entityhuman.getX(), entityhuman.getY(), entityhuman.getZ(), SoundEffects.FISHING_BOBBER_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (world.getRandom().nextFloat() * 0.4F + 0.8F));
 +            // world.playSound((Entity) null, entityhuman.getX(), entityhuman.getY(), entityhuman.getZ(), SoundEffects.FISHING_BOBBER_THROW, SoundCategory.NEUTRAL, 0.5F, 0.4F / (world.getRandom().nextFloat() * 0.4F + 0.8F));

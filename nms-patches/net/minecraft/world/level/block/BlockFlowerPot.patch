@@ -1,7 +1,7 @@
 --- a/net/minecraft/world/level/block/BlockFlowerPot.java
 +++ b/net/minecraft/world/level/block/BlockFlowerPot.java
-@@ -136,11 +136,14 @@
-             boolean flag1 = CreakingHeartBlock.isNaturalNight(worldserver);
+@@ -138,11 +138,14 @@
+             boolean flag1 = ((TriState) worldserver.environmentAttributes().getValue(EnvironmentAttributes.EYEBLOSSOM_OPEN, blockposition)).toBoolean(flag);
  
              if (flag != flag1) {
 -                worldserver.setBlock(blockposition, this.opposite(iblockdata), 3);

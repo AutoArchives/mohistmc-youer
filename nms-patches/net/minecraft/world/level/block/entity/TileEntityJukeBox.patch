@@ -57,7 +57,7 @@
  
      public TileEntityJukeBox(BlockPosition blockposition, IBlockData iblockdata) {
          super(TileEntityTypes.JUKEBOX, blockposition, iblockdata);
-@@ -140,7 +184,7 @@
+@@ -141,7 +185,7 @@
  
      @Override
      public int getMaxStackSize() {
@@ -66,7 +66,7 @@
      }
  
      @Override
-@@ -164,12 +208,17 @@
+@@ -165,12 +209,17 @@
      }
  
      @VisibleForTesting

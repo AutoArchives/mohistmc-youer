@@ -1,7 +1,7 @@
 --- a/net/minecraft/world/entity/ai/behavior/BehaviorMakeLove.java
 +++ b/net/minecraft/world/entity/ai/behavior/BehaviorMakeLove.java
 @@ -17,6 +17,11 @@
- import net.minecraft.world.entity.npc.EntityVillager;
+ import net.minecraft.world.entity.npc.villager.EntityVillager;
  import net.minecraft.world.level.pathfinder.PathEntity;
  
 +// CraftBukkit start

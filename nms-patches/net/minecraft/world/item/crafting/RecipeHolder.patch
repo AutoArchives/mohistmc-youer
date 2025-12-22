@@ -13,7 +13,7 @@
  
 +    // CraftBukkit start
 +    public final Recipe toBukkitRecipe() {
-+        return this.value.toBukkitRecipe(CraftNamespacedKey.fromMinecraft(this.id.location()));
++        return this.value.toBukkitRecipe(CraftNamespacedKey.fromMinecraft(this.id.identifier()));
 +    }
 +    // CraftBukkit end
 +

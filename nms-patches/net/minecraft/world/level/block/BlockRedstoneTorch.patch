@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/level/block/BlockRedstoneTorch.java
 +++ b/net/minecraft/world/level/block/BlockRedstoneTorch.java
 @@ -21,6 +21,8 @@
- import net.minecraft.world.level.redstone.ExperimentalRedstoneUtils;
  import net.minecraft.world.level.redstone.Orientation;
+ import org.jspecify.annotations.Nullable;
  
 +import org.bukkit.event.block.BlockRedstoneEvent; // CraftBukkit
 +

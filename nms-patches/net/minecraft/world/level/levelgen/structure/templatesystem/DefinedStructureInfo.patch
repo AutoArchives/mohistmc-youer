@@ -1,15 +1,15 @@
 --- a/net/minecraft/world/level/levelgen/structure/templatesystem/DefinedStructureInfo.java
 +++ b/net/minecraft/world/level/levelgen/structure/templatesystem/DefinedStructureInfo.java
-@@ -22,7 +22,7 @@
+@@ -20,7 +20,7 @@
+     private @Nullable StructureBoundingBox boundingBox;
      private LiquidSettings liquidSettings;
-     @Nullable
-     private RandomSource random;
+     private @Nullable RandomSource random;
 -    private int palette;
 +    public int palette = -1; // CraftBukkit - Set initial value so we know if the palette has been set forcefully
      private final List<DefinedStructureProcessor> processors;
      private boolean knownShape;
      private boolean finalizeEntities;
-@@ -149,6 +149,13 @@
+@@ -146,6 +146,13 @@
  
          if (i == 0) {
              throw new IllegalStateException("No palettes");

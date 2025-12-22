@@ -1,7 +1,7 @@
 --- a/net/minecraft/world/inventory/Container.java
 +++ b/net/minecraft/world/inventory/Container.java
 @@ -36,6 +36,20 @@
- import net.minecraft.world.level.block.entity.TileEntity;
+ import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
 +// CraftBukkit start
@@ -21,8 +21,8 @@
  public abstract class Container {
  
      private static final Logger LOGGER = LogUtils.getLogger();
-@@ -68,6 +82,31 @@
-     private ContainerSynchronizer synchronizer;
+@@ -66,6 +80,31 @@
+     private @Nullable ContainerSynchronizer synchronizer;
      private boolean suppressRemoteUpdates;
  
 +    // CraftBukkit start
@@ -53,7 +53,7 @@
      protected Container(@Nullable Containers<?> containers, int i) {
          this.carried = ItemStack.EMPTY;
          this.remoteSlots = NonNullList.<RemoteSlot>create();
-@@ -201,6 +240,16 @@
+@@ -199,6 +238,16 @@
  
      }
  
@@ -70,7 +70,7 @@
      public void removeSlotListener(ICrafting icrafting) {
          this.containerListeners.remove(icrafting);
      }
-@@ -408,7 +457,7 @@
+@@ -406,7 +455,7 @@
                  }
              } else if (this.quickcraftStatus == 2) {
                  if (!this.quickcraftSlots.isEmpty()) {
@@ -79,7 +79,7 @@
                          int l = ((Slot) this.quickcraftSlots.iterator().next()).index;
  
                          this.resetQuickCraft();
-@@ -424,6 +473,7 @@
+@@ -422,6 +471,7 @@
                      }
  
                      int i1 = this.getCarried().getCount();
@@ -87,7 +87,7 @@
  
                      for (Slot slot1 : this.quickcraftSlots) {
                          ItemStack itemstack2 = this.getCarried();
-@@ -434,12 +484,48 @@
+@@ -432,12 +482,48 @@
                              int l1 = Math.min(getQuickCraftPlaceCount(this.quickcraftSlots, this.quickcraftType, itemstack1) + j1, k1);
  
                              i1 -= l1 - j1;
@@ -139,7 +139,7 @@
                  }
  
                  this.resetQuickCraft();
-@@ -454,8 +540,11 @@
+@@ -452,8 +538,11 @@
              if (i == -999) {
                  if (!this.getCarried().isEmpty()) {
                      if (clickaction == ClickAction.PRIMARY) {
@@ -152,7 +152,7 @@
                      } else {
                          entityhuman.drop(this.getCarried().split(1), true);
                      }
-@@ -521,6 +610,15 @@
+@@ -519,6 +608,15 @@
                  }
  
                  slot3.setChanged();
@@ -168,7 +168,7 @@
              }
          } else if (inventoryclicktype == InventoryClickType.SWAP && (j >= 0 && j < 9 || j == 40)) {
              ItemStack itemstack6 = playerinventory.getItem(j);
-@@ -589,7 +687,11 @@
+@@ -587,7 +685,11 @@
                      }
  
                      itemstack9 = slot6.safeTake(j3, Integer.MAX_VALUE, entityhuman);
@@ -181,7 +181,7 @@
                      entityhuman.handleCreativeModeItemDrop(itemstack9);
                  }
              }
-@@ -651,8 +753,9 @@
+@@ -649,8 +751,9 @@
              ItemStack itemstack = this.getCarried();
  
              if (!itemstack.isEmpty()) {
@@ -192,7 +192,7 @@
              }
  
          }
-@@ -881,6 +984,11 @@
+@@ -879,6 +982,11 @@
      }
  
      public ItemStack getCarried() {

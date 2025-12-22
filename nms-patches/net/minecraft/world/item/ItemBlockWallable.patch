@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/item/ItemBlockWallable.java
 +++ b/net/minecraft/world/item/ItemBlockWallable.java
 @@ -10,6 +10,13 @@
- import net.minecraft.world.level.block.state.IBlockData;
  import net.minecraft.world.phys.shapes.VoxelShapeCollision;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import net.minecraft.server.level.EntityPlayer;
@@ -14,7 +14,7 @@
  public class ItemBlockWallable extends ItemBlock {
  
      public final Block wallBlock;
-@@ -44,7 +51,19 @@
+@@ -43,7 +50,19 @@
              }
          }
  

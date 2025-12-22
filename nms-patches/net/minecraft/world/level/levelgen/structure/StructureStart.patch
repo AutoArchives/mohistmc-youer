@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/level/levelgen/structure/StructureStart.java
 +++ b/net/minecraft/world/level/levelgen/structure/StructureStart.java
-@@ -31,6 +31,12 @@
-     @Nullable
-     private volatile StructureBoundingBox cachedBoundingBox;
+@@ -30,6 +30,12 @@
+     private int references;
+     private volatile @Nullable StructureBoundingBox cachedBoundingBox;
  
 +    // CraftBukkit start
 +    private static final org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry DATA_TYPE_REGISTRY = new org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry();
@@ -13,7 +13,7 @@
      public StructureStart(Structure structure, ChunkCoordIntPair chunkcoordintpair, int i, PiecesContainer piecescontainer) {
          this.structure = structure;
          this.chunkPos = chunkcoordintpair;
-@@ -91,11 +97,25 @@
+@@ -89,11 +95,25 @@
              BlockPosition blockposition = structureboundingbox1.getCenter();
              BlockPosition blockposition1 = new BlockPosition(blockposition.getX(), structureboundingbox1.minY(), blockposition.getZ());
  
@@ -39,7 +39,7 @@
  
              this.structure.afterPlace(generatoraccessseed, structuremanager, chunkgenerator, randomsource, structureboundingbox, chunkcoordintpair, this.pieceContainer);
          }
-@@ -103,6 +123,11 @@
+@@ -101,6 +121,11 @@
  
      public NBTTagCompound createTag(StructurePieceSerializationContext structurepieceserializationcontext, ChunkCoordIntPair chunkcoordintpair) {
          NBTTagCompound nbttagcompound = new NBTTagCompound();

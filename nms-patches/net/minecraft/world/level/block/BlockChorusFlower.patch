@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/level/block/BlockChorusFlower.java
 +++ b/net/minecraft/world/level/block/BlockChorusFlower.java
 @@ -22,6 +22,8 @@
- import net.minecraft.world.phys.MovingObjectPositionBlock;
  import net.minecraft.world.phys.shapes.VoxelShape;
+ import org.jspecify.annotations.Nullable;
  
 +import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
 +

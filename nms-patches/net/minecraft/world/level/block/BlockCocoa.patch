@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/level/block/BlockCocoa.java
 +++ b/net/minecraft/world/level/block/BlockCocoa.java
 @@ -25,6 +25,8 @@
- import net.minecraft.world.phys.shapes.VoxelShapeCollision;
  import net.minecraft.world.phys.shapes.VoxelShapes;
+ import org.jspecify.annotations.Nullable;
  
 +import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
 +
@@ -18,7 +18,7 @@
              }
          }
  
-@@ -109,7 +111,7 @@
+@@ -108,7 +110,7 @@
  
      @Override
      public void performBonemeal(WorldServer worldserver, RandomSource randomsource, BlockPosition blockposition, IBlockData iblockdata) {

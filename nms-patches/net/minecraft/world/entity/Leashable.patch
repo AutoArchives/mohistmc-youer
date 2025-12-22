@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/Leashable.java
 +++ b/net/minecraft/world/entity/Leashable.java
 @@ -27,6 +27,11 @@
- import net.minecraft.world.phys.AxisAlignedBB;
  import net.minecraft.world.phys.Vec3D;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.event.entity.EntityUnleashEvent;
@@ -12,7 +12,7 @@
  public interface Leashable {
  
      String LEASH_TAG = "leash";
-@@ -68,11 +73,11 @@
+@@ -67,11 +72,11 @@
  
      default void setDelayedLeashHolderId(int i) {
          this.setLeashData(new Leashable.a(i));
@@ -26,10 +26,10 @@
  
          if (this.getLeashData() != null && leashable_a == null) {
              this.removeLeash();
-@@ -82,6 +87,14 @@
+@@ -81,6 +86,14 @@
      }
  
-     default void writeLeashData(ValueOutput valueoutput, @Nullable Leashable.a leashable_a) {
+     default void writeLeashData(ValueOutput valueoutput, Leashable.@Nullable a leashable_a) {
 +        // CraftBukkit start - SPIGOT-7487: Don't save (and possible drop) leash, when the holder was removed by a plugin
 +        if (leashable_a != null) {
 +            Entity entity = leashable_a.leashHolder;
@@ -41,7 +41,7 @@
          valueoutput.storeNullable("leash", Leashable.a.CODEC, leashable_a);
      }
  
-@@ -107,7 +120,9 @@
+@@ -106,7 +119,9 @@
                  }
  
                  if (e0.tickCount > 100) {
@@ -51,7 +51,7 @@
                      ((Leashable) e0).setLeashData((Leashable.a) null);
                  }
              }
-@@ -116,11 +131,11 @@
+@@ -115,11 +130,11 @@
      }
  
      default void dropLeash() {
@@ -65,7 +65,7 @@
      }
  
      default void onLeashRemoved() {}
-@@ -137,7 +152,9 @@
+@@ -136,7 +151,9 @@
                  WorldServer worldserver = (WorldServer) world;
  
                  if (flag1) {
@@ -75,17 +75,17 @@
                  }
  
                  if (flag) {
-@@ -159,7 +176,8 @@
+@@ -158,7 +175,8 @@
  
          if (leashable_a != null && leashable_a.leashHolder != null) {
              if (!e0.canInteractWithLevel() || !leashable_a.leashHolder.canInteractWithLevel()) {
--                if (worldserver.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+-                if ((Boolean) worldserver.getGameRules().get(GameRules.ENTITY_DROPS)) {
 +                worldserver.getCraftServer().getPluginManager().callEvent(new EntityUnleashEvent(e0.getBukkitEntity(), (!e0.isAlive()) ? UnleashReason.PLAYER_UNLEASH : UnleashReason.HOLDER_GONE)); // CraftBukkit
-+                if (worldserver.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS) && !e0.pluginRemoved) { // CraftBukkit - SPIGOT-7487: Don't drop leash, when the holder was removed by a plugin
++                if ((Boolean) worldserver.getGameRules().get(GameRules.ENTITY_DROPS) && !e0.pluginRemoved) { // CraftBukkit - SPIGOT-7487: Don't drop leash, when the holder was removed by a plugin
                      ((Leashable) e0).dropLeash();
                  } else {
                      ((Leashable) e0).removeLeash();
-@@ -211,6 +229,11 @@
+@@ -210,6 +228,11 @@
      }
  
      default void leashTooFarBehaviour() {
@@ -97,7 +97,7 @@
          this.dropLeash();
      }
  
-@@ -218,7 +241,7 @@
+@@ -217,7 +240,7 @@
  
      default boolean checkElasticInteractions(Entity entity, Leashable.a leashable_a) {
          boolean flag = entity.supportQuadLeashAsHolder() && this.supportQuadLeash();
@@ -106,7 +106,7 @@
  
          if (list.isEmpty()) {
              return false;
-@@ -257,7 +280,7 @@
+@@ -256,7 +279,7 @@
              Vec3D vec3d4 = e0.position().add(vec3d3);
              Vec3D vec3d5 = ((Vec3D) list1.get(i)).multiply(vec3d2).yRot(-f1);
              Vec3D vec3d6 = entity.position().add(vec3d5);
@@ -115,7 +115,7 @@
  
              Objects.requireNonNull(list2);
              optional.ifPresent(list2::add);
-@@ -314,7 +337,7 @@
+@@ -313,7 +336,7 @@
  
      default void setLeashedTo(Entity entity, boolean flag) {
          if (this != entity) {
@@ -124,12 +124,12 @@
          }
      }
  
-@@ -351,7 +374,7 @@
+@@ -349,7 +372,7 @@
+     }
  
-     @Nullable
-     default Entity getLeashHolder() {
+     default @Nullable Entity getLeashHolder() {
 -        return getLeashHolder((Entity) this);
 +        return getLeashHolder((Entity & Leashable) this); // CraftBukkit - decompile error
      }
  
-     @Nullable
+     private static <E extends Entity & Leashable> @Nullable Entity getLeashHolder(E e0) {

@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/level/IWorldWriter.java
 +++ b/net/minecraft/world/level/IWorldWriter.java
-@@ -28,4 +28,10 @@
+@@ -29,4 +29,10 @@
      default boolean addFreshEntity(Entity entity) {
          return false;
      }

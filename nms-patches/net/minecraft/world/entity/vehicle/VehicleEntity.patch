@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/vehicle/VehicleEntity.java
 +++ b/net/minecraft/world/entity/vehicle/VehicleEntity.java
 @@ -17,6 +17,13 @@
- import net.minecraft.world.level.World;
  import net.minecraft.world.level.gameevent.GameEvent;
+ import net.minecraft.world.level.gamerules.GameRules;
  
 +// CraftBukkit start
 +import org.bukkit.entity.Vehicle;

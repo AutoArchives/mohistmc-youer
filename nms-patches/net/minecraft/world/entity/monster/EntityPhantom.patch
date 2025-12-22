@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/entity/monster/EntityPhantom.java
 +++ b/net/minecraft/world/entity/monster/EntityPhantom.java
-@@ -164,7 +164,7 @@
+@@ -155,7 +155,7 @@
      @Override
      protected void readAdditionalSaveData(ValueInput valueinput) {
          super.readAdditionalSaveData(valueinput);
@@ -9,7 +9,7 @@
          this.setPhantomSize(valueinput.getIntOr("size", 0));
      }
  
-@@ -534,11 +534,11 @@
+@@ -525,11 +525,11 @@
                  List<EntityHuman> list = worldserver.getNearbyPlayers(this.attackTargeting, EntityPhantom.this, EntityPhantom.this.getBoundingBox().inflate(16.0D, 64.0D, 16.0D));
  
                  if (!list.isEmpty()) {

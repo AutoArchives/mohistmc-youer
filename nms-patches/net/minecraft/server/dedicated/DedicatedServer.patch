@@ -1,7 +1,7 @@
 --- a/net/minecraft/server/dedicated/DedicatedServer.java
 +++ b/net/minecraft/server/dedicated/DedicatedServer.java
-@@ -73,6 +73,22 @@
- import net.minecraft.world.level.storage.WorldData;
+@@ -75,6 +75,22 @@
+ import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
 +// CraftBukkit start
@@ -23,17 +23,17 @@
  public class DedicatedServer extends MinecraftServer implements IMinecraftServer {
  
      static final Logger LOGGER = LogUtils.getLogger();
-@@ -81,7 +97,7 @@
+@@ -82,7 +98,7 @@
+     private static final int CONVERSION_RETRIES = 2;
      private final List<ServerCommand> consoleInput = Collections.synchronizedList(Lists.newArrayList());
-     @Nullable
-     private RemoteStatusListener queryThreadGs4;
+     private @Nullable RemoteStatusListener queryThreadGs4;
 -    private final RemoteControlCommandListener rconConsoleSource;
 +    // private final RemoteControlCommandListener rconConsoleSource; // CraftBukkit - remove field
-     @Nullable
-     private RemoteControlListener rconThread;
+     private @Nullable RemoteControlListener rconThread;
      public DedicatedServerSettings settings;
-@@ -98,10 +114,12 @@
-     private ManagementServer jsonRpcServer;
+     private @Nullable ServerGUI gui;
+@@ -94,10 +110,12 @@
+     private @Nullable ManagementServer jsonRpcServer;
      private long lastHeartbeat;
  
 -    public DedicatedServer(Thread thread, Convertable.ConversionSession convertable_conversionsession, ResourcePackRepository resourcepackrepository, WorldStem worldstem, DedicatedServerSettings dedicatedserversettings, DataFixer datafixer, Services services) {
@@ -48,7 +48,7 @@
          this.serverTextFilter = ServerTextFilter.createFromConfig(dedicatedserversettings.getProperties());
          this.serverLinks = createServerLinks(dedicatedserversettings);
          if (dedicatedserversettings.getProperties().codeOfConduct) {
-@@ -143,7 +161,7 @@
+@@ -139,7 +157,7 @@
                      }
                  }
  
@@ -57,7 +57,7 @@
              } catch (IOException ioexception1) {
                  throw new IllegalArgumentException("Failed to read Code of Conduct folder", ioexception1);
              }
-@@ -189,23 +207,82 @@
+@@ -186,23 +204,82 @@
              }
          }
  
@@ -84,22 +84,22 @@
 +                }
 +                // CraftBukkit end
  
-                 String s2;
+                 String s3;
  
                  try {
--                    while (!DedicatedServer.this.isStopped() && DedicatedServer.this.isRunning() && (s2 = bufferedreader.readLine()) != null) {
--                        DedicatedServer.this.handleConsoleInput(s2, DedicatedServer.this.createCommandSourceStack());
+-                    while (!DedicatedServer.this.isStopped() && DedicatedServer.this.isRunning() && (s3 = bufferedreader.readLine()) != null) {
+-                        DedicatedServer.this.handleConsoleInput(s3, DedicatedServer.this.createCommandSourceStack());
 +                    // CraftBukkit start - JLine disabling compatibility
 +                    while (!DedicatedServer.this.isStopped() && DedicatedServer.this.isRunning()) {
 +                        try {
 +                            if (org.bukkit.craftbukkit.Main.useJline) {
-+                                s2 = reader.readLine(">", null);
++                                s3 = reader.readLine(">", null);
 +                            } else {
-+                                s2 = reader.readLine();
++                                s3 = reader.readLine();
 +                            }
 +
-+                            if (s2.trim().length() > 0) { // Trim to filter lines which are just spaces
-+                                DedicatedServer.this.handleConsoleInput(s2, DedicatedServer.this.createCommandSourceStack());
++                            if (s3.trim().length() > 0) { // Trim to filter lines which are just spaces
++                                DedicatedServer.this.handleConsoleInput(s3, DedicatedServer.this.createCommandSourceStack());
 +                            }
 +                        } catch (EndOfFileException | UserInterruptException eof) {
 +                            // SPIGOT-5220: Throttle if EOF (ctrl^d) or stdin is /dev/null
@@ -144,7 +144,7 @@
          thread.setDaemon(true);
          thread.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(DedicatedServer.LOGGER));
          thread.start();
-@@ -225,7 +302,7 @@
+@@ -222,7 +299,7 @@
              this.setLocalIp(dedicatedserverproperties.serverIp);
          }
  
@@ -153,7 +153,7 @@
          DedicatedServer.LOGGER.info("Default game type: {}", dedicatedserverproperties.gameMode.get());
          InetAddress inetaddress = null;
  
-@@ -249,6 +326,12 @@
+@@ -246,6 +323,12 @@
              return false;
          }
  
@@ -166,7 +166,7 @@
          if (!this.usesAuthentication()) {
              DedicatedServer.LOGGER.warn("**** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!");
              DedicatedServer.LOGGER.warn("The server will make no attempt to authenticate usernames. Beware.");
-@@ -263,19 +346,19 @@
+@@ -260,19 +343,19 @@
          if (!NameReferencingFileConverter.serverReadyAfterUserconversion(this)) {
              return false;
          } else {
@@ -180,16 +180,16 @@
 -            this.loadLevel();
 +            this.loadLevel(storageSource.getLevelId()); // CraftBukkit
              long k = SystemUtils.getNanos() - j;
-             String s2 = String.format(Locale.ROOT, "%.3fs", (double) k / 1.0E9D);
+             String s3 = String.format(Locale.ROOT, "%.3fs", (double) k / 1.0E9D);
  
-             DedicatedServer.LOGGER.info("Done ({})! For help, type \"help\"", s2);
+             DedicatedServer.LOGGER.info("Done ({})! For help, type \"help\"", s3);
              if (dedicatedserverproperties.announcePlayerAchievements != null) {
--                ((GameRules.GameRuleBoolean) this.getGameRules().getRule(GameRules.RULE_ANNOUNCE_ADVANCEMENTS)).set(dedicatedserverproperties.announcePlayerAchievements, this);
-+                ((GameRules.GameRuleBoolean) this.getGameRules().getRule(GameRules.RULE_ANNOUNCE_ADVANCEMENTS)).set(dedicatedserverproperties.announcePlayerAchievements, this.overworld()); // CraftBukkit - per-world
+-                this.worldData.getGameRules().set(GameRules.SHOW_ADVANCEMENT_MESSAGES, dedicatedserverproperties.announcePlayerAchievements, this);
++                this.worldData.getGameRules().set(GameRules.SHOW_ADVANCEMENT_MESSAGES, dedicatedserverproperties.announcePlayerAchievements, this.overworld()); // CraftBukkit - per-world
              }
  
              if (dedicatedserverproperties.enableQuery) {
-@@ -466,6 +549,7 @@
+@@ -463,6 +546,7 @@
              }
          }
  
@@ -197,7 +197,7 @@
      }
  
      @Override
-@@ -482,7 +566,15 @@
+@@ -479,7 +563,15 @@
          while (!this.consoleInput.isEmpty()) {
              ServerCommand servercommand = (ServerCommand) this.consoleInput.remove(0);
  
@@ -214,7 +214,7 @@
          }
  
      }
-@@ -764,16 +856,52 @@
+@@ -756,16 +848,52 @@
  
      @Override
      public String getPluginNames() {
@@ -271,7 +271,7 @@
      }
  
      @Override
-@@ -922,4 +1050,15 @@
+@@ -913,4 +1041,15 @@
      public Map<String, String> getCodeOfConducts() {
          return this.codeOfConductTexts;
      }

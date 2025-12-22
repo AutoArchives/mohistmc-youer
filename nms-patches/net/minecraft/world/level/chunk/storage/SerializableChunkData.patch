@@ -1,20 +1,20 @@
 --- a/net/minecraft/world/level/chunk/storage/SerializableChunkData.java
 +++ b/net/minecraft/world/level/chunk/storage/SerializableChunkData.java
 @@ -72,7 +72,12 @@
- import net.minecraft.world.ticks.TickListChunk;
+ import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
--public record SerializableChunkData(PalettedContainerFactory containerFactory, ChunkCoordIntPair chunkPos, int minSectionY, long lastUpdateTime, long inhabitedTime, ChunkStatus chunkStatus, @Nullable BlendingData.d blendingData, @Nullable BelowZeroRetrogen belowZeroRetrogen, ChunkConverter upgradeData, @Nullable long[] carvingMask, Map<HeightMap.Type, long[]> heightmaps, IChunkAccess.b packedTicks, ShortList[] postProcessingSections, boolean lightCorrect, List<SerializableChunkData.b> sectionData, List<NBTTagCompound> entities, List<NBTTagCompound> blockEntities, NBTTagCompound structureData) {
+-public record SerializableChunkData(PalettedContainerFactory containerFactory, ChunkCoordIntPair chunkPos, int minSectionY, long lastUpdateTime, long inhabitedTime, ChunkStatus chunkStatus, BlendingData.@Nullable d blendingData, @Nullable BelowZeroRetrogen belowZeroRetrogen, ChunkConverter upgradeData, long @Nullable [] carvingMask, Map<HeightMap.Type, long[]> heightmaps, IChunkAccess.b packedTicks, @Nullable ShortList[] postProcessingSections, boolean lightCorrect, List<SerializableChunkData.b> sectionData, List<NBTTagCompound> entities, List<NBTTagCompound> blockEntities, NBTTagCompound structureData) {
 +// CraftBukkit start
 +import net.minecraft.nbt.NBTBase;
 +// CraftBukkit end
 +
 +// CraftBukkit - persistentDataContainer
-+public record SerializableChunkData(PalettedContainerFactory containerFactory, ChunkCoordIntPair chunkPos, int minSectionY, long lastUpdateTime, long inhabitedTime, ChunkStatus chunkStatus, @Nullable BlendingData.d blendingData, @Nullable BelowZeroRetrogen belowZeroRetrogen, ChunkConverter upgradeData, @Nullable long[] carvingMask, Map<HeightMap.Type, long[]> heightmaps, IChunkAccess.b packedTicks, ShortList[] postProcessingSections, boolean lightCorrect, List<SerializableChunkData.b> sectionData, List<NBTTagCompound> entities, List<NBTTagCompound> blockEntities, NBTTagCompound structureData, @Nullable NBTBase persistentDataContainer) {
++public record SerializableChunkData(PalettedContainerFactory containerFactory, ChunkCoordIntPair chunkPos, int minSectionY, long lastUpdateTime, long inhabitedTime, ChunkStatus chunkStatus, BlendingData.@Nullable d blendingData, @Nullable BelowZeroRetrogen belowZeroRetrogen, ChunkConverter upgradeData, long @Nullable [] carvingMask, Map<HeightMap.Type, long[]> heightmaps, IChunkAccess.b packedTicks, @Nullable ShortList[] postProcessingSections, boolean lightCorrect, List<SerializableChunkData.b> sectionData, List<NBTTagCompound> entities, List<NBTTagCompound> blockEntities, NBTTagCompound structureData, @Nullable NBTBase persistentDataContainer) {
  
      private static final Codec<List<TickListChunk<Block>>> BLOCK_TICKS_CODEC = TickListChunk.codec(BuiltInRegistries.BLOCK.byNameCodec()).listOf();
      private static final Codec<List<TickListChunk<FluidType>>> FLUID_TICKS_CODEC = TickListChunk.codec(BuiltInRegistries.FLUID.byNameCodec()).listOf();
-@@ -101,9 +106,9 @@
+@@ -100,9 +105,9 @@
                  return new ChunkConverter(nbttagcompound1, levelheightaccessor);
              }).orElse(ChunkConverter.EMPTY);
              boolean flag = nbttagcompound.getBooleanOr("isLightOn", false);
@@ -27,7 +27,16 @@
              Map<HeightMap.Type, long[]> map = new EnumMap(HeightMap.Type.class);
  
              nbttagcompound.getCompound("Heightmaps").ifPresent((nbttagcompound1) -> {
-@@ -136,7 +141,7 @@
+@@ -120,7 +125,7 @@
+             ShortList[] ashortlist = new ShortList[nbttaglist.size()];
+ 
+             for (int k = 0; k < nbttaglist.size(); ++k) {
+-                NBTTagList nbttaglist1 = (NBTTagList) nbttaglist.getList(k).orElse((Object) null);
++                NBTTagList nbttaglist1 = (NBTTagList) nbttaglist.getList(k).orElse(null); // CraftBukkit - decompile error
+ 
+                 if (nbttaglist1 != null && !nbttaglist1.isEmpty()) {
+                     ShortList shortlist = new ShortArrayList(nbttaglist1.size());
+@@ -138,7 +143,7 @@
              NBTTagCompound nbttagcompound1 = nbttagcompound.getCompoundOrEmpty("structures");
              NBTTagList nbttaglist2 = nbttagcompound.getListOrEmpty("sections");
              List<SerializableChunkData.b> list4 = new ArrayList(nbttaglist2.size());
@@ -36,7 +45,7 @@
              Codec<DataPaletteBlock<IBlockData>> codec1 = palettedcontainerfactory.blockStatesContainerCodec();
  
              for (int i1 = 0; i1 < nbttaglist2.size(); ++i1) {
-@@ -163,21 +168,22 @@
+@@ -165,21 +170,22 @@
                              }).getOrThrow(SerializableChunkData.a::new);
                          });
                          Objects.requireNonNull(palettedcontainerfactory);
@@ -63,7 +72,7 @@
          }
      }
  
-@@ -247,6 +253,12 @@
+@@ -249,6 +255,12 @@
              }
          }
  
@@ -76,7 +85,7 @@
          ichunkaccess.setLightCorrect(this.lightCorrect);
          EnumSet<HeightMap.Type> enumset = EnumSet.noneOf(HeightMap.Type.class);
  
-@@ -359,7 +371,14 @@
+@@ -365,7 +377,14 @@
              });
              NBTTagCompound nbttagcompound1 = packStructureData(StructurePieceSerializationContext.fromLevel(worldserver), chunkcoordintpair, ichunkaccess.getAllStarts(), ichunkaccess.getAllReferences());
  
@@ -92,7 +101,7 @@
          }
      }
  
-@@ -433,6 +452,11 @@
+@@ -439,6 +458,11 @@
          });
          nbttagcompound.put("Heightmaps", nbttagcompound2);
          nbttagcompound.put("structures", this.structureData);
@@ -104,7 +113,7 @@
          return nbttagcompound;
      }
  
-@@ -513,6 +537,12 @@
+@@ -518,6 +542,12 @@
                  StructureStart structurestart = StructureStart.loadStaticStart(structurepieceserializationcontext, nbttagcompound1.getCompoundOrEmpty(s), i);
  
                  if (structurestart != null) {

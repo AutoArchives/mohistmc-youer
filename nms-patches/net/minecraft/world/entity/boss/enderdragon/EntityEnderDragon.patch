@@ -1,7 +1,7 @@
 --- a/net/minecraft/world/entity/boss/enderdragon/EntityEnderDragon.java
 +++ b/net/minecraft/world/entity/boss/enderdragon/EntityEnderDragon.java
-@@ -52,6 +52,22 @@
- import net.minecraft.world.phys.Vec3D;
+@@ -51,6 +51,22 @@
+ import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
 +// CraftBukkit start
@@ -23,7 +23,7 @@
  public class EntityEnderDragon extends EntityInsentient implements IMonster {
  
      private static final Logger LOGGER = LogUtils.getLogger();
-@@ -89,6 +105,7 @@
+@@ -86,6 +102,7 @@
      private final PathPoint[] nodes;
      private final int[] nodeAdjacency;
      private final Path openSet;
@@ -31,7 +31,7 @@
  
      public EntityEnderDragon(EntityTypes<? extends EntityEnderDragon> entitytypes, World world) {
          super(EntityTypes.ENDER_DRAGON, world);
-@@ -109,6 +126,7 @@
+@@ -106,6 +123,7 @@
          this.setHealth(this.getMaxHealth());
          this.noPhysics = true;
          this.phaseManager = new DragonControllerManager(this);
@@ -39,7 +39,7 @@
      }
  
      public void setDragonFight(EnderDragonBattle enderdragonbattle) {
-@@ -213,7 +231,7 @@
+@@ -210,7 +228,7 @@
  
                      Vec3D vec3d1 = idragoncontroller.getFlyTargetLocation();
  
@@ -48,7 +48,7 @@
                          double d0 = vec3d1.x - this.getX();
                          double d1 = vec3d1.y - this.getY();
                          double d2 = vec3d1.z - this.getZ();
-@@ -370,7 +388,14 @@
+@@ -367,7 +385,14 @@
              if (this.nearestCrystal.isRemoved()) {
                  this.nearestCrystal = null;
              } else if (this.tickCount % 10 == 0 && this.getHealth() < this.getMaxHealth()) {
@@ -64,7 +64,7 @@
              }
          }
  
-@@ -440,6 +465,9 @@
+@@ -437,6 +462,9 @@
          int j1 = MathHelper.floor(axisalignedbb.maxZ);
          boolean flag = false;
          boolean flag1 = false;
@@ -74,10 +74,10 @@
  
          for (int k1 = i; k1 <= l; ++k1) {
              for (int l1 = j; l1 <= i1; ++l1) {
-@@ -449,7 +477,11 @@
+@@ -446,7 +474,11 @@
  
                      if (!iblockdata.isAir() && !iblockdata.is(TagsBlock.DRAGON_TRANSPARENT)) {
-                         if (worldserver.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && !iblockdata.is(TagsBlock.DRAGON_IMMUNE)) {
+                         if ((Boolean) worldserver.getGameRules().get(GameRules.MOB_GRIEFING) && !iblockdata.is(TagsBlock.DRAGON_IMMUNE)) {
 -                            flag1 = worldserver.removeBlock(blockposition, false) || flag1;
 +                            // CraftBukkit start - Add blocks to list rather than destroying them
 +                            // flag1 = worldserver.removeBlock(blockposition, false) || flag1;
@@ -87,7 +87,7 @@
                          } else {
                              flag = true;
                          }
-@@ -458,6 +490,49 @@
+@@ -455,6 +487,49 @@
              }
          }
  
@@ -137,7 +137,7 @@
          if (flag1) {
              BlockPosition blockposition1 = new BlockPosition(i + this.random.nextInt(l - i + 1), j + this.random.nextInt(i1 - j + 1), k + this.random.nextInt(j1 - k + 1));
  
-@@ -513,7 +588,7 @@
+@@ -510,7 +585,7 @@
  
      @Override
      public void kill(WorldServer worldserver) {
@@ -146,7 +146,7 @@
          this.gameEvent(GameEvent.ENTITY_DIE);
          if (this.dragonFight != null) {
              this.dragonFight.updateDragon(this);
-@@ -522,6 +597,21 @@
+@@ -519,6 +594,21 @@
  
      }
  
@@ -154,7 +154,7 @@
 +    @Override
 +    public int getExpReward(WorldServer worldserver, Entity entity) {
 +        // CraftBukkit - Moved from #tickDeath method
-+        boolean flag = worldserver.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT);
++        boolean flag = worldserver.getGameRules().get(GameRules.MOB_DROPS);
 +        short short0 = 500;
 +
 +        if (this.dragonFight != null && !this.dragonFight.hasPreviouslyKilledDragon()) {
@@ -168,7 +168,7 @@
      @Override
      protected void tickDeath() {
          if (this.dragonFight != null) {
-@@ -537,16 +627,21 @@
+@@ -534,16 +624,21 @@
              this.level().addParticle(Particles.EXPLOSION_EMITTER, this.getX() + (double) f, this.getY() + 2.0D + (double) f1, this.getZ() + (double) f2, 0.0D, 0.0D, 0.0D);
          }
  
@@ -186,21 +186,21 @@
          World world = this.level();
  
          if (world instanceof WorldServer worldserver) {
--            if (this.dragonDeathTime > 150 && this.dragonDeathTime % 5 == 0 && worldserver.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
+-            if (this.dragonDeathTime > 150 && this.dragonDeathTime % 5 == 0 && (Boolean) worldserver.getGameRules().get(GameRules.MOB_DROPS)) {
 +            if (this.dragonDeathTime > 150 && this.dragonDeathTime % 5 == 0 && true) {  // CraftBukkit - SPIGOT-2420: Already checked for the game rule when calculating the xp
                  EntityExperienceOrb.award(worldserver, this.position(), MathHelper.floor((float) i * 0.08F));
              }
  
-@@ -570,7 +665,7 @@
+@@ -567,7 +662,7 @@
              if (world1 instanceof WorldServer) {
                  WorldServer worldserver1 = (WorldServer) world1;
  
--                if (worldserver1.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
+-                if ((Boolean) worldserver1.getGameRules().get(GameRules.MOB_DROPS)) {
 +                if (true) { // CraftBukkit - SPIGOT-2420: Already checked for the game rule when calculating the xp
                      EntityExperienceOrb.award(worldserver1, this.position(), MathHelper.floor((float) i * 0.2F));
                  }
  
-@@ -578,7 +673,7 @@
+@@ -575,7 +670,7 @@
                      this.dragonFight.setDragonKilled(this);
                  }
  
@@ -209,7 +209,7 @@
                  this.gameEvent(GameEvent.ENTITY_DIE);
              }
          }
-@@ -775,6 +870,7 @@
+@@ -771,6 +866,7 @@
          super.addAdditionalSaveData(valueoutput);
          valueoutput.putInt("DragonPhase", this.phaseManager.getCurrentPhase().getPhase().getId());
          valueoutput.putInt("DragonDeathTime", this.dragonDeathTime);
@@ -217,7 +217,7 @@
      }
  
      @Override
-@@ -784,6 +880,7 @@
+@@ -780,6 +876,7 @@
              this.phaseManager.setPhase(DragonControllerPhase.getById(integer));
          });
          this.dragonDeathTime = valueinput.getIntOr("DragonDeathTime", 0);

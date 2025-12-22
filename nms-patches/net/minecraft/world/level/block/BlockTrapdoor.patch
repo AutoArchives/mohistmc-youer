@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/level/block/BlockTrapdoor.java
 +++ b/net/minecraft/world/level/block/BlockTrapdoor.java
 @@ -39,6 +39,8 @@
- import net.minecraft.world.phys.shapes.VoxelShapeCollision;
  import net.minecraft.world.phys.shapes.VoxelShapes;
+ import org.jspecify.annotations.Nullable;
  
 +import org.bukkit.event.block.BlockRedstoneEvent; // CraftBukkit
 +

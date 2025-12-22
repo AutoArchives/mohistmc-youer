@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/inventory/ContainerWorkbench.java
 +++ b/net/minecraft/world/inventory/ContainerWorkbench.java
 @@ -16,6 +16,11 @@
- import net.minecraft.world.item.crafting.Recipes;
  import net.minecraft.world.level.block.Blocks;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.craftbukkit.inventory.CraftInventoryCrafting;

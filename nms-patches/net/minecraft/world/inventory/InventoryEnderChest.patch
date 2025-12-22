@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/inventory/InventoryEnderChest.java
 +++ b/net/minecraft/world/inventory/InventoryEnderChest.java
-@@ -10,13 +10,32 @@
- import net.minecraft.world.level.storage.ValueInput;
+@@ -10,12 +10,31 @@
  import net.minecraft.world.level.storage.ValueOutput;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.Location;
@@ -12,8 +12,7 @@
 +
  public class InventoryEnderChest extends InventorySubcontainer {
  
-     @Nullable
-     private TileEntityEnderChest activeChest;
+     private @Nullable TileEntityEnderChest activeChest;
 +    // CraftBukkit start
 +    private final EntityHuman owner;
  

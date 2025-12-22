@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/level/block/BlockDiodeAbstract.java
 +++ b/net/minecraft/world/level/block/BlockDiodeAbstract.java
 @@ -24,6 +24,8 @@
- import net.minecraft.world.phys.shapes.VoxelShapeCollision;
  import net.minecraft.world.ticks.TickListPriority;
+ import org.jspecify.annotations.Nullable;
  
 +import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
 +

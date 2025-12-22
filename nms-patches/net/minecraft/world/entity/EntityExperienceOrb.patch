@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/EntityExperienceOrb.java
 +++ b/net/minecraft/world/entity/EntityExperienceOrb.java
 @@ -27,6 +27,14 @@
- import net.minecraft.world.phys.shapes.VoxelShape;
  import net.minecraft.world.phys.shapes.VoxelShapes;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
@@ -15,7 +15,7 @@
  public class EntityExperienceOrb extends Entity {
  
      protected static final DataWatcherObject<Integer> DATA_VALUE = DataWatcher.<Integer>defineId(EntityExperienceOrb.class, DataWatcherRegistry.INT);
-@@ -155,13 +163,14 @@
+@@ -154,13 +162,14 @@
  
              ++this.age;
              if (this.age >= 6000) {
@@ -31,7 +31,7 @@
          if (this.followingPlayer == null || this.followingPlayer.isSpectator() || this.followingPlayer.distanceToSqr((Entity) this) > 64.0D) {
              EntityHuman entityhuman = this.level().getNearestPlayer(this, 8.0D);
  
-@@ -172,7 +181,22 @@
+@@ -171,7 +180,22 @@
              }
          }
  
@@ -55,7 +55,7 @@
              Vec3D vec3d = new Vec3D(this.followingPlayer.getX() - this.getX(), this.followingPlayer.getY() + (double) this.followingPlayer.getEyeHeight() / 2.0D - this.getY(), this.followingPlayer.getZ() - this.getZ());
              double d0 = vec3d.lengthSqr();
              double d1 = 1.0D - Math.sqrt(d0) / 8.0D;
-@@ -241,7 +265,7 @@
+@@ -240,7 +264,7 @@
      private void merge(EntityExperienceOrb entityexperienceorb) {
          this.count += entityexperienceorb.count;
          this.age = Math.min(this.age, entityexperienceorb.age);
@@ -64,7 +64,7 @@
      }
  
      private void setUnderwaterMovement() {
-@@ -266,7 +290,7 @@
+@@ -265,7 +289,7 @@
              this.markHurt();
              this.health = (int) ((float) this.health - f);
              if (this.health <= 0) {
@@ -73,7 +73,7 @@
              }
  
              return true;
-@@ -293,17 +317,17 @@
+@@ -292,17 +316,17 @@
      public void playerTouch(EntityHuman entityhuman) {
          if (entityhuman instanceof EntityPlayer entityplayer) {
              if (entityhuman.takeXpDelay == 0) {
@@ -94,7 +94,7 @@
                  }
              }
  
-@@ -317,12 +341,20 @@
+@@ -316,12 +340,20 @@
              ItemStack itemstack = ((EnchantedItemInUse) optional.get()).itemStack();
              int j = EnchantmentManager.modifyDurabilityToRepairFromXp(entityplayer.level(), itemstack, i);
              int k = Math.min(j, itemstack.getDamageValue());
@@ -115,7 +115,7 @@
                      return this.repairPlayerItems(entityplayer, l);
                  }
              }
-@@ -348,6 +380,24 @@
+@@ -347,6 +379,24 @@
      }
  
      public static int getExperienceValue(int i) {

@@ -1,6 +1,6 @@
 --- a/net/minecraft/network/chat/ChatHexColor.java
 +++ b/net/minecraft/network/chat/ChatHexColor.java
-@@ -17,7 +17,7 @@
+@@ -17,23 +17,29 @@
      private static final String CUSTOM_COLOR_PREFIX = "#";
      public static final Codec<ChatHexColor> CODEC = Codec.STRING.comapFlatMap(ChatHexColor::parseColor, ChatHexColor::serialize);
      private static final Map<EnumChatFormat, ChatHexColor> LEGACY_FORMAT_TO_COLOR = (Map) Stream.of(EnumChatFormat.values()).filter(EnumChatFormat::isColor).collect(ImmutableMap.toImmutableMap(Function.identity(), (enumchatformat) -> {
@@ -9,10 +9,9 @@
      }));
      private static final Map<String, ChatHexColor> NAMED_COLORS = (Map) ChatHexColor.LEGACY_FORMAT_TO_COLOR.values().stream().collect(ImmutableMap.toImmutableMap((chathexcolor) -> {
          return chathexcolor.name;
-@@ -25,16 +25,22 @@
+     }, Function.identity()));
      private final int value;
-     @Nullable
-     public final String name;
+     public final @Nullable String name;
 +    // CraftBukkit start
 +    @Nullable
 +    public final EnumChatFormat format;

@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/item/crafting/ShapedRecipes.java
 +++ b/net/minecraft/world/item/crafting/ShapedRecipes.java
 @@ -17,6 +17,14 @@
- import net.minecraft.world.item.crafting.display.SlotDisplay;
  import net.minecraft.world.level.World;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.NamespacedKey;
@@ -15,7 +15,7 @@
  public class ShapedRecipes implements RecipeCrafting {
  
      final ShapedRecipePattern pattern;
-@@ -39,6 +47,68 @@
+@@ -38,6 +46,68 @@
          this(s, craftingbookcategory, shapedrecipepattern, itemstack, true);
      }
  

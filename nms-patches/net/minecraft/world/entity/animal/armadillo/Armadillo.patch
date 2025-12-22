@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/animal/armadillo/Armadillo.java
 +++ b/net/minecraft/world/entity/animal/armadillo/Armadillo.java
 @@ -50,6 +50,10 @@
- import net.minecraft.world.level.storage.ValueOutput;
  import net.minecraft.world.level.storage.loot.LootTables;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.event.entity.EntityDamageEvent;
@@ -11,7 +11,7 @@
  public class Armadillo extends EntityAnimal {
  
      public static final float BABY_SCALE = 0.6F;
-@@ -131,16 +135,18 @@
+@@ -130,16 +134,18 @@
          GameProfilerFiller gameprofilerfiller = Profiler.get();
  
          gameprofilerfiller.push("armadilloBrain");
@@ -21,7 +21,7 @@
          gameprofilerfiller.push("armadilloActivityUpdate");
          ArmadilloAi.updateActivity(this);
          gameprofilerfiller.pop();
-         if (this.isAlive() && !this.isBaby() && --this.scuteTime <= 0) {
+         if (this.isAlive() && --this.scuteTime <= 0 && this.shouldDropLoot(worldserver)) {
 +            this.forceDrops = true; // CraftBukkit
              if (this.dropFromGiftLootTable(worldserver, LootTables.ARMADILLO_SHED, this::spawnAtLocation)) {
                  this.playSound(SoundEffects.ARMADILLO_SCUTE_DROP, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
@@ -31,7 +31,7 @@
  
              this.scuteTime = this.pickNextScuteDropTime();
          }
-@@ -286,8 +292,13 @@
+@@ -285,8 +291,13 @@
      }
  
      @Override
@@ -47,7 +47,7 @@
          if (!this.isNoAi() && !this.isDeadOrDying()) {
              if (damagesource.getEntity() instanceof EntityLiving) {
                  this.getBrain().setMemoryWithExpiry(MemoryModuleType.DANGER_DETECTED_RECENTLY, true, 80L);
-@@ -299,6 +310,7 @@
+@@ -298,6 +309,7 @@
              }
  
          }
@@ -55,7 +55,7 @@
      }
  
      @Override
-@@ -322,7 +334,9 @@
+@@ -321,7 +333,9 @@
              if (world instanceof WorldServer) {
                  WorldServer worldserver = (WorldServer) world;
  

@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/inventory/InventoryCraftResult.java
 +++ b/net/minecraft/world/inventory/InventoryCraftResult.java
-@@ -8,12 +8,51 @@
- import net.minecraft.world.item.ItemStack;
+@@ -8,11 +8,50 @@
  import net.minecraft.world.item.crafting.RecipeHolder;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.Location;
@@ -13,8 +13,7 @@
  public class InventoryCraftResult implements IInventory, RecipeCraftingHolder {
  
      private final NonNullList<ItemStack> itemStacks;
-     @Nullable
-     private RecipeHolder<?> recipeUsed;
+     private @Nullable RecipeHolder<?> recipeUsed;
  
 +    // CraftBukkit start
 +    private int maxStack = MAX_STACK;

@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/item/crafting/TransmuteRecipe.java
 +++ b/net/minecraft/world/item/crafting/TransmuteRecipe.java
 @@ -16,6 +16,13 @@
- import net.minecraft.world.item.crafting.display.SlotDisplay;
  import net.minecraft.world.level.World;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.NamespacedKey;
@@ -14,7 +14,7 @@
  public class TransmuteRecipe implements RecipeCrafting {
  
      final String group;
-@@ -82,6 +89,13 @@
+@@ -81,6 +88,13 @@
          return List.of(new ShapelessCraftingRecipeDisplay(List.of(this.input.display(), this.material.display()), this.result.display(), new SlotDisplay.d(Items.CRAFTING_TABLE)));
      }
  

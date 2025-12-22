@@ -1,18 +1,18 @@
 --- a/net/minecraft/world/IInventory.java
 +++ b/net/minecraft/world/IInventory.java
-@@ -13,6 +13,11 @@
- import net.minecraft.world.level.World;
+@@ -16,6 +16,11 @@
  import net.minecraft.world.level.block.entity.TileEntity;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import net.minecraft.world.item.crafting.RecipeHolder;
 +import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 +// CraftBukkit end
 +
- public interface IInventory extends Clearable, Iterable<ItemStack> {
+ public interface IInventory extends Clearable, SlotProvider, Iterable<ItemStack> {
  
      float DEFAULT_DISTANCE_BUFFER = 4.0F;
-@@ -29,9 +34,7 @@
+@@ -32,9 +37,7 @@
  
      void setItem(int i, ItemStack itemstack);
  
@@ -23,7 +23,7 @@
  
      default int getMaxStackSize(ItemStack itemstack) {
          return Math.min(this.getMaxStackSize(), itemstack.getMaxStackSize());
-@@ -100,6 +103,24 @@
+@@ -119,6 +122,24 @@
          return new IInventory.a(this);
      }
  

@@ -14,7 +14,7 @@
              ResourceKey<IRecipe<?>> resourcekey = recipeholder.id();
  
 -            if (!this.known.contains(resourcekey) && !recipeholder.value().isSpecial()) {
-+            if (!this.known.contains(resourcekey) && !recipeholder.value().isSpecial() && CraftEventFactory.handlePlayerRecipeListUpdateEvent(entityplayer, resourcekey.location())) { // CraftBukkit
++            if (!this.known.contains(resourcekey) && !recipeholder.value().isSpecial() && CraftEventFactory.handlePlayerRecipeListUpdateEvent(entityplayer, resourcekey.identifier())) { // CraftBukkit
                  this.add(resourcekey);
                  this.addHighlight(resourcekey);
                  this.displayResolver.displaysForRecipe(resourcekey, (recipedisplayentry) -> {

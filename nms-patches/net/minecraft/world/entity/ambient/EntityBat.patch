@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/ambient/EntityBat.java
 +++ b/net/minecraft/world/entity/ambient/EntityBat.java
-@@ -30,6 +30,10 @@
- import net.minecraft.world.level.storage.ValueOutput;
+@@ -28,6 +28,10 @@
  import net.minecraft.world.phys.Vec3D;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
@@ -11,7 +11,7 @@
  public class EntityBat extends EntityAmbient {
  
      public static final float FLAP_LENGTH_SECONDS = 0.5F;
-@@ -145,13 +149,13 @@
+@@ -141,13 +145,13 @@
                      this.yHeadRot = (float) this.random.nextInt(360);
                  }
  
@@ -27,7 +27,7 @@
                  this.setResting(false);
                  if (!flag) {
                      worldserver.levelEvent((Entity) null, 1025, blockposition, 0);
-@@ -178,7 +182,7 @@
+@@ -174,7 +178,7 @@
  
              this.zza = 0.5F;
              this.setYRot(this.getYRot() + f1);
@@ -36,7 +36,7 @@
                  this.setResting(true);
              }
          }
-@@ -203,7 +207,7 @@
+@@ -199,7 +203,7 @@
          if (this.isInvulnerableTo(worldserver, damagesource)) {
              return false;
          } else {

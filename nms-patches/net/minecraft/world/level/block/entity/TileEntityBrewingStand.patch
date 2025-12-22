@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/level/block/entity/TileEntityBrewingStand.java
 +++ b/net/minecraft/world/level/block/entity/TileEntityBrewingStand.java
 @@ -24,6 +24,20 @@
- import net.minecraft.world.level.storage.ValueInput;
  import net.minecraft.world.level.storage.ValueOutput;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import java.util.ArrayList;

@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/level/block/BlockSponge.java
 +++ b/net/minecraft/world/level/block/BlockSponge.java
 @@ -16,6 +16,13 @@
- import net.minecraft.world.level.material.Fluid;
  import net.minecraft.world.level.redstone.Orientation;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import java.util.List;

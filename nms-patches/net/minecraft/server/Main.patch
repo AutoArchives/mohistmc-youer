@@ -1,7 +1,7 @@
 --- a/net/minecraft/server/Main.java
 +++ b/net/minecraft/server/Main.java
 @@ -60,16 +60,28 @@
- import net.minecraft.world.level.storage.WorldInfo;
+ import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
 +// CraftBukkit start
@@ -196,8 +196,8 @@
              thread.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(Main.LOGGER));
              Runtime.getRuntime().addShutdownHook(thread);
 +            */ // CraftBukkit end
-         } catch (Exception exception1) {
-             Main.LOGGER.error(LogUtils.FATAL_MARKER, "Failed to start the minecraft server", exception1);
+         } catch (Throwable throwable) {
+             Main.LOGGER.error(LogUtils.FATAL_MARKER, "Failed to start the minecraft server", throwable);
          }
 @@ -297,7 +359,7 @@
      }

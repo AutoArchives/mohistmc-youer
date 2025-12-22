@@ -1,6 +1,6 @@
 --- a/net/minecraft/server/level/ChunkProviderServer.java
 +++ b/net/minecraft/server/level/ChunkProviderServer.java
-@@ -99,6 +99,16 @@
+@@ -97,6 +97,16 @@
          this.clearCache();
      }
  
@@ -17,7 +17,7 @@
      @Override
      public LightEngineThreaded getLightEngine() {
          return this.lightEngine;
-@@ -138,7 +148,7 @@
+@@ -134,7 +144,7 @@
                  if (k == this.lastChunkPos[l] && chunkstatus == this.lastChunkStatus[l]) {
                      IChunkAccess ichunkaccess = this.lastChunk[l];
  
@@ -26,7 +26,7 @@
                          return ichunkaccess;
                      }
                  }
-@@ -151,7 +161,7 @@
+@@ -147,7 +157,7 @@
              Objects.requireNonNull(completablefuture);
              chunkproviderserver_a.managedBlock(completablefuture::isDone);
              ChunkResult<IChunkAccess> chunkresult = (ChunkResult) completablefuture.join();
@@ -35,7 +35,7 @@
  
              if (ichunkaccess1 == null && flag) {
                  throw (IllegalStateException) SystemUtils.pauseInIde(new IllegalStateException("Chunk not there when requested: " + chunkresult.getError()));
-@@ -231,7 +241,15 @@
+@@ -226,7 +236,15 @@
          int l = ChunkLevel.byStatus(chunkstatus);
          PlayerChunk playerchunk = this.getVisibleChunkIfPresent(k);
  
@@ -52,7 +52,7 @@
              this.addTicket(new Ticket(TicketType.UNKNOWN, l), chunkcoordintpair);
              if (this.chunkAbsent(playerchunk, l)) {
                  GameProfilerFiller gameprofilerfiller = Profiler.get();
-@@ -250,7 +268,7 @@
+@@ -245,7 +263,7 @@
      }
  
      private boolean chunkAbsent(@Nullable PlayerChunk playerchunk, int i) {
@@ -61,7 +61,7 @@
      }
  
      @Override
-@@ -309,12 +327,34 @@
+@@ -303,12 +321,34 @@
  
      @Override
      public void close() throws IOException {
@@ -97,17 +97,17 @@
      @Override
      public void tick(BooleanSupplier booleansupplier, boolean flag) {
          GameProfilerFiller gameprofilerfiller = Profiler.get();
-@@ -378,14 +418,14 @@
+@@ -372,14 +412,14 @@
          SpawnerCreature.d spawnercreature_d = SpawnerCreature.createState(j, this.level.getAllEntities(), this::getFullChunk, new LocalMobCapCalculator(this.chunkMap));
  
          this.lastSpawnState = spawnercreature_d;
--        boolean flag = this.level.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING);
-+        boolean flag = this.level.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING) && !this.level.players().isEmpty(); // CraftBukkit
-         int k = this.level.getGameRules().getInt(GameRules.RULE_RANDOMTICKING);
+-        boolean flag = (Boolean) this.level.getGameRules().get(GameRules.SPAWN_MOBS);
++        boolean flag = (Boolean) this.level.getGameRules().get(GameRules.SPAWN_MOBS) && !this.level.players().isEmpty(); // CraftBukkit
+         int k = (Integer) this.level.getGameRules().get(GameRules.RANDOM_TICK_SPEED);
          List<EnumCreatureType> list;
  
          if (flag) {
--            boolean flag1 = this.level.getLevelData().getGameTime() % 400L == 0L;
+-            boolean flag1 = this.level.getGameTime() % 400L == 0L;
 +            boolean flag1 = this.level.ticksPerSpawnCategory.getLong(org.bukkit.entity.SpawnCategory.ANIMAL) != 0L && this.level.getLevelData().getGameTime() % this.level.ticksPerSpawnCategory.getLong(org.bukkit.entity.SpawnCategory.ANIMAL) == 0L; // CraftBukkit
  
 -            list = SpawnerCreature.getFilteredSpawningCategories(spawnercreature_d, true, this.spawnEnemies, flag1);
@@ -115,7 +115,7 @@
          } else {
              list = List.of();
          }
-@@ -648,13 +688,19 @@
+@@ -641,13 +681,19 @@
          }
  
          @Override

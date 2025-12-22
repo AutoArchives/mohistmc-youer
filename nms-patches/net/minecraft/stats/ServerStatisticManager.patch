@@ -5,8 +5,8 @@
  package net.minecraft.stats;
  
  import com.google.common.collect.Sets;
-@@ -51,11 +52,11 @@
-     private final File file;
+@@ -59,11 +60,11 @@
+     private final Path file;
      private final Set<Statistic<?>> dirty = Sets.newHashSet();
  
 -    private static <T> Codec<Map<Statistic<?>, Integer>> createTypedStatsCodec(StatisticWrapper<T> statisticwrapper) {

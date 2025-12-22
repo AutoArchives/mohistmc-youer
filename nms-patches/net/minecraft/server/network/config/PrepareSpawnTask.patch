@@ -1,7 +1,7 @@
 --- a/net/minecraft/server/network/config/PrepareSpawnTask.java
 +++ b/net/minecraft/server/network/config/PrepareSpawnTask.java
-@@ -28,18 +28,23 @@
- import net.minecraft.world.phys.Vec3D;
+@@ -28,17 +28,22 @@
+ import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
 +// CraftBukkit start
@@ -18,15 +18,14 @@
 -    final NameAndId nameAndId;
 +    final EntityPlayer nameAndId;
      final LevelLoadListener loadListener;
-     @Nullable
-     private PrepareSpawnTask.c state;
+     private PrepareSpawnTask.@Nullable c state;
  
 -    public PrepareSpawnTask(MinecraftServer minecraftserver, NameAndId nameandid) {
 +    public PrepareSpawnTask(MinecraftServer minecraftserver, EntityPlayer nameandid) { // CraftBukkit
          this.server = minecraftserver;
          this.nameAndId = nameandid;
          this.loadListener = minecraftserver.getLevelLoadListener();
-@@ -54,8 +59,8 @@
+@@ -53,8 +58,8 @@
              EntityPlayer.c entityplayer_c = (EntityPlayer.c) optional.flatMap((valueinput) -> {
                  return valueinput.read(EntityPlayer.c.MAP_CODEC);
              }).orElse(EntityPlayer.c.EMPTY);
@@ -37,7 +36,7 @@
              MinecraftServer minecraftserver = this.server;
  
              Objects.requireNonNull(this.server);
-@@ -83,11 +88,9 @@
+@@ -82,11 +87,9 @@
          //$FF: b0->value
          //0->net/minecraft/server/network/config/PrepareSpawnTask$a
          //1->net/minecraft/server/network/config/PrepareSpawnTask$b
@@ -52,7 +51,7 @@
                  PrepareSpawnTask.a preparespawntask_a = (PrepareSpawnTask.a)preparespawntask_c;
                  PrepareSpawnTask.b preparespawntask_b = preparespawntask_a.tick();
  
-@@ -97,14 +100,14 @@
+@@ -96,14 +99,14 @@
                  } else {
                      flag = false;
                  }
@@ -72,7 +71,7 @@
          }
  
          return flag;
-@@ -211,7 +214,7 @@
+@@ -208,7 +211,7 @@
              ChunkCoordIntPair chunkcoordintpair = new ChunkCoordIntPair(BlockPosition.containing(this.spawnPosition));
  
              this.spawnLevel.waitForEntities(chunkcoordintpair, 3);

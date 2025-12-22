@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/level/block/entity/vault/VaultBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/vault/VaultBlockEntity.java
 @@ -42,6 +42,13 @@
- import net.minecraft.world.level.storage.loot.parameters.LootContextParameters;
  import net.minecraft.world.phys.Vec3D;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
@@ -14,7 +14,7 @@
  public class VaultBlockEntity extends TileEntity {
  
      private final VaultServerData serverData = new VaultServerData();
-@@ -82,13 +89,13 @@
+@@ -81,13 +88,13 @@
          VaultServerData vaultserverdata = this.serverData;
  
          Objects.requireNonNull(this.serverData);
@@ -29,8 +29,8 @@
 +        ((Optional<VaultSharedData>) optional).ifPresent(vaultshareddata::set); // CraftBukkit - decompile error
      }
  
-     @Nullable
-@@ -163,6 +170,14 @@
+     public @Nullable VaultServerData getServerData() {
+@@ -161,6 +168,14 @@
                      if (!list.isEmpty()) {
                          entityhuman.awardStat(StatisticList.ITEM_USED.get(itemstack.getItem()));
                          itemstack.consume(vaultconfig.keyItem().getCount(), entityhuman);
@@ -45,7 +45,7 @@
                          unlock(worldserver, iblockdata, blockposition, vaultconfig, vaultserverdata, vaultshareddata, list);
                          vaultserverdata.addToRewardedPlayers(entityhuman);
                          vaultshareddata.updateConnectedPlayersWithinRange(worldserver, blockposition, vaultserverdata, vaultconfig, vaultconfig.deactivationRange());
-@@ -184,6 +199,14 @@
+@@ -182,6 +197,14 @@
                  vaultshareddata.setDisplayItem(ItemStack.EMPTY);
              } else {
                  ItemStack itemstack = getRandomDisplayItemFromLootTable(worldserver, blockposition, (ResourceKey) vaultconfig.overrideLootTableToDisplay().orElse(vaultconfig.lootTable()));

@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/item/EntityItem.java
 +++ b/net/minecraft/world/entity/item/EntityItem.java
 @@ -35,6 +35,15 @@
- import net.minecraft.world.level.storage.ValueOutput;
  import net.minecraft.world.phys.Vec3D;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import net.minecraft.server.MinecraftServer;
@@ -16,15 +16,15 @@
  public class EntityItem extends Entity implements TraceableEntity {
  
      private static final DataWatcherObject<ItemStack> DATA_ITEM = DataWatcher.<ItemStack>defineId(EntityItem.class, DataWatcherRegistry.ITEM_STACK);
-@@ -54,6 +63,7 @@
-     @Nullable
-     public UUID target;
+@@ -52,6 +61,7 @@
+     public @Nullable EntityReference<Entity> thrower;
+     public @Nullable UUID target;
      public final float bobOffs;
 +    private int lastTick = MinecraftServer.currentTick - 1; // CraftBukkit
  
      public EntityItem(EntityTypes<? extends EntityItem> entitytypes, World world) {
          super(entitytypes, world);
-@@ -113,12 +123,15 @@
+@@ -110,12 +120,15 @@
      @Override
      public void tick() {
          if (this.getItem().isEmpty()) {
@@ -44,7 +44,7 @@
  
              this.xo = this.getX();
              this.yo = this.getY();
-@@ -168,9 +181,11 @@
+@@ -165,9 +178,11 @@
                  this.mergeWithNeighbours();
              }
  
@@ -54,9 +54,9 @@
              }
 +            // CraftBukkit end */
  
-             this.hasImpulse |= this.updateInWaterStateAndDoFluidPushing();
+             this.needsSync |= this.updateInWaterStateAndDoFluidPushing();
              if (!this.level().isClientSide()) {
-@@ -182,7 +197,13 @@
+@@ -179,7 +194,13 @@
              }
  
              if (!this.level().isClientSide() && this.age >= 6000) {
@@ -71,7 +71,7 @@
              }
  
          }
-@@ -262,11 +283,16 @@
+@@ -259,11 +280,16 @@
      }
  
      private static void merge(EntityItem entityitem, ItemStack itemstack, EntityItem entityitem1, ItemStack itemstack1) {
@@ -89,7 +89,7 @@
          }
  
      }
-@@ -295,12 +321,17 @@
+@@ -292,12 +318,17 @@
          } else if (!this.getItem().canBeHurtBy(damagesource)) {
              return false;
          } else {
@@ -108,7 +108,7 @@
              }
  
              return true;
-@@ -330,11 +361,11 @@
+@@ -327,11 +358,11 @@
          this.health = valueinput.getShortOr("Health", (short) 5);
          this.age = valueinput.getShortOr("Age", (short) 0);
          this.pickupDelay = valueinput.getShortOr("PickupDelay", (short) 0);
@@ -122,7 +122,7 @@
          }
  
      }
-@@ -346,10 +377,50 @@
+@@ -343,10 +374,50 @@
              Item item = itemstack.getItem();
              int i = itemstack.getCount();
  

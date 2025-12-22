@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/monster/EntitySlime.java
 +++ b/net/minecraft/world/entity/monster/EntitySlime.java
-@@ -48,6 +48,15 @@
- import net.minecraft.world.phys.Vec3D;
+@@ -49,6 +49,15 @@
  import net.minecraft.world.scores.ScoreboardTeam;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import java.util.ArrayList;
@@ -16,7 +16,7 @@
  public class EntitySlime extends EntityInsentient implements IMonster {
  
      private static final DataWatcherObject<Integer> ID_SIZE = DataWatcher.<Integer>defineId(EntitySlime.class, DataWatcherRegistry.INT);
-@@ -194,11 +203,18 @@
+@@ -195,11 +204,18 @@
  
      @Override
      public EntityTypes<? extends EntitySlime> getType() {
@@ -36,7 +36,7 @@
          int i = this.getSize();
  
          if (!this.level().isClientSide() && i > 1 && this.isDeadOrDying()) {
-@@ -208,18 +224,45 @@
+@@ -209,18 +225,45 @@
              int k = 2 + this.random.nextInt(3);
              ScoreboardTeam scoreboardteam = this.getTeam();
  

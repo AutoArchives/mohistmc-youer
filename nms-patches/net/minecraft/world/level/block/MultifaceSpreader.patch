@@ -18,7 +18,7 @@
              } else {
                  return false;
              }
-@@ -168,19 +168,19 @@
+@@ -167,19 +167,19 @@
          SAME_POSITION {
              @Override
              public MultifaceSpreader.c getSpreadPos(BlockPosition blockposition, EnumDirection enumdirection, EnumDirection enumdirection1) {

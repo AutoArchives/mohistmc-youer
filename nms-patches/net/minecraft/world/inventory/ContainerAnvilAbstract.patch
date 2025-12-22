@@ -6,5 +6,5 @@
      public boolean stillValid(EntityHuman entityhuman) {
 +        if (!this.checkReachable) return true; // CraftBukkit
          return (Boolean) this.access.evaluate((world, blockposition) -> {
-             return !this.isValidBlock(world.getBlockState(blockposition)) ? false : entityhuman.canInteractWithBlock(blockposition, 4.0D);
+             return !this.isValidBlock(world.getBlockState(blockposition)) ? false : entityhuman.isWithinBlockInteractionRange(blockposition, 4.0D);
          }, true);

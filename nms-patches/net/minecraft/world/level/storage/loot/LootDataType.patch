@@ -16,7 +16,7 @@
      private static LootDataType.a<LootTable> createLootTableValidator() {
          return (lootcollector, resourcekey, loottable) -> {
              loottable.validate(lootcollector.setContextKeySet(loottable.getParamSet()).enterElement(new ProblemReporter.h(resourcekey), resourcekey));
-+            loottable.craftLootTable = new CraftLootTable(CraftNamespacedKey.fromMinecraft(resourcekey.location()), loottable); // CraftBukkit
++            loottable.craftLootTable = new CraftLootTable(CraftNamespacedKey.fromMinecraft(resourcekey.identifier()), loottable); // CraftBukkit
          };
      }
  

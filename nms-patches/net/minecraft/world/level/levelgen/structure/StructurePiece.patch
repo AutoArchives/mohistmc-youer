@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/level/levelgen/structure/StructurePiece.java
 +++ b/net/minecraft/world/level/levelgen/structure/StructurePiece.java
-@@ -45,7 +45,7 @@
+@@ -44,7 +44,7 @@
      private EnumBlockRotation rotation;
      protected int genDepth;
      private final WorldGenFeatureStructurePieceType type;
@@ -9,7 +9,7 @@
  
      protected StructurePiece(WorldGenFeatureStructurePieceType worldgenfeaturestructurepiecetype, int i, StructureBoundingBox structureboundingbox) {
          this.type = worldgenfeaturestructurepiecetype;
-@@ -172,6 +172,11 @@
+@@ -171,6 +171,11 @@
                  }
  
                  generatoraccessseed.setBlock(blockposition, iblockdata, 2);
@@ -21,7 +21,7 @@
                  Fluid fluid = generatoraccessseed.getFluidState(blockposition);
  
                  if (!fluid.isEmpty()) {
-@@ -186,6 +191,38 @@
+@@ -185,6 +190,38 @@
          }
      }
  
@@ -60,7 +60,7 @@
      protected boolean canBeReplaced(IWorldReader iworldreader, int i, int j, int k, StructureBoundingBox structureboundingbox) {
          return true;
      }
-@@ -377,12 +414,20 @@
+@@ -376,12 +413,20 @@
                  iblockdata = reorient(worldaccess, blockposition, Blocks.CHEST.defaultBlockState());
              }
  
@@ -81,7 +81,7 @@
  
              return true;
          } else {
-@@ -394,12 +439,31 @@
+@@ -393,12 +438,31 @@
          BlockPosition blockposition = this.getWorldPos(i, j, k);
  
          if (structureboundingbox.isInside(blockposition) && !generatoraccessseed.getBlockState(blockposition).is(Blocks.DISPENSER)) {
@@ -113,7 +113,7 @@
  
              return true;
          } else {
-@@ -412,7 +476,7 @@
+@@ -411,7 +475,7 @@
      }
  
      public static StructureBoundingBox createBoundingBox(Stream<StructurePiece> stream) {

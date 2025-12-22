@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/entity/raid/Raid.java
 +++ b/net/minecraft/world/entity/raid/Raid.java
-@@ -189,6 +189,12 @@
+@@ -188,6 +188,12 @@
          return this.status == Raid.Status.LOSS;
      }
  
@@ -13,7 +13,7 @@
      public float getTotalHealth() {
          return this.totalHealth;
      }
-@@ -279,6 +285,7 @@
+@@ -278,6 +284,7 @@
  
                  this.active = worldserver.hasChunkAt(this.center);
                  if (worldserver.getDifficulty() == EnumDifficulty.PEACEFUL) {
@@ -21,7 +21,7 @@
                      this.stop();
                      return;
                  }
-@@ -298,13 +305,16 @@
+@@ -297,13 +304,16 @@
                  if (!worldserver.isVillage(this.center)) {
                      if (this.groupsSpawned > 0) {
                          this.status = Raid.Status.LOSS;
@@ -38,7 +38,7 @@
                      this.stop();
                      return;
                  }
-@@ -381,6 +391,7 @@
+@@ -380,6 +390,7 @@
                      }
  
                      if (j > 5) {
@@ -46,7 +46,7 @@
                          this.stop();
                          break;
                      }
-@@ -392,6 +403,7 @@
+@@ -391,6 +402,7 @@
                      } else {
                          this.status = Raid.Status.VICTORY;
  
@@ -54,7 +54,7 @@
                          for (UUID uuid : this.heroesOfTheVillage) {
                              Entity entity = worldserver.getEntity(uuid);
  
-@@ -405,10 +417,12 @@
+@@ -404,10 +416,12 @@
  
                                          entityplayer.awardStat(StatisticList.RAID_WIN);
                                          CriterionTriggers.RAID_WIN.trigger(entityplayer);
@@ -67,7 +67,7 @@
                      }
                  }
  
-@@ -416,6 +430,7 @@
+@@ -415,6 +429,7 @@
              } else if (this.isOver()) {
                  ++this.celebrationTicks;
                  if (this.celebrationTicks >= 600) {
@@ -75,7 +75,7 @@
                      this.stop();
                      return;
                  }
-@@ -537,6 +552,10 @@
+@@ -536,6 +551,10 @@
          DifficultyDamageScaler difficultydamagescaler = worldserver.getCurrentDifficultyAt(blockposition);
          boolean flag1 = this.shouldSpawnBonusGroup();
  
@@ -86,7 +86,7 @@
          for (Raid.Wave raid_wave : Raid.Wave.VALUES) {
              int j = this.getDefaultNumSpawns(raid_wave, i, flag1) + this.getPotentialBonusSpawns(raid_wave, this.random, i, difficultydamagescaler, flag1);
              int k = 0;
-@@ -552,9 +571,11 @@
+@@ -551,9 +570,11 @@
                      entityraider.setPatrolLeader(true);
                      this.setLeader(i, entityraider);
                      flag = true;
@@ -98,7 +98,7 @@
                  if (raid_wave.entityType == EntityTypes.RAVAGER) {
                      EntityRaider entityraider1 = null;
  
-@@ -573,6 +594,7 @@
+@@ -572,6 +593,7 @@
                          this.joinRaid(worldserver, i, entityraider1, blockposition, false);
                          entityraider1.snapTo(blockposition, 0.0F, 0.0F);
                          entityraider1.startRiding(entityraider, false, false);
@@ -106,7 +106,7 @@
                      }
                  }
              }
-@@ -582,6 +604,7 @@
+@@ -581,6 +603,7 @@
          ++this.groupsSpawned;
          this.updateBossbar();
          this.setDirty(worldserver);
@@ -114,7 +114,7 @@
      }
  
      public void joinRaid(WorldServer worldserver, int i, EntityRaider entityraider, @Nullable BlockPosition blockposition, boolean flag) {
-@@ -597,7 +620,7 @@
+@@ -596,7 +619,7 @@
                  entityraider.finalizeSpawn(worldserver, worldserver.getCurrentDifficultyAt(blockposition), EntitySpawnReason.EVENT, (GroupDataEntity) null);
                  entityraider.applyRaidBuffs(worldserver, i, false);
                  entityraider.setOnGround(true);
@@ -123,7 +123,7 @@
              }
          }
  
-@@ -820,6 +843,12 @@
+@@ -817,6 +840,12 @@
          this.heroesOfTheVillage.add(entity.getUUID());
      }
  

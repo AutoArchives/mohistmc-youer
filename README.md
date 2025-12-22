@@ -32,7 +32,7 @@
 ✅ **Core Integration**
 - [x] NeoForge ([4ab3cd89d](https://github.com/neoforged/NeoForge/commit/4ab3cd89d))
 - [x] Bukkit([**5905bd8f**](https://hub.spigotmc.org/stash/projects/SPIGOT/repos/bukkit/commits/5905bd8f))
-- [x] CraftBukkit([**ddc9a2dad**](https://hub.spigotmc.org/stash/projects/SPIGOT/repos/craftbukkit/commits/ddc9a2dad))
+- [x] CraftBukkit([**b743ddcc4**](https://hub.spigotmc.org/stash/projects/SPIGOT/repos/craftbukkit/commits/b743ddcc4))
 - [x] Spigot ([**d2eba2c8**](https://hub.spigotmc.org/stash/projects/SPIGOT/repos/spigot/commits/d2eba2c8))
   - [x] Bukkit-Patches
   - [x] CraftBukkit-Patches

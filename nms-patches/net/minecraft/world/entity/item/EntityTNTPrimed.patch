@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/item/EntityTNTPrimed.java
 +++ b/net/minecraft/world/entity/item/EntityTNTPrimed.java
 @@ -28,6 +28,12 @@
- import net.minecraft.world.level.storage.ValueInput;
  import net.minecraft.world.level.storage.ValueOutput;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start;
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
@@ -13,15 +13,15 @@
  public class EntityTNTPrimed extends Entity implements TraceableEntity {
  
      private static final DataWatcherObject<Integer> DATA_FUSE_ID = DataWatcher.<Integer>defineId(EntityTNTPrimed.class, DataWatcherRegistry.INT);
-@@ -53,6 +59,7 @@
-     public EntityReference<EntityLiving> owner;
+@@ -52,6 +58,7 @@
+     public @Nullable EntityReference<EntityLiving> owner;
      private boolean usedPortal;
      public float explosionPower;
 +    public boolean isIncendiary = false; // CraftBukkit - add field
  
      public EntityTNTPrimed(EntityTypes<? extends EntityTNTPrimed> entitytypes, World world) {
          super(entitytypes, world);
-@@ -109,10 +116,13 @@
+@@ -108,10 +115,13 @@
  
          this.setFuse(i);
          if (i <= 0) {
@@ -36,10 +36,10 @@
          } else {
              this.updateInWaterStateAndDoFluidPushing();
              if (this.level().isClientSide()) {
-@@ -127,7 +137,13 @@
+@@ -126,7 +136,13 @@
  
          if (world instanceof WorldServer worldserver) {
-             if (worldserver.getGameRules().getBoolean(GameRules.RULE_TNT_EXPLODES)) {
+             if ((Boolean) worldserver.getGameRules().get(GameRules.TNT_EXPLODES)) {
 -                this.level().explode(this, Explosion.getDefaultDamageSource(this.level(), this), this.usedPortal ? EntityTNTPrimed.USED_PORTAL_DAMAGE_CALCULATOR : null, this.getX(), this.getY(0.0625D), this.getZ(), this.explosionPower, false, World.a.TNT);
 +                // CraftBukkit start
 +                ExplosionPrimeEvent event = CraftEventFactory.callExplosionPrimeEvent((org.bukkit.entity.Explosive) this.getBukkitEntity());

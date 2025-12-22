@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/level/block/SculkSpreader.java
 +++ b/net/minecraft/world/level/block/SculkSpreader.java
 @@ -37,6 +37,14 @@
- import net.minecraft.world.level.storage.ValueInput;
  import net.minecraft.world.level.storage.ValueOutput;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import net.minecraft.nbt.NBTBase;
@@ -52,7 +52,7 @@
              this.cursors.add(sculkspreader_a);
          }
      }
-@@ -229,7 +251,7 @@
+@@ -228,7 +250,7 @@
              this.charge = i;
              this.decayDelay = j;
              this.updateDelay = k;

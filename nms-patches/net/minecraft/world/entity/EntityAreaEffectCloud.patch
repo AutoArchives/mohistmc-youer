@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/EntityAreaEffectCloud.java
 +++ b/net/minecraft/world/entity/EntityAreaEffectCloud.java
 @@ -28,6 +28,12 @@
- import net.minecraft.world.level.storage.ValueInput;
  import net.minecraft.world.level.storage.ValueOutput;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.craftbukkit.entity.CraftLivingEntity;
@@ -13,7 +13,7 @@
  public class EntityAreaEffectCloud extends Entity implements TraceableEntity {
  
      private static final int TIME_BETWEEN_APPLICATIONS = 5;
-@@ -214,7 +220,7 @@
+@@ -212,7 +218,7 @@
  
      private void serverTick(WorldServer worldserver) {
          if (this.duration != -1 && this.tickCount - this.waitTime >= this.duration) {
@@ -22,7 +22,7 @@
          } else {
              boolean flag = this.isWaiting();
              boolean flag1 = this.tickCount < this.waitTime;
-@@ -229,7 +235,7 @@
+@@ -227,7 +233,7 @@
                  if (this.radiusPerTick != 0.0F) {
                      f += this.radiusPerTick;
                      if (f < 0.5F) {
@@ -31,7 +31,7 @@
                          return;
                      }
  
-@@ -251,9 +257,10 @@
+@@ -249,9 +255,10 @@
                          List<EntityLiving> list1 = this.level().<EntityLiving>getEntitiesOfClass(EntityLiving.class, this.getBoundingBox());
  
                          if (!list1.isEmpty()) {
@@ -43,7 +43,7 @@
  
                                      Objects.requireNonNull(entityliving);
                                      if (!stream.noneMatch(entityliving::canBeAffected)) {
-@@ -262,20 +269,33 @@
+@@ -260,20 +267,33 @@
                                          double d2 = d0 * d0 + d1 * d1;
  
                                          if (d2 <= (double) (f * f)) {
@@ -79,7 +79,7 @@
                                                      return;
                                                  }
  
-@@ -285,7 +305,7 @@
+@@ -283,7 +303,7 @@
                                              if (this.durationOnUse != 0 && this.duration != -1) {
                                                  this.duration += this.durationOnUse;
                                                  if (this.duration <= 0) {
@@ -88,7 +88,7 @@
                                                      return;
                                                  }
                                              }
-@@ -354,7 +374,7 @@
+@@ -351,7 +371,7 @@
          this.radiusPerTick = valueinput.getFloatOr("RadiusPerTick", 0.0F);
          this.setRadius(valueinput.getFloatOr("Radius", 3.0F));
          this.owner = EntityReference.<EntityLiving>read(valueinput, "Owner");

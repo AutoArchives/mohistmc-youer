@@ -1,6 +1,6 @@
 --- a/net/minecraft/util/worldupdate/WorldUpgrader.java
 +++ b/net/minecraft/util/worldupdate/WorldUpgrader.java
-@@ -82,7 +82,7 @@
+@@ -83,7 +83,7 @@
  
      public WorldUpgrader(Convertable.ConversionSession convertable_conversionsession, DataFixer datafixer, SaveData savedata, IRegistryCustom iregistrycustom, boolean flag, boolean flag1) {
          this.dimensions = iregistrycustom.lookupOrThrow(Registries.LEVEL_STEM);
@@ -9,15 +9,21 @@
          this.eraseCache = flag;
          this.dataFixer = datafixer;
          this.levelStorage = convertable_conversionsession;
-@@ -446,9 +446,9 @@
+@@ -446,7 +446,7 @@
              if (nbttagcompound != null) {
-                 int i = IChunkLoader.getVersion(nbttagcompound);
+                 int i = GameProfileSerializer.getDataVersion(nbttagcompound);
                  ChunkGenerator chunkgenerator = ((WorldDimension) WorldUpgrader.this.dimensions.getValueOrThrow(Registries.levelToLevelStem(resourcekey))).generator();
--                NBTTagCompound nbttagcompound1 = ichunkloader.upgradeChunkTag(resourcekey, () -> {
-+                NBTTagCompound nbttagcompound1 = ichunkloader.upgradeChunkTag(Registries.levelToLevelStem(resourcekey), () -> { // CraftBukkit
-                     return WorldUpgrader.this.overworldDataStorage;
--                }, nbttagcompound, chunkgenerator.getTypeNameForDataFixer());
-+                }, nbttagcompound, chunkgenerator.getTypeNameForDataFixer(), chunkcoordintpair, null); // CraftBukkit
+-                NBTTagCompound nbttagcompound1 = simpleregionstorage.upgradeChunkTag(nbttagcompound, -1, PlayerChunkMap.getChunkDataFixContextTag(resourcekey, chunkgenerator.getTypeNameForDataFixer()));
++                NBTTagCompound nbttagcompound1 = simpleregionstorage.upgradeChunkTag(nbttagcompound, -1, PlayerChunkMap.getChunkDataFixContextTag(Registries.levelToLevelStem(resourcekey), chunkgenerator.getTypeNameForDataFixer()), chunkcoordintpair, null); // CraftBukkit
                  ChunkCoordIntPair chunkcoordintpair1 = new ChunkCoordIntPair(nbttagcompound1.getIntOr("xPos", 0), nbttagcompound1.getIntOr("zPos", 0));
  
                  if (!chunkcoordintpair1.equals(chunkcoordintpair)) {
+@@ -491,7 +491,7 @@
+ 
+         @Override
+         protected SimpleRegionStorage createStorage(RegionStorageInfo regionstorageinfo, Path path) {
+-            Supplier<LegacyTagFixer> supplier = PersistentStructureLegacy.getLegacyTagFixer(regionstorageinfo.dimension(), () -> {
++            Supplier<LegacyTagFixer> supplier = PersistentStructureLegacy.getLegacyTagFixer(Registries.levelToLevelStem(regionstorageinfo.dimension()), () -> { // CraftBukkit
+                 return WorldUpgrader.this.overworldDataStorage;
+             }, WorldUpgrader.this.dataFixer);
+ 

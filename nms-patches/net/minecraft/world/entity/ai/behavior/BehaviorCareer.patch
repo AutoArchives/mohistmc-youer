@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/ai/behavior/BehaviorCareer.java
 +++ b/net/minecraft/world/entity/ai/behavior/BehaviorCareer.java
 @@ -9,6 +9,12 @@
- import net.minecraft.world.entity.npc.EntityVillager;
- import net.minecraft.world.entity.npc.VillagerProfession;
+ import net.minecraft.world.entity.npc.villager.EntityVillager;
+ import net.minecraft.world.entity.npc.villager.VillagerProfession;
  
 +// CraftBukkit start
 +import org.bukkit.craftbukkit.entity.CraftVillager;

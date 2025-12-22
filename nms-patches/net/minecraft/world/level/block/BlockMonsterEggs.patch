@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/level/block/BlockMonsterEggs.java
 +++ b/net/minecraft/world/level/block/BlockMonsterEggs.java
 @@ -19,6 +19,8 @@
- import net.minecraft.world.level.block.state.IBlockData;
  import net.minecraft.world.level.block.state.properties.IBlockState;
+ import net.minecraft.world.level.gamerules.GameRules;
  
 +import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason; // CraftBukkit
 +

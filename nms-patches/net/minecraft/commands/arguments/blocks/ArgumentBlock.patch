@@ -8,8 +8,8 @@
 +    private final Map<IBlockState<?>, Comparable<?>> properties = Maps.newLinkedHashMap(); // CraftBukkit - stable
      private final Map<String, String> vagueProperties = Maps.newHashMap();
      private MinecraftKey id = MinecraftKey.withDefaultNamespace("");
-     @Nullable
-@@ -516,7 +516,7 @@
+     private @Nullable BlockStateList<Block, IBlockData> definition;
+@@ -512,7 +512,7 @@
          Optional<T> optional = iblockstate.getValue(s);
  
          if (optional.isPresent()) {
@@ -18,7 +18,7 @@
              this.properties.put(iblockstate, (Comparable) optional.get());
          } else {
              this.reader.setCursor(i);
-@@ -551,7 +551,7 @@
+@@ -547,7 +547,7 @@
      private static <T extends Comparable<T>> void appendProperty(StringBuilder stringbuilder, IBlockState<T> iblockstate, Comparable<?> comparable) {
          stringbuilder.append(iblockstate.getName());
          stringbuilder.append('=');

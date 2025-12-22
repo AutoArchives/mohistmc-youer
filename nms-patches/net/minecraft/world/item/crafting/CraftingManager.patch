@@ -1,7 +1,7 @@
 --- a/net/minecraft/world/item/crafting/CraftingManager.java
 +++ b/net/minecraft/world/item/crafting/CraftingManager.java
 @@ -38,6 +38,11 @@
- import net.minecraft.world.level.World;
+ import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
 +// CraftBukkit start
@@ -50,8 +50,8 @@
      }
  
      public Optional<RecipeHolder<?>> byKey(ResourceKey<IRecipe<?>> resourcekey) {
-@@ -182,7 +208,7 @@
-     private <T extends IRecipe<?>> RecipeHolder<T> byKeyTyped(Recipes<T> recipes, ResourceKey<IRecipe<?>> resourcekey) {
+@@ -181,7 +207,7 @@
+     private <T extends IRecipe<?>> @Nullable RecipeHolder<T> byKeyTyped(Recipes<T> recipes, ResourceKey<IRecipe<?>> resourcekey) {
          RecipeHolder<?> recipeholder = this.recipes.byKey(resourcekey);
  
 -        return recipeholder != null && recipeholder.value().getType().equals(recipes) ? recipeholder : null;
@@ -59,7 +59,7 @@
      }
  
      public Map<ResourceKey<RecipePropertySet>, RecipePropertySet> getSynchronizedItemProperties() {
-@@ -232,6 +258,22 @@
+@@ -230,6 +256,22 @@
          return new RecipeHolder(resourcekey, irecipe);
      }
  
@@ -81,4 +81,4 @@
 +
      public static <I extends RecipeInput, T extends IRecipe<I>> CraftingManager.a<I, T> createCheck(final Recipes<T> recipes) {
          return new CraftingManager.a<I, T>() {
-             @Nullable
+             private @Nullable ResourceKey<IRecipe<?>> lastRecipe;

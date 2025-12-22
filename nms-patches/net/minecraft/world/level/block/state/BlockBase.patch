@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/level/block/state/BlockBase.java
 +++ b/net/minecraft/world/level/block/state/BlockBase.java
 @@ -84,6 +84,11 @@
- import net.minecraft.world.phys.shapes.VoxelShapeCollision;
  import net.minecraft.world.phys.shapes.VoxelShapes;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import net.minecraft.world.item.context.ItemActionContext;
@@ -38,7 +38,7 @@
                  }
  
                  iblockdata.spawnAfterBreak(worldserver, blockposition, ItemStack.EMPTY, flag);
-@@ -1108,7 +1121,13 @@
+@@ -1103,7 +1116,13 @@
          }
  
          public void onPlace(World world, BlockPosition blockposition, IBlockData iblockdata, boolean flag) {

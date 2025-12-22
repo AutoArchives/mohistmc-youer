@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/level/block/EyeblossomBlock.java
 +++ b/net/minecraft/world/level/block/EyeblossomBlock.java
-@@ -88,7 +88,11 @@
+@@ -90,7 +90,11 @@
          } else {
              EyeblossomBlock.a eyeblossomblock_a = this.type.transform();
  

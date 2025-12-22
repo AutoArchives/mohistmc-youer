@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/level/levelgen/structure/structures/MineshaftPieces.java
 +++ b/net/minecraft/world/level/levelgen/structure/structures/MineshaftPieces.java
 @@ -38,6 +38,10 @@
- import net.minecraft.world.level.storage.loot.LootTable;
  import net.minecraft.world.level.storage.loot.LootTables;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import net.minecraft.nbt.NBTBase;
@@ -11,7 +11,7 @@
  public class MineshaftPieces {
  
      private static final int DEFAULT_SHAFT_WIDTH = 3;
-@@ -517,6 +521,8 @@
+@@ -516,6 +520,8 @@
  
                          if (structureboundingbox.isInside(blockposition1) && this.isInterior(generatoraccessseed, 1, 0, i2, structureboundingbox)) {
                              this.hasPlacedSpider = true;
@@ -20,7 +20,7 @@
                              generatoraccessseed.setBlock(blockposition1, Blocks.SPAWNER.defaultBlockState(), 2);
                              TileEntity tileentity = generatoraccessseed.getBlockEntity(blockposition1);
  
-@@ -525,6 +531,9 @@
+@@ -524,6 +530,9 @@
  
                                  tileentitymobspawner.setEntityId(EntityTypes.CAVE_SPIDER, randomsource);
                              }

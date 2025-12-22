@@ -5,7 +5,7 @@
  import net.minecraft.util.VisibleForDebug;
  
 +// CraftBukkit start
-+import net.minecraft.world.entity.npc.EntityVillager;
++import net.minecraft.world.entity.npc.villager.EntityVillager;
 +import org.bukkit.craftbukkit.entity.CraftVillager.CraftReputationType;
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
 +import org.bukkit.entity.Villager;

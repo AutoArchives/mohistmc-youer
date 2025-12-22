@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/animal/camel/Camel.java
 +++ b/net/minecraft/world/entity/animal/camel/Camel.java
 @@ -56,6 +56,10 @@
- import net.minecraft.world.phys.Vec2F;
  import net.minecraft.world.phys.Vec3D;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.event.entity.EntityDamageEvent;
@@ -20,7 +20,7 @@
  
          behaviorcontroller.tick(worldserver, this);
          gameprofilerfiller.pop();
-@@ -470,9 +474,15 @@
+@@ -476,9 +480,15 @@
      }
  
      @Override

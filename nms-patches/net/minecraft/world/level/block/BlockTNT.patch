@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/level/block/BlockTNT.java
 +++ b/net/minecraft/world/level/block/BlockTNT.java
 @@ -31,6 +31,11 @@
- import net.minecraft.world.level.redstone.Orientation;
  import net.minecraft.world.phys.MovingObjectPositionBlock;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.craftbukkit.event.CraftEventFactory;

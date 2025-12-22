@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/monster/EntityRavager.java
 +++ b/net/minecraft/world/entity/monster/EntityRavager.java
-@@ -42,6 +42,10 @@
- import net.minecraft.world.phys.AxisAlignedBB;
+@@ -43,6 +43,10 @@
  import net.minecraft.world.phys.Vec3D;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
@@ -11,7 +11,7 @@
  public class EntityRavager extends EntityRaider {
  
      private static final Predicate<Entity> ROAR_TARGET_WITH_GRIEFING = (entity) -> {
-@@ -158,6 +162,11 @@
+@@ -159,6 +163,11 @@
                          Block block = iblockdata.getBlock();
  
                          if (block instanceof BlockLeaves) {

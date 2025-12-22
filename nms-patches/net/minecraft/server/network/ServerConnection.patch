@@ -1,11 +1,11 @@
 --- a/net/minecraft/server/network/ServerConnection.java
 +++ b/net/minecraft/server/network/ServerConnection.java
-@@ -104,9 +104,19 @@
+@@ -76,9 +76,19 @@
                      networkmanager.configurePacketHandler(channelpipeline);
                      networkmanager.setListenerForServerboundHandshake(new HandshakeListener(ServerConnection.this.server, networkmanager));
                  }
--            }).group(eventloopgroup).localAddress(inetaddress, i)).bind().syncUninterruptibly());
-+            }).group(eventloopgroup).localAddress(inetaddress, i)).option(ChannelOption.AUTO_READ, false).bind().syncUninterruptibly()); // CraftBukkit
+-            }).group(eventloopgroupholder.eventLoopGroup()).localAddress(inetaddress, i)).bind().syncUninterruptibly());
++            }).group(eventloopgroupholder.eventLoopGroup()).localAddress(inetaddress, i)).option(ChannelOption.AUTO_READ, false).bind().syncUninterruptibly()); // CraftBukkit
 +        }
 +    }
 +

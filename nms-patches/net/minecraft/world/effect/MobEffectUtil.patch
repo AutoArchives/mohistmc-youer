@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/effect/MobEffectUtil.java
 +++ b/net/minecraft/world/effect/MobEffectUtil.java
-@@ -50,13 +50,19 @@
+@@ -54,13 +54,19 @@
      }
  
      public static List<EntityPlayer> addEffectToPlayersAround(WorldServer worldserver, @Nullable Entity entity, Vec3D vec3d, double d0, MobEffect mobeffect, int i) {

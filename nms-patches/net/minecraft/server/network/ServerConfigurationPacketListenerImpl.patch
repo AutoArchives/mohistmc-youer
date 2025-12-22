@@ -1,7 +1,7 @@
 --- a/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java
 @@ -42,6 +42,12 @@
- import net.minecraft.world.flag.FeatureFlags;
+ import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
 +// CraftBukkit start
@@ -13,9 +13,9 @@
  public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketListenerImpl implements ServerConfigurationPacketListener, TickablePacketListener {
  
      private static final Logger LOGGER = LogUtils.getLogger();
-@@ -57,8 +63,10 @@
-     @Nullable
-     private PrepareSpawnTask prepareSpawnTask;
+@@ -54,8 +60,10 @@
+     private @Nullable SynchronizeRegistriesTask synchronizeRegistriesTask;
+     private @Nullable PrepareSpawnTask prepareSpawnTask;
  
 -    public ServerConfigurationPacketListenerImpl(MinecraftServer minecraftserver, NetworkManager networkmanager, CommonListenerCookie commonlistenercookie) {
 -        super(minecraftserver, networkmanager, commonlistenercookie);
@@ -26,7 +26,7 @@
          this.gameProfile = commonlistenercookie.gameProfile();
          this.clientInformation = commonlistenercookie.clientInformation();
      }
-@@ -87,6 +95,12 @@
+@@ -84,6 +92,12 @@
      public void startConfiguration() {
          this.send(new ClientboundCustomPayloadPacket(new BrandPayload(this.server.getServerModName())));
          ServerLinks serverlinks = this.server.serverLinks();
@@ -39,7 +39,7 @@
  
          if (!serverlinks.isEmpty()) {
              this.send(new ClientboundServerLinksPacket(serverlinks.untrust()));
-@@ -105,7 +119,7 @@
+@@ -102,7 +116,7 @@
      }
  
      public void returnToWorld() {
@@ -48,7 +48,7 @@
          this.configurationTasks.add(this.prepareSpawnTask);
          this.configurationTasks.add(new JoinWorldTask());
          this.startNextTask();
-@@ -179,13 +193,17 @@
+@@ -176,13 +190,17 @@
                  return;
              }
  

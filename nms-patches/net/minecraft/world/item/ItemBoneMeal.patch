@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/item/ItemBoneMeal.java
 +++ b/net/minecraft/world/item/ItemBoneMeal.java
-@@ -35,13 +35,19 @@
+@@ -35,6 +35,12 @@
  
      @Override
      public EnumInteractionResult useOn(ItemActionContext itemactioncontext) {
@@ -13,20 +13,21 @@
          World world = itemactioncontext.getLevel();
          BlockPosition blockposition = itemactioncontext.getClickedPos();
          BlockPosition blockposition1 = blockposition.relative(itemactioncontext.getClickedFace());
+@@ -42,7 +48,7 @@
  
-         if (growCrop(itemactioncontext.getItemInHand(), world, blockposition)) {
+         if (growCrop(itemstack, world, blockposition)) {
              if (!world.isClientSide()) {
--                itemactioncontext.getPlayer().gameEvent(GameEvent.ITEM_INTERACT_FINISH);
-+                if (itemactioncontext.getPlayer() != null) itemactioncontext.getPlayer().gameEvent(GameEvent.ITEM_INTERACT_FINISH); // CraftBukkit - SPIGOT-7518
+-                itemstack.causeUseVibration(itemactioncontext.getPlayer(), GameEvent.ITEM_INTERACT_FINISH);
++                if (itemactioncontext.getPlayer() != null) itemstack.causeUseVibration(itemactioncontext.getPlayer(), GameEvent.ITEM_INTERACT_FINISH); // CraftBukkit - SPIGOT-7518
                  world.levelEvent(1505, blockposition, 15);
              }
  
-@@ -52,7 +58,7 @@
+@@ -53,7 +59,7 @@
  
-             if (flag && growWaterPlant(itemactioncontext.getItemInHand(), world, blockposition1, itemactioncontext.getClickedFace())) {
+             if (flag && growWaterPlant(itemstack, world, blockposition1, itemactioncontext.getClickedFace())) {
                  if (!world.isClientSide()) {
--                    itemactioncontext.getPlayer().gameEvent(GameEvent.ITEM_INTERACT_FINISH);
-+                    if (itemactioncontext.getPlayer() != null) itemactioncontext.getPlayer().gameEvent(GameEvent.ITEM_INTERACT_FINISH); // CraftBukkit - SPIGOT-7518
+-                    itemstack.causeUseVibration(itemactioncontext.getPlayer(), GameEvent.ITEM_INTERACT_FINISH);
++                    if (itemactioncontext.getPlayer() != null) itemstack.causeUseVibration(itemactioncontext.getPlayer(), GameEvent.ITEM_INTERACT_FINISH); // CraftBukkit - SPIGOT-7518
                      world.levelEvent(1505, blockposition1, 15);
                  }
  

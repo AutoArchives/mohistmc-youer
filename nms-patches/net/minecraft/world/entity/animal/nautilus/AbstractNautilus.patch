@@ -1,0 +1,20 @@
+--- a/net/minecraft/world/entity/animal/nautilus/AbstractNautilus.java
++++ b/net/minecraft/world/entity/animal/nautilus/AbstractNautilus.java
+@@ -81,7 +81,7 @@
+     private static final float DASH_MOMENTUM_ON_LAND = 0.5F;
+     private int dashCooldown = 0;
+     protected float playerJumpPendingScale;
+-    protected InventorySubcontainer inventory;
++    public InventorySubcontainer inventory; // CraftBukkit private->public
+     private static final double BUBBLE_SPREAD_FACTOR = 0.8D;
+     private static final double BUBBLE_DIRECTION_SCALE = 1.1D;
+     private static final double BUBBLE_Y_OFFSET = 0.25D;
+@@ -491,7 +491,7 @@
+     protected void createInventory() {
+         InventorySubcontainer inventorysubcontainer = this.inventory;
+ 
+-        this.inventory = new InventorySubcontainer(this.getInventorySize());
++        this.inventory = new InventorySubcontainer(this.getInventorySize(),  (org.bukkit.entity.AbstractNautilus) this.getBukkitEntity()); // CraftBukkit - store entity
+         if (inventorysubcontainer != null) {
+             int i = Math.min(inventorysubcontainer.getContainerSize(), this.inventory.getContainerSize());
+ 

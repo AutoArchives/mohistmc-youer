@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/animal/sheep/EntitySheep.java
 +++ b/net/minecraft/world/entity/animal/sheep/EntitySheep.java
 @@ -51,6 +51,11 @@
- import net.minecraft.world.level.storage.ValueOutput;
  import net.minecraft.world.level.storage.loot.LootTables;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
@@ -34,7 +34,7 @@
  
                  if (entityitem != null) {
                      entityitem.setDeltaMovement(entityitem.getDeltaMovement().add((double) ((this.random.nextFloat() - this.random.nextFloat()) * 0.1F), (double) (this.random.nextFloat() * 0.05F), (double) ((this.random.nextFloat() - this.random.nextFloat()) * 0.1F)));
-@@ -283,6 +295,12 @@
+@@ -281,6 +293,12 @@
  
      @Override
      public void ate() {

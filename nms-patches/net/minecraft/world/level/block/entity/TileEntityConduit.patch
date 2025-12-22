@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/level/block/entity/TileEntityConduit.java
 +++ b/net/minecraft/world/level/block/entity/TileEntityConduit.java
 @@ -32,6 +32,10 @@
- import net.minecraft.world.phys.AxisAlignedBB;
  import net.minecraft.world.phys.Vec3D;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import net.minecraft.server.level.WorldServer;
@@ -11,7 +11,7 @@
  public class TileEntityConduit extends TileEntity {
  
      private static final int BLOCK_REFRESH_RATE = 2;
-@@ -174,8 +178,20 @@
+@@ -173,8 +177,20 @@
      }
  
      private static void applyEffects(World world, BlockPosition blockposition, List<BlockPosition> list) {
@@ -32,7 +32,7 @@
          int k = blockposition.getX();
          int l = blockposition.getY();
          int i1 = blockposition.getZ();
-@@ -185,7 +201,7 @@
+@@ -184,7 +200,7 @@
          if (!list1.isEmpty()) {
              for (EntityHuman entityhuman : list1) {
                  if (blockposition.closerThan(entityhuman.blockPosition(), (double) j) && entityhuman.isInWaterOrRain()) {
@@ -41,7 +41,7 @@
                  }
              }
  
-@@ -193,12 +209,21 @@
+@@ -192,12 +208,21 @@
      }
  
      private static void updateAndAttackTarget(WorldServer worldserver, BlockPosition blockposition, IBlockData iblockdata, TileEntityConduit tileentityconduit, boolean flag) {

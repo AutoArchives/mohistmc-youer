@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/entity/monster/piglin/PiglinAI.java
 +++ b/net/minecraft/world/entity/monster/piglin/PiglinAI.java
-@@ -73,6 +73,14 @@
+@@ -76,6 +76,14 @@
  import net.minecraft.world.level.storage.loot.parameters.LootContextParameters;
  import net.minecraft.world.phys.Vec3D;
  
@@ -15,17 +15,17 @@
  public class PiglinAI {
  
      public static final int REPELLENT_DETECTION_RANGE_HORIZONTAL = 8;
-@@ -147,7 +155,8 @@
+@@ -150,7 +158,8 @@
      private static void initFightActivity(EntityPiglin entitypiglin, BehaviorController<EntityPiglin> behaviorcontroller) {
          behaviorcontroller.addActivityAndRemoveMemoryWhenStopped(Activity.FIGHT, 10, ImmutableList.of(BehaviorAttackTargetForget.create((worldserver, entityliving) -> {
              return !isNearestValidAttackTarget(worldserver, entitypiglin, entityliving);
--        }), BehaviorBuilder.triggerIf(PiglinAI::hasCrossbow, BehaviorRetreat.create(5, 0.75F)), BehaviorWalkAwayOutOfRange.create(1.0F), BehaviorAttack.create(20), new BehaviorCrossbowAttack(), BehaviorRememberHuntedHoglin.create(), BehaviorRemoveMemory.create(PiglinAI::isNearZombified, MemoryModuleType.ATTACK_TARGET)), MemoryModuleType.ATTACK_TARGET);
+-        }), BehaviorBuilder.triggerIf(PiglinAI::hasCrossbow, BehaviorRetreat.create(5, 0.75F)), BehaviorWalkAwayOutOfRange.create(1.0F), new SpearApproach(1.0D, 10.0F), new SpearAttack(1.0D, 1.0D, 10.0F, 2.0F), new SpearRetreat(1.0D), BehaviorAttack.create(20), new BehaviorCrossbowAttack(), BehaviorRememberHuntedHoglin.create(), BehaviorRemoveMemory.create(PiglinAI::isNearZombified, MemoryModuleType.ATTACK_TARGET)), MemoryModuleType.ATTACK_TARGET);
 +            // CraftBukkit - decompile error
-+        }), BehaviorBuilder.triggerIf(PiglinAI::hasCrossbow, BehaviorRetreat.create(5, 0.75F)), BehaviorWalkAwayOutOfRange.create(1.0F), BehaviorAttack.create(20), new BehaviorCrossbowAttack<>(), BehaviorRememberHuntedHoglin.create(), BehaviorRemoveMemory.create(PiglinAI::isNearZombified, MemoryModuleType.ATTACK_TARGET)), MemoryModuleType.ATTACK_TARGET);
++        }), BehaviorBuilder.triggerIf(PiglinAI::hasCrossbow, BehaviorRetreat.create(5, 0.75F)), BehaviorWalkAwayOutOfRange.create(1.0F), new SpearApproach(1.0D, 10.0F), new SpearAttack(1.0D, 1.0D, 10.0F, 2.0F), new SpearRetreat(1.0D), BehaviorAttack.create(20), new BehaviorCrossbowAttack<>(), BehaviorRememberHuntedHoglin.create(), BehaviorRemoveMemory.create(PiglinAI::isNearZombified, MemoryModuleType.ATTACK_TARGET)), MemoryModuleType.ATTACK_TARGET);
      }
  
      private static void initCelebrateActivity(BehaviorController<EntityPiglin> behaviorcontroller) {
-@@ -155,7 +164,8 @@
+@@ -158,7 +167,8 @@
              return entitypiglin.isAdult();
          }, PiglinAI::findNearestValidAttackTarget), BehaviorBuilder.triggerIf((entitypiglin) -> {
              return !entitypiglin.isDancing();
@@ -35,7 +35,7 @@
      }
  
      private static void initAdmireItemActivity(BehaviorController<EntityPiglin> behaviorcontroller) {
-@@ -167,7 +177,8 @@
+@@ -170,7 +180,8 @@
      }
  
      private static void initRideHoglinActivity(BehaviorController<EntityPiglin> behaviorcontroller) {
@@ -45,7 +45,7 @@
              return true;
          }), 1)).build())), BehaviorStopRiding.create(8, PiglinAI::wantsToStopRiding)), MemoryModuleType.RIDE_TARGET);
      }
-@@ -177,7 +188,7 @@
+@@ -180,7 +191,7 @@
      }
  
      private static BehaviorGateSingle<EntityLiving> createIdleLookBehaviors() {
@@ -54,7 +54,7 @@
      }
  
      private static BehaviorGateSingle<EntityPiglin> createIdleMovementBehaviors() {
-@@ -198,13 +209,13 @@
+@@ -201,13 +212,13 @@
  
      protected static void updateActivity(EntityPiglin entitypiglin) {
          BehaviorController<EntityPiglin> behaviorcontroller = entitypiglin.getBrain();
@@ -71,7 +71,7 @@
  
              Objects.requireNonNull(entitypiglin);
              optional.ifPresent(entitypiglin::makeSound);
-@@ -236,23 +247,27 @@
+@@ -239,23 +250,27 @@
          stopWalking(entitypiglin);
          ItemStack itemstack;
  
@@ -104,7 +104,7 @@
  
              if (!flag) {
                  putInInventory(entitypiglin, itemstack);
-@@ -273,7 +288,7 @@
+@@ -276,7 +291,7 @@
          ItemStack itemstack1 = itemstack.split(1);
  
          if (itemstack.isEmpty()) {
@@ -113,7 +113,7 @@
          } else {
              entityitem.setItem(itemstack);
          }
-@@ -286,10 +301,15 @@
+@@ -289,10 +304,15 @@
  
          entitypiglin.setItemInHand(EnumHand.OFF_HAND, ItemStack.EMPTY);
          if (entitypiglin.isAdult()) {
@@ -131,7 +131,7 @@
              } else if (!flag1) {
                  boolean flag2 = !entitypiglin.equipItemIfPossible(worldserver, itemstack).isEmpty();
  
-@@ -303,7 +323,7 @@
+@@ -306,7 +326,7 @@
              if (!flag3) {
                  ItemStack itemstack1 = entitypiglin.getMainHandItem();
  
@@ -140,7 +140,7 @@
                      putInInventory(entitypiglin, itemstack1);
                  } else {
                      throwItems(entitypiglin, Collections.singletonList(itemstack1));
-@@ -377,7 +397,7 @@
+@@ -380,7 +400,7 @@
              return false;
          } else if (isAdmiringDisabled(entitypiglin) && entitypiglin.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET)) {
              return false;
@@ -149,7 +149,7 @@
              return isNotHoldingLovedItemInOffHand(entitypiglin);
          } else {
              boolean flag = entitypiglin.canAddToInventory(itemstack);
-@@ -386,6 +406,12 @@
+@@ -389,6 +409,12 @@
          }
      }
  
@@ -162,7 +162,7 @@
      protected static boolean isLovedItem(ItemStack itemstack) {
          return itemstack.is(TagsItem.PIGLIN_LOVED);
      }
-@@ -479,7 +505,7 @@
+@@ -482,7 +508,7 @@
      }
  
      protected static boolean canAdmire(EntityPiglin entitypiglin, ItemStack itemstack) {
@@ -171,7 +171,7 @@
      }
  
      protected static void wasHurtBy(WorldServer worldserver, EntityPiglin entitypiglin, EntityLiving entityliving) {
-@@ -727,6 +753,12 @@
+@@ -730,6 +756,12 @@
          return entitypiglin.getBrain().hasMemoryValue(MemoryModuleType.ADMIRING_ITEM);
      }
  
@@ -184,7 +184,7 @@
      private static boolean isBarterCurrency(ItemStack itemstack) {
          return itemstack.is(PiglinAI.BARTERING_ITEM);
      }
-@@ -764,7 +796,7 @@
+@@ -767,7 +799,7 @@
      }
  
      private static boolean isNotHoldingLovedItemInOffHand(EntityPiglin entitypiglin) {

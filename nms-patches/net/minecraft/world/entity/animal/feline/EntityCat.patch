@@ -1,0 +1,37 @@
+--- a/net/minecraft/world/entity/animal/feline/EntityCat.java
++++ b/net/minecraft/world/entity/animal/feline/EntityCat.java
+@@ -458,7 +458,7 @@
+     }
+ 
+     private void tryToTame(EntityHuman entityhuman) {
+-        if (this.random.nextInt(3) == 0) {
++        if (this.random.nextInt(3) == 0 && !org.bukkit.craftbukkit.event.CraftEventFactory.callEntityTameEvent(this, entityhuman).isCancelled()) { // CraftBukkit
+             this.tame(entityhuman);
+             this.setOrderedToSit(true);
+             this.level().broadcastEntityEvent(this, (byte) 7);
+@@ -495,7 +495,7 @@
+ 
+     private static class PathfinderGoalTemptChance extends PathfinderGoalTempt {
+ 
+-        private @Nullable EntityHuman selectedPlayer;
++        private @Nullable EntityLiving selectedPlayer; // CraftBukkit
+         private final EntityCat cat;
+ 
+         public PathfinderGoalTemptChance(EntityCat entitycat, double d0, Predicate<ItemStack> predicate, boolean flag) {
+@@ -618,7 +618,15 @@
+             this.cat.randomTeleport((double) (blockposition_mutableblockposition.getX() + randomsource.nextInt(11) - 5), (double) (blockposition_mutableblockposition.getY() + randomsource.nextInt(5) - 2), (double) (blockposition_mutableblockposition.getZ() + randomsource.nextInt(11) - 5), false);
+             blockposition_mutableblockposition.set(this.cat.blockPosition());
+             this.cat.dropFromGiftLootTable(getServerLevel((Entity) this.cat), LootTables.CAT_MORNING_GIFT, (worldserver, itemstack) -> {
+-                worldserver.addFreshEntity(new EntityItem(worldserver, (double) blockposition_mutableblockposition.getX() - (double) MathHelper.sin((double) (this.cat.yBodyRot * ((float) Math.PI / 180F))), (double) blockposition_mutableblockposition.getY(), (double) blockposition_mutableblockposition.getZ() + (double) MathHelper.cos((double) (this.cat.yBodyRot * ((float) Math.PI / 180F))), itemstack));
++                // CraftBukkit start
++                EntityItem entityitem = new EntityItem(worldserver, (double) blockposition_mutableblockposition.getX() - (double) MathHelper.sin((double) (this.cat.yBodyRot * ((float) Math.PI / 180F))), (double) blockposition_mutableblockposition.getY(), (double) blockposition_mutableblockposition.getZ() + (double) MathHelper.cos((double) (this.cat.yBodyRot * ((float) Math.PI / 180F))), itemstack);
++                org.bukkit.event.entity.EntityDropItemEvent event = new org.bukkit.event.entity.EntityDropItemEvent(this.cat.getBukkitEntity(), (org.bukkit.entity.Item) entityitem.getBukkitEntity());
++                entityitem.level().getCraftServer().getPluginManager().callEvent(event);
++                if (event.isCancelled()) {
++                    return;
++                }
++                worldserver.addFreshEntity(entityitem);
++                // CraftBukkit end
+             });
+         }
+ 

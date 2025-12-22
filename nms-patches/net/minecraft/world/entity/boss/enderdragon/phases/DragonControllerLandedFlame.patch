@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/boss/enderdragon/phases/DragonControllerLandedFlame.java
 +++ b/net/minecraft/world/entity/boss/enderdragon/phases/DragonControllerLandedFlame.java
 @@ -12,6 +12,10 @@
- import net.minecraft.world.entity.boss.enderdragon.EntityEnderDragon;
  import net.minecraft.world.phys.Vec3D;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.event.entity.EntityRemoveEvent;
@@ -11,7 +11,7 @@
  public class DragonControllerLandedFlame extends AbstractDragonControllerLanded {
  
      private static final int FLAME_DURATION = 200;
-@@ -102,7 +106,7 @@
+@@ -101,7 +105,7 @@
      @Override
      public void end() {
          if (this.flame != null) {

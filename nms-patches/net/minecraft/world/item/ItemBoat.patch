@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/item/ItemBoat.java
 +++ b/net/minecraft/world/item/ItemBoat.java
 @@ -20,6 +20,10 @@
- import net.minecraft.world.phys.MovingObjectPosition;
  import net.minecraft.world.phys.Vec3D;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import net.minecraft.world.phys.MovingObjectPositionBlock;

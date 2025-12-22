@@ -1,7 +1,7 @@
 --- a/net/minecraft/world/level/block/entity/TileEntityCampfire.java
 +++ b/net/minecraft/world/level/block/entity/TileEntityCampfire.java
 @@ -38,6 +38,14 @@
- import net.minecraft.world.level.storage.ValueOutput;
+ import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
 +// CraftBukkit start

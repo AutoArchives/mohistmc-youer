@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/monster/EntitySilverfish.java
 +++ b/net/minecraft/world/entity/monster/EntitySilverfish.java
 @@ -31,6 +31,11 @@
- import net.minecraft.world.level.block.BlockMonsterEggs;
- import net.minecraft.world.level.block.state.IBlockData;
+ import net.minecraft.world.level.gamerules.GameRules;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
@@ -11,8 +11,8 @@
 +
  public class EntitySilverfish extends EntityMonster {
  
-     @Nullable
-@@ -160,6 +165,11 @@
+     private EntitySilverfish.@Nullable PathfinderGoalSilverfishWakeOthers friendsGoal;
+@@ -159,6 +164,11 @@
                              Block block = iblockdata.getBlock();
  
                              if (block instanceof BlockMonsterEggs) {
@@ -21,10 +21,10 @@
 +                                    continue;
 +                                }
 +                                // CraftBukkit end
-                                 if (getServerLevel(world).getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+                                 if ((Boolean) getServerLevel(world).getGameRules().get(GameRules.MOB_GRIEFING)) {
                                      world.destroyBlock(blockposition1, true, this.silverfish);
                                  } else {
-@@ -229,9 +239,14 @@
+@@ -227,9 +237,14 @@
                  IBlockData iblockdata = generatoraccess.getBlockState(blockposition);
  
                  if (BlockMonsterEggs.isCompatibleHostBlock(iblockdata)) {

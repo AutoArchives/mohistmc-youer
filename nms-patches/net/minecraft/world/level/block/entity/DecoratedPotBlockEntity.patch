@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/level/block/entity/DecoratedPotBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/DecoratedPotBlockEntity.java
 @@ -23,8 +23,59 @@
- import net.minecraft.world.level.storage.loot.LootTable;
  import net.minecraft.world.ticks.ContainerSingleItem;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import java.util.ArrayList;

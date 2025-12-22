@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/level/block/DecoratedPotBlock.java
 +++ b/net/minecraft/world/level/block/DecoratedPotBlock.java
-@@ -213,6 +213,11 @@
+@@ -212,6 +212,11 @@
  
          if (world instanceof WorldServer worldserver) {
              if (iprojectile.mayInteract(worldserver, blockposition) && iprojectile.mayBreak(worldserver)) {

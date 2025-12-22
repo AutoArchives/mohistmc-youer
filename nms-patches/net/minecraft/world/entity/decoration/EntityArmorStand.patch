@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/decoration/EntityArmorStand.java
 +++ b/net/minecraft/world/entity/decoration/EntityArmorStand.java
 @@ -47,6 +47,16 @@
- import net.minecraft.world.phys.AxisAlignedBB;
  import net.minecraft.world.phys.Vec3D;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.event.entity.EntityRemoveEvent;
@@ -67,7 +67,7 @@
  
      @Override
 @@ -292,12 +328,22 @@
-         } else if (!worldserver.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && damagesource.getEntity() instanceof EntityInsentient) {
+         } else if (!(Boolean) worldserver.getGameRules().get(GameRules.MOB_GRIEFING) && damagesource.getEntity() instanceof EntityInsentient) {
              return false;
          } else if (damagesource.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
 -            this.kill(worldserver);

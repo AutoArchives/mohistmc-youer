@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/EntityInsentient.java
 +++ b/net/minecraft/world/entity/EntityInsentient.java
-@@ -90,6 +90,23 @@
- import net.minecraft.world.phys.Vec3D;
+@@ -92,6 +92,23 @@
  import net.minecraft.world.ticks.ContainerSingleItem;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import java.util.Arrays;
@@ -46,10 +46,10 @@
      protected void registerGoals() {}
  
      public static AttributeProvider.Builder createMobAttributes() {
-@@ -266,11 +291,42 @@
+@@ -263,11 +288,42 @@
+     }
  
-     @Nullable
-     protected final EntityLiving getTargetFromBrain() {
+     protected final @Nullable EntityLiving getTargetFromBrain() {
 -        return (EntityLiving) this.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse((Object) null);
 +        return (EntityLiving) this.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null); // CraftBukkit - decompile error
      }
@@ -90,7 +90,7 @@
      }
  
      @Override
-@@ -392,6 +448,12 @@
+@@ -388,6 +444,12 @@
          return null;
      }
  
@@ -103,7 +103,7 @@
      @Override
      protected void addAdditionalSaveData(ValueOutput valueoutput) {
          super.addAdditionalSaveData(valueoutput);
-@@ -419,13 +481,23 @@
+@@ -415,13 +477,23 @@
              valueoutput.putBoolean("NoAI", this.isNoAi());
          }
  
@@ -129,7 +129,7 @@
          this.dropChances = (DropChances) valueinput.read("drop_chances", DropChances.CODEC).orElse(DropChances.DEFAULT);
          this.readLeashData(valueinput);
          this.homeRadius = valueinput.getIntOr("home_radius", -1);
-@@ -437,6 +509,9 @@
+@@ -433,6 +505,9 @@
          this.lootTable = valueinput.<ResourceKey<LootTable>>read("DeathLootTable", LootTable.KEY_CODEC);
          this.lootTableSeed = valueinput.getLongOr("DeathLootTableSeed", 0L);
          this.setNoAi(valueinput.getBooleanOr("NoAI", false));
@@ -139,7 +139,7 @@
      }
  
      @Override
-@@ -511,20 +586,26 @@
+@@ -551,20 +626,26 @@
  
      protected void pickUpItem(WorldServer worldserver, EntityItem entityitem) {
          ItemStack itemstack = entityitem.getItem();
@@ -168,7 +168,7 @@
          EnumItemSlot enumitemslot = this.getEquipmentSlotForItem(itemstack);
  
          if (!this.isEquippableInSlot(itemstack, enumitemslot)) {
-@@ -539,11 +620,19 @@
+@@ -579,11 +660,19 @@
                  flag = itemstack1.isEmpty();
              }
  
@@ -189,7 +189,7 @@
                  }
  
                  ItemStack itemstack2 = enumitemslot.limit(itemstack);
-@@ -651,7 +740,7 @@
+@@ -690,7 +779,7 @@
      @Override
      public void checkDespawn() {
          if (this.level().getDifficulty() == EnumDifficulty.PEACEFUL && !this.getType().isAllowedInPeaceful()) {
@@ -198,7 +198,7 @@
          } else if (!this.isPersistenceRequired() && !this.requiresCustomPersistence()) {
              Entity entity = this.level().getNearestPlayer(this, -1.0D);
  
-@@ -661,14 +750,14 @@
+@@ -700,14 +789,14 @@
                  int j = i * i;
  
                  if (d0 > (double) j && this.removeWhenFarAway(d0)) {
@@ -215,7 +215,7 @@
                  } else if (d0 < (double) l) {
                      this.noActionTime = 0;
                  }
-@@ -682,6 +771,7 @@
+@@ -721,6 +810,7 @@
      @Override
      protected final void serverAiStep() {
          ++this.noActionTime;
@@ -223,9 +223,9 @@
          GameProfilerFiller gameprofilerfiller = Profiler.get();
  
          gameprofilerfiller.push("sensing");
-@@ -861,6 +951,51 @@
+@@ -900,6 +990,51 @@
              public boolean stillValid(EntityHuman entityhuman) {
-                 return entityhuman.getVehicle() == EntityInsentient.this || entityhuman.canInteractWithEntity((Entity) EntityInsentient.this, 4.0D);
+                 return entityhuman.getVehicle() == EntityInsentient.this || entityhuman.isWithinEntityInteractionRange((Entity) EntityInsentient.this, 4.0D);
              }
 +
 +            // CraftBukkit start - add fields and methods
@@ -275,30 +275,29 @@
          };
      }
  
-@@ -1154,7 +1289,7 @@
-         if (itemstack.getItem() instanceof ItemMonsterEgg) {
+@@ -1192,7 +1327,7 @@
+ 
+         if (item instanceof ItemMonsterEgg itemmonsteregg) {
              if (this.level() instanceof WorldServer) {
-                 ItemMonsterEgg itemmonsteregg = (ItemMonsterEgg) itemstack.getItem();
 -                Optional<EntityInsentient> optional = itemmonsteregg.spawnOffspringFromSpawnEgg(entityhuman, this, this.getType(), (WorldServer) this.level(), this.position(), itemstack);
 +                Optional<EntityInsentient> optional = itemmonsteregg.spawnOffspringFromSpawnEgg(entityhuman, this, (EntityTypes<? extends EntityInsentient>) this.getType(), (WorldServer) this.level(), this.position(), itemstack); // CraftBukkit - decompile error
  
                  optional.ifPresent((entityinsentient) -> {
                      this.onOffspringSpawnedFromEgg(entityhuman, entityinsentient);
-@@ -1227,6 +1362,13 @@
+@@ -1264,6 +1399,12 @@
+     }
  
-     @Nullable
-     public <T extends EntityInsentient> T convertTo(EntityTypes<T> entitytypes, ConversionParams conversionparams, EntitySpawnReason entityspawnreason, ConversionParams.a<T> conversionparams_a) {
+     public <T extends EntityInsentient> @Nullable T convertTo(EntityTypes<T> entitytypes, ConversionParams conversionparams, EntitySpawnReason entityspawnreason, ConversionParams.a<T> conversionparams_a) {
 +        // CraftBukkit start
 +        return this.convertTo(entitytypes, conversionparams, entityspawnreason, conversionparams_a, EntityTransformEvent.TransformReason.UNKNOWN, CreatureSpawnEvent.SpawnReason.DEFAULT);
 +    }
 +
-+    @Nullable
-+    public <T extends EntityInsentient> T convertTo(EntityTypes<T> entitytypes, ConversionParams conversionparams, EntitySpawnReason entityspawnreason, ConversionParams.a<T> conversionparams_a, EntityTransformEvent.TransformReason transformReason, CreatureSpawnEvent.SpawnReason spawnReason) {
++    public <T extends EntityInsentient> @Nullable T convertTo(EntityTypes<T> entitytypes, ConversionParams conversionparams, EntitySpawnReason entityspawnreason, ConversionParams.a<T> conversionparams_a, EntityTransformEvent.TransformReason transformReason, CreatureSpawnEvent.SpawnReason spawnReason) {
 +        // CraftBukkit end
          if (this.isRemoved()) {
              return null;
          } else {
-@@ -1239,14 +1381,26 @@
+@@ -1276,14 +1417,26 @@
                  conversionparams_a.finalizeConversion(t0);
                  World world = this.level();
  
@@ -327,36 +326,26 @@
                  }
  
                  return t0;
-@@ -1256,7 +1410,14 @@
+@@ -1292,7 +1445,13 @@
+     }
  
-     @Nullable
-     public <T extends EntityInsentient> T convertTo(EntityTypes<T> entitytypes, ConversionParams conversionparams, ConversionParams.a<T> conversionparams_a) {
+     public <T extends EntityInsentient> @Nullable T convertTo(EntityTypes<T> entitytypes, ConversionParams conversionparams, ConversionParams.a<T> conversionparams_a) {
 -        return (T) this.convertTo(entitytypes, conversionparams, EntitySpawnReason.CONVERSION, conversionparams_a);
 +        // CraftBukkit start
 +        return (T) this.convertTo(entitytypes, conversionparams, conversionparams_a, EntityTransformEvent.TransformReason.UNKNOWN, CreatureSpawnEvent.SpawnReason.DEFAULT);
 +    }
 +
-+    @Nullable
-+    public <T extends EntityInsentient> T convertTo(EntityTypes<T> entitytypes, ConversionParams conversionparams, ConversionParams.a<T> conversionparams_a, EntityTransformEvent.TransformReason transformReason, CreatureSpawnEvent.SpawnReason spawnReason) {
++    public <T extends EntityInsentient> @Nullable T convertTo(EntityTypes<T> entitytypes, ConversionParams conversionparams, ConversionParams.a<T> conversionparams_a, EntityTransformEvent.TransformReason transformReason, CreatureSpawnEvent.SpawnReason spawnReason) {
 +        return (T) this.convertTo(entitytypes, conversionparams, EntitySpawnReason.CONVERSION, conversionparams_a, transformReason, spawnReason);
 +        // CraftBukkit end
      }
  
-     @Nullable
-@@ -1301,6 +1462,7 @@
+     @Override
+@@ -1336,6 +1495,7 @@
          boolean flag2 = super.startRiding(entity, flag, flag1);
  
          if (flag2 && this.isLeashed()) {
 +            this.level().getCraftServer().getPluginManager().callEvent(new EntityUnleashEvent(this.getBukkitEntity(), UnleashReason.UNKNOWN)); // CraftBukkit
              this.dropLeash();
          }
- 
-@@ -1385,7 +1547,7 @@
-             if (f1 > 0.0F && entity instanceof EntityLiving) {
-                 EntityLiving entityliving = (EntityLiving) entity;
- 
--                entityliving.knockback((double) (f1 * 0.5F), (double) MathHelper.sin(this.getYRot() * ((float) Math.PI / 180F)), (double) (-MathHelper.cos(this.getYRot() * ((float) Math.PI / 180F))));
-+                entityliving.knockback((double) (f1 * 0.5F), (double) MathHelper.sin(this.getYRot() * ((float) Math.PI / 180F)), (double) (-MathHelper.cos(this.getYRot() * ((float) Math.PI / 180F))), this, org.bukkit.event.entity.EntityKnockbackEvent.KnockbackCause.ENTITY_ATTACK); // CraftBukkit
-                 this.setDeltaMovement(this.getDeltaMovement().multiply(0.6D, 1.0D, 0.6D));
-             }
  

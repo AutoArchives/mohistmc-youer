@@ -9,7 +9,7 @@
      private final TileEntityTypes.a<? extends T> factory;
      private final Set<Block> validBlocks;
      private final Holder.c<TileEntityTypes<?>> builtInRegistryHolder;
-@@ -86,7 +86,7 @@
+@@ -85,7 +85,7 @@
          }
  
          SystemUtils.fetchChoiceType(DataConverterTypes.BLOCK_ENTITY, s);

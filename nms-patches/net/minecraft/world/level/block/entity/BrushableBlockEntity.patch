@@ -1,7 +1,7 @@
 --- a/net/minecraft/world/level/block/entity/BrushableBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/BrushableBlockEntity.java
 @@ -34,6 +34,13 @@
- import net.minecraft.world.phys.Vec3D;
+ import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
 +// CraftBukkit start
@@ -14,7 +14,7 @@
  public class BrushableBlockEntity extends TileEntity {
  
      private static final Logger LOGGER = LogUtils.getLogger();
-@@ -83,7 +90,12 @@
+@@ -81,7 +88,12 @@
                      IBlockData iblockdata = this.getBlockState();
                      IBlockData iblockdata1 = (IBlockData) iblockdata.setValue(BlockProperties.DUSTED, k);
  
@@ -28,7 +28,7 @@
                  }
  
                  return false;
-@@ -124,10 +136,10 @@
+@@ -122,10 +134,10 @@
      }
  
      private void brushingCompleted(WorldServer worldserver, EntityLiving entityliving, ItemStack itemstack) {
@@ -41,7 +41,7 @@
          Block block = this.getBlockState().getBlock();
          Block block1;
  
-@@ -137,7 +149,15 @@
+@@ -135,7 +147,15 @@
              block1 = Blocks.AIR;
          }
  
@@ -58,7 +58,7 @@
      }
  
      private void dropContent(WorldServer worldserver, EntityLiving entityliving, ItemStack itemstack) {
-@@ -154,7 +174,12 @@
+@@ -152,7 +172,12 @@
              EntityItem entityitem = new EntityItem(worldserver, d3, d4, d5, this.item.split(worldserver.random.nextInt(21) + 10));
  
              entityitem.setDeltaMovement(Vec3D.ZERO);
@@ -72,7 +72,7 @@
              this.item = ItemStack.EMPTY;
          }
  
-@@ -187,7 +212,7 @@
+@@ -185,7 +210,7 @@
      }
  
      private boolean tryLoadLootTable(ValueInput valueinput) {
@@ -81,7 +81,7 @@
          this.lootTableSeed = valueinput.getLongOr("LootTableSeed", 0L);
          return this.lootTable != null;
      }
-@@ -233,7 +258,7 @@
+@@ -231,7 +256,7 @@
              this.item = ItemStack.EMPTY;
          }
  

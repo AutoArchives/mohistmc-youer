@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/level/block/piston/BlockPiston.java
 +++ b/net/minecraft/world/level/block/piston/BlockPiston.java
 @@ -42,6 +42,14 @@
- import net.minecraft.world.phys.shapes.VoxelShapeCollision;
  import net.minecraft.world.phys.shapes.VoxelShapes;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import com.google.common.collect.ImmutableList;

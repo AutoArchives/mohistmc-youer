@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/boss/enderdragon/EntityEnderCrystal.java
 +++ b/net/minecraft/world/entity/boss/enderdragon/EntityEnderCrystal.java
 @@ -20,6 +20,12 @@
- import net.minecraft.world.level.storage.ValueInput;
  import net.minecraft.world.level.storage.ValueOutput;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.craftbukkit.event.CraftEventFactory;

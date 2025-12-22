@@ -1,56 +1,90 @@
 --- a/net/minecraft/commands/CommandListenerWrapper.java
 +++ b/net/minecraft/commands/CommandListenerWrapper.java
-@@ -46,6 +46,8 @@
- import net.minecraft.world.phys.Vec2F;
+@@ -47,6 +47,12 @@
  import net.minecraft.world.phys.Vec3D;
+ import org.jspecify.annotations.Nullable;
  
-+import com.mojang.brigadier.tree.CommandNode; // CraftBukkit
++// CraftBukkit start
++import com.mojang.brigadier.tree.CommandNode;
++import net.minecraft.server.permissions.Permission;
++import net.minecraft.server.permissions.Permissions;
++// CraftBukkit end
 +
- public class CommandListenerWrapper implements ExecutionCommandSource<CommandListenerWrapper>, PermissionSource, ICompletionProvider {
+ public class CommandListenerWrapper implements ExecutionCommandSource<CommandListenerWrapper>, ICompletionProvider {
  
      public static final SimpleCommandExceptionType ERROR_NOT_PLAYER = new SimpleCommandExceptionType(IChatBaseComponent.translatable("permissions.requires.player"));
-@@ -65,6 +67,7 @@
+@@ -65,6 +71,10 @@
      private final Vec2F rotation;
      private final CommandSigningContext signingContext;
      private final TaskChainer chatMessageChainer;
-+    public volatile CommandNode currentCommand; // CraftBukkit
++    // CraftBukkit start
++    private final PermissionSet bukkitPermissions;
++    public volatile CommandNode currentCommand;
++    // CraftBukkit end
  
-     public CommandListenerWrapper(ICommandListener icommandlistener, Vec3D vec3d, Vec2F vec2f, WorldServer worldserver, int i, String s, IChatBaseComponent ichatbasecomponent, MinecraftServer minecraftserver, @Nullable Entity entity) {
-         this(icommandlistener, vec3d, vec2f, worldserver, i, s, ichatbasecomponent, minecraftserver, entity, false, CommandResultCallback.EMPTY, ArgumentAnchor.Anchor.FEET, CommandSigningContext.ANONYMOUS, TaskChainer.immediate(minecraftserver));
-@@ -171,9 +174,23 @@
- 
-     @Override
-     public boolean hasPermission(int i) {
+     public CommandListenerWrapper(ICommandListener icommandlistener, Vec3D vec3d, Vec2F vec2f, WorldServer worldserver, PermissionSet permissionset, String s, IChatBaseComponent ichatbasecomponent, MinecraftServer minecraftserver, @Nullable Entity entity) {
+         this(icommandlistener, vec3d, vec2f, worldserver, permissionset, s, ichatbasecomponent, minecraftserver, entity, false, CommandResultCallback.EMPTY, ArgumentAnchor.Anchor.FEET, CommandSigningContext.ANONYMOUS, TaskChainer.immediate(minecraftserver));
+@@ -85,8 +95,41 @@
+         this.rotation = vec2f;
+         this.signingContext = commandsigningcontext;
+         this.chatMessageChainer = taskchainer;
 +        // CraftBukkit start
-+        CommandNode currentCommand = this.currentCommand;
-+        if (currentCommand != null) {
-+            return hasPermission(i, org.bukkit.craftbukkit.command.VanillaCommandWrapper.getPermission(currentCommand));
-+        }
-+        // CraftBukkit end
-+
-         return this.permissionLevel >= i;
++        this.bukkitPermissions = new DelegatePermissionSet(permissions);
      }
  
-+    // CraftBukkit start
-+    public boolean hasPermission(int i, String bukkitPermission) {
-+        // World is null when loading functions
-+        return ((getLevel() == null || !getLevel().getCraftServer().ignoreVanillaPermissions) && this.permissionLevel >= i) || getBukkitSender().hasPermission(bukkitPermission);
++    private class DelegatePermissionSet implements PermissionSet {
++
++        private final PermissionSet handle;
++
++        public DelegatePermissionSet(PermissionSet handle) {
++            this.handle = handle;
++        }
++
++        @Override
++        public boolean hasPermission(Permission permission) {
++            boolean hasPermission = handle.hasPermission(permission);
++
++            CommandNode currentCommand = CommandListenerWrapper.this.currentCommand;
++            if (currentCommand != null) {
++                return hasPermission(hasPermission, org.bukkit.craftbukkit.command.VanillaCommandWrapper.getPermission(currentCommand));
++            }
++
++            if (permission.equals(Permissions.COMMANDS_ENTITY_SELECTORS)) {
++                return hasPermission(hasPermission, "minecraft.command.selector");
++            }
++
++            return hasPermission;
++        }
++
++        public boolean hasPermission(boolean hasPermission, String bukkitPermission) {
++            // World is null when loading functions
++            return ((getLevel() == null || !getLevel().getCraftServer().ignoreVanillaPermissions) && hasPermission) || getBukkitSender().hasPermission(bukkitPermission);
++        }
 +    }
 +    // CraftBukkit end
 +
-     public Vec3D getPosition() {
-         return this.worldPosition;
+     public CommandListenerWrapper withSource(ICommandListener icommandlistener) {
+         return this.source == icommandlistener ? this : new CommandListenerWrapper(icommandlistener, this.worldPosition, this.rotation, this.level, this.permissions, this.textName, this.displayName, this.server, this.entity, this.silent, this.resultCallback, this.anchor, this.signingContext, this.chatMessageChainer);
      }
-@@ -298,7 +315,7 @@
+@@ -171,7 +214,7 @@
  
-         if (this.server.getGameRules().getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK)) {
+     @Override
+     public PermissionSet permissions() {
+-        return this.permissions;
++        return this.bukkitPermissions; // CraftBukkit
+     }
+ 
+     public Vec3D getPosition() {
+@@ -297,7 +340,7 @@
+ 
+         if ((Boolean) gamerules.get(GameRules.SEND_COMMAND_FEEDBACK)) {
              for (EntityPlayer entityplayer : this.server.getPlayerList().getPlayers()) {
 -                if (entityplayer.commandSource() != this.source && this.server.getPlayerList().isOp(entityplayer.nameAndId())) {
 +                if (entityplayer.commandSource() != this.source && entityplayer.getBukkitEntity().hasPermission("minecraft.admin.command_feedback")) { // CraftBukkit
                      entityplayer.sendSystemMessage(ichatbasecomponent1);
                  }
              }
-@@ -402,4 +419,15 @@
+@@ -401,4 +444,10 @@
      public boolean isSilent() {
          return this.silent;
      }
@@ -58,11 +92,6 @@
 +    // CraftBukkit start
 +    public org.bukkit.command.CommandSender getBukkitSender() {
 +        return source.getBukkitSender(this);
-+    }
-+
-+    @Override
-+    public boolean allowsSelectors() {
-+        return hasPermission(2, "minecraft.command.selector");
 +    }
 +    // CraftBukkit end
  }

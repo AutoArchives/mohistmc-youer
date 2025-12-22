@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/EntityTameableAnimal.java
 +++ b/net/minecraft/world/entity/EntityTameableAnimal.java
 @@ -27,6 +27,12 @@
- import net.minecraft.world.level.storage.ValueOutput;
  import net.minecraft.world.scores.ScoreboardTeam;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.Location;
@@ -13,7 +13,7 @@
  public abstract class EntityTameableAnimal extends EntityAnimal implements OwnableEntity {
  
      public static final int TELEPORT_WHEN_DISTANCE_IS_SQ = 144;
-@@ -284,7 +290,14 @@
+@@ -282,7 +288,14 @@
          if (!this.canTeleportTo(new BlockPosition(i, j, k))) {
              return false;
          } else {

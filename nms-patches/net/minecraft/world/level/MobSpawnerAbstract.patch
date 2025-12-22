@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/level/MobSpawnerAbstract.java
 +++ b/net/minecraft/world/level/MobSpawnerAbstract.java
-@@ -62,6 +62,7 @@
+@@ -60,6 +60,7 @@
  
      public void setEntityId(EntityTypes<?> entitytypes, @Nullable World world, RandomSource randomsource, BlockPosition blockposition) {
          this.getOrCreateNextSpawnData(world, randomsource, blockposition).getEntityToSpawn().putString("id", BuiltInRegistries.ENTITY_TYPE.getKey(entitytypes).toString());
@@ -8,7 +8,7 @@
      }
  
      private boolean isNearPlayer(World world, BlockPosition blockposition) {
-@@ -164,13 +165,18 @@
+@@ -162,13 +163,18 @@
                                      ((EntityInsentient) entity).finalizeSpawn(worldserver, worldserver.getCurrentDifficultyAt(entity.blockPosition()), EntitySpawnReason.SPAWNER, (GroupDataEntity) null);
                                  }
  

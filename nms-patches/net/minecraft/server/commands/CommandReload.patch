@@ -15,5 +15,5 @@
 +    // CraftBukkit end
 +
      public static void register(CommandDispatcher<CommandListenerWrapper> commanddispatcher) {
-         commanddispatcher.register((LiteralArgumentBuilder) ((LiteralArgumentBuilder) net.minecraft.commands.CommandDispatcher.literal("reload").requires(net.minecraft.commands.CommandDispatcher.hasPermission(2))).executes((commandcontext) -> {
+         commanddispatcher.register((LiteralArgumentBuilder) ((LiteralArgumentBuilder) net.minecraft.commands.CommandDispatcher.literal("reload").requires(net.minecraft.commands.CommandDispatcher.hasPermission(net.minecraft.commands.CommandDispatcher.LEVEL_GAMEMASTERS))).executes((commandcontext) -> {
              CommandListenerWrapper commandlistenerwrapper = (CommandListenerWrapper) commandcontext.getSource();

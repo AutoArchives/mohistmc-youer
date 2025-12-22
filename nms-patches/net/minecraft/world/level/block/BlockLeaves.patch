@@ -9,7 +9,7 @@
  public abstract class BlockLeaves extends Block implements IBlockWaterlogged {
  
      public static final int DECAY_DISTANCE = 7;
-@@ -58,6 +60,14 @@
+@@ -68,6 +70,14 @@
      @Override
      protected void randomTick(IBlockData iblockdata, WorldServer worldserver, BlockPosition blockposition, RandomSource randomsource) {
          if (this.decaying(iblockdata)) {

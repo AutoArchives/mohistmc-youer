@@ -1,17 +1,18 @@
 --- a/net/minecraft/server/level/PlayerChunkMap.java
 +++ b/net/minecraft/server/level/PlayerChunkMap.java
-@@ -105,6 +105,10 @@
- import org.apache.commons.lang3.mutable.MutableBoolean;
+@@ -111,6 +111,11 @@
+ import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
 +// CraftBukkit start
++import net.minecraft.world.level.dimension.WorldDimension;
 +import org.bukkit.craftbukkit.generator.CustomChunkGenerator;
 +// CraftBukkit end
 +
- public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.b, GeneratingChunkMap {
+ public class PlayerChunkMap extends SimpleRegionStorage implements PlayerChunk.b, GeneratingChunkMap {
  
      private static final ChunkResult<List<IChunkAccess>> UNLOADED_CHUNK_LIST_RESULT = ChunkResult.error("Unloaded chunks found in range");
-@@ -149,6 +153,27 @@
+@@ -154,8 +159,29 @@
      public int serverViewDistance;
      private final WorldGenContext worldGenContext;
  
@@ -37,9 +38,12 @@
 +    // CraftBukkit end
 +
      public PlayerChunkMap(WorldServer worldserver, Convertable.ConversionSession convertable_conversionsession, DataFixer datafixer, StructureTemplateManager structuretemplatemanager, Executor executor, IAsyncTaskHandler<Runnable> iasynctaskhandler, ILightAccess ilightaccess, ChunkGenerator chunkgenerator, ChunkStatusUpdateListener chunkstatusupdatelistener, Supplier<WorldPersistentData> supplier, TicketStorage ticketstorage, int i, boolean flag) {
-         super(new RegionStorageInfo(convertable_conversionsession.getLevelId(), worldserver.dimension(), "chunk"), convertable_conversionsession.getDimensionPath(worldserver.dimension()).resolve("region"), datafixer, flag);
+-        super(new RegionStorageInfo(convertable_conversionsession.getLevelId(), worldserver.dimension(), "chunk"), convertable_conversionsession.getDimensionPath(worldserver.dimension()).resolve("region"), datafixer, flag, DataFixTypes.CHUNK, PersistentStructureLegacy.getLegacyTagFixer(worldserver.dimension(), supplier, datafixer));
++        super(new RegionStorageInfo(convertable_conversionsession.getLevelId(), worldserver.dimension(), "chunk"), convertable_conversionsession.getDimensionPath(worldserver.dimension()).resolve("region"), datafixer, flag, DataFixTypes.CHUNK, PersistentStructureLegacy.getLegacyTagFixer(worldserver.getTypeKey(), supplier, datafixer)); // CraftBukkit
          this.visibleChunkMap = this.updatingChunkMap.clone();
-@@ -169,7 +194,13 @@
+         this.pendingUnloads = new Long2ObjectLinkedOpenHashMap();
+         this.pendingGenerationTasks = new ArrayList();
+@@ -174,7 +200,13 @@
          IRegistryCustom iregistrycustom = worldserver.registryAccess();
          long j = worldserver.getSeed();
  
@@ -54,7 +58,7 @@
              this.randomState = RandomState.create((GeneratorSettingBase) chunkgeneratorabstract.generatorSettings().value(), iregistrycustom.lookupOrThrow(Registries.NOISE), j);
          } else {
              this.randomState = RandomState.create(GeneratorSettingBase.dummy(), iregistrycustom.lookupOrThrow(Registries.NOISE), j);
-@@ -319,7 +350,7 @@
+@@ -320,7 +352,7 @@
                          throw this.debugFuturesAndCreateReportedException(new IllegalStateException("At least one of the chunk futures were null"), "n/a");
                      }
  
@@ -63,7 +67,7 @@
  
                      if (ichunkaccess == null) {
                          return PlayerChunkMap.UNLOADED_CHUNK_LIST_RESULT;
-@@ -956,7 +987,8 @@
+@@ -956,7 +988,8 @@
                  return ichunkaccess instanceof Chunk ? Optional.of((Chunk) ichunkaccess) : Optional.empty();
              });
  
@@ -73,7 +77,7 @@
                  return chunk.getBlockEntities().size();
              }).orElse(0), this.ticketStorage.getTicketDebugString(i, true), this.distanceManager.getChunkLevel(i, true), optional1.map((chunk) -> {
                  return chunk.getBlockTicks().count();
-@@ -969,7 +1001,7 @@
+@@ -969,7 +1002,7 @@
  
      private static String printFuture(CompletableFuture<ChunkResult<Chunk>> completablefuture) {
          try {
@@ -82,7 +86,7 @@
  
              return chunkresult != null ? (chunkresult.isSuccess() ? "done" : "unloaded") : "not completed";
          } catch (CompletionException completionexception) {
-@@ -981,12 +1013,14 @@
+@@ -981,15 +1014,17 @@
  
      private CompletableFuture<Optional<NBTTagCompound>> readChunk(ChunkCoordIntPair chunkcoordintpair) {
          return this.read(chunkcoordintpair).thenApplyAsync((optional) -> {
@@ -92,15 +96,19 @@
      }
  
 -    private NBTTagCompound upgradeChunkTag(NBTTagCompound nbttagcompound) {
--        return this.upgradeChunkTag(this.level.dimension(), this.overworldDataStorage, nbttagcompound, this.generator().getTypeNameForDataFixer());
+-        return this.upgradeChunkTag(nbttagcompound, -1, getChunkDataFixContextTag(this.level.dimension(), this.generator().getTypeNameForDataFixer()));
 +    // CraftBukkit start
 +    private NBTTagCompound upgradeChunkTag(NBTTagCompound nbttagcompound, ChunkCoordIntPair chunkcoordintpair) {
-+        return this.upgradeChunkTag(this.level.getTypeKey(), this.overworldDataStorage, nbttagcompound, this.generator().getTypeNameForDataFixer(), chunkcoordintpair, level);
++        return this.upgradeChunkTag(nbttagcompound, -1, getChunkDataFixContextTag(this.level.getTypeKey(), this.generator().getTypeNameForDataFixer()), chunkcoordintpair, level); // CraftBukkit
 +        // CraftBukkit end
      }
  
-     void collectSpawningChunks(List<Chunk> list) {
-@@ -1450,7 +1484,7 @@
+-    public static NBTTagCompound getChunkDataFixContextTag(ResourceKey<World> resourcekey, Optional<ResourceKey<MapCodec<? extends ChunkGenerator>>> optional) {
++    public static NBTTagCompound getChunkDataFixContextTag(ResourceKey<WorldDimension> resourcekey, Optional<ResourceKey<MapCodec<? extends ChunkGenerator>>> optional) { // CraftBukkit
+         NBTTagCompound nbttagcompound = new NBTTagCompound();
+ 
+         nbttagcompound.putString("dimension", resourcekey.identifier().toString());
+@@ -1480,7 +1515,7 @@
          public final Set<ServerPlayerConnection> seenBy = Sets.newIdentityHashSet();
  
          public EntityTracker(final Entity entity, final int i, final int j, final boolean flag) {
@@ -109,7 +117,7 @@
              this.entity = entity;
              this.range = i;
              this.lastSectionPos = SectionPosition.of((EntityAccess) entity);
-@@ -1493,6 +1527,17 @@
+@@ -1523,6 +1558,17 @@
  
          }
  
@@ -127,7 +135,7 @@
          public void broadcastRemoved() {
              for (ServerPlayerConnection serverplayerconnection : this.seenBy) {
                  this.serverEntity.removePairing(serverplayerconnection.getPlayer());
-@@ -1519,6 +1564,11 @@
+@@ -1549,6 +1595,11 @@
                  double d2 = d0 * d0;
                  boolean flag = d1 <= d2 && this.entity.broadcastToPlayer(entityplayer) && PlayerChunkMap.this.isChunkTracked(entityplayer, this.entity.chunkPosition().x, this.entity.chunkPosition().z);
  

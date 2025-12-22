@@ -1,15 +1,15 @@
 --- a/net/minecraft/world/level/block/BlockDoor.java
 +++ b/net/minecraft/world/level/block/BlockDoor.java
 @@ -41,6 +41,8 @@
- import net.minecraft.world.phys.shapes.VoxelShapeCollision;
  import net.minecraft.world.phys.shapes.VoxelShapes;
+ import org.jspecify.annotations.Nullable;
  
 +import org.bukkit.event.block.BlockRedstoneEvent; // CraftBukkit
 +
  public class BlockDoor extends Block {
  
      public static final MapCodec<BlockDoor> CODEC = RecordCodecBuilder.mapCodec((instance) -> {
-@@ -204,9 +206,24 @@
+@@ -203,9 +205,24 @@
  
      @Override
      protected void neighborChanged(IBlockData iblockdata, World world, BlockPosition blockposition, Block block, @Nullable Orientation orientation, boolean flag) {

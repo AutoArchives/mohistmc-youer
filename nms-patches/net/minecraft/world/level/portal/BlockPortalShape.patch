@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/level/portal/BlockPortalShape.java
 +++ b/net/minecraft/world/level/portal/BlockPortalShape.java
 @@ -23,6 +23,11 @@
- import net.minecraft.world.phys.shapes.VoxelShapes;
  import org.apache.commons.lang3.mutable.MutableInt;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.craftbukkit.util.BlockStateListPopulator;
@@ -26,7 +26,7 @@
          this.axis = enumdirection_enumaxis;
          this.numPortalBlocks = i;
          this.rightDir = enumdirection;
-@@ -69,44 +78,45 @@
+@@ -69,43 +78,44 @@
      }
  
      public static BlockPortalShape findAnyShape(IBlockAccess iblockaccess, BlockPosition blockposition, EnumDirection.EnumAxis enumdirection_enumaxis) {
@@ -50,15 +50,14 @@
 -                int j = calculateHeight(iblockaccess, blockposition1, enumdirection, i, mutableint);
 +                int j = calculateHeight(iblockaccess, blockposition1, enumdirection, i, mutableint, blocks); // CraftBukkit
  
--                return new BlockPortalShape(enumdirection_enumaxis, mutableint.getValue(), enumdirection, blockposition1, i, j);
+-                return new BlockPortalShape(enumdirection_enumaxis, mutableint.intValue(), enumdirection, blockposition1, i, j);
 +                return new BlockPortalShape(enumdirection_enumaxis, mutableint.getValue(), enumdirection, blockposition1, i, j, blocks); // CraftBukkit
              }
          }
      }
  
-     @Nullable
--    private static BlockPosition calculateBottomLeft(IBlockAccess iblockaccess, EnumDirection enumdirection, BlockPosition blockposition) {
-+    private static BlockPosition calculateBottomLeft(IBlockAccess iblockaccess, EnumDirection enumdirection, BlockPosition blockposition, BlockStateListPopulator blocks) { // CraftBukkit
+-    private static @Nullable BlockPosition calculateBottomLeft(IBlockAccess iblockaccess, EnumDirection enumdirection, BlockPosition blockposition) {
++    private static @Nullable BlockPosition calculateBottomLeft(IBlockAccess iblockaccess, EnumDirection enumdirection, BlockPosition blockposition, BlockStateListPopulator blocks) { // CraftBukkit
          for (int i = Math.max(iblockaccess.getMinY(), blockposition.getY() - 21); blockposition.getY() > i && isEmpty(iblockaccess.getBlockState(blockposition.below())); blockposition = blockposition.below()) {
              ;
          }
@@ -83,7 +82,7 @@
          BlockPosition.MutableBlockPosition blockposition_mutableblockposition = new BlockPosition.MutableBlockPosition();
  
          for (int i = 0; i <= 21; ++i) {
-@@ -115,6 +125,7 @@
+@@ -114,6 +124,7 @@
  
              if (!isEmpty(iblockdata)) {
                  if (BlockPortalShape.FRAME.test(iblockdata, iblockaccess, blockposition_mutableblockposition)) {
@@ -91,7 +90,7 @@
                      return i;
                  }
                  break;
-@@ -125,31 +136,33 @@
+@@ -124,31 +135,33 @@
              if (!BlockPortalShape.FRAME.test(iblockdata1, iblockaccess, blockposition_mutableblockposition)) {
                  break;
              }
@@ -130,7 +129,7 @@
          for (int j = 0; j < 21; ++j) {
              blockposition_mutableblockposition.set(blockposition).move(EnumDirection.UP, j).move(enumdirection, -1);
              if (!BlockPortalShape.FRAME.test(iblockaccess.getBlockState(blockposition_mutableblockposition), iblockaccess, blockposition_mutableblockposition)) {
-@@ -173,6 +186,10 @@
+@@ -172,6 +185,10 @@
                      mutableint.increment();
                  }
              }
@@ -141,7 +140,7 @@
          }
  
          return 21;
-@@ -186,12 +203,28 @@
+@@ -185,12 +202,28 @@
          return this.width >= 2 && this.width <= 21 && this.height >= 3 && this.height <= 21;
      }
  

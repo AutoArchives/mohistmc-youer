@@ -1,7 +1,7 @@
 --- a/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
 @@ -31,8 +31,44 @@
- import net.minecraft.util.profiling.Profiler;
+ import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
 -public abstract class ServerCommonPacketListenerImpl implements ServerCommonPacketListener {

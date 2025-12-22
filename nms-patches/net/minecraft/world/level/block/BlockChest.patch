@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/level/block/BlockChest.java
 +++ b/net/minecraft/world/level/block/BlockChest.java
-@@ -90,28 +90,11 @@
+@@ -92,32 +92,11 @@
              return Optional.empty();
          }
      };
@@ -10,14 +10,18 @@
 -            final IInventory iinventory = new InventoryLargeChest(tileentitychest, tileentitychest1);
 -
 -            return Optional.of(new ITileInventory() {
--                @Nullable
 -                @Override
--                public Container createMenu(int i, PlayerInventory playerinventory, EntityHuman entityhuman) {
+-                public @Nullable Container createMenu(int i, PlayerInventory playerinventory, EntityHuman entityhuman) {
 -                    if (tileentitychest.canOpen(entityhuman) && tileentitychest1.canOpen(entityhuman)) {
 -                        tileentitychest.unpackLootTable(playerinventory.player);
 -                        tileentitychest1.unpackLootTable(playerinventory.player);
 -                        return ContainerChest.sixRows(i, playerinventory, iinventory);
 -                    } else {
+-                        EnumDirection enumdirection = BlockChest.getConnectedDirection(tileentitychest.getBlockState());
+-                        Vec3D vec3d = tileentitychest.getBlockPos().getCenter();
+-                        Vec3D vec3d1 = vec3d.add((double) enumdirection.getStepX() / 2.0D, 0.0D, (double) enumdirection.getStepZ() / 2.0D);
+-
+-                        TileEntityContainer.sendChestLockedNotifications(vec3d1, entityhuman, this.getDisplayName());
 -                        return null;
 -                    }
 -                }
@@ -32,7 +36,7 @@
          }
  
          public Optional<ITileInventory> acceptSingle(TileEntityChest tileentitychest) {
-@@ -124,6 +107,38 @@
+@@ -130,6 +109,42 @@
          }
      };
  
@@ -49,14 +53,18 @@
 +            this.inventorylargechest = inventorylargechest;
 +        }
 +
-+        @Nullable
 +        @Override
-+        public Container createMenu(int i, PlayerInventory playerinventory, EntityHuman entityhuman) {
++        public @Nullable Container createMenu(int i, PlayerInventory playerinventory, EntityHuman entityhuman) {
 +            if (tileentitychest.canOpen(entityhuman) && tileentitychest1.canOpen(entityhuman)) {
 +                tileentitychest.unpackLootTable(playerinventory.player);
 +                tileentitychest1.unpackLootTable(playerinventory.player);
 +                return ContainerChest.sixRows(i, playerinventory, inventorylargechest);
 +            } else {
++                EnumDirection enumdirection = BlockChest.getConnectedDirection(tileentitychest.getBlockState());
++                Vec3D vec3d = tileentitychest.getBlockPos().getCenter();
++                Vec3D vec3d1 = vec3d.add((double) enumdirection.getStepX() / 2.0D, 0.0D, (double) enumdirection.getStepZ() / 2.0D);
++
++                TileEntityContainer.sendChestLockedNotifications(vec3d1, entityhuman, this.getDisplayName());
 +                return null;
 +            }
 +        }
@@ -71,17 +79,16 @@
      @Override
      public MapCodec<? extends BlockChest> codec() {
          return BlockChest.CODEC;
-@@ -287,7 +302,14 @@
-     @Nullable
+@@ -290,7 +305,13 @@
+ 
      @Override
-     protected ITileInventory getMenuProvider(IBlockData iblockdata, World world, BlockPosition blockposition) {
+     protected @Nullable ITileInventory getMenuProvider(IBlockData iblockdata, World world, BlockPosition blockposition) {
 -        return (ITileInventory) ((Optional) this.combine(iblockdata, world, blockposition, false).apply(BlockChest.MENU_PROVIDER_COMBINER)).orElse((Object) null);
 +        // CraftBukkit start
 +        return getMenuProvider(iblockdata, world, blockposition, false);
 +    }
 +
-+    @Nullable
-+    public ITileInventory getMenuProvider(IBlockData iblockdata, World world, BlockPosition blockposition, boolean ignoreObstructions) {
++    public @Nullable ITileInventory getMenuProvider(IBlockData iblockdata, World world, BlockPosition blockposition, boolean ignoreObstructions) {
 +        return (ITileInventory) ((Optional) this.combine(iblockdata, world, blockposition, ignoreObstructions).apply(BlockChest.MENU_PROVIDER_COMBINER)).orElse((Object) null);
 +        // CraftBukkit end
      }

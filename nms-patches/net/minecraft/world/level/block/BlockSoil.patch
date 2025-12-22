@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/level/block/BlockSoil.java
 +++ b/net/minecraft/world/level/block/BlockSoil.java
 @@ -28,6 +28,11 @@
- import net.minecraft.world.phys.shapes.VoxelShape;
  import net.minecraft.world.phys.shapes.VoxelShapeCollision;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.event.entity.EntityInteractEvent;
@@ -32,7 +32,7 @@
      public void fallOn(World world, IBlockData iblockdata, BlockPosition blockposition, Entity entity, double d0) {
 +        super.fallOn(world, iblockdata, blockposition, entity, d0); // CraftBukkit - moved here as game rules / events shouldn't affect fall damage.
          if (world instanceof WorldServer worldserver) {
-             if ((double) world.random.nextFloat() < d0 - 0.5D && entity instanceof EntityLiving && (entity instanceof EntityHuman || worldserver.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) && entity.getBbWidth() * entity.getBbWidth() * entity.getBbHeight() > 0.512F) {
+             if ((double) world.random.nextFloat() < d0 - 0.5D && entity instanceof EntityLiving && (entity instanceof EntityHuman || (Boolean) worldserver.getGameRules().get(GameRules.MOB_GRIEFING)) && entity.getBbWidth() * entity.getBbWidth() * entity.getBbHeight() > 0.512F) {
 +                // CraftBukkit start - Interact soil
 +                org.bukkit.event.Cancellable cancellable;
 +                if (entity instanceof EntityHuman) {

@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/item/crafting/ShapelessRecipes.java
 +++ b/net/minecraft/world/item/crafting/ShapelessRecipes.java
 @@ -17,6 +17,13 @@
- import net.minecraft.world.item.crafting.display.SlotDisplay;
  import net.minecraft.world.level.World;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.NamespacedKey;
@@ -14,7 +14,7 @@
  public class ShapelessRecipes implements RecipeCrafting {
  
      final String group;
-@@ -33,6 +40,22 @@
+@@ -32,6 +39,22 @@
          this.ingredients = list;
      }
  

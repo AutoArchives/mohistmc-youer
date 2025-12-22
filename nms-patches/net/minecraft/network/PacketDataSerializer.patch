@@ -9,7 +9,7 @@
      }
  
      public <K, V, M extends Map<K, V>> M readMap(IntFunction<M> intfunction, StreamDecoder<? super PacketDataSerializer, K> streamdecoder, StreamDecoder<? super PacketDataSerializer, V> streamdecoder1) {
-@@ -579,7 +579,7 @@
+@@ -577,7 +577,7 @@
  
          try {
              NBTCompressedStreamTools.writeAnyTag(nbtbase, new ByteBufOutputStream(bytebuf));

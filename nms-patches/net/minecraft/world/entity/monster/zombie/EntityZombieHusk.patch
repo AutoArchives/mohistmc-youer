@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/entity/monster/zombie/EntityZombieHusk.java
++++ b/net/minecraft/world/entity/monster/zombie/EntityZombieHusk.java
+@@ -61,7 +61,7 @@
+         if (flag && this.getMainHandItem().isEmpty() && entity instanceof EntityLiving) {
+             float f = worldserver.getCurrentDifficultyAt(this.blockPosition()).getEffectiveDifficulty();
+ 
+-            ((EntityLiving) entity).addEffect(new MobEffect(MobEffects.HUNGER, 140 * (int) f), this);
++            ((EntityLiving) entity).addEffect(new MobEffect(MobEffects.HUNGER, 140 * (int) f), this, org.bukkit.event.entity.EntityPotionEffectEvent.Cause.ATTACK); // CraftBukkit
+         }
+ 
+         return flag;

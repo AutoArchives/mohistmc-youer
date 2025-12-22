@@ -1,8 +1,8 @@
 --- a/net/minecraft/network/chat/IChatBaseComponent.java
 +++ b/net/minecraft/network/chat/IChatBaseComponent.java
 @@ -25,7 +25,23 @@
- import net.minecraft.util.FormattedString;
  import net.minecraft.world.level.ChunkCoordIntPair;
+ import org.jspecify.annotations.Nullable;
  
 -public interface IChatBaseComponent extends Message, IChatFormatted {
 +// CraftBukkit start

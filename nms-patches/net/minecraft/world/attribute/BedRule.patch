@@ -1,0 +1,32 @@
+--- a/net/minecraft/world/attribute/BedRule.java
++++ b/net/minecraft/world/attribute/BedRule.java
+@@ -9,10 +9,17 @@
+ import net.minecraft.world.entity.player.EntityHuman;
+ import net.minecraft.world.level.World;
+ 
+-public record BedRule(BedRule.a canSleep, BedRule.a canSetSpawn, boolean explodes, Optional<IChatBaseComponent> errorMessage) {
++// CraftBukkit start
++import org.bukkit.event.player.PlayerBedEnterEvent;
+ 
+-    public static final BedRule CAN_SLEEP_WHEN_DARK = new BedRule(BedRule.a.WHEN_DARK, BedRule.a.ALWAYS, false, Optional.of(IChatBaseComponent.translatable("block.minecraft.bed.no_sleep")));
+-    public static final BedRule EXPLODES = new BedRule(BedRule.a.NEVER, BedRule.a.NEVER, true, Optional.empty());
++public record BedRule(BedRule.a canSleep, BedRule.a canSetSpawn, boolean explodes, Optional<IChatBaseComponent> errorMessage, PlayerBedEnterEvent.BedEnterResult bukkit) {
++
++    public BedRule(BedRule.a canSleep, BedRule.a canSetSpawn, boolean explodes, Optional<IChatBaseComponent> errorMessage) {
++        this(canSleep, canSetSpawn, explodes, errorMessage, PlayerBedEnterEvent.BedEnterResult.OTHER_PROBLEM);
++    }
++    public static final BedRule CAN_SLEEP_WHEN_DARK = new BedRule(BedRule.a.WHEN_DARK, BedRule.a.ALWAYS, false, Optional.of(IChatBaseComponent.translatable("block.minecraft.bed.no_sleep")), PlayerBedEnterEvent.BedEnterResult.NOT_POSSIBLE_NOW);
++    public static final BedRule EXPLODES = new BedRule(BedRule.a.NEVER, BedRule.a.NEVER, true, Optional.empty(), PlayerBedEnterEvent.BedEnterResult.NOT_POSSIBLE_HERE);
++    // CraftBukkit end
+     public static final Codec<BedRule> CODEC = RecordCodecBuilder.create((instance) -> {
+         return instance.group(BedRule.a.CODEC.fieldOf("can_sleep").forGetter(BedRule::canSleep), BedRule.a.CODEC.fieldOf("can_set_spawn").forGetter(BedRule::canSetSpawn), Codec.BOOL.optionalFieldOf("explodes", false).forGetter(BedRule::explodes), ComponentSerialization.CODEC.optionalFieldOf("error_message").forGetter(BedRule::errorMessage)).apply(instance, BedRule::new);
+     });
+@@ -26,7 +33,7 @@
+     }
+ 
+     public EntityHuman.EnumBedResult asProblem() {
+-        return new EntityHuman.EnumBedResult((IChatBaseComponent) this.errorMessage.orElse((Object) null));
++        return new EntityHuman.EnumBedResult((IChatBaseComponent) this.errorMessage.orElse(null), bukkit); // CraftBukkit - decompile error
+     }
+ 
+     public static enum a implements INamable {

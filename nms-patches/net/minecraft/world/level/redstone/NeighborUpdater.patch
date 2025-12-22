@@ -1,9 +1,9 @@
 --- a/net/minecraft/world/level/redstone/NeighborUpdater.java
 +++ b/net/minecraft/world/level/redstone/NeighborUpdater.java
-@@ -13,6 +13,13 @@
- import net.minecraft.world.level.block.Block;
- import net.minecraft.world.level.block.Blocks;
+@@ -14,6 +14,14 @@
  import net.minecraft.world.level.block.state.IBlockData;
+ import org.jspecify.annotations.Nullable;
+ 
 +// CraftBukkit start
 +import net.minecraft.server.level.WorldServer;
 +import org.bukkit.craftbukkit.CraftWorld;
@@ -11,10 +11,11 @@
 +import org.bukkit.craftbukkit.block.data.CraftBlockData;
 +import org.bukkit.event.block.BlockPhysicsEvent;
 +// CraftBukkit end
- 
++
  public interface NeighborUpdater {
  
-@@ -45,6 +52,22 @@
+     EnumDirection[] UPDATE_ORDER = new EnumDirection[]{EnumDirection.WEST, EnumDirection.EAST, EnumDirection.DOWN, EnumDirection.UP, EnumDirection.NORTH, EnumDirection.SOUTH};
+@@ -45,6 +53,22 @@
  
      static void executeUpdate(World world, IBlockData iblockdata, BlockPosition blockposition, Block block, @Nullable Orientation orientation, boolean flag) {
          try {

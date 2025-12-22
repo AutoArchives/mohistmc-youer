@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/animal/EntityAnimal.java
 +++ b/net/minecraft/world/entity/animal/EntityAnimal.java
-@@ -33,6 +33,13 @@
- import net.minecraft.world.level.storage.ValueInput;
- import net.minecraft.world.level.storage.ValueOutput;
+@@ -40,12 +40,20 @@
+ import net.minecraft.world.phys.Vec3D;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
@@ -14,15 +14,14 @@
  public abstract class EntityAnimal extends EntityAgeable {
  
      protected static final int PARENT_AGE_AFTER_BREEDING = 6000;
-@@ -40,6 +47,7 @@
+     private static final int DEFAULT_IN_LOVE_TIME = 0;
      public int inLove = 0;
-     @Nullable
-     public EntityReference<EntityPlayer> loveCause;
+     public @Nullable EntityReference<EntityPlayer> loveCause;
 +    public ItemStack breedItem; // CraftBukkit - Add breedItem variable
  
      protected EntityAnimal(EntityTypes<? extends EntityAnimal> entitytypes, World world) {
          super(entitytypes, world);
-@@ -81,9 +89,15 @@
+@@ -87,9 +95,15 @@
      }
  
      @Override
@@ -40,7 +39,7 @@
      }
  
      @Override
-@@ -172,10 +186,17 @@
+@@ -178,10 +192,17 @@
      }
  
      public void setInLove(@Nullable EntityHuman entityhuman) {
@@ -59,7 +58,7 @@
  
          this.level().broadcastEntityEvent(this, (byte) 18);
      }
-@@ -211,12 +232,29 @@
+@@ -216,12 +237,29 @@
          if (entityageable != null) {
              entityageable.setBaby(true);
              entityageable.snapTo(this.getX(), this.getY(), this.getZ(), 0.0F, 0.0F);
@@ -91,10 +90,10 @@
          Optional.ofNullable(this.getLoveCause()).or(() -> {
              return Optional.ofNullable(entityanimal.getLoveCause());
          }).ifPresent((entityplayer) -> {
-@@ -229,7 +267,11 @@
+@@ -234,7 +272,11 @@
          entityanimal.resetLove();
          worldserver.broadcastEntityEvent(this, (byte) 18);
-         if (worldserver.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
+         if ((Boolean) worldserver.getGameRules().get(GameRules.MOB_DROPS)) {
 -            worldserver.addFreshEntity(new EntityExperienceOrb(worldserver, this.getX(), this.getY(), this.getZ(), this.getRandom().nextInt(7) + 1));
 +            // CraftBukkit start - use event experience
 +            if (experience > 0) {

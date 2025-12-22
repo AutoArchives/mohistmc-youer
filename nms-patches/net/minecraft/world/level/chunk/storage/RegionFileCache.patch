@@ -17,10 +17,10 @@
              RegionFile regionfile1 = new RegionFile(this.info, path1, this.folder, this.sync);
  
              this.regionCache.putAndMoveToFirst(i, regionfile1);
-@@ -57,7 +58,12 @@
+@@ -56,7 +57,12 @@
+     }
  
-     @Nullable
-     public NBTTagCompound read(ChunkCoordIntPair chunkcoordintpair) throws IOException {
+     public @Nullable NBTTagCompound read(ChunkCoordIntPair chunkcoordintpair) throws IOException {
 -        RegionFile regionfile = this.getRegionFile(chunkcoordintpair);
 +        // CraftBukkit start - SPIGOT-5680: There's no good reason to preemptively create files on read, save that for writing
 +        RegionFile regionfile = this.getRegionFile(chunkcoordintpair, true);
@@ -31,7 +31,7 @@
  
          try (DataInputStream datainputstream = regionfile.getChunkDataInputStream(chunkcoordintpair)) {
              if (datainputstream == null) {
-@@ -69,7 +75,12 @@
+@@ -68,7 +74,12 @@
      }
  
      public void scanChunk(ChunkCoordIntPair chunkcoordintpair, StreamTagVisitor streamtagvisitor) throws IOException {
@@ -45,7 +45,7 @@
  
          try (DataInputStream datainputstream = regionfile.getChunkDataInputStream(chunkcoordintpair)) {
              if (datainputstream != null) {
-@@ -81,7 +92,7 @@
+@@ -80,7 +91,7 @@
  
      protected void write(ChunkCoordIntPair chunkcoordintpair, @Nullable NBTTagCompound nbttagcompound) throws IOException {
          if (!SharedConstants.DEBUG_DONT_SAVE_WORLD) {

@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/level/storage/WorldNBTStorage.java
 +++ b/net/minecraft/world/level/storage/WorldNBTStorage.java
-@@ -21,6 +21,12 @@
+@@ -20,6 +20,12 @@
  import net.minecraft.world.entity.player.EntityHuman;
  import org.slf4j.Logger;
  
@@ -13,7 +13,7 @@
  public class WorldNBTStorage {
  
      private static final Logger LOGGER = LogUtils.getLogger();
-@@ -86,6 +92,23 @@
+@@ -84,6 +90,23 @@
          return Optional.empty();
      }
  
@@ -37,7 +37,7 @@
      public Optional<NBTTagCompound> load(NameAndId nameandid) {
          Optional<NBTTagCompound> optional = this.load(nameandid, ".dat");
  
-@@ -102,4 +125,10 @@
+@@ -100,4 +123,10 @@
              return nbttagcompound;
          });
      }

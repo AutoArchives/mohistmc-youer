@@ -1,0 +1,38 @@
+--- a/net/minecraft/world/inventory/AbstractMountInventoryMenu.java
++++ b/net/minecraft/world/inventory/AbstractMountInventoryMenu.java
+@@ -7,6 +7,11 @@
+ import net.minecraft.world.entity.player.PlayerInventory;
+ import net.minecraft.world.item.ItemStack;
+ 
++// CraftBukkit start
++import org.bukkit.craftbukkit.inventory.CraftInventoryView;
++import org.bukkit.inventory.InventoryView;
++// CraftBukkit end
++
+ public abstract class AbstractMountInventoryMenu extends Container {
+ 
+     protected final IInventory mountContainer;
+@@ -16,8 +21,23 @@
+     protected final int SLOT_INVENTORY_START = 2;
+     protected static final int INVENTORY_ROWS = 3;
+ 
++    // CraftBukkit start
++    org.bukkit.craftbukkit.inventory.CraftInventoryView bukkitEntity;
++    PlayerInventory player;
++
++    @Override
++    public InventoryView getBukkitView() {
++        if (bukkitEntity != null) {
++            return bukkitEntity;
++        }
++
++        return bukkitEntity = new CraftInventoryView(player.player.getBukkitEntity(), mountContainer.getOwner().getInventory(), this);
++    }
++
+     protected AbstractMountInventoryMenu(int i, PlayerInventory playerinventory, IInventory iinventory, EntityLiving entityliving) {
+         super((Containers) null, i);
++        player = playerinventory;
++        // CraftBukkit end
+         this.mountContainer = iinventory;
+         this.mount = entityliving;
+         iinventory.startOpen(playerinventory.player);

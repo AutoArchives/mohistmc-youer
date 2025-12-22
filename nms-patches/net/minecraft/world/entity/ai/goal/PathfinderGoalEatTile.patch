@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/ai/goal/PathfinderGoalEatTile.java
 +++ b/net/minecraft/world/entity/ai/goal/PathfinderGoalEatTile.java
 @@ -11,6 +11,10 @@
- import net.minecraft.world.level.block.Blocks;
  import net.minecraft.world.level.block.state.IBlockData;
+ import net.minecraft.world.level.gamerules.GameRules;
  
 +// CraftBukkit start
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
@@ -15,8 +15,8 @@
              BlockPosition blockposition = this.mob.blockPosition();
  
              if (PathfinderGoalEatTile.IS_EDIBLE.test(this.level.getBlockState(blockposition))) {
--                if (getServerLevel(this.level).getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
-+                if (CraftEventFactory.callEntityChangeBlockEvent(this.mob, blockposition, Blocks.AIR.defaultBlockState(), !getServerLevel(this.level).getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING))) { // CraftBukkit
+-                if ((Boolean) getServerLevel(this.level).getGameRules().get(GameRules.MOB_GRIEFING)) {
++                if (CraftEventFactory.callEntityChangeBlockEvent(this.mob, blockposition, Blocks.AIR.defaultBlockState(), !(Boolean) getServerLevel(this.level).getGameRules().get(GameRules.MOB_GRIEFING))) { // CraftBukkit
                      this.level.destroyBlock(blockposition, false);
                  }
  
@@ -24,8 +24,8 @@
                  BlockPosition blockposition1 = blockposition.below();
  
                  if (this.level.getBlockState(blockposition1).is(Blocks.GRASS_BLOCK)) {
--                    if (getServerLevel(this.level).getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
-+                    if (CraftEventFactory.callEntityChangeBlockEvent(this.mob, blockposition1, Blocks.AIR.defaultBlockState(), !getServerLevel(this.level).getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING))) { // CraftBukkit
+-                    if ((Boolean) getServerLevel(this.level).getGameRules().get(GameRules.MOB_GRIEFING)) {
++                    if (CraftEventFactory.callEntityChangeBlockEvent(this.mob, blockposition1, Blocks.AIR.defaultBlockState(), !(Boolean) getServerLevel(this.level).getGameRules().get(GameRules.MOB_GRIEFING))) { // CraftBukkit
                          this.level.levelEvent(2001, blockposition1, Block.getId(Blocks.GRASS_BLOCK.defaultBlockState()));
                          this.level.setBlock(blockposition1, Blocks.DIRT.defaultBlockState(), 2);
                      }

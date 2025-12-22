@@ -1,7 +1,7 @@
 --- a/net/minecraft/world/level/block/entity/TileEntitySign.java
 +++ b/net/minecraft/world/level/block/entity/TileEntitySign.java
-@@ -33,6 +33,16 @@
- import net.minecraft.world.phys.Vec3D;
+@@ -34,6 +34,16 @@
+ import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
 +// CraftBukkit start
@@ -151,16 +151,16 @@
          String s = entityhuman == null ? "Sign" : entityhuman.getPlainTextName();
          IChatBaseComponent ichatbasecomponent = (IChatBaseComponent) (entityhuman == null ? IChatBaseComponent.literal("Sign") : entityhuman.getDisplayName());
  
--        return new CommandListenerWrapper(ICommandListener.NULL, Vec3D.atCenterOf(blockposition), Vec2F.ZERO, worldserver, 2, s, ichatbasecomponent, worldserver.getServer(), entityhuman);
+-        return new CommandListenerWrapper(ICommandListener.NULL, Vec3D.atCenterOf(blockposition), Vec2F.ZERO, worldserver, LevelBasedPermissionSet.GAMEMASTER, s, ichatbasecomponent, worldserver.getServer(), entityhuman);
 +        // CraftBukkit - commandSource
-+        return new CommandListenerWrapper(commandSource, Vec3D.atCenterOf(blockposition), Vec2F.ZERO, worldserver, 2, s, ichatbasecomponent, worldserver.getServer(), entityhuman);
++        return new CommandListenerWrapper(commandSource, Vec3D.atCenterOf(blockposition), Vec2F.ZERO, worldserver, LevelBasedPermissionSet.GAMEMASTER, s, ichatbasecomponent, worldserver.getServer(), entityhuman);
      }
  
      @Override
-@@ -260,12 +322,17 @@
+@@ -259,12 +321,17 @@
+     }
  
-     @Nullable
-     public UUID getPlayerWhoMayEdit() {
+     public @Nullable UUID getPlayerWhoMayEdit() {
 +        // CraftBukkit start - unnecessary sign ticking removed, so do this lazily
 +        if (this.level != null && this.playerWhoMayEdit != null) {
 +            clearInvalidPlayerWhoMayEdit(this, this.level, this.playerWhoMayEdit);

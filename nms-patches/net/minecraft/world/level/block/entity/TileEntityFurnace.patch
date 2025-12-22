@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/level/block/entity/TileEntityFurnace.java
 +++ b/net/minecraft/world/level/block/entity/TileEntityFurnace.java
 @@ -42,6 +42,21 @@
- import net.minecraft.world.level.storage.ValueOutput;
  import net.minecraft.world.phys.Vec3D;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.craftbukkit.block.CraftBlock;
@@ -174,7 +174,7 @@
          SingleRecipeInput singlerecipeinput = new SingleRecipeInput(tileentityfurnace.getItem(0));
  
          return (Integer) tileentityfurnace.quickCheck.getRecipeFor(singlerecipeinput, worldserver).map((recipeholder) -> {
-@@ -351,8 +447,8 @@
+@@ -350,8 +446,8 @@
      @Override
      public void awardUsedRecipes(EntityHuman entityhuman, List<ItemStack> list) {}
  
@@ -185,7 +185,7 @@
  
          entityplayer.awardRecipes(list);
  
-@@ -366,22 +462,28 @@
+@@ -363,22 +459,28 @@
      }
  
      public List<RecipeHolder<?>> getRecipesToAwardAndPopExperience(WorldServer worldserver, Vec3D vec3d) {
@@ -217,7 +217,7 @@
          int j = MathHelper.floor((float) i * f);
          float f1 = MathHelper.frac((float) i * f);
  
-@@ -389,6 +491,17 @@
+@@ -386,6 +488,17 @@
              ++j;
          }
  

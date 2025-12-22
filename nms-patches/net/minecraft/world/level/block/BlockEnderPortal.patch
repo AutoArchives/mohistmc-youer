@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/level/block/BlockEnderPortal.java
 +++ b/net/minecraft/world/level/block/BlockEnderPortal.java
 @@ -29,6 +29,19 @@
- import net.minecraft.world.phys.shapes.VoxelShape;
  import net.minecraft.world.phys.shapes.VoxelShapeCollision;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import java.util.List;
@@ -22,7 +22,7 @@
      public static final MapCodec<BlockEnderPortal> CODEC = simpleCodec(BlockEnderPortal::new);
 @@ -61,6 +74,10 @@
      @Override
-     protected void entityInside(IBlockData iblockdata, World world, BlockPosition blockposition, Entity entity, InsideBlockEffectApplier insideblockeffectapplier) {
+     protected void entityInside(IBlockData iblockdata, World world, BlockPosition blockposition, Entity entity, InsideBlockEffectApplier insideblockeffectapplier, boolean flag) {
          if (entity.canUsePortal(false)) {
 +            // CraftBukkit start - Entity in portal
 +            EntityPortalEnterEvent event = new EntityPortalEnterEvent(entity.getBukkitEntity(), new org.bukkit.Location(world.getWorld(), blockposition.getX(), blockposition.getY(), blockposition.getZ()));
@@ -31,9 +31,9 @@
              if (!world.isClientSide() && world.dimension() == World.END && entity instanceof EntityPlayer) {
                  EntityPlayer entityplayer = (EntityPlayer) entity;
  
-@@ -79,14 +96,16 @@
+@@ -78,14 +95,16 @@
      @Override
-     public TeleportTransition getPortalDestination(WorldServer worldserver, Entity entity, BlockPosition blockposition) {
+     public @Nullable TeleportTransition getPortalDestination(WorldServer worldserver, Entity entity, BlockPosition blockposition) {
          WorldData.a worlddata_a = worldserver.getRespawnData();
 -        ResourceKey<World> resourcekey = worldserver.dimension();
 -        boolean flag = resourcekey == World.END;
@@ -51,7 +51,7 @@
          } else {
              Vec3D vec3d = blockposition1.getBottomCenter();
              float f;
-@@ -94,7 +113,7 @@
+@@ -93,7 +112,7 @@
              Set<Relative> set;
  
              if (!flag) {
@@ -60,7 +60,7 @@
                  f = EnumDirection.WEST.toYRot();
                  f1 = 0.0F;
                  set = Relative.union(Relative.DELTA, Set.of(Relative.X_ROT));
-@@ -108,13 +127,21 @@
+@@ -107,13 +126,21 @@
                  if (entity instanceof EntityPlayer) {
                      EntityPlayer entityplayer = (EntityPlayer) entity;
  

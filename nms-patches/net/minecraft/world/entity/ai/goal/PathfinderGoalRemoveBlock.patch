@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/ai/goal/PathfinderGoalRemoveBlock.java
 +++ b/net/minecraft/world/entity/ai/goal/PathfinderGoalRemoveBlock.java
 @@ -22,6 +22,11 @@
- import net.minecraft.world.level.chunk.status.ChunkStatus;
  import net.minecraft.world.phys.Vec3D;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.craftbukkit.block.CraftBlock;

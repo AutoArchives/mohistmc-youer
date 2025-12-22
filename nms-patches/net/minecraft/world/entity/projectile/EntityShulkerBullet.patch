@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/projectile/EntityShulkerBullet.java
 +++ b/net/minecraft/world/entity/projectile/EntityShulkerBullet.java
 @@ -33,6 +33,10 @@
- import net.minecraft.world.phys.MovingObjectPositionEntity;
  import net.minecraft.world.phys.Vec3D;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.event.entity.EntityRemoveEvent;
@@ -11,7 +11,7 @@
  public class EntityShulkerBullet extends IProjectile {
  
      private static final double SPEED = 0.15D;
-@@ -59,8 +63,21 @@
+@@ -57,8 +61,21 @@
          this.finalTarget = EntityReference.of(entity);
          this.currentMoveDirection = EnumDirection.UP;
          this.selectNextMoveDirection(enumdirection_enumaxis, entity);
@@ -33,7 +33,7 @@
      @Override
      public SoundCategory getSoundSource() {
          return SoundCategory.HOSTILE;
-@@ -87,7 +104,7 @@
+@@ -85,7 +102,7 @@
          this.targetDeltaX = valueinput.getDoubleOr("TXD", 0.0D);
          this.targetDeltaY = valueinput.getDoubleOr("TYD", 0.0D);
          this.targetDeltaZ = valueinput.getDoubleOr("TZD", 0.0D);
@@ -42,7 +42,7 @@
          this.finalTarget = EntityReference.<Entity>read(valueinput, "Target");
      }
  
-@@ -184,7 +201,7 @@
+@@ -181,7 +198,7 @@
      @Override
      public void checkDespawn() {
          if (this.level().getDifficulty() == EnumDifficulty.PEACEFUL) {
@@ -51,7 +51,7 @@
          }
  
      }
-@@ -228,7 +245,7 @@
+@@ -225,7 +242,7 @@
          }
  
          if (movingobjectposition != null && this.isAlive() && movingobjectposition.getType() != MovingObjectPosition.EnumMovingObjectType.MISS) {
@@ -60,7 +60,7 @@
          }
  
          ProjectileHelper.rotateTowardsMovement(this, 0.5F);
-@@ -306,7 +323,7 @@
+@@ -303,7 +320,7 @@
              if (entity instanceof EntityLiving) {
                  EntityLiving entityliving1 = (EntityLiving) entity;
  
@@ -69,7 +69,7 @@
              }
          }
  
-@@ -320,14 +337,20 @@
+@@ -317,14 +334,20 @@
      }
  
      private void destroy() {
@@ -92,7 +92,7 @@
      }
  
      @Override
-@@ -342,9 +365,14 @@
+@@ -339,9 +362,14 @@
  
      @Override
      public boolean hurtServer(WorldServer worldserver, DamageSource damagesource, float f) {

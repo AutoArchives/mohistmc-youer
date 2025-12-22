@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/Interaction.java
 +++ b/net/minecraft/world/entity/Interaction.java
 @@ -22,6 +22,12 @@
- import net.minecraft.world.phys.AxisAlignedBB;
  import net.minecraft.world.phys.Vec3D;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import net.minecraft.world.damagesource.DamageSource;
@@ -13,7 +13,7 @@
  public class Interaction extends Entity implements Attackable, Targeting {
  
      private static final DataWatcherObject<Float> DATA_WIDTH_ID = DataWatcher.<Float>defineId(Interaction.class, DataWatcherRegistry.FLOAT);
-@@ -56,8 +62,8 @@
+@@ -54,8 +60,8 @@
      protected void readAdditionalSaveData(ValueInput valueinput) {
          this.setWidth(valueinput.getFloatOr("width", 1.0F));
          this.setHeight(valueinput.getFloatOr("height", 1.0F));
@@ -24,7 +24,7 @@
          this.setResponse(valueinput.getBooleanOr("response", false));
          this.setBoundingBox(this.makeBoundingBox());
      }
-@@ -103,9 +109,16 @@
+@@ -101,9 +107,16 @@
      @Override
      public boolean skipAttackInteraction(Entity entity) {
          if (entity instanceof EntityHuman entityhuman) {

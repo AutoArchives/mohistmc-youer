@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/monster/EntityCreeper.java
 +++ b/net/minecraft/world/entity/monster/EntityCreeper.java
 @@ -42,6 +42,13 @@
- import net.minecraft.world.level.storage.ValueOutput;
  import net.minecraft.world.level.storage.loot.LootTables;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start;
 +import org.bukkit.event.entity.CreatureSpawnEvent;

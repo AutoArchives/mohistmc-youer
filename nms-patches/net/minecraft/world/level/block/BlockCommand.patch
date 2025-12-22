@@ -1,7 +1,7 @@
 --- a/net/minecraft/world/level/block/BlockCommand.java
 +++ b/net/minecraft/world/level/block/BlockCommand.java
 @@ -31,6 +31,8 @@
- import net.minecraft.world.phys.MovingObjectPositionBlock;
+ import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
 +import org.bukkit.event.block.BlockRedstoneEvent; // CraftBukkit

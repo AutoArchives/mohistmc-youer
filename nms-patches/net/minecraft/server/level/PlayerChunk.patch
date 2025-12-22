@@ -1,8 +1,8 @@
 --- a/net/minecraft/server/level/PlayerChunk.java
 +++ b/net/minecraft/server/level/PlayerChunk.java
 @@ -28,6 +28,10 @@
- import net.minecraft.world.level.chunk.status.ChunkStatus;
  import net.minecraft.world.level.lighting.LevelLightEngine;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import net.minecraft.server.MinecraftServer;
@@ -43,23 +43,23 @@
      public CompletableFuture<ChunkResult<Chunk>> getTickingChunkFuture() {
          return this.tickingChunkFuture;
      }
-@@ -86,7 +102,7 @@
+@@ -85,7 +101,7 @@
+     }
  
-     @Nullable
-     public Chunk getTickingChunk() {
+     public @Nullable Chunk getTickingChunk() {
 -        return (Chunk) ((ChunkResult) this.getTickingChunkFuture().getNow(PlayerChunk.UNLOADED_LEVEL_CHUNK)).orElse((Object) null);
 +        return (Chunk) ((ChunkResult) this.getTickingChunkFuture().getNow(PlayerChunk.UNLOADED_LEVEL_CHUNK)).orElse(null); // CraftBukkit - decompile error
      }
  
-     @Nullable
-@@ -138,6 +154,7 @@
+     public @Nullable Chunk getChunkToSend() {
+@@ -135,6 +151,7 @@
+         } else {
              boolean flag = this.hasChangedSections;
              int i = this.levelHeightAccessor.getSectionIndex(blockposition.getY());
- 
 +            if (i < 0 || i >= this.changedBlocksPerSection.length) return false; // CraftBukkit - SPIGOT-6086, SPIGOT-6296
-             if (this.changedBlocksPerSection[i] == null) {
-                 this.hasChangedSections = true;
-                 this.changedBlocksPerSection[i] = new ShortOpenHashSet();
+             ShortSet shortset = this.changedBlocksPerSection[i];
+ 
+             if (shortset == null) {
 @@ -291,7 +308,7 @@
          this.pendingFullStateConfirmation = completablefuture1;
          completablefuture.thenAccept((chunkresult) -> {

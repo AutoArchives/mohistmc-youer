@@ -1,20 +1,11 @@
 --- a/net/minecraft/server/commands/CommandGamerule.java
 +++ b/net/minecraft/server/commands/CommandGamerule.java
-@@ -32,7 +32,7 @@
- 
-     static <T extends GameRules.GameRuleValue<T>> int setRule(CommandContext<CommandListenerWrapper> commandcontext, GameRules.GameRuleKey<T> gamerules_gamerulekey) {
+@@ -41,7 +41,7 @@
          CommandListenerWrapper commandlistenerwrapper = (CommandListenerWrapper) commandcontext.getSource();
--        T t0 = commandlistenerwrapper.getServer().getGameRules().getRule(gamerules_gamerulekey);
-+        T t0 = commandlistenerwrapper.getLevel().getGameRules().getRule(gamerules_gamerulekey); // CraftBukkit
+         T t0 = (T) commandcontext.getArgument("value", gamerule.valueClass());
  
-         ((GameRules.GameRuleValue) t0).setFromArgument(commandcontext, "value");
-         commandlistenerwrapper.getServer().onGameRuleChanged(gamerules_gamerulekey.getId(), t0);
-@@ -43,7 +43,7 @@
-     }
- 
-     static <T extends GameRules.GameRuleValue<T>> int queryRule(CommandListenerWrapper commandlistenerwrapper, GameRules.GameRuleKey<T> gamerules_gamerulekey) {
--        T t0 = commandlistenerwrapper.getServer().getGameRules().getRule(gamerules_gamerulekey);
-+        T t0 = commandlistenerwrapper.getLevel().getGameRules().getRule(gamerules_gamerulekey); // CraftBukkit
- 
+-        commandlistenerwrapper.getLevel().getGameRules().set(gamerule, t0, ((CommandListenerWrapper) commandcontext.getSource()).getServer());
++        commandlistenerwrapper.getLevel().getGameRules().set(gamerule, t0, ((CommandListenerWrapper) commandcontext.getSource()).getLevel()); // CraftBukkit
          commandlistenerwrapper.sendSuccess(() -> {
-             return IChatBaseComponent.translatable("commands.gamerule.query", gamerules_gamerulekey.getId(), t0.toString());
+             return IChatBaseComponent.translatable("commands.gamerule.set", gamerule.id(), gamerule.serialize(t0));
+         }, true);

@@ -1,0 +1,78 @@
+--- a/net/minecraft/world/level/chunk/storage/SimpleRegionStorage.java
++++ b/net/minecraft/world/level/chunk/storage/SimpleRegionStorage.java
+@@ -20,6 +20,14 @@
+ import net.minecraft.world.level.ChunkCoordIntPair;
+ import org.jspecify.annotations.Nullable;
+ 
++// CraftBukkit start
++import java.util.concurrent.ExecutionException;
++import net.minecraft.server.level.ChunkProviderServer;
++import net.minecraft.server.level.WorldServer;
++import net.minecraft.world.level.GeneratorAccess;
++import net.minecraft.world.level.chunk.status.ChunkStatus;
++// CraftBukkit end
++
+ public class SimpleRegionStorage implements AutoCloseable {
+ 
+     private final IOWorker worker;
+@@ -58,13 +66,60 @@
+         return this.worker.store(chunkcoordintpair, supplier);
+     }
+ 
++    // CraftBukkit start
++    private boolean check(ChunkProviderServer cps, int x, int z) {
++        ChunkCoordIntPair pos = new ChunkCoordIntPair(x, z);
++        if (cps != null) {
++            if (cps.hasChunk(x, z)) {
++                return true;
++            }
++        }
++
++        NBTTagCompound nbt;
++        try {
++            nbt = read(pos).get().orElse(null);
++        } catch (InterruptedException | ExecutionException ex) {
++            throw new RuntimeException(ex);
++        }
++        if (nbt != null) {
++            NBTTagCompound level = nbt.getCompoundOrEmpty("Level");
++            if (level.getBooleanOr("TerrainPopulated", false)) {
++                return true;
++            }
++
++            ChunkStatus status = ChunkStatus.byName(level.getStringOr("Status", ""));
++            if (status != null && status.isOrAfter(ChunkStatus.FEATURES)) {
++                return true;
++            }
++        }
++
++        return false;
++    }
++
+     public NBTTagCompound upgradeChunkTag(NBTTagCompound nbttagcompound, int i, @Nullable NBTTagCompound nbttagcompound1) {
++        // CraftBukkit start
++        return this.upgradeChunkTag(nbttagcompound, i, nbttagcompound1, null, null);
++    }
++
++    public NBTTagCompound upgradeChunkTag(NBTTagCompound nbttagcompound, int i, @Nullable NBTTagCompound nbttagcompound1, ChunkCoordIntPair pos, @Nullable GeneratorAccess generatoraccess) {
++        // CraftBukkit end
+         int j = GameProfileSerializer.getDataVersion(nbttagcompound, i);
+ 
+         if (j == SharedConstants.getCurrentVersion().dataVersion().version()) {
+             return nbttagcompound;
+         } else {
+             try {
++                // CraftBukkit start
++                if (j < 1466 && pos != null) {
++                    NBTTagCompound level = nbttagcompound.getCompoundOrEmpty("Level");
++                    if (level.getBooleanOr("TerrainPopulated", false) && !level.getBooleanOr("LightPopulated", false)) {
++                        ChunkProviderServer cps = (generatoraccess == null) ? null : ((WorldServer) generatoraccess).getChunkSource();
++                        if (check(cps, pos.x - 1, pos.z) && check(cps, pos.x - 1, pos.z - 1) && check(cps, pos.x, pos.z - 1)) {
++                            level.putBoolean("LightPopulated", true);
++                        }
++                    }
++                }
++                // CraftBukkit end
+                 nbttagcompound = ((LegacyTagFixer) this.legacyFixer.get()).applyFix(nbttagcompound);
+                 injectDatafixingContext(nbttagcompound, nbttagcompound1);
+                 nbttagcompound = this.dataFixType.updateToCurrentVersion(this.fixerUpper, nbttagcompound, Math.max(((LegacyTagFixer) this.legacyFixer.get()).targetDataVersion(), j));

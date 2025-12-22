@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/projectile/IProjectile.java
 +++ b/net/minecraft/world/entity/projectile/IProjectile.java
-@@ -36,6 +36,10 @@
- import net.minecraft.world.phys.MovingObjectPositionEntity;
+@@ -37,6 +37,10 @@
  import net.minecraft.world.phys.Vec3D;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.projectiles.ProjectileSource;
@@ -11,26 +11,26 @@
  public abstract class IProjectile extends Entity implements TraceableEntity {
  
      private static final boolean DEFAULT_LEFT_OWNER = false;
-@@ -48,6 +52,10 @@
-     @Nullable
-     private Entity lastDeflectedBy;
+@@ -47,6 +51,10 @@
+     private boolean hasBeenShot = false;
+     private @Nullable Entity lastDeflectedBy;
  
 +    // CraftBukkit start
 +    private boolean hitCancelled = false;
 +    // CraftBukkit end
 +
-     IProjectile(EntityTypes<? extends IProjectile> entitytypes, World world) {
+     protected IProjectile(EntityTypes<? extends IProjectile> entitytypes, World world) {
          super(entitytypes, world);
      }
-@@ -58,6 +66,7 @@
+@@ -57,6 +65,7 @@
  
      public void setOwner(@Nullable Entity entity) {
          this.setOwner(EntityReference.of(entity));
 +        this.projectileSource = (entity != null && entity.getBukkitEntity() instanceof ProjectileSource) ? (ProjectileSource) entity.getBukkitEntity() : null; // CraftBukkit
      }
  
-     @Nullable
-@@ -203,7 +212,7 @@
+     @Override
+@@ -201,7 +210,7 @@
  
      public static <T extends IProjectile> T spawnProjectile(T t0, WorldServer worldserver, ItemStack itemstack, Consumer<T> consumer) {
          consumer.accept(t0);
@@ -39,7 +39,7 @@
          t0.applyOnProjectileSpawned(worldserver, itemstack);
          return t0;
      }
-@@ -222,6 +231,17 @@
+@@ -220,6 +229,17 @@
  
      }
  
@@ -57,7 +57,7 @@
      protected ProjectileDeflection hitTargetOrDeflectSelf(MovingObjectPosition movingobjectposition) {
          if (movingobjectposition.getType() == MovingObjectPosition.EnumMovingObjectType.ENTITY) {
              MovingObjectPositionEntity movingobjectpositionentity = (MovingObjectPositionEntity) movingobjectposition;
-@@ -299,6 +319,11 @@
+@@ -297,6 +317,11 @@
      protected void onHitEntity(MovingObjectPositionEntity movingobjectpositionentity) {}
  
      protected void onHitBlock(MovingObjectPositionBlock movingobjectpositionblock) {

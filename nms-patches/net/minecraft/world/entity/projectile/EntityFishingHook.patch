@@ -1,7 +1,7 @@
 --- a/net/minecraft/world/entity/projectile/EntityFishingHook.java
 +++ b/net/minecraft/world/entity/projectile/EntityFishingHook.java
-@@ -49,6 +49,13 @@
- import net.minecraft.world.phys.Vec3D;
+@@ -48,6 +48,13 @@
+ import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
 +// CraftBukkit start
@@ -14,7 +14,7 @@
  public class EntityFishingHook extends IProjectile {
  
      private static final Logger LOGGER = LogUtils.getLogger();
-@@ -71,6 +78,18 @@
+@@ -69,6 +76,18 @@
      private final int lureSpeed;
      private final InterpolationHandler interpolationHandler;
  
@@ -33,7 +33,7 @@
      private EntityFishingHook(EntityTypes<? extends EntityFishingHook> entitytypes, World world, int i, int j) {
          super(entitytypes, world);
          this.syncronizedRandom = RandomSource.create();
-@@ -160,12 +179,12 @@
+@@ -157,12 +176,12 @@
          EntityHuman entityhuman = this.getPlayerOwner();
  
          if (entityhuman == null) {
@@ -48,7 +48,7 @@
                      return;
                  }
              } else {
-@@ -270,14 +289,14 @@
+@@ -267,14 +286,14 @@
              }
          }
  
@@ -65,7 +65,7 @@
      }
  
      @Override
-@@ -310,11 +329,11 @@
+@@ -307,11 +326,11 @@
          int i = 1;
          BlockPosition blockposition1 = blockposition.above();
  
@@ -79,7 +79,7 @@
              --i;
          }
  
-@@ -324,6 +343,10 @@
+@@ -321,6 +340,10 @@
                  this.timeUntilLured = 0;
                  this.timeUntilHooked = 0;
                  this.getEntityData().set(EntityFishingHook.DATA_BITING, false);
@@ -90,7 +90,7 @@
              }
          } else if (this.timeUntilHooked > 0) {
              this.timeUntilHooked -= i;
-@@ -349,6 +372,13 @@
+@@ -346,6 +369,13 @@
                      worldserver.sendParticles(Particles.FISHING, d0, d1, d2, 0, (double) (-f4), 0.01D, (double) f3, 1.0D);
                  }
              } else {
@@ -104,7 +104,7 @@
                  this.playSound(SoundEffects.FISHING_BOBBER_SPLASH, 0.25F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.4F);
                  double d3 = this.getY() + 0.5D;
  
-@@ -383,12 +413,16 @@
+@@ -380,12 +410,16 @@
              }
  
              if (this.timeUntilLured <= 0) {
@@ -125,7 +125,7 @@
          }
  
      }
-@@ -455,6 +489,14 @@
+@@ -452,6 +486,14 @@
              int i = 0;
  
              if (this.hookedIn != null) {
@@ -140,7 +140,7 @@
                  this.pullEntity(this.hookedIn);
                  CriterionTriggers.FISHING_ROD_HOOKED.trigger((EntityPlayer) entityhuman, itemstack, this, Collections.emptyList());
                  this.level().broadcastEntityEvent(this, (byte) 31);
-@@ -468,6 +510,15 @@
+@@ -465,6 +507,15 @@
  
                  for (ItemStack itemstack1 : list) {
                      EntityItem entityitem = new EntityItem(this.level(), this.getX(), this.getY(), this.getZ(), itemstack1);
@@ -156,7 +156,7 @@
                      double d0 = entityhuman.getX() - this.getX();
                      double d1 = entityhuman.getY() - this.getY();
                      double d2 = entityhuman.getZ() - this.getZ();
-@@ -475,7 +526,11 @@
+@@ -472,7 +523,11 @@
  
                      entityitem.setDeltaMovement(d0 * 0.1D, d1 * 0.1D + Math.sqrt(Math.sqrt(d0 * d0 + d1 * d1 + d2 * d2)) * 0.08D, d2 * 0.1D);
                      this.level().addFreshEntity(entityitem);
@@ -169,7 +169,7 @@
                      if (itemstack1.is(TagsItem.FISHES)) {
                          entityhuman.awardStat(StatisticList.FISH_CAUGHT, 1);
                      }
-@@ -485,10 +540,27 @@
+@@ -482,10 +537,27 @@
              }
  
              if (this.onGround()) {
@@ -198,7 +198,7 @@
              return i;
          } else {
              return 0;
-@@ -529,8 +601,15 @@
+@@ -526,8 +598,15 @@
  
      @Override
      public void remove(Entity.RemovalReason entity_removalreason) {
@@ -215,7 +215,7 @@
      }
  
      @Override
-@@ -591,7 +670,7 @@
+@@ -586,7 +665,7 @@
              int i = packetplayoutspawnentity.getData();
  
              EntityFishingHook.LOGGER.error("Failed to recreate fishing hook on client. {} (id: {}) is not a valid owner.", this.level().getEntity(i), i);

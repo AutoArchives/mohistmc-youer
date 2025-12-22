@@ -1,14 +1,14 @@
 --- a/net/minecraft/world/entity/monster/EntityGuardian.java
 +++ b/net/minecraft/world/entity/monster/EntityGuardian.java
-@@ -60,6 +60,7 @@
+@@ -58,6 +58,7 @@
+     private int clientSideAttackTime;
      private boolean clientSideTouchedGround;
-     @Nullable
-     public PathfinderGoalRandomStroll randomStrollGoal;
+     public @Nullable PathfinderGoalRandomStroll randomStrollGoal;
 +    public EntityGuardian.PathfinderGoalGuardianAttack guardianAttackGoal; // CraftBukkit - add field
  
      public EntityGuardian(EntityTypes<? extends EntityGuardian> entitytypes, World world) {
          super(entitytypes, world);
-@@ -75,7 +76,7 @@
+@@ -73,7 +74,7 @@
          PathfinderGoalMoveTowardsRestriction pathfindergoalmovetowardsrestriction = new PathfinderGoalMoveTowardsRestriction(this, 1.0D);
  
          this.randomStrollGoal = new PathfinderGoalRandomStroll(this, 1.0D, 80);

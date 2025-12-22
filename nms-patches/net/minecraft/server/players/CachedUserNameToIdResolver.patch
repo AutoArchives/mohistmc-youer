@@ -1,6 +1,6 @@
 --- a/net/minecraft/server/players/CachedUserNameToIdResolver.java
 +++ b/net/minecraft/server/players/CachedUserNameToIdResolver.java
-@@ -122,7 +122,7 @@
+@@ -123,7 +123,7 @@
              cachedusernametoidresolver_a.setLastAccess(this.getNextOperation());
              optional = Optional.of(cachedusernametoidresolver_a.nameAndId());
          } else {
@@ -9,7 +9,7 @@
  
              if (optional1.isPresent()) {
                  optional = Optional.of(this.addInternal((NameAndId) optional1.get()).nameAndId());
-@@ -168,7 +168,7 @@
+@@ -169,7 +169,7 @@
              DateFormat dateformat = createDateFormat();
  
              jsonarray.forEach((jsonelement) -> {

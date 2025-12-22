@@ -1,7 +1,7 @@
 --- a/net/minecraft/server/DispenserRegistry.java
 +++ b/net/minecraft/server/DispenserRegistry.java
-@@ -30,7 +30,14 @@
- import net.minecraft.world.level.block.state.BlockBase;
+@@ -32,7 +32,14 @@
+ import net.minecraft.world.level.gamerules.GameRules;
  import org.slf4j.Logger;
  
 -@SuppressForbidden(a = "System.out setup")
@@ -16,7 +16,7 @@
  public class DispenserRegistry {
  
      public static final PrintStream STDOUT = System.out;
-@@ -42,6 +49,23 @@
+@@ -44,6 +51,23 @@
  
      public static void bootStrap() {
          if (!DispenserRegistry.isBootstrapped) {
@@ -40,7 +40,7 @@
              DispenserRegistry.isBootstrapped = true;
              Instant instant = Instant.now();
  
-@@ -61,6 +85,69 @@
+@@ -63,6 +87,69 @@
                      wrapStreams();
                      DispenserRegistry.bootstrapDuration.set(Duration.between(instant, Instant.now()).toMillis());
                  }

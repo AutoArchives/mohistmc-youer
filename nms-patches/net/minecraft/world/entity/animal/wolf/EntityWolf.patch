@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/animal/wolf/EntityWolf.java
 +++ b/net/minecraft/world/entity/animal/wolf/EntityWolf.java
 @@ -88,6 +88,13 @@
- import net.minecraft.world.level.storage.ValueOutput;
  import net.minecraft.world.phys.Vec3D;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.event.entity.EntityDamageEvent;
@@ -14,7 +14,7 @@
  public class EntityWolf extends EntityTameableAnimal implements IEntityAngerable {
  
      private static final DataWatcherObject<Boolean> DATA_INTERESTED_ID = DataWatcher.<Boolean>defineId(EntityWolf.class, DataWatcherRegistry.BOOLEAN);
-@@ -385,16 +392,27 @@
+@@ -382,16 +389,27 @@
          if (this.isInvulnerableTo(worldserver, damagesource)) {
              return false;
          } else {
@@ -45,7 +45,7 @@
              ItemStack itemstack = this.getBodyArmorItem();
              int i = itemstack.getDamageValue();
              int j = itemstack.getMaxDamage();
-@@ -406,6 +424,7 @@
+@@ -403,6 +421,7 @@
              }
  
          }
@@ -53,7 +53,7 @@
      }
  
      private boolean canArmorAbsorb(DamageSource damagesource) {
-@@ -416,7 +435,7 @@
+@@ -413,7 +432,7 @@
      protected void applyTamingSideEffects() {
          if (this.isTame()) {
              this.getAttribute(GenericAttributes.MAX_HEALTH).setBaseValue(40.0D);
@@ -62,7 +62,7 @@
          } else {
              this.getAttribute(GenericAttributes.MAX_HEALTH).setBaseValue(8.0D);
          }
-@@ -444,7 +463,7 @@
+@@ -441,7 +460,7 @@
                  FoodInfo foodinfo = (FoodInfo) itemstack.get(DataComponents.FOOD);
                  float f = foodinfo != null ? (float) foodinfo.nutrition() : 1.0F;
  
@@ -71,7 +71,7 @@
                  return EnumInteractionResult.SUCCESS;
              } else {
                  if (item instanceof ItemDye) {
-@@ -482,7 +501,7 @@
+@@ -479,7 +498,7 @@
                          this.setOrderedToSit(!this.isOrderedToSit());
                          this.jumping = false;
                          this.navigation.stop();
@@ -80,7 +80,7 @@
                          return EnumInteractionResult.SUCCESS.withoutItem();
                      } else {
                          return enuminteractionresult;
-@@ -499,7 +518,8 @@
+@@ -496,7 +515,8 @@
      }
  
      private void tryToTame(EntityHuman entityhuman) {

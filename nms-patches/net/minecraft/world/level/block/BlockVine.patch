@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/level/block/BlockVine.java
 +++ b/net/minecraft/world/level/block/BlockVine.java
 @@ -23,6 +23,8 @@
- import net.minecraft.world.phys.shapes.VoxelShapeCollision;
  import net.minecraft.world.phys.shapes.VoxelShapes;
+ import org.jspecify.annotations.Nullable;
  
 +import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
 +

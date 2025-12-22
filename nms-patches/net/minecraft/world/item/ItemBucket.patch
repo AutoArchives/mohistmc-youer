@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/item/ItemBucket.java
 +++ b/net/minecraft/world/item/ItemBucket.java
-@@ -30,6 +30,16 @@
- import net.minecraft.world.phys.MovingObjectPosition;
+@@ -31,6 +31,16 @@
  import net.minecraft.world.phys.MovingObjectPositionBlock;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import net.minecraft.network.protocol.game.PacketPlayOutBlockChange;
@@ -17,7 +17,7 @@
  public class ItemBucket extends Item implements DispensibleContainerItem {
  
      public final FluidType content;
-@@ -60,6 +70,17 @@
+@@ -61,6 +71,17 @@
  
                      if (block instanceof IFluidSource) {
                          IFluidSource ifluidsource = (IFluidSource) block;
@@ -35,7 +35,7 @@
                          ItemStack itemstack1 = ifluidsource.pickupBlock(entityhuman, world, blockposition, iblockdata);
  
                          if (!itemstack1.isEmpty()) {
-@@ -68,7 +89,7 @@
+@@ -69,7 +90,7 @@
                                  entityhuman.playSound(soundeffect, 1.0F, 1.0F);
                              });
                              world.gameEvent(entityhuman, (Holder) GameEvent.FLUID_PICKUP, blockposition);
@@ -44,7 +44,7 @@
  
                              if (!world.isClientSide()) {
                                  CriterionTriggers.FILLED_BUCKET.trigger((EntityPlayer) entityhuman, itemstack1);
-@@ -83,7 +104,7 @@
+@@ -84,7 +105,7 @@
                      IBlockData iblockdata1 = world.getBlockState(blockposition);
                      BlockPosition blockposition2 = iblockdata1.getBlock() instanceof IFluidContainer && this.content == FluidTypes.WATER ? blockposition : blockposition1;
  
@@ -53,7 +53,7 @@
                          this.checkExtraContent(entityhuman, world, itemstack, blockposition2);
                          if (entityhuman instanceof EntityPlayer) {
                              CriterionTriggers.PLACED_BLOCK.trigger((EntityPlayer) entityhuman, blockposition2, itemstack);
-@@ -112,11 +133,18 @@
+@@ -113,11 +134,18 @@
  
      @Override
      public boolean emptyContents(@Nullable EntityLiving entityliving, World world, BlockPosition blockposition, @Nullable MovingObjectPositionBlock movingobjectpositionblock) {
@@ -72,7 +72,7 @@
              Block block;
              boolean flag;
              boolean flag1;
-@@ -149,8 +177,18 @@
+@@ -150,8 +178,18 @@
              boolean flag3 = flag2;
              boolean flag4 = iblockdata.isAir() || flag3 && (!flag1 || movingobjectpositionblock == null);
  
@@ -89,6 +89,6 @@
              if (!flag4) {
 -                return movingobjectpositionblock != null && this.emptyContents(entityliving, world, movingobjectpositionblock.getBlockPos().relative(movingobjectpositionblock.getDirection()), (MovingObjectPositionBlock) null);
 +                return movingobjectpositionblock != null && this.emptyContents(entityliving, world, movingobjectpositionblock.getBlockPos().relative(movingobjectpositionblock.getDirection()), (MovingObjectPositionBlock) null, enumdirection, clicked, itemstack, enumhand); // CraftBukkit
-             } else if (world.dimensionType().ultraWarm() && this.content.is(TagsFluid.WATER)) {
+             } else if ((Boolean) world.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, blockposition) && this.content.is(TagsFluid.WATER)) {
                  int i = blockposition.getX();
                  int j = blockposition.getY();

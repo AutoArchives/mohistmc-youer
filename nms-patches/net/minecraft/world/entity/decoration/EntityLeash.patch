@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/decoration/EntityLeash.java
 +++ b/net/minecraft/world/entity/decoration/EntityLeash.java
 @@ -25,6 +25,13 @@
- import net.minecraft.world.phys.AxisAlignedBB;
  import net.minecraft.world.phys.Vec3D;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import net.minecraft.network.protocol.game.PacketPlayOutAttachEntity;

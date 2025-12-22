@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/level/block/entity/TileEntityBeacon.java
 +++ b/net/minecraft/world/level/block/entity/TileEntityBeacon.java
 @@ -51,6 +51,11 @@
- import net.minecraft.world.level.storage.ValueOutput;
  import net.minecraft.world.phys.AxisAlignedBB;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.craftbukkit.potion.CraftPotionUtil;
@@ -12,8 +12,8 @@
  public class TileEntityBeacon extends TileEntity implements ITileInventory, INamableTileEntity, BeaconBeamOwner {
  
      private static final int MAX_LEVELS = 4;
-@@ -76,6 +81,15 @@
-     public IChatBaseComponent name;
+@@ -73,6 +78,15 @@
+     public @Nullable IChatBaseComponent name;
      public ChestLock lockKey;
      private final IContainerProperties dataAccess;
 +    // CraftBukkit start - add fields and methods
@@ -26,9 +26,9 @@
 +    }
 +    // CraftBukkit end
  
-     @Nullable
-     static Holder<MobEffectList> filterEffect(@Nullable Holder<MobEffectList> holder) {
-@@ -252,32 +266,72 @@
+     static @Nullable Holder<MobEffectList> filterEffect(@Nullable Holder<MobEffectList> holder) {
+         return TileEntityBeacon.VALID_EFFECTS.contains(holder) ? holder : null;
+@@ -248,32 +262,72 @@
          super.setRemoved();
      }
  
@@ -108,7 +108,7 @@
      public static void playSound(World world, BlockPosition blockposition, SoundEffect soundeffect) {
          world.playSound((Entity) null, blockposition, soundeffect, SoundCategory.BLOCKS, 1.0F, 1.0F);
      }
-@@ -312,7 +366,7 @@
+@@ -307,7 +361,7 @@
          Set set = TileEntityBeacon.VALID_EFFECTS;
  
          Objects.requireNonNull(set);
@@ -117,7 +117,7 @@
      }
  
      @Override
-@@ -320,6 +374,7 @@
+@@ -315,6 +369,7 @@
          super.loadAdditional(valueinput);
          this.primaryPower = loadEffect(valueinput, "primary_effect");
          this.secondaryPower = loadEffect(valueinput, "secondary_effect");

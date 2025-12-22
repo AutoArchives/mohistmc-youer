@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/monster/EntityShulker.java
 +++ b/net/minecraft/world/entity/monster/EntityShulker.java
 @@ -60,6 +60,12 @@
- import net.minecraft.world.phys.Vec3D;
  import org.joml.Vector3f;
+ import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
 +import org.bukkit.craftbukkit.util.CraftLocation;
@@ -13,7 +13,7 @@
  public class EntityShulker extends EntityGolem implements IMonster {
  
      private static final MinecraftKey COVERED_ARMOR_MODIFIER_ID = MinecraftKey.withDefaultNamespace("covered");
-@@ -392,6 +398,14 @@
+@@ -389,6 +395,14 @@
                      EnumDirection enumdirection = this.findAttachableSurface(blockposition1);
  
                      if (enumdirection != null) {
@@ -28,7 +28,7 @@
                          this.unRide();
                          this.setAttachFace(enumdirection);
                          this.playSound(SoundEffects.SHULKER_TELEPORT, 1.0F, 1.0F);
-@@ -460,7 +474,7 @@
+@@ -457,7 +471,7 @@
                  if (entityshulker != null) {
                      entityshulker.setVariant(this.getVariant());
                      entityshulker.snapTo(vec3d);

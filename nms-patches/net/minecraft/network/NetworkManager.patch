@@ -1,14 +1,14 @@
 --- a/net/minecraft/network/NetworkManager.java
 +++ b/net/minecraft/network/NetworkManager.java
-@@ -112,6 +112,7 @@
-     private volatile DisconnectionDetails delayedDisconnect;
+@@ -89,6 +89,7 @@
+     private volatile @Nullable DisconnectionDetails delayedDisconnect;
      @Nullable
      BandwidthDebugMonitor bandwidthDebugMonitor;
 +    public String hostname = ""; // CraftBukkit - add field
  
      public NetworkManager(EnumProtocolDirection enumprotocoldirection) {
          this.receiving = enumprotocoldirection;
-@@ -203,7 +204,7 @@
+@@ -180,7 +181,7 @@
      }
  
      private static <T extends PacketListener> void genericsFtw(Packet<T> packet, PacketListener packetlistener) {
@@ -17,7 +17,7 @@
      }
  
      private void validateListener(ProtocolInfo<?> protocolinfo, PacketListener packetlistener) {
-@@ -330,7 +331,7 @@
+@@ -307,7 +308,7 @@
              this.flushQueue();
              this.sendPacket(packet, channelfuturelistener, flag);
          } else {
@@ -26,7 +26,7 @@
                  networkmanager.sendPacket(packet, channelfuturelistener, flag);
              });
          }
-@@ -456,7 +457,7 @@
+@@ -433,7 +434,7 @@
          }
  
          if (this.isConnected()) {
