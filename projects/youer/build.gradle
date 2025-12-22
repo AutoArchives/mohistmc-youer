@@ -211,6 +211,8 @@ dependencies {
         exclude group: 'xpp3'
     }
     // LibraryLoader end
+
+    libraries 'org.apache.commons:commons-compress:1.28.0'
 }
 
 // Select runtimeElements rather than universalJar from the main source set
