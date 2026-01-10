@@ -1,9 +1,9 @@
 package org.bukkit.craftbukkit.inventory.view.builder;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.server.level.EntityPlayer;
-import net.minecraft.world.inventory.Container;
-import net.minecraft.world.inventory.Containers;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.entity.HumanEntity;
@@ -12,12 +12,12 @@ import org.bukkit.inventory.view.builder.InventoryViewBuilder;
 
 public abstract class CraftAbstractInventoryViewBuilder<V extends InventoryView> implements InventoryViewBuilder<V> {
 
-    protected final Containers<?> handle;
+    protected final MenuType<?> handle;
 
     protected boolean checkReachable = false;
     protected String title = null;
 
-    public CraftAbstractInventoryViewBuilder(Containers<?> handle) {
+    public CraftAbstractInventoryViewBuilder(MenuType<?> handle) {
         this.handle = handle;
     }
 
@@ -33,13 +33,13 @@ public abstract class CraftAbstractInventoryViewBuilder<V extends InventoryView>
         Preconditions.checkArgument(this.title != null, "The given title must not be null");
         Preconditions.checkArgument(player instanceof CraftHumanEntity, "The given player must be a CraftHumanEntity");
         final CraftHumanEntity craftHuman = (CraftHumanEntity) player;
-        Preconditions.checkArgument(craftHuman.getHandle() instanceof EntityPlayer, "The given player must be an EntityPlayer");
-        final EntityPlayer serverPlayer = (EntityPlayer) craftHuman.getHandle();
-        final Container container = buildContainer(serverPlayer);
+        Preconditions.checkArgument(craftHuman.getHandle() instanceof ServerPlayer, "The given player must be an EntityPlayer");
+        final ServerPlayer serverPlayer = (ServerPlayer) craftHuman.getHandle();
+        final AbstractContainerMenu container = buildContainer(serverPlayer);
         container.checkReachable = this.checkReachable;
         container.setTitle(CraftChatMessage.fromString(title)[0]);
         return (V) container.getBukkitView();
     }
 
-    protected abstract Container buildContainer(EntityPlayer player);
+    protected abstract AbstractContainerMenu buildContainer(ServerPlayer player);
 }

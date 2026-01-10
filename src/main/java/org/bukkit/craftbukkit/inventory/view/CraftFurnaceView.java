@@ -1,15 +1,15 @@
 package org.bukkit.craftbukkit.inventory.view;
 
-import net.minecraft.world.inventory.ContainerFurnace;
-import net.minecraft.world.level.block.entity.TileEntityFurnace;
+import net.minecraft.world.inventory.AbstractFurnaceMenu;
+import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.FurnaceInventory;
 import org.bukkit.inventory.view.FurnaceView;
 
-public class CraftFurnaceView extends CraftInventoryView<ContainerFurnace, FurnaceInventory> implements FurnaceView {
+public class CraftFurnaceView extends CraftInventoryView<AbstractFurnaceMenu, FurnaceInventory> implements FurnaceView {
 
-    public CraftFurnaceView(final HumanEntity player, final FurnaceInventory viewing, final ContainerFurnace container) {
+    public CraftFurnaceView(final HumanEntity player, final FurnaceInventory viewing, final AbstractFurnaceMenu container) {
         super(player, viewing, container);
     }
 
@@ -30,13 +30,13 @@ public class CraftFurnaceView extends CraftInventoryView<ContainerFurnace, Furna
 
     @Override
     public void setCookTime(final int cookProgress, final int cookDuration) {
-        container.setData(TileEntityFurnace.DATA_COOKING_PROGRESS, cookProgress);
-        container.setData(TileEntityFurnace.DATA_COOKING_TOTAL_TIME, cookDuration);
+        container.setData(AbstractFurnaceBlockEntity.DATA_COOKING_PROGRESS, cookProgress);
+        container.setData(AbstractFurnaceBlockEntity.DATA_COOKING_TOTAL_TIME, cookDuration);
     }
 
     @Override
     public void setBurnTime(final int burnProgress, final int burnDuration) {
-        container.setData(TileEntityFurnace.DATA_LIT_TIME, burnProgress);
-        container.setData(TileEntityFurnace.DATA_LIT_DURATION, burnDuration);
+        container.setData(AbstractFurnaceBlockEntity.DATA_LIT_TIME, burnProgress);
+        container.setData(AbstractFurnaceBlockEntity.DATA_LIT_DURATION, burnDuration);
     }
 }

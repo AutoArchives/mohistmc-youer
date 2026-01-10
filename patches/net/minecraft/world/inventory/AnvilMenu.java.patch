@@ -1,5 +1,17 @@
 --- a/net/minecraft/world/inventory/AnvilMenu.java
 +++ b/net/minecraft/world/inventory/AnvilMenu.java
+@@ -31,8 +_,9 @@
+     private static final boolean DEBUG_COST = false;
+     public static final int MAX_NAME_LENGTH = 50;
+     public int repairItemCountCost;
+-    private @Nullable String itemName;
+-    private final DataSlot cost = DataSlot.standalone();
++    @Nullable
++    public String itemName;
++    public final DataSlot cost = DataSlot.standalone();
+     private boolean onlyRenaming = false;
+     private static final int COST_FAIL = 0;
+     private static final int COST_BASE = 1;
 @@ -75,6 +_,16 @@
  
      @Override

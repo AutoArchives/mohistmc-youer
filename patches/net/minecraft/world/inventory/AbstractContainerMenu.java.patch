@@ -1,5 +1,20 @@
 --- a/net/minecraft/world/inventory/AbstractContainerMenu.java
 +++ b/net/minecraft/world/inventory/AbstractContainerMenu.java
+@@ -49,11 +_,11 @@
+     public static final int CARRIED_SLOT_SIZE = Integer.MAX_VALUE;
+     public static final int SLOTS_PER_ROW = 9;
+     public static final int SLOT_SIZE = 18;
+-    private final NonNullList<ItemStack> lastSlots = NonNullList.create();
+-    public final NonNullList<Slot> slots = NonNullList.create();
++    public NonNullList<ItemStack> lastSlots = NonNullList.create();
++    public NonNullList<Slot> slots = NonNullList.create();
+     private final List<DataSlot> dataSlots = Lists.newArrayList();
+     private ItemStack carried = ItemStack.EMPTY;
+-    private final NonNullList<RemoteSlot> remoteSlots = NonNullList.create();
++    public NonNullList<RemoteSlot> remoteSlots = NonNullList.create();
+     private final IntList remoteDataSlots = new IntArrayList();
+     private RemoteSlot remoteCarried = RemoteSlot.PLACEHOLDER;
+     private int stateId;
 @@ -565,6 +_,12 @@
      }
  

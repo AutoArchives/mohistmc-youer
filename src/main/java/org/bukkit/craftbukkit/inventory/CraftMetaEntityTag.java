@@ -7,10 +7,10 @@ import java.util.Map;
 import java.util.Set;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.DynamicOpsNBT;
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.component.TypedEntityData;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
@@ -27,9 +27,9 @@ public class CraftMetaEntityTag extends CraftMetaItem {
             Material.PAINTING
     );
 
-    static final ItemMetaKeyType<TypedEntityData<EntityTypes<?>>> ENTITY_TAG = new ItemMetaKeyType<>(DataComponents.ENTITY_DATA, "EntityTag", "entity-tag");
-    static final Codec<TypedEntityData<EntityTypes<?>>> ENTITY_TAG_CODEC = TypedEntityData.codec(EntityTypes.CODEC);
-    TypedEntityData<EntityTypes<?>> entityTag;
+    static final ItemMetaKeyType<TypedEntityData<EntityType<?>>> ENTITY_TAG = new ItemMetaKeyType<>(DataComponents.ENTITY_DATA, "EntityTag", "entity-tag");
+    static final Codec<TypedEntityData<EntityType<?>>> ENTITY_TAG_CODEC = TypedEntityData.codec(EntityType.CODEC);
+    TypedEntityData<EntityType<?>> entityTag;
 
     CraftMetaEntityTag(CraftMetaItem meta) {
         super(meta);
@@ -55,20 +55,20 @@ public class CraftMetaEntityTag extends CraftMetaItem {
     }
 
     @Override
-    void deserializeInternal(NBTTagCompound tag, Object context) {
+    void deserializeInternal(CompoundTag tag, Object context) {
         super.deserializeInternal(tag, context);
 
         tag.getCompound(ENTITY_TAG.NBT).ifPresent((entityTag) -> {
-            ENTITY_TAG_CODEC.decode(DynamicOpsNBT.INSTANCE, entityTag).ifSuccess((result) -> {
+            ENTITY_TAG_CODEC.decode(NbtOps.INSTANCE, entityTag).ifSuccess((result) -> {
                 this.entityTag = result.getFirst();
             });
         });
     }
 
     @Override
-    void serializeInternal(Map<String, NBTBase> internalTags) {
+    void serializeInternal(Map<String, Tag> internalTags) {
         if (entityTag != null) {
-            internalTags.put(ENTITY_TAG.NBT, ENTITY_TAG_CODEC.encodeStart(DynamicOpsNBT.INSTANCE, entityTag).getOrThrow());
+            internalTags.put(ENTITY_TAG.NBT, ENTITY_TAG_CODEC.encodeStart(NbtOps.INSTANCE, entityTag).getOrThrow());
         }
     }
 

@@ -2,16 +2,16 @@ package org.bukkit.craftbukkit.inventory;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import net.minecraft.world.item.BannerItem;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.BundleItem;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemBanner;
-import net.minecraft.world.item.ItemBlock;
-import net.minecraft.world.item.ItemMonsterEgg;
-import net.minecraft.world.item.ItemSign;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.SignItem;
+import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.BlockShulkerBox;
 import net.minecraft.world.level.block.ShelfBlock;
+import net.minecraft.world.level.block.ShulkerBoxBlock;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.meta.ArmorMeta;
 import org.bukkit.inventory.meta.AxolotlBucketMeta;
@@ -160,7 +160,7 @@ public final class CraftItemMetas {
     // which would result in dead memory once all ItemTypes have cached the data.
     public static <I extends ItemMeta> ItemMetaData<I> getItemMetaData(CraftItemType<?> itemType) {
         Item itemHandle = itemType.getHandle();
-        Block blockHandle = (itemHandle instanceof ItemBlock itemBlock) ? itemBlock.getBlock() : null;
+        Block blockHandle = (itemHandle instanceof BlockItem itemBlock) ? itemBlock.getBlock() : null;
 
         if (itemType == ItemType.AIR) {
             return asType(EMPTY_META_DATA);
@@ -216,10 +216,10 @@ public final class CraftItemMetas {
         if (itemType == ItemType.ENCHANTED_BOOK) {
             return asType(ENCHANTED_BOOK_META_DATA);
         }
-        if (itemHandle instanceof ItemBanner) {
+        if (itemHandle instanceof BannerItem) {
             return asType(BANNER_META_DATA);
         }
-        if (itemHandle instanceof ItemMonsterEgg) {
+        if (itemHandle instanceof SpawnEggItem) {
             return asType(SPAWN_EGG_META_DATA);
         }
         if (itemType == ItemType.ARMOR_STAND) {
@@ -231,13 +231,13 @@ public final class CraftItemMetas {
         if (itemType == ItemType.FURNACE || itemType == ItemType.CHEST
                 || itemType == ItemType.TRAPPED_CHEST || itemType == ItemType.JUKEBOX
                 || itemType == ItemType.DISPENSER || itemType == ItemType.DROPPER
-                || itemHandle instanceof ItemSign || itemType == ItemType.SPAWNER
+                || itemHandle instanceof SignItem || itemType == ItemType.SPAWNER
                 || itemType == ItemType.BREWING_STAND || itemType == ItemType.ENCHANTING_TABLE
                 || itemType == ItemType.COMMAND_BLOCK || itemType == ItemType.REPEATING_COMMAND_BLOCK
                 || itemType == ItemType.CHAIN_COMMAND_BLOCK || itemType == ItemType.BEACON
                 || itemType == ItemType.DAYLIGHT_DETECTOR || itemType == ItemType.HOPPER
                 || itemType == ItemType.COMPARATOR || itemType == ItemType.STRUCTURE_BLOCK
-                || blockHandle instanceof BlockShulkerBox
+                || blockHandle instanceof ShulkerBoxBlock
                 || itemType == ItemType.ENDER_CHEST || itemType == ItemType.BARREL
                 || itemType == ItemType.BELL || itemType == ItemType.BLAST_FURNACE
                 || itemType == ItemType.CAMPFIRE || itemType == ItemType.SOUL_CAMPFIRE

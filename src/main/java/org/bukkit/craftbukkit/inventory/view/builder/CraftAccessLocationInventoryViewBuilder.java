@@ -1,10 +1,10 @@
 package org.bukkit.craftbukkit.inventory.view.builder;
 
-import net.minecraft.server.level.EntityPlayer;
-import net.minecraft.world.entity.player.PlayerInventory;
-import net.minecraft.world.inventory.Container;
-import net.minecraft.world.inventory.ContainerAccess;
-import net.minecraft.world.inventory.Containers;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.MenuType;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.view.builder.LocationInventoryViewBuilder;
 
@@ -12,18 +12,18 @@ public class CraftAccessLocationInventoryViewBuilder<V extends InventoryView> ex
 
     private final CraftAccessContainerObjectBuilder containerBuilder;
 
-    public CraftAccessLocationInventoryViewBuilder(final Containers<?> handle, CraftAccessContainerObjectBuilder containerBuilder) {
+    public CraftAccessLocationInventoryViewBuilder(final MenuType<?> handle, CraftAccessContainerObjectBuilder containerBuilder) {
         super(handle);
         this.containerBuilder = containerBuilder;
     }
 
     @Override
-    protected Container buildContainer(final EntityPlayer player) {
-        ContainerAccess access;
+    protected AbstractContainerMenu buildContainer(final ServerPlayer player) {
+        ContainerLevelAccess access;
         if (super.position == null) {
-            access = ContainerAccess.create(player.level(), player.blockPosition());
+            access = ContainerLevelAccess.create(player.level(), player.blockPosition());
         } else {
-            access = ContainerAccess.create(super.world, super.position);
+            access = ContainerLevelAccess.create(super.world, super.position);
         }
 
         return this.containerBuilder.build(player.nextContainerCounter(), player.getInventory(), access);
@@ -41,6 +41,6 @@ public class CraftAccessLocationInventoryViewBuilder<V extends InventoryView> ex
 
     public interface CraftAccessContainerObjectBuilder {
 
-        Container build(final int syncId, final PlayerInventory inventory, ContainerAccess access);
+        AbstractContainerMenu build(final int syncId, final Inventory inventory, ContainerLevelAccess access);
     }
 }

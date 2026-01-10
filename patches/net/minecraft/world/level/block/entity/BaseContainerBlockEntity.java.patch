@@ -1,5 +1,15 @@
 --- a/net/minecraft/world/level/block/entity/BaseContainerBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/BaseContainerBlockEntity.java
+@@ -28,7 +_,8 @@
+ 
+ public abstract class BaseContainerBlockEntity extends BlockEntity implements Container, MenuProvider, Nameable {
+     private LockCode lockKey = LockCode.NO_LOCK;
+-    private @Nullable Component name;
++    @Nullable
++    public Component name;
+ 
+     protected BaseContainerBlockEntity(BlockEntityType<?> p_155076_, BlockPos p_155077_, BlockState p_155078_) {
+         super(p_155076_, p_155077_, p_155078_);
 @@ -118,9 +_,17 @@
  
      @Override

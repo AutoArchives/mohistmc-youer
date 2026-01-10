@@ -17,7 +17,12 @@
      private final EntityType<?> type;
      private boolean requiresPrecisePosition;
      private int id = ENTITY_COUNTER.incrementAndGet();
-@@ -233,8 +_,10 @@
+@@ -229,12 +_,14 @@
+     public double yOld;
+     public double zOld;
+     public boolean noPhysics;
+-    protected final RandomSource random = RandomSource.create();
++    public final RandomSource random = RandomSource.create();
      public int tickCount;
      private int remainingFireTicks;
      protected boolean wasTouchingWater;

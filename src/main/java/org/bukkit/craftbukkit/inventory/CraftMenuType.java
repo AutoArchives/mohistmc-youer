@@ -4,7 +4,6 @@ import com.google.common.base.Suppliers;
 import java.util.function.Supplier;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.world.inventory.Containers;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.craftbukkit.CraftRegistry;
@@ -15,11 +14,11 @@ import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.MenuType;
 import org.bukkit.inventory.view.builder.InventoryViewBuilder;
 
-public class CraftMenuType<V extends InventoryView, B extends InventoryViewBuilder<V>> extends CraftRegistryItem<Containers<?>> implements MenuType.Typed<V, B> {
+public class CraftMenuType<V extends InventoryView, B extends InventoryViewBuilder<V>> extends CraftRegistryItem<net.minecraft.world.inventory.MenuType<?>> implements MenuType.Typed<V, B> {
 
     private final Supplier<CraftMenus.MenuTypeData<V, B>> typeData;
 
-    public CraftMenuType(NamespacedKey key, Holder<Containers<?>> handle) {
+    public CraftMenuType(NamespacedKey key, Holder<net.minecraft.world.inventory.MenuType<?>> handle) {
         super(key, handle);
         this.typeData = Suppliers.memoize(() -> CraftMenus.getMenuTypeData(this));
     }
@@ -58,15 +57,15 @@ public class CraftMenuType<V extends InventoryView, B extends InventoryViewBuild
         return getKeyOrThrow();
     }
 
-    public static Containers<?> bukkitToMinecraft(MenuType bukkit) {
+    public static net.minecraft.world.inventory.MenuType<?> bukkitToMinecraft(MenuType bukkit) {
         return CraftRegistry.bukkitToMinecraft(bukkit);
     }
 
-    public static MenuType minecraftToBukkit(Containers<?> minecraft) {
+    public static MenuType minecraftToBukkit(net.minecraft.world.inventory.MenuType<?> minecraft) {
         return CraftRegistry.minecraftToBukkit(minecraft, Registries.MENU, Registry.MENU);
     }
 
-    public static MenuType minecraftHolderToBukkit(Holder<Containers<?>> minecraft) {
+    public static MenuType minecraftHolderToBukkit(Holder<net.minecraft.world.inventory.MenuType<?>> minecraft) {
         return minecraftToBukkit(minecraft.value());
     }
 }

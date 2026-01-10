@@ -1,35 +1,35 @@
 package org.bukkit.craftbukkit.inventory.view.builder;
 
-import net.minecraft.server.level.EntityPlayer;
-import net.minecraft.world.ITileInventory;
-import net.minecraft.world.inventory.Container;
-import net.minecraft.world.inventory.Containers;
-import net.minecraft.world.level.block.BlockChest;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.DoubleBlockFinder;
-import net.minecraft.world.level.block.entity.TileEntityChest;
+import net.minecraft.world.level.block.DoubleBlockCombiner;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.view.builder.LocationInventoryViewBuilder;
 
 public class CraftDoubleChestInventoryViewBuilder<V extends InventoryView> extends CraftAbstractLocationInventoryViewBuilder<V> {
 
-    public CraftDoubleChestInventoryViewBuilder(final Containers<?> handle) {
+    public CraftDoubleChestInventoryViewBuilder(final MenuType<?> handle) {
         super(handle);
     }
 
     @Override
-    protected Container buildContainer(final EntityPlayer player) {
+    protected AbstractContainerMenu buildContainer(final ServerPlayer player) {
         if (super.world == null) {
             return handle.create(player.nextContainerCounter(), player.getInventory());
         }
 
-        BlockChest chest = (BlockChest) Blocks.CHEST;
-        final DoubleBlockFinder.Result<? extends TileEntityChest> result = chest.combine(super.world.getBlockState(super.position), super.world, super.position, false);
-        if (result instanceof DoubleBlockFinder.Result.Single<? extends TileEntityChest>) {
+        ChestBlock chest = (ChestBlock) Blocks.CHEST;
+        final DoubleBlockCombiner.NeighborCombineResult<? extends ChestBlockEntity> result = chest.combine(super.world.getBlockState(super.position), super.world, super.position, false);
+        if (result instanceof DoubleBlockCombiner.NeighborCombineResult.Single<? extends ChestBlockEntity>) {
             return handle.create(player.nextContainerCounter(), player.getInventory());
         }
 
-        final ITileInventory combined = result.apply(BlockChest.MENU_PROVIDER_COMBINER).orElse(null);
+        final MenuProvider combined = result.apply(ChestBlock.MENU_PROVIDER_COMBINER).orElse(null);
         if (combined == null) {
             return handle.create(player.nextContainerCounter(), player.getInventory());
         }

@@ -1,9 +1,9 @@
 package org.bukkit.craftbukkit.inventory.view.builder;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.core.BlockPosition;
-import net.minecraft.world.inventory.Containers;
-import net.minecraft.world.level.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.level.Level;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.util.CraftLocation;
@@ -13,10 +13,10 @@ import org.jetbrains.annotations.NotNull;
 
 public abstract class CraftAbstractLocationInventoryViewBuilder<V extends InventoryView> extends CraftAbstractInventoryViewBuilder<V> implements LocationInventoryViewBuilder<V> {
 
-    protected World world;
-    protected BlockPosition position;
+    protected Level world;
+    protected BlockPos position;
 
-    public CraftAbstractLocationInventoryViewBuilder(final Containers<?> handle) {
+    public CraftAbstractLocationInventoryViewBuilder(final MenuType<?> handle) {
         super(handle);
     }
 

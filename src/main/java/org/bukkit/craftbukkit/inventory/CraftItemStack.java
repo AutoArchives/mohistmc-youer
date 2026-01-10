@@ -5,9 +5,9 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
-import net.minecraft.advancements.criterion.CriterionConditionItem;
-import net.minecraft.advancements.criterion.CriterionConditionValue;
 import net.minecraft.advancements.criterion.DataComponentMatchers;
+import net.minecraft.advancements.criterion.ItemPredicate;
+import net.minecraft.advancements.criterion.MinMaxBounds;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.component.DataComponentExactPredicate;
@@ -16,7 +16,7 @@ import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.component.PatchedDataComponentMap;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.enchantment.EnchantmentManager;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.DelegateDeserialization;
@@ -94,11 +94,11 @@ public final class CraftItemStack extends ItemStack {
         return new CraftItemStack(CraftItemType.minecraftToBukkit(item), amount, (short) 0, null);
     }
 
-    public static CriterionConditionItem asCriterionConditionItem(ItemStack original) {
+    public static ItemPredicate asCriterionConditionItem(ItemStack original) {
         net.minecraft.world.item.ItemStack nms = CraftItemStack.asNMSCopy(original);
         DataComponentExactPredicate predicate = DataComponentExactPredicate.allOf(PatchedDataComponentMap.fromPatch(DataComponentMap.EMPTY, nms.getComponentsPatch()));
 
-        return new CriterionConditionItem(Optional.of(HolderSet.direct(nms.getItemHolder())), CriterionConditionValue.IntegerRange.ANY, new DataComponentMatchers(predicate, Collections.emptyMap()));
+        return new ItemPredicate(Optional.of(HolderSet.direct(nms.getItemHolder())), MinMaxBounds.Ints.ANY, new DataComponentMatchers(predicate, Collections.emptyMap()));
     }
 
     net.minecraft.world.item.ItemStack handle;
@@ -223,7 +223,7 @@ public final class CraftItemStack extends ItemStack {
         if (list == null) {
             list = ItemEnchantments.EMPTY;
         }
-        ItemEnchantments.a listCopy = new ItemEnchantments.a(list);
+        ItemEnchantments.Mutable listCopy = new ItemEnchantments.Mutable(list);
         listCopy.set(CraftEnchantment.bukkitToMinecraftHolder(ench), level);
         handle.set(DataComponents.ENCHANTMENTS, listCopy.toImmutable());
     }
@@ -247,7 +247,7 @@ public final class CraftItemStack extends ItemStack {
         if (handle == null) {
             return 0;
         }
-        return EnchantmentManager.getItemEnchantmentLevel(CraftEnchantment.bukkitToMinecraftHolder(ench), handle);
+        return EnchantmentHelper.getItemEnchantmentLevel(CraftEnchantment.bukkitToMinecraftHolder(ench), handle);
     }
 
     @Override
@@ -269,7 +269,7 @@ public final class CraftItemStack extends ItemStack {
             return level;
         }
 
-        ItemEnchantments.a listCopy = new ItemEnchantments.a(list);
+        ItemEnchantments.Mutable listCopy = new ItemEnchantments.Mutable(list);
         listCopy.set(CraftEnchantment.bukkitToMinecraftHolder(ench), -1); // Negative to remove
         handle.set(DataComponents.ENCHANTMENTS, listCopy.toImmutable());
 

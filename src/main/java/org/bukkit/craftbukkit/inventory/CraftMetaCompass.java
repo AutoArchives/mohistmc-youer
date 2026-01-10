@@ -4,15 +4,15 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap.Builder;
 import java.util.Map;
 import java.util.Optional;
-import net.minecraft.core.BlockPosition;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.MinecraftKey;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.WorldServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.component.LodestoneTracker;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -31,7 +31,7 @@ public class CraftMetaCompass extends CraftMetaItem implements CompassMeta {
     static final ItemMetaKey LODESTONE_POS_Z = new ItemMetaKey("LodestonePosZ");
     static final ItemMetaKey LODESTONE_TRACKED = new ItemMetaKey("LodestoneTracked");
 
-    private ResourceKey<net.minecraft.world.level.World> lodestoneWorld;
+    private ResourceKey<net.minecraft.world.level.Level> lodestoneWorld;
     private int lodestoneX;
     private int lodestoneY;
     private int lodestoneZ;
@@ -55,7 +55,7 @@ public class CraftMetaCompass extends CraftMetaItem implements CompassMeta {
         getOrEmpty(tag, LODESTONE_TARGET).ifPresent((lodestoneTarget) -> {
             lodestoneTarget.target().ifPresent((target) -> {
                 lodestoneWorld = target.dimension();
-                BlockPosition pos = target.pos();
+                BlockPos pos = target.pos();
                 lodestoneX = pos.getX();
                 lodestoneY = pos.getY();
                 lodestoneZ = pos.getZ();
@@ -68,7 +68,7 @@ public class CraftMetaCompass extends CraftMetaItem implements CompassMeta {
         super(map);
         String lodestoneWorldString = SerializableMeta.getString(map, LODESTONE_POS_WORLD.BUKKIT, true);
         if (lodestoneWorldString != null) {
-            lodestoneWorld = ResourceKey.create(Registries.DIMENSION, MinecraftKey.tryParse(lodestoneWorldString));
+            lodestoneWorld = ResourceKey.create(Registries.DIMENSION, Identifier.tryParse(lodestoneWorldString));
             lodestoneX = (Integer) map.get(LODESTONE_POS_X.BUKKIT);
             lodestoneY = (Integer) map.get(LODESTONE_POS_Y.BUKKIT);
             lodestoneZ = (Integer) map.get(LODESTONE_POS_Z.BUKKIT);
@@ -88,7 +88,7 @@ public class CraftMetaCompass extends CraftMetaItem implements CompassMeta {
 
         Optional<GlobalPos> target = Optional.empty();
         if (lodestoneWorld != null) {
-            target = Optional.of(new GlobalPos(lodestoneWorld, new BlockPosition(lodestoneX, lodestoneY, lodestoneZ)));
+            target = Optional.of(new GlobalPos(lodestoneWorld, new BlockPos(lodestoneX, lodestoneY, lodestoneZ)));
         }
 
         if (target.isPresent() || hasLodestoneTracked()) {
@@ -121,7 +121,7 @@ public class CraftMetaCompass extends CraftMetaItem implements CompassMeta {
         if (lodestoneWorld == null) {
             return null;
         }
-        WorldServer worldServer = MinecraftServer.getServer().getLevel(lodestoneWorld);
+        ServerLevel worldServer = MinecraftServer.getServer().getLevel(lodestoneWorld);
         World world = worldServer != null ? worldServer.getWorld() : null;
         return new Location(world, lodestoneX, lodestoneY, lodestoneZ); // world may be null here, if the referenced world is not loaded
     }

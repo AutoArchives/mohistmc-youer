@@ -10,10 +10,10 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemBlock;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
-import net.minecraft.world.level.block.BlockComposter;
+import net.minecraft.world.level.block.ComposterBlock;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
@@ -117,13 +117,13 @@ public class CraftItemType<M extends ItemMeta> extends CraftRegistryItem<Item> i
 
     @Override
     public boolean hasBlockType() {
-        return getHandle() instanceof ItemBlock;
+        return getHandle() instanceof BlockItem;
     }
 
     @NotNull
     @Override
     public BlockType getBlockType() {
-        if (!(getHandle() instanceof ItemBlock block)) {
+        if (!(getHandle() instanceof BlockItem block)) {
             throw new IllegalStateException("The item type " + (isRegistered() ? getKeyOrThrow() : toString()) + " has no corresponding block type");
         }
 
@@ -170,13 +170,13 @@ public class CraftItemType<M extends ItemMeta> extends CraftRegistryItem<Item> i
 
     @Override
     public boolean isCompostable() {
-        return BlockComposter.COMPOSTABLES.containsKey(getHandle());
+        return ComposterBlock.COMPOSTABLES.containsKey(getHandle());
     }
 
     @Override
     public float getCompostChance() {
         Preconditions.checkArgument(isCompostable(), "The item type " + (isRegistered() ? getKeyOrThrow() : toString()) + " is not compostable");
-        return BlockComposter.COMPOSTABLES.getFloat(getHandle());
+        return ComposterBlock.COMPOSTABLES.getFloat(getHandle());
     }
 
     @Override

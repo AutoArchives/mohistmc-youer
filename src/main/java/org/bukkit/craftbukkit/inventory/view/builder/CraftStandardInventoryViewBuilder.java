@@ -1,19 +1,19 @@
 package org.bukkit.craftbukkit.inventory.view.builder;
 
-import net.minecraft.server.level.EntityPlayer;
-import net.minecraft.world.inventory.Container;
-import net.minecraft.world.inventory.Containers;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.view.builder.InventoryViewBuilder;
 
 public class CraftStandardInventoryViewBuilder<V extends InventoryView> extends CraftAbstractInventoryViewBuilder<V> {
 
-    public CraftStandardInventoryViewBuilder(final Containers<?> handle) {
+    public CraftStandardInventoryViewBuilder(final MenuType<?> handle) {
         super(handle);
     }
 
     @Override
-    protected Container buildContainer(final EntityPlayer player) {
+    protected AbstractContainerMenu buildContainer(final ServerPlayer player) {
         return super.handle.create(player.nextContainerCounter(), player.getInventory());
     }
 

@@ -9,7 +9,7 @@ import java.util.Locale;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.MinecraftKey;
+import net.minecraft.resources.Identifier;
 import org.bukkit.NamespacedKey;
 import org.bukkit.craftbukkit.legacy.FieldRename;
 import org.bukkit.craftbukkit.util.ApiVersion;
@@ -58,7 +58,7 @@ public class CraftItemFlag {
         ItemFlag inverse = BUKKIT_TO_NMS.inverse().get(nms);
 
         if (inverse == null) {
-            MinecraftKey key = BuiltInRegistries.DATA_COMPONENT_TYPE.getKey(nms);
+            Identifier key = BuiltInRegistries.DATA_COMPONENT_TYPE.getKey(nms);
             if (key == null) {
                 throw new IllegalArgumentException("Unregistered component " + nms);
             }
