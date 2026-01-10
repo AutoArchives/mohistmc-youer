@@ -1,5 +1,23 @@
 --- a/net/minecraft/server/level/ChunkMap.java
 +++ b/net/minecraft/server/level/ChunkMap.java
+@@ -126,7 +_,7 @@
+     public static final int MAX_VIEW_DISTANCE = 32;
+     public static final int FORCED_TICKET_LEVEL = ChunkLevel.byStatus(FullChunkStatus.ENTITY_TICKING);
+     private final Long2ObjectLinkedOpenHashMap<ChunkHolder> updatingChunkMap = new Long2ObjectLinkedOpenHashMap<>();
+-    private volatile Long2ObjectLinkedOpenHashMap<ChunkHolder> visibleChunkMap = this.updatingChunkMap.clone();
++    public volatile Long2ObjectLinkedOpenHashMap<ChunkHolder> visibleChunkMap = this.updatingChunkMap.clone();
+     private final Long2ObjectLinkedOpenHashMap<ChunkHolder> pendingUnloads = new Long2ObjectLinkedOpenHashMap<>();
+     private final List<ChunkGenerationTask> pendingGenerationTasks = new ArrayList<>();
+     final ServerLevel level;
+@@ -150,7 +_,7 @@
+     private final LongSet chunksToEagerlySave = new LongLinkedOpenHashSet();
+     private final Queue<Runnable> unloadQueue = Queues.newConcurrentLinkedQueue();
+     private final AtomicInteger activeChunkWrites = new AtomicInteger();
+-    private int serverViewDistance;
++    public int serverViewDistance;
+     private final WorldGenContext worldGenContext;
+ 
+     public ChunkMap(
 @@ -402,6 +_,7 @@
                  this.modified = true;
              }

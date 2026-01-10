@@ -5,10 +5,10 @@ import com.mojang.serialization.Codec;
 import java.util.Map;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.DynamicOpsNBT;
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.TypedEntityData;
 import org.bukkit.DyeColor;
@@ -21,13 +21,13 @@ import org.bukkit.inventory.meta.TropicalFishBucketMeta;
 class CraftMetaTropicalFishBucket extends CraftMetaItem implements TropicalFishBucketMeta {
 
     static final ItemMetaKey VARIANT = new ItemMetaKey("BucketVariantTag", "fish-variant");
-    static final ItemMetaKeyType<TypedEntityData<EntityTypes<?>>> ENTITY_TAG = new ItemMetaKeyType<>(DataComponents.ENTITY_DATA, "entity-tag");
+    static final ItemMetaKeyType<TypedEntityData<EntityType<?>>> ENTITY_TAG = new ItemMetaKeyType<>(DataComponents.ENTITY_DATA, "entity-tag");
     static final ItemMetaKeyType<CustomData> BUCKET_ENTITY_TAG = new ItemMetaKeyType<>(DataComponents.BUCKET_ENTITY_DATA, "bucket-entity-tag");
-    static final Codec<TypedEntityData<EntityTypes<?>>> ENTITY_TAG_CODEC = TypedEntityData.codec(EntityTypes.CODEC);
+    static final Codec<TypedEntityData<EntityType<?>>> ENTITY_TAG_CODEC = TypedEntityData.codec(EntityType.CODEC);
 
     private Integer variant;
-    private TypedEntityData<EntityTypes<?>> entityTag;
-    private NBTTagCompound bucketEntityTag;
+    private TypedEntityData<EntityType<?>> entityTag;
+    private CompoundTag bucketEntityTag;
 
     CraftMetaTropicalFishBucket(CraftMetaItem meta) {
         super(meta);
@@ -71,19 +71,19 @@ class CraftMetaTropicalFishBucket extends CraftMetaItem implements TropicalFishB
     }
 
     @Override
-    void deserializeInternal(NBTTagCompound tag, Object context) {
+    void deserializeInternal(CompoundTag tag, Object context) {
         super.deserializeInternal(tag, context);
 
-        ENTITY_TAG_CODEC.decode(DynamicOpsNBT.INSTANCE, tag).ifSuccess((result) -> {
+        ENTITY_TAG_CODEC.decode(NbtOps.INSTANCE, tag).ifSuccess((result) -> {
             entityTag = result.getFirst();
         });
         bucketEntityTag = tag.getCompound(BUCKET_ENTITY_TAG.NBT).orElse(bucketEntityTag);
     }
 
     @Override
-    void serializeInternal(Map<String, NBTBase> internalTags) {
+    void serializeInternal(Map<String, Tag> internalTags) {
         if (entityTag != null) {
-            internalTags.put(ENTITY_TAG.NBT, ENTITY_TAG_CODEC.encodeStart(DynamicOpsNBT.INSTANCE, entityTag).getOrThrow());
+            internalTags.put(ENTITY_TAG.NBT, ENTITY_TAG_CODEC.encodeStart(NbtOps.INSTANCE, entityTag).getOrThrow());
         }
         if (bucketEntityTag != null && !bucketEntityTag.isEmpty()) {
             internalTags.put(BUCKET_ENTITY_TAG.NBT, bucketEntityTag);
@@ -98,10 +98,10 @@ class CraftMetaTropicalFishBucket extends CraftMetaItem implements TropicalFishB
             tag.put(ENTITY_TAG, entityTag);
         }
 
-        NBTTagCompound bucketEntityTag = (this.bucketEntityTag != null) ? this.bucketEntityTag.copy() : null;
+        CompoundTag bucketEntityTag = (this.bucketEntityTag != null) ? this.bucketEntityTag.copy() : null;
         if (hasVariant()) {
             if (bucketEntityTag == null) {
-                bucketEntityTag = new NBTTagCompound();
+                bucketEntityTag = new CompoundTag();
             }
             bucketEntityTag.putInt(VARIANT.NBT, variant);
         }

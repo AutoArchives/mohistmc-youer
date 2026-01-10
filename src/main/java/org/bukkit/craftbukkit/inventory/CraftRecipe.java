@@ -7,6 +7,7 @@ import java.util.Optional;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.crafting.IRecipe;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeItemStack;
 import net.minecraft.world.item.crafting.TransmuteResult;
 import org.bukkit.NamespacedKey;
@@ -21,19 +22,19 @@ public interface CraftRecipe extends Recipe {
 
     void addToCraftingManager();
 
-    default Optional<RecipeItemStack> toNMSOptional(RecipeChoice bukkit, boolean requireNotEmpty) {
+    default Optional<Ingredient> toNMSOptional(RecipeChoice bukkit, boolean requireNotEmpty) {
         return (bukkit == null) ? Optional.empty() : Optional.of(toNMS(bukkit, requireNotEmpty));
     }
 
-    default RecipeItemStack toNMS(RecipeChoice bukkit, boolean requireNotEmpty) {
-        RecipeItemStack stack;
+    default Ingredient toNMS(RecipeChoice bukkit, boolean requireNotEmpty) {
+        Ingredient stack;
 
         if (bukkit == null) {
-            stack = RecipeItemStack.of();
+            stack = Ingredient.of();
         } else if (bukkit instanceof RecipeChoice.MaterialChoice) {
-            stack = RecipeItemStack.of(((RecipeChoice.MaterialChoice) bukkit).getChoices().stream().map((mat) -> CraftItemType.bukkitToMinecraft(mat)));
+            stack = Ingredient.of(((RecipeChoice.MaterialChoice) bukkit).getChoices().stream().map((mat) -> CraftItemType.bukkitToMinecraft(mat)));
         } else if (bukkit instanceof RecipeChoice.ExactChoice) {
-            stack = RecipeItemStack.ofStacks(((RecipeChoice.ExactChoice) bukkit).getChoices().stream().map((mat) -> CraftItemStack.asNMSCopy(mat)).toList());
+            stack = Ingredient.ofStacks(((RecipeChoice.ExactChoice) bukkit).getChoices().stream().map((mat) -> CraftItemStack.asNMSCopy(mat)).toList());
         } else {
             throw new IllegalArgumentException("Unknown recipe stack instance " + bukkit);
         }
@@ -51,11 +52,11 @@ public interface CraftRecipe extends Recipe {
         return new TransmuteResult(nms.getItemHolder(), nms.getCount(), nms.getComponentsPatch());
     }
 
-    public static RecipeChoice toBukkit(Optional<RecipeItemStack> list) {
+    public static RecipeChoice toBukkit(Optional<Ingredient> list) {
         return list.map(CraftRecipe::toBukkit).orElse(null);
     }
 
-    public static RecipeChoice toBukkit(RecipeItemStack list) {
+    public static RecipeChoice toBukkit(Ingredient list) {
         if (list.isEmpty()) {
             return null;
         }
@@ -96,7 +97,7 @@ public interface CraftRecipe extends Recipe {
         return CookingBookCategory.valueOf(nms.name());
     }
 
-    public static ResourceKey<IRecipe<?>> toMinecraft(NamespacedKey key) {
+    public static ResourceKey<net.minecraft.world.item.crafting.Recipe<?>> toMinecraft(NamespacedKey key) {
         return ResourceKey.create(Registries.RECIPE, CraftNamespacedKey.toMinecraft(key));
     }
 }

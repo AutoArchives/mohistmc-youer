@@ -1,0 +1,11 @@
+--- a/net/minecraft/server/level/DistanceManager.java
++++ b/net/minecraft/server/level/DistanceManager.java
+@@ -44,7 +_,7 @@
+     final ThrottlingChunkTaskDispatcher ticketDispatcher;
+     final LongSet ticketsToRelease = new LongOpenHashSet();
+     final Executor mainThreadExecutor;
+-    private int simulationDistance = 10;
++    public int simulationDistance = 10;
+ 
+     protected DistanceManager(TicketStorage p_394060_, Executor p_140774_, Executor p_140775_) {
+         this.ticketStorage = p_394060_;

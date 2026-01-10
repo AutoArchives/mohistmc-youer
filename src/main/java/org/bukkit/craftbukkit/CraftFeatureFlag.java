@@ -2,7 +2,7 @@ package org.bukkit.craftbukkit;
 
 import java.util.HashSet;
 import java.util.Set;
-import net.minecraft.resources.MinecraftKey;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
 import org.bukkit.FeatureFlag;
@@ -15,7 +15,7 @@ public class CraftFeatureFlag implements FeatureFlag {
     private final NamespacedKey namespacedKey;
     private final net.minecraft.world.flag.FeatureFlag featureFlag;
 
-    public CraftFeatureFlag(MinecraftKey minecraftKey, net.minecraft.world.flag.FeatureFlag featureFlag) {
+    public CraftFeatureFlag(Identifier minecraftKey, net.minecraft.world.flag.FeatureFlag featureFlag) {
         this.namespacedKey = CraftNamespacedKey.fromMinecraft(minecraftKey);
         this.featureFlag = featureFlag;
     }
@@ -37,7 +37,7 @@ public class CraftFeatureFlag implements FeatureFlag {
 
     public static Set<CraftFeatureFlag> getFromNMS(FeatureFlagSet featureFlagSet) {
         Set<CraftFeatureFlag> set = new HashSet<>();
-        FeatureFlags.REGISTRY.names.forEach((minecraftkey, featureflag) -> {
+        FeatureFlags.REGISTRY.getAllFlags().forEach((minecraftkey, featureflag) -> {
             if (featureFlagSet.contains(featureflag)) {
                 set.add(new CraftFeatureFlag(minecraftkey, featureflag));
             }
@@ -46,6 +46,6 @@ public class CraftFeatureFlag implements FeatureFlag {
     }
 
     public static CraftFeatureFlag getFromNMS(NamespacedKey namespacedKey) {
-        return FeatureFlags.REGISTRY.names.entrySet().stream().filter(entry -> CraftNamespacedKey.fromMinecraft(entry.getKey()).equals(namespacedKey)).findFirst().map(entry -> new CraftFeatureFlag(entry.getKey(), entry.getValue())).orElse(null);
+        return FeatureFlags.REGISTRY.getAllFlags().entrySet().stream().filter(entry -> CraftNamespacedKey.fromMinecraft(entry.getKey()).equals(namespacedKey)).findFirst().map(entry -> new CraftFeatureFlag(entry.getKey(), entry.getValue())).orElse(null);
     }
 }

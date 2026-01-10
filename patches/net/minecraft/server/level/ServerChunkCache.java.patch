@@ -1,5 +1,14 @@
 --- a/net/minecraft/server/level/ServerChunkCache.java
 +++ b/net/minecraft/server/level/ServerChunkCache.java
+@@ -64,7 +_,7 @@
+     private final ServerChunkCache.MainThreadExecutor mainThreadProcessor;
+     public final ChunkMap chunkMap;
+     private final DimensionDataStorage dataStorage;
+-    private final TicketStorage ticketStorage;
++    public final TicketStorage ticketStorage;
+     private long lastInhabitedUpdate;
+     private boolean spawnEnemies = true;
+     private static final int CACHE_SIZE = 4;
 @@ -100,7 +_,7 @@
              LOGGER.error("Failed to create dimension data storage directory", (Throwable)ioexception);
          }
