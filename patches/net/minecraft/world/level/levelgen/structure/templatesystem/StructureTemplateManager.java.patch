@@ -1,0 +1,38 @@
+--- a/net/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplateManager.java
++++ b/net/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplateManager.java
+@@ -56,7 +_,7 @@
+     private static final String STRUCTURE_GENERATED_DIRECTORY_NAME = "structures";
+     private static final String STRUCTURE_FILE_EXTENSION = ".nbt";
+     private static final String STRUCTURE_TEXT_FILE_EXTENSION = ".snbt";
+-    private final Map<Identifier, Optional<StructureTemplate>> structureRepository = Maps.newConcurrentMap();
++    public final Map<Identifier, Optional<StructureTemplate>> structureRepository = Maps.newConcurrentMap();
+     private final DataFixer fixerUpper;
+     private ResourceManager resourceManager;
+     private final Path generatedDir;
+@@ -119,7 +_,7 @@
+         this.structureRepository.clear();
+     }
+ 
+-    private Optional<StructureTemplate> loadFromResource(Identifier p_469526_) {
++    public Optional<StructureTemplate> loadFromResource(Identifier p_469526_) {
+         Identifier identifier = RESOURCE_LISTER.idToFile(p_469526_);
+         return this.load(() -> this.resourceManager.open(identifier), p_230366_ -> LOGGER.error("Couldn't load structure {}", p_469526_, p_230366_));
+     }
+@@ -142,7 +_,7 @@
+         }
+     }
+ 
+-    private Optional<StructureTemplate> loadFromGenerated(Identifier p_467253_) {
++    public Optional<StructureTemplate> loadFromGenerated(Identifier p_467253_) {
+         if (!Files.isDirectory(this.generatedDir)) {
+             return Optional.empty();
+         } else {
+@@ -238,7 +_,7 @@
+         }
+     }
+ 
+-    private StructureTemplate readStructure(InputStream p_230378_) throws IOException {
++    public StructureTemplate readStructure(InputStream p_230378_) throws IOException {
+         CompoundTag compoundtag = NbtIo.readCompressed(p_230378_, NbtAccounter.unlimitedHeap());
+         return this.readStructure(compoundtag);
+     }

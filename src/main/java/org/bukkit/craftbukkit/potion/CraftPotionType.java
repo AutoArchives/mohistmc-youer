@@ -6,9 +6,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Supplier;
 import net.minecraft.core.Holder;
-import net.minecraft.core.IRegistry;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.world.item.alchemy.PotionRegistry;
+import net.minecraft.world.item.alchemy.Potion;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.craftbukkit.CraftRegistry;
@@ -21,14 +20,14 @@ import org.bukkit.potion.PotionType;
 
 public class CraftPotionType implements PotionType.InternalPotionData {
 
-    public static PotionType minecraftHolderToBukkit(Holder<PotionRegistry> minecraft) {
+    public static PotionType minecraftHolderToBukkit(Holder<Potion> minecraft) {
         return minecraftToBukkit(minecraft.value());
     }
 
-    public static PotionType minecraftToBukkit(PotionRegistry minecraft) {
+    public static PotionType minecraftToBukkit(Potion minecraft) {
         Preconditions.checkArgument(minecraft != null);
 
-        IRegistry<PotionRegistry> registry = CraftRegistry.getMinecraftRegistry(Registries.POTION);
+        net.minecraft.core.Registry<Potion> registry = CraftRegistry.getMinecraftRegistry(Registries.POTION);
         PotionType bukkit = Registry.POTION.get(CraftNamespacedKey.fromMinecraft(registry.getResourceKey(minecraft).orElseThrow().identifier()));
 
         Preconditions.checkArgument(bukkit != null);
@@ -36,19 +35,19 @@ public class CraftPotionType implements PotionType.InternalPotionData {
         return bukkit;
     }
 
-    public static PotionRegistry bukkitToMinecraft(PotionType bukkit) {
+    public static Potion bukkitToMinecraft(PotionType bukkit) {
         Preconditions.checkArgument(bukkit != null);
 
         return CraftRegistry.getMinecraftRegistry(Registries.POTION)
                 .getOptional(CraftNamespacedKey.toMinecraft(bukkit.getKey())).orElseThrow();
     }
 
-    public static Holder<PotionRegistry> bukkitToMinecraftHolder(PotionType bukkit) {
+    public static Holder<Potion> bukkitToMinecraftHolder(PotionType bukkit) {
         Preconditions.checkArgument(bukkit != null);
 
-        IRegistry<PotionRegistry> registry = CraftRegistry.getMinecraftRegistry(Registries.POTION);
+        net.minecraft.core.Registry<Potion> registry = CraftRegistry.getMinecraftRegistry(Registries.POTION);
 
-        if (registry.wrapAsHolder(bukkitToMinecraft(bukkit)) instanceof Holder.c<PotionRegistry> holder) {
+        if (registry.wrapAsHolder(bukkitToMinecraft(bukkit)) instanceof Holder.Reference<Potion> holder) {
             return holder;
         }
 
@@ -76,13 +75,13 @@ public class CraftPotionType implements PotionType.InternalPotionData {
     }
 
     private final NamespacedKey key;
-    private final PotionRegistry potion;
+    private final Potion potion;
     private final Supplier<List<PotionEffect>> potionEffects;
     private final Supplier<Boolean> upgradeable;
     private final Supplier<Boolean> extendable;
     private final Supplier<Integer> maxLevel;
 
-    public CraftPotionType(NamespacedKey key, PotionRegistry potion) {
+    public CraftPotionType(NamespacedKey key, Potion potion) {
         this.key = key;
         this.potion = potion;
         this.potionEffects = Suppliers.memoize(() -> potion.getEffects().stream().map(CraftPotionUtil::toBukkit).toList());

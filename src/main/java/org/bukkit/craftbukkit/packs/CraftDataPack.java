@@ -3,10 +3,10 @@ package org.bukkit.craftbukkit.packs;
 import java.io.IOException;
 import java.util.Set;
 import java.util.stream.Collectors;
-import net.minecraft.server.packs.IResourcePack;
-import net.minecraft.server.packs.metadata.pack.ResourcePackInfo;
+import net.minecraft.server.packs.PackResources;
+import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
+import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackSource;
-import net.minecraft.server.packs.repository.ResourcePackLoader;
 import org.bukkit.Bukkit;
 import org.bukkit.FeatureFlag;
 import org.bukkit.NamespacedKey;
@@ -18,16 +18,16 @@ import org.bukkit.packs.DataPackFormat;
 
 public class CraftDataPack implements DataPack {
 
-    private final ResourcePackLoader handle;
-    private final ResourcePackInfo resourcePackInfo;
+    private final Pack handle;
+    private final PackMetadataSection resourcePackInfo;
 
-    public CraftDataPack(ResourcePackLoader handler) {
+    public CraftDataPack(Pack handler) {
         this.handle = handler;
-        try (IResourcePack iresourcepack = this.handle.resources.openPrimary(this.handle.location())) {
-            ResourcePackInfo resourcepackinfo = iresourcepack.getMetadataSection(ResourcePackInfo.SERVER_TYPE);
+        try (PackResources iresourcepack = this.handle.resources.openPrimary(this.handle.location())) {
+            PackMetadataSection resourcepackinfo = iresourcepack.getMetadataSection(PackMetadataSection.SERVER_TYPE);
 
             if (resourcepackinfo == null) {
-                resourcepackinfo = iresourcepack.getMetadataSection(ResourcePackInfo.FALLBACK_TYPE);
+                resourcepackinfo = iresourcepack.getMetadataSection(PackMetadataSection.FALLBACK_TYPE);
             }
 
             this.resourcePackInfo = resourcepackinfo;
@@ -36,7 +36,7 @@ public class CraftDataPack implements DataPack {
         }
     }
 
-    public ResourcePackLoader getHandle() {
+    public Pack getHandle() {
         return this.handle;
     }
 

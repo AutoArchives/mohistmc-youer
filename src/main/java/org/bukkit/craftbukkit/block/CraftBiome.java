@@ -1,9 +1,7 @@
 package org.bukkit.craftbukkit.block;
 
 import net.minecraft.core.Holder;
-import net.minecraft.core.IRegistry;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.world.level.biome.BiomeBase;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.block.Biome;
@@ -11,19 +9,19 @@ import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.registry.CraftOldEnumRegistryItem;
 import org.jetbrains.annotations.NotNull;
 
-public class CraftBiome extends CraftOldEnumRegistryItem<Biome, BiomeBase> implements Biome {
+public class CraftBiome extends CraftOldEnumRegistryItem<Biome, net.minecraft.world.level.biome.Biome> implements Biome {
 
     private static int count = 0;
 
-    public static Biome minecraftToBukkit(BiomeBase minecraft) {
+    public static Biome minecraftToBukkit(net.minecraft.world.level.biome.Biome minecraft) {
         return CraftRegistry.minecraftToBukkit(minecraft, Registries.BIOME, Registry.BIOME);
     }
 
-    public static Biome minecraftHolderToBukkit(Holder<BiomeBase> minecraft) {
+    public static Biome minecraftHolderToBukkit(Holder<net.minecraft.world.level.biome.Biome> minecraft) {
         return minecraftToBukkit(minecraft.value());
     }
 
-    public static BiomeBase bukkitToMinecraft(Biome bukkit) {
+    public static net.minecraft.world.level.biome.Biome bukkitToMinecraft(Biome bukkit) {
         if (bukkit == Biome.CUSTOM) {
             return null;
         }
@@ -31,14 +29,14 @@ public class CraftBiome extends CraftOldEnumRegistryItem<Biome, BiomeBase> imple
         return CraftRegistry.bukkitToMinecraft(bukkit);
     }
 
-    public static Holder<BiomeBase> bukkitToMinecraftHolder(Biome bukkit) {
+    public static Holder<net.minecraft.world.level.biome.Biome> bukkitToMinecraftHolder(Biome bukkit) {
         if (bukkit == Biome.CUSTOM) {
             return null;
         }
 
-        IRegistry<BiomeBase> registry = CraftRegistry.getMinecraftRegistry(Registries.BIOME);
+        net.minecraft.core.Registry<net.minecraft.world.level.biome.Biome> registry = CraftRegistry.getMinecraftRegistry(Registries.BIOME);
 
-        if (registry.wrapAsHolder(bukkitToMinecraft(bukkit)) instanceof Holder.c<BiomeBase> holder) {
+        if (registry.wrapAsHolder(bukkitToMinecraft(bukkit)) instanceof Holder.Reference<net.minecraft.world.level.biome.Biome> holder) {
             return holder;
         }
 
@@ -46,7 +44,7 @@ public class CraftBiome extends CraftOldEnumRegistryItem<Biome, BiomeBase> imple
                 + ", this can happen if a plugin creates its own biome base with out properly registering it.");
     }
 
-    public CraftBiome(NamespacedKey key, Holder<BiomeBase> handle) {
+    public CraftBiome(NamespacedKey key, Holder<net.minecraft.world.level.biome.Biome> handle) {
         super(key, handle, count++);
     }
 

@@ -8,20 +8,20 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
-import net.minecraft.core.BlockPosition;
-import net.minecraft.core.IRegistryCustom;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityTypes;
-import net.minecraft.world.level.ChunkCoordIntPair;
-import net.minecraft.world.level.GeneratorAccessSeed;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.EnumBlockMirror;
-import net.minecraft.world.level.block.EnumBlockRotation;
-import net.minecraft.world.level.levelgen.structure.templatesystem.DefinedStructure;
-import net.minecraft.world.level.levelgen.structure.templatesystem.DefinedStructureInfo;
-import net.minecraft.world.level.levelgen.structure.templatesystem.DefinedStructureProcessorRotation;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.levelgen.structure.templatesystem.BlockRotProcessor;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.storage.TagValueInput;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -46,10 +46,10 @@ import org.bukkit.util.EntityTransformer;
 
 public class CraftStructure implements Structure {
 
-    private final DefinedStructure structure;
-    private final IRegistryCustom registry;
+    private final StructureTemplate structure;
+    private final RegistryAccess registry;
 
-    public CraftStructure(DefinedStructure structure, IRegistryCustom registry) {
+    public CraftStructure(StructureTemplate structure, RegistryAccess registry) {
         this.structure = structure;
         this.registry = registry;
     }
@@ -86,20 +86,20 @@ public class CraftStructure implements Structure {
         Preconditions.checkArgument(integrity >= 0F && integrity <= 1F, "Integrity value (%S) must be between 0 and 1 inclusive", integrity);
 
         RandomSource randomSource = new RandomSourceWrapper(random);
-        DefinedStructureInfo definedstructureinfo = new DefinedStructureInfo()
-                .setMirror(EnumBlockMirror.valueOf(mirror.name()))
-                .setRotation(EnumBlockRotation.valueOf(structureRotation.name()))
+        StructurePlaceSettings definedstructureinfo = new StructurePlaceSettings()
+                .setMirror(net.minecraft.world.level.block.Mirror.valueOf(mirror.name()))
+                .setRotation(Rotation.valueOf(structureRotation.name()))
                 .setIgnoreEntities(!includeEntities)
-                .addProcessor(new DefinedStructureProcessorRotation(integrity))
+                .addProcessor(new BlockRotProcessor(integrity))
                 .setRandom(randomSource);
         definedstructureinfo.palette = palette;
 
-        BlockPosition blockPosition = CraftBlockVector.toBlockPosition(location);
-        GeneratorAccessSeed handle = ((CraftRegionAccessor) regionAccessor).getHandle();
+        BlockPos blockPosition = CraftBlockVector.toBlockPosition(location);
+        WorldGenLevel handle = ((CraftRegionAccessor) regionAccessor).getHandle();
 
         TransformerGeneratorAccess access = new TransformerGeneratorAccess();
         access.setHandle(handle);
-        access.setStructureTransformer(new CraftStructureTransformer(handle, new ChunkCoordIntPair(blockPosition), blockTransformers, entityTransformers));
+        access.setStructureTransformer(new CraftStructureTransformer(handle, new ChunkPos(blockPosition), blockTransformers, entityTransformers));
 
         structure.placeInWorld(access, blockPosition, blockPosition, definedstructureinfo, randomSource, 2);
         access.getStructureTransformer().discard();
@@ -136,8 +136,8 @@ public class CraftStructure implements Structure {
     @Override
     public List<Entity> getEntities() {
         List<Entity> entities = new ArrayList<>();
-        for (DefinedStructure.EntityInfo entity : structure.entityInfoList) {
-            EntityTypes.create(TagValueInput.create(ProblemReporter.DISCARDING, registry, entity.nbt), ((CraftWorld) Bukkit.getServer().getWorlds().get(0)).getHandle(), EntitySpawnReason.STRUCTURE).ifPresent(dummyEntity -> {
+        for (StructureTemplate.StructureEntityInfo entity : structure.entityInfoList) {
+            EntityType.create(TagValueInput.create(ProblemReporter.DISCARDING, registry, entity.nbt), ((CraftWorld) Bukkit.getServer().getWorlds().get(0)).getHandle(), EntitySpawnReason.STRUCTURE).ifPresent(dummyEntity -> {
                 dummyEntity.setPos(entity.pos.x, entity.pos.y, entity.pos.z);
                 entities.add(dummyEntity.getBukkitEntity());
             });
@@ -165,7 +165,7 @@ public class CraftStructure implements Structure {
         return getHandle().persistentDataContainer;
     }
 
-    public DefinedStructure getHandle() {
+    public StructureTemplate getHandle() {
         return structure;
     }
 }

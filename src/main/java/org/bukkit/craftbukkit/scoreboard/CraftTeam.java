@@ -3,9 +3,8 @@ package org.bukkit.craftbukkit.scoreboard;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
-import net.minecraft.world.scores.ScoreboardTeam;
-import net.minecraft.world.scores.ScoreboardTeamBase;
-import net.minecraft.world.scores.ScoreboardTeamBase.EnumNameTagVisibility;
+import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.world.scores.Team.Visibility;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -14,9 +13,9 @@ import org.bukkit.scoreboard.NameTagVisibility;
 import org.bukkit.scoreboard.Team;
 
 final class CraftTeam extends CraftScoreboardComponent implements Team {
-    private final ScoreboardTeam team;
+    private final PlayerTeam team;
 
-    CraftTeam(CraftScoreboard scoreboard, ScoreboardTeam team) {
+    CraftTeam(CraftScoreboard scoreboard, PlayerTeam team) {
         super(scoreboard);
         this.team = team;
     }
@@ -235,35 +234,35 @@ final class CraftTeam extends CraftScoreboardComponent implements Team {
 
         switch (option) {
             case NAME_TAG_VISIBILITY:
-                team.setNameTagVisibility(EnumNameTagVisibility.values()[status.ordinal()]);
+                team.setNameTagVisibility(Visibility.values()[status.ordinal()]);
                 break;
             case DEATH_MESSAGE_VISIBILITY:
-                team.setDeathMessageVisibility(EnumNameTagVisibility.values()[status.ordinal()]);
+                team.setDeathMessageVisibility(Visibility.values()[status.ordinal()]);
                 break;
             case COLLISION_RULE:
-                team.setCollisionRule(ScoreboardTeamBase.EnumTeamPush.values()[status.ordinal()]);
+                team.setCollisionRule(net.minecraft.world.scores.Team.CollisionRule.values()[status.ordinal()]);
                 break;
             default:
                 throw new IllegalArgumentException("Unrecognised option " + option);
         }
     }
 
-    public static EnumNameTagVisibility bukkitToNotch(NameTagVisibility visibility) {
+    public static Visibility bukkitToNotch(NameTagVisibility visibility) {
         switch (visibility) {
             case ALWAYS:
-                return EnumNameTagVisibility.ALWAYS;
+                return Visibility.ALWAYS;
             case NEVER:
-                return EnumNameTagVisibility.NEVER;
+                return Visibility.NEVER;
             case HIDE_FOR_OTHER_TEAMS:
-                return EnumNameTagVisibility.HIDE_FOR_OTHER_TEAMS;
+                return Visibility.HIDE_FOR_OTHER_TEAMS;
             case HIDE_FOR_OWN_TEAM:
-                return EnumNameTagVisibility.HIDE_FOR_OWN_TEAM;
+                return Visibility.HIDE_FOR_OWN_TEAM;
             default:
                 throw new IllegalArgumentException("Unknown visibility level " + visibility);
         }
     }
 
-    public static NameTagVisibility notchToBukkit(EnumNameTagVisibility visibility) {
+    public static NameTagVisibility notchToBukkit(Visibility visibility) {
         switch (visibility) {
             case ALWAYS:
                 return NameTagVisibility.ALWAYS;

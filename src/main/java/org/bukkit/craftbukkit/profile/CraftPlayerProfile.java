@@ -20,9 +20,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.players.NameAndId;
-import net.minecraft.util.SystemUtils;
+import net.minecraft.util.Util;
 import net.minecraft.world.item.component.ResolvableProfile;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.craftbukkit.CraftServer;
@@ -90,7 +90,7 @@ public final class CraftPlayerProfile implements PlayerProfile {
 
     @Override
     public UUID getUniqueId() {
-        return (Objects.equals(uniqueId, SystemUtils.NIL_UUID)) ? null : uniqueId;
+        return (Objects.equals(uniqueId, Util.NIL_UUID)) ? null : uniqueId;
     }
 
     @Override
@@ -154,7 +154,7 @@ public final class CraftPlayerProfile implements PlayerProfile {
 
     @Override
     public CompletableFuture<PlayerProfile> update() {
-        return CompletableFuture.supplyAsync(this::getUpdatedProfile, SystemUtils.backgroundExecutor());
+        return CompletableFuture.supplyAsync(this::getUpdatedProfile, Util.backgroundExecutor());
     }
 
     private CraftPlayerProfile getUpdatedProfile() {
@@ -162,12 +162,12 @@ public final class CraftPlayerProfile implements PlayerProfile {
         GameProfile profile = this.buildGameProfile();
 
         // If missing, look up the uuid by name:
-        if (profile.id().equals(SystemUtils.NIL_UUID)) {
+        if (profile.id().equals(Util.NIL_UUID)) {
             profile = server.services().nameToIdCache().get(profile.name()).map((resolved) -> new GameProfile(resolved.id(), resolved.name())).orElse(profile);
         }
 
         // Look up properties such as the textures:
-        if (!profile.id().equals(SystemUtils.NIL_UUID)) {
+        if (!profile.id().equals(Util.NIL_UUID)) {
             ProfileResult newProfile = server.services().sessionService().fetchProfile(profile.id(), true);
             if (newProfile != null) {
                 profile = newProfile.profile();
@@ -198,7 +198,7 @@ public final class CraftPlayerProfile implements PlayerProfile {
     @Nonnull
     public GameProfile buildGameProfile() {
         rebuildDirtyProperties();
-        GameProfile profile = new GameProfile((uniqueId != null) ? uniqueId : SystemUtils.NIL_UUID, (name != null) ? name : "", new PropertyMap(properties));
+        GameProfile profile = new GameProfile((uniqueId != null) ? uniqueId : Util.NIL_UUID, (name != null) ? name : "", new PropertyMap(properties));
         return profile;
     }
 

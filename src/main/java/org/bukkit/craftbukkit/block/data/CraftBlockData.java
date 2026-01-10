@@ -8,21 +8,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import net.minecraft.commands.arguments.blocks.ArgumentBlock;
-import net.minecraft.core.BlockPosition;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.util.INamable;
-import net.minecraft.world.level.BlockAccessAir;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.EnumBlockMirror;
-import net.minecraft.world.level.block.EnumBlockRotation;
-import net.minecraft.world.level.block.state.IBlockData;
-import net.minecraft.world.level.block.state.IBlockDataHolder;
-import net.minecraft.world.level.block.state.properties.BlockStateBoolean;
-import net.minecraft.world.level.block.state.properties.BlockStateEnum;
-import net.minecraft.world.level.block.state.properties.BlockStateInteger;
-import net.minecraft.world.level.block.state.properties.IBlockState;
+import net.minecraft.world.level.block.state.properties.Property;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -50,14 +39,14 @@ import org.jetbrains.annotations.NotNull;
 
 public class CraftBlockData implements BlockData {
 
-    private IBlockData state;
-    private Map<IBlockState<?>, Comparable<?>> parsedStates;
+    private net.minecraft.world.level.block.state.BlockState state;
+    private Map<Property<?>, Comparable<?>> parsedStates;
 
     protected CraftBlockData() {
         throw new AssertionError("Template Constructor");
     }
 
-    protected CraftBlockData(IBlockData state) {
+    protected CraftBlockData(net.minecraft.world.level.block.state.BlockState state) {
         this.state = state;
     }
 
@@ -66,7 +55,7 @@ public class CraftBlockData implements BlockData {
         return CraftBlockType.minecraftToBukkit(state.getBlock());
     }
 
-    public IBlockData getState() {
+    public net.minecraft.world.level.block.state.BlockState getState() {
         return state;
     }
 

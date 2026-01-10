@@ -1,0 +1,20 @@
+--- a/net/minecraft/world/item/component/ResolvableProfile.java
++++ b/net/minecraft/world/item/component/ResolvableProfile.java
+@@ -96,7 +_,7 @@
+         private static final Component DYNAMIC_TOOLTIP = Component.translatable("component.profile.dynamic").withStyle(ChatFormatting.GRAY);
+         private final Either<String, UUID> nameOrId;
+ 
+-        Dynamic(Either<String, UUID> p_440116_, PlayerSkin.Patch p_451404_) {
++        public Dynamic(Either<String, UUID> p_440116_, PlayerSkin.Patch p_451404_) {
+             super(ResolvableProfile.createPartialProfile(p_440116_.left(), p_440116_.right(), PropertyMap.EMPTY), p_451404_);
+             this.nameOrId = p_440116_;
+         }
+@@ -165,7 +_,7 @@
+         public static final ResolvableProfile.Static EMPTY = new ResolvableProfile.Static(Either.right(ResolvableProfile.Partial.EMPTY), PlayerSkin.Patch.EMPTY);
+         private final Either<GameProfile, ResolvableProfile.Partial> contents;
+ 
+-        Static(Either<GameProfile, ResolvableProfile.Partial> p_440066_, PlayerSkin.Patch p_451475_) {
++        public Static(Either<GameProfile, ResolvableProfile.Partial> p_440066_, PlayerSkin.Patch p_451475_) {
+             super(p_440066_.map(p_439472_ -> (GameProfile)p_439472_, ResolvableProfile.Partial::createProfile), p_451475_);
+             this.contents = p_440066_;
+         }

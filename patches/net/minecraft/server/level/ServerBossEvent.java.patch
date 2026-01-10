@@ -1,0 +1,11 @@
+--- a/net/minecraft/server/level/ServerBossEvent.java
++++ b/net/minecraft/server/level/ServerBossEvent.java
+@@ -83,7 +_,7 @@
+         }
+     }
+ 
+-    private void broadcast(Function<BossEvent, ClientboundBossEventPacket> p_143225_) {
++    public void broadcast(Function<BossEvent, ClientboundBossEventPacket> p_143225_) {
+         if (this.visible) {
+             ClientboundBossEventPacket clientboundbosseventpacket = p_143225_.apply(this);
+ 

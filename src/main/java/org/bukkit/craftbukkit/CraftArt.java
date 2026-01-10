@@ -2,7 +2,6 @@ package org.bukkit.craftbukkit;
 
 import com.google.common.base.Preconditions;
 import net.minecraft.core.Holder;
-import net.minecraft.core.IRegistry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.decoration.painting.PaintingVariant;
 import org.bukkit.Art;
@@ -30,9 +29,9 @@ public class CraftArt extends CraftOldEnumRegistryItem<Art, PaintingVariant> imp
     public static Holder<PaintingVariant> bukkitToMinecraftHolder(Art bukkit) {
         Preconditions.checkArgument(bukkit != null);
 
-        IRegistry<PaintingVariant> registry = CraftRegistry.getMinecraftRegistry(Registries.PAINTING_VARIANT);
+        net.minecraft.core.Registry<PaintingVariant> registry = CraftRegistry.getMinecraftRegistry(Registries.PAINTING_VARIANT);
 
-        if (registry.wrapAsHolder(bukkitToMinecraft(bukkit)) instanceof Holder.c<PaintingVariant> holder) {
+        if (registry.wrapAsHolder(bukkitToMinecraft(bukkit)) instanceof Holder.Reference<PaintingVariant> holder) {
             return holder;
         }
 

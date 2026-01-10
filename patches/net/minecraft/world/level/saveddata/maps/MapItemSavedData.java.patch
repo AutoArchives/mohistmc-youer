@@ -1,0 +1,37 @@
+--- a/net/minecraft/world/level/saveddata/maps/MapItemSavedData.java
++++ b/net/minecraft/world/level/saveddata/maps/MapItemSavedData.java
+@@ -64,18 +_,18 @@
+             )
+             .apply(p_400959_, MapItemSavedData::new)
+     );
+-    public final int centerX;
+-    public final int centerZ;
++    public int centerX;
++    public int centerZ;
+     public final ResourceKey<Level> dimension;
+-    private final boolean trackingPosition;
+-    private final boolean unlimitedTracking;
+-    public final byte scale;
++    public boolean trackingPosition;
++    public boolean unlimitedTracking;
++    public byte scale;
+     public byte[] colors = new byte[16384];
+-    public final boolean locked;
++    public boolean locked;
+     private final List<MapItemSavedData.HoldingPlayer> carriedBy = Lists.newArrayList();
+     private final Map<Player, MapItemSavedData.HoldingPlayer> carriedByPlayers = Maps.newHashMap();
+     private final Map<String, MapBanner> bannerMarkers = Maps.newHashMap();
+-    final Map<String, MapDecoration> decorations = Maps.newLinkedHashMap();
++    public final Map<String, MapDecoration> decorations = Maps.newLinkedHashMap();
+     private final Map<String, MapFrame> frameMarkers = Maps.newHashMap();
+     private int trackedDecorationCount;
+ 
+@@ -363,7 +_,7 @@
+         return mapitemsaveddata$holdingplayer == null ? null : mapitemsaveddata$holdingplayer.nextUpdatePacket(p_323760_);
+     }
+ 
+-    private void setColorsDirty(int p_164790_, int p_164791_) {
++    public void setColorsDirty(int p_164790_, int p_164791_) {
+         this.setDirty();
+ 
+         for (MapItemSavedData.HoldingPlayer mapitemsaveddata$holdingplayer : this.carriedBy) {

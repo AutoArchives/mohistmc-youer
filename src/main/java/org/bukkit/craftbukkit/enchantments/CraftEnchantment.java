@@ -5,7 +5,7 @@ import java.util.Locale;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.EnchantmentTags;
-import net.minecraft.util.SystemUtils;
+import net.minecraft.util.Util;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.craftbukkit.CraftRegistry;
@@ -150,7 +150,7 @@ public class CraftEnchantment extends Enchantment implements Handleable<net.mine
 
     @Override
     public String getTranslationKey() {
-        return SystemUtils.makeDescriptionId("enchantment", handle.unwrapKey().get().identifier());
+        return Util.makeDescriptionId("enchantment", handle.unwrapKey().get().identifier());
     }
 
     @Override

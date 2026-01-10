@@ -39,9 +39,9 @@ public final class CraftPlayerSkinPatch implements PlayerSkinPatch {
 
     public CraftPlayerSkinPatch(PlayerSkin.Patch patch) {
         this(
-                patch.body().map(ClientAsset.b::id).map(CraftNamespacedKey::fromMinecraft).orElse(null),
-                patch.cape().map(ClientAsset.b::id).map(CraftNamespacedKey::fromMinecraft).orElse(null),
-                patch.elytra().map(ClientAsset.b::id).map(CraftNamespacedKey::fromMinecraft).orElse(null),
+                patch.body().map(ClientAsset.ResourceTexture::id).map(CraftNamespacedKey::fromMinecraft).orElse(null),
+                patch.cape().map(ClientAsset.ResourceTexture::id).map(CraftNamespacedKey::fromMinecraft).orElse(null),
+                patch.elytra().map(ClientAsset.ResourceTexture::id).map(CraftNamespacedKey::fromMinecraft).orElse(null),
                 patch.model().map((model) -> model == PlayerModelType.WIDE ? PlayerTextures.SkinModel.CLASSIC : PlayerTextures.SkinModel.valueOf(model.name())).orElse(null)
         );
     }
@@ -135,9 +135,9 @@ public final class CraftPlayerSkinPatch implements PlayerSkinPatch {
 
     public PlayerSkin.Patch toMinecraft() {
         return PlayerSkin.Patch.create(
-                Optional.ofNullable(this.texturePatch).map(CraftNamespacedKey::toMinecraft).map(ClientAsset.b::new),
-                Optional.ofNullable(this.capeTexturePatch).map(CraftNamespacedKey::toMinecraft).map(ClientAsset.b::new),
-                Optional.ofNullable(this.elytraTexturePatch).map(CraftNamespacedKey::toMinecraft).map(ClientAsset.b::new),
+                Optional.ofNullable(this.texturePatch).map(CraftNamespacedKey::toMinecraft).map(ClientAsset.ResourceTexture::new),
+                Optional.ofNullable(this.capeTexturePatch).map(CraftNamespacedKey::toMinecraft).map(ClientAsset.ResourceTexture::new),
+                Optional.ofNullable(this.elytraTexturePatch).map(CraftNamespacedKey::toMinecraft).map(ClientAsset.ResourceTexture::new),
                 Optional.ofNullable(this.modelPatch).map((model) -> model == PlayerTextures.SkinModel.CLASSIC ? PlayerModelType.WIDE : PlayerModelType.valueOf(model.name()))
         );
     }

@@ -1,9 +1,10 @@
 --- a/net/minecraft/nbt/ListTag.java
 +++ b/net/minecraft/nbt/ListTag.java
-@@ -153,6 +_,15 @@
+@@ -153,7 +_,16 @@
          this(new ArrayList<>());
      }
  
+-    ListTag(List<Tag> p_128721_) {
 +    /**
 +     * Neo: create a list tag with the given initial capacity.
 +     *
@@ -13,6 +14,16 @@
 +        this(new ArrayList<>(initialCapacity));
 +    }
 +
-     ListTag(List<Tag> p_128721_) {
++    public ListTag(List<Tag> p_128721_) {
          this.list = p_128721_;
      }
+ 
+@@ -196,7 +_,7 @@
+     }
+ 
+     @VisibleForTesting
+-    byte identifyRawElementType() {
++    public byte identifyRawElementType() {
+         byte b0 = 0;
+ 
+         for (Tag tag : this.list) {
