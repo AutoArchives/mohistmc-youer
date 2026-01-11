@@ -6,6 +6,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.FluidState;
 import org.bukkit.craftbukkit.block.CraftBlockEntityState;
 import org.bukkit.craftbukkit.block.CraftBlockState;
 import org.bukkit.craftbukkit.block.CraftBlockStates;
@@ -63,7 +64,7 @@ public class TransformerGeneratorAccess extends DelegatedGeneratorAccess {
         // It ensures that any kind of block is updated correctly upon placing it
         BlockState iblockdata = craftBlockState.getHandle();
         boolean result = super.setBlock(position, iblockdata, i, j);
-        Fluid fluid = getFluidState(position);
+        FluidState fluid = getFluidState(position);
         if (!fluid.isEmpty()) {
             scheduleTick(position, fluid.getType(), 0);
         }

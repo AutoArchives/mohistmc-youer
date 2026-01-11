@@ -1,5 +1,40 @@
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
+@@ -200,6 +_,7 @@
+ import net.minecraft.world.scores.Scoreboard;
+ import net.minecraft.world.scores.Team;
+ import net.minecraft.world.scores.criteria.ObjectiveCriteria;
++import org.bukkit.craftbukkit.entity.CraftPlayer;
+ import org.jspecify.annotations.Nullable;
+ import org.slf4j.Logger;
+ 
+@@ -227,7 +_,7 @@
+     private static final boolean DEFAULT_SEEN_CREDITS = false;
+     private static final boolean DEFAULT_SPAWN_EXTRA_PARTICLES_ON_FALL = false;
+     public ServerGamePacketListenerImpl connection;
+-    private final MinecraftServer server;
++    public final MinecraftServer server;
+     public final ServerPlayerGameMode gameMode;
+     private final PlayerAdvancements advancements;
+     private final ServerStatsCounter stats;
+@@ -240,7 +_,7 @@
+     private float lastSentHealth = -1.0E8F;
+     private int lastSentFood = -99999999;
+     private boolean lastFoodSaturationZero = true;
+-    private int lastSentExp = -99999999;
++    public int lastSentExp = -99999999;
+     private ChatVisiblity chatVisibility = ChatVisiblity.FULL;
+     private ParticleStatus particleStatus = ParticleStatus.ALL;
+     private boolean canChatColor = true;
+@@ -253,7 +_,7 @@
+     private int levitationStartTime;
+     private boolean disconnected;
+     private int requestedViewDistance = 2;
+-    private String language = "en_us";
++    public String language = "en_us";
+     private @Nullable Vec3 startingToFallPosition;
+     private @Nullable Vec3 enteredNetherPosition;
+     private @Nullable Vec3 enteredLavaOnVehiclePosition;
 @@ -313,6 +_,10 @@
          }
  
@@ -70,6 +105,17 @@
          boolean flag = this.level().getGameRules().get(GameRules.SHOW_DEATH_MESSAGES);
          if (flag) {
              Component component = this.getCombatTracker().getDeathMessage();
+@@ -1043,8 +_,8 @@
+         super.onAttributeUpdated(p_419585_);
+     }
+ 
+-    private static Optional<ServerPlayer.RespawnPosAngle> findRespawnAndUseSpawnBlock(
+-        ServerLevel p_348505_, ServerPlayer.RespawnConfig p_404800_, boolean p_348513_
++    public static Optional<ServerPlayer.RespawnPosAngle> findRespawnAndUseSpawnBlock(
++            ServerLevel p_348505_, ServerPlayer.RespawnConfig p_404800_, boolean p_348513_
+     ) {
+         LevelData.RespawnData leveldata$respawndata = p_404800_.respawnData;
+         BlockPos blockpos = leveldata$respawndata.pos();
 @@ -1066,7 +_,7 @@
              return BedBlock.findStandUpPosition(EntityType.PLAYER, p_348505_, blockpos, blockstate.getValue(BedBlock.FACING), f)
                  .map(p_450850_ -> ServerPlayer.RespawnPosAngle.of(p_450850_, blockpos, 0.0F));
@@ -417,3 +463,14 @@
          this.shoulderEntityRight = p_445961_;
          this.setShoulderParrotRight(extractParrotVariant(p_445961_));
      }
+@@ -2312,5 +_,10 @@
+                 .apply(p_433952_, ServerPlayer.SavedPosition::new)
+         );
+         public static final ServerPlayer.SavedPosition EMPTY = new ServerPlayer.SavedPosition(Optional.empty(), Optional.empty(), Optional.empty());
++    }
++
++    @Override
++    public CraftPlayer getBukkitEntity() {
++        return (CraftPlayer) super.getBukkitEntity();
+     }
+ }

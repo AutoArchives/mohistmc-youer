@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -537,7 +538,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
 
     @Override
     public String getCustomName() {
-        IChatBaseComponent name = getHandle().getCustomName();
+        Component name = getHandle().getCustomName();
 
         if (name == null) {
             return null;
@@ -585,8 +586,8 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
         Preconditions.checkState(!entity.generation, "Cannot get tracking players during world generation");
         ImmutableSet.Builder<Player> players = ImmutableSet.builder();
 
-        WorldServer world = ((CraftWorld) getWorld()).getHandle();
-        PlayerChunkMap.EntityTracker entityTracker = world.getChunkSource().chunkMap.entityMap.get(getEntityId());
+        ServerLevel world = ((CraftWorld) getWorld()).getHandle();
+        ChunkMap.TrackedEntity entityTracker = world.getChunkSource().chunkMap.entityMap.get(getEntityId());
 
         if (entityTracker != null) {
             for (ServerPlayerConnection connection : entityTracker.seenBy) {
@@ -817,11 +818,11 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
         return location.getWorld().addEntity(copy.getBukkitEntity());
     }
 
-    private Entity copy(net.minecraft.world.level.World level) {
+    private Entity copy(net.minecraft.world.level.Level level) {
         TagValueOutput compoundTag = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, getHandle().registryAccess());
         getHandle().saveAsPassenger(compoundTag, false);
 
-        return EntityTypes.loadEntityRecursive(compoundTag.buildResult(), level, EntitySpawnReason.LOAD, EntityProcessor.NOP);
+        return net.minecraft.world.entity.EntityType.loadEntityRecursive(compoundTag.buildResult(), level, EntitySpawnReason.LOAD, EntityProcessor.NOP);
     }
 
     public void storeBukkitValues(ValueOutput output) {

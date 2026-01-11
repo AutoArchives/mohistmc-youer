@@ -1,17 +1,35 @@
 --- a/net/minecraft/world/level/saveddata/maps/MapItemSavedData.java
 +++ b/net/minecraft/world/level/saveddata/maps/MapItemSavedData.java
-@@ -64,18 +_,18 @@
+@@ -15,6 +_,7 @@
+ import java.util.Map;
+ import java.util.Objects;
+ import java.util.Optional;
++import java.util.UUID;
+ import java.util.function.Predicate;
+ import net.minecraft.core.BlockPos;
+ import net.minecraft.core.Holder;
+@@ -39,6 +_,8 @@
+ import net.minecraft.world.level.LevelAccessor;
+ import net.minecraft.world.level.saveddata.SavedData;
+ import net.minecraft.world.level.saveddata.SavedDataType;
++import org.bukkit.craftbukkit.CraftServer;
++import org.bukkit.craftbukkit.map.CraftMapView;
+ import org.jspecify.annotations.Nullable;
+ import org.slf4j.Logger;
+ 
+@@ -64,21 +_,28 @@
              )
              .apply(p_400959_, MapItemSavedData::new)
      );
 -    public final int centerX;
 -    public final int centerZ;
-+    public int centerX;
-+    public int centerZ;
-     public final ResourceKey<Level> dimension;
+-    public final ResourceKey<Level> dimension;
 -    private final boolean trackingPosition;
 -    private final boolean unlimitedTracking;
 -    public final byte scale;
++    public int centerX;
++    public int centerZ;
++    public ResourceKey<Level> dimension;
 +    public boolean trackingPosition;
 +    public boolean unlimitedTracking;
 +    public byte scale;
@@ -26,6 +44,27 @@
      private final Map<String, MapFrame> frameMarkers = Maps.newHashMap();
      private int trackedDecorationCount;
  
++    // CraftBukkit start
++    public final CraftMapView mapView;
++    private CraftServer server;
++    public UUID uniqueId = null;
++    public MapId id;
++    // CraftBukkit end
++
+     public static SavedDataType<MapItemSavedData> type(MapId p_401062_) {
+         return new SavedDataType<>(p_401062_.key(), () -> {
+             throw new IllegalStateException("Should never create an empty map saved data");
+@@ -95,6 +_,10 @@
+         this.trackingPosition = p_164771_;
+         this.unlimitedTracking = p_164772_;
+         this.locked = p_164773_;
++        // CraftBukkit start
++        mapView = new CraftMapView(this);
++        server = (CraftServer) org.bukkit.Bukkit.getServer();
++        // CraftBukkit end
+     }
+ 
+     private MapItemSavedData(
 @@ -363,7 +_,7 @@
          return mapitemsaveddata$holdingplayer == null ? null : mapitemsaveddata$holdingplayer.nextUpdatePacket(p_323760_);
      }

@@ -1,5 +1,14 @@
 --- a/net/minecraft/server/dedicated/DedicatedServer.java
 +++ b/net/minecraft/server/dedicated/DedicatedServer.java
+@@ -84,7 +_,7 @@
+     private @Nullable QueryThreadGs4 queryThreadGs4;
+     private final RconConsoleSource rconConsoleSource;
+     private @Nullable RconThread rconThread;
+-    private final DedicatedServerSettings settings;
++    public final DedicatedServerSettings settings;
+     private @Nullable MinecraftServerGui gui;
+     private final @Nullable ServerTextFilter serverTextFilter;
+     private @Nullable RemoteSampleLogger tickTimeLogger;
 @@ -93,6 +_,7 @@
      private final Map<String, String> codeOfConductTexts;
      private @Nullable ManagementServer jsonRpcServer;

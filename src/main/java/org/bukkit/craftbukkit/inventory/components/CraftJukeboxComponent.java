@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.MinecraftKey;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.EitherHolder;
 import net.minecraft.world.item.JukeboxPlayable;
@@ -36,7 +36,7 @@ public final class CraftJukeboxComponent implements JukeboxPlayableComponent {
     public CraftJukeboxComponent(Map<String, Object> map) {
         String song = SerializableMeta.getObject(String.class, map, "song", false);
 
-        this.handle = new JukeboxPlayable(new EitherHolder<>(ResourceKey.create(Registries.JUKEBOX_SONG, MinecraftKey.parse(song))));
+        this.handle = new JukeboxPlayable(new EitherHolder<>(ResourceKey.create(Registries.JUKEBOX_SONG, Identifier.parse(song))));
     }
 
     @Override

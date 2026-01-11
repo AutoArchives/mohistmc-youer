@@ -57,7 +57,7 @@ public final class CraftPersistentDataTypeRegistry {
      * @param primitiveType the class of the primitive type, e.g.
      * {@link String}.
      * @param nbtBaseType the class of the tag implementation that is used to
-     * store this primitive type, e.g {@link NBTTagString}.
+     * store this primitive type, e.g {@link StringTag}.
      * @param nmsTypeByte the byte identifier of the tag as defined by
      * {@link Tag#getId()}.
      * @param builder a bi function that is responsible for mapping a "primitive

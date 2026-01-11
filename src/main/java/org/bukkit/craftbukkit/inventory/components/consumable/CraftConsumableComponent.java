@@ -6,8 +6,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.core.Holder;
-import net.minecraft.sounds.SoundEffect;
-import net.minecraft.sounds.SoundEffects;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.consume_effects.ConsumeEffect;
@@ -90,7 +90,7 @@ public class CraftConsumableComponent implements ConsumableComponent {
 
     @Override
     public void setSound(Sound sound) {
-        Holder<SoundEffect> soundEffectHolder = (sound != null) ? CraftSound.bukkitToMinecraftHolder(sound) : SoundEffects.GENERIC_EAT;
+        Holder<SoundEvent> soundEffectHolder = (sound != null) ? CraftSound.bukkitToMinecraftHolder(sound) : SoundEvents.GENERIC_EAT;
         handle = new Consumable(this.handle.consumeSeconds(), this.handle.animation(), soundEffectHolder, this.handle.hasConsumeParticles(), this.handle.onConsumeEffects());
     }
 

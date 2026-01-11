@@ -1,5 +1,13 @@
 --- a/net/minecraft/world/level/dimension/end/EndDragonFight.java
 +++ b/net/minecraft/world/level/dimension/end/EndDragonFight.java
+@@ -15,6 +_,7 @@
+ import java.util.Optional;
+ import java.util.Set;
+ import java.util.UUID;
++import java.util.concurrent.atomic.AtomicBoolean;
+ import java.util.function.Predicate;
+ import net.minecraft.advancements.CriteriaTriggers;
+ import net.minecraft.core.BlockPos;
 @@ -72,12 +_,12 @@
      private static final int GATEWAY_DISTANCE = 96;
      public static final int DRAGON_SPAWN_Y = 128;
@@ -60,15 +68,29 @@
          EndPodiumFeature endpodiumfeature = new EndPodiumFeature(p_64094_);
          if (this.portalLocation == null) {
              this.portalLocation = this.level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EndPodiumFeature.getLocation(this.origin)).below();
-@@ -503,7 +_,7 @@
+@@ -503,7 +_,11 @@
          }
      }
  
 -    private void respawnDragon(List<EndCrystal> p_64092_) {
++    private AtomicBoolean respawnDragonBoolean = new AtomicBoolean(false);
++    public boolean respawnDragonBoolean(){
++        return respawnDragonBoolean.getAndSet(false);
++    }
 +    public void respawnDragon(List<EndCrystal> p_64092_) {
          if (this.dragonKilled && this.respawnStage == null) {
              for (BlockPattern.BlockPatternMatch blockpattern$blockpatternmatch = this.findExitPortal();
                  blockpattern$blockpatternmatch != null;
+@@ -525,7 +_,9 @@
+             this.respawnTime = 0;
+             this.spawnExitPortal(false);
+             this.respawnCrystals = p_64092_;
++            respawnDragonBoolean.set(true);
+         }
++        respawnDragonBoolean.set(false);
+     }
+ 
+     public void resetSpikeCrystals() {
 @@ -535,6 +_,14 @@
                  endcrystal.setBeamTarget(null);
              }

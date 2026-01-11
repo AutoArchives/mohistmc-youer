@@ -143,7 +143,7 @@
      class DistanceManager extends net.minecraft.server.level.DistanceManager {
          protected DistanceManager(TicketStorage p_394597_, Executor p_140459_, Executor p_140460_) {
              super(p_394597_, p_140459_, p_140460_);
-@@ -1331,8 +_,8 @@
+@@ -1331,12 +_,12 @@
          }
      }
  
@@ -154,6 +154,11 @@
          final Entity entity;
          private final int range;
          SectionPos lastSectionPos;
+-        final Set<ServerPlayerConnection> seenBy = Sets.newIdentityHashSet();
++        public final Set<ServerPlayerConnection> seenBy = Sets.newIdentityHashSet();
+ 
+         public TrackedEntity(Entity p_140478_, int p_140479_, int p_140480_, boolean p_140481_) {
+             this.serverEntity = new ServerEntity(ChunkMap.this.level, p_140478_, p_140480_, p_140481_, this);
 @@ -1441,5 +_,20 @@
                  this.updatePlayer(serverplayer);
              }

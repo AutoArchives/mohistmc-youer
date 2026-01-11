@@ -42,6 +42,7 @@ public class CraftBossBar implements BossBar {
     }
 
     public CraftBossBar(ServerBossEvent bossBattleServer) {
+        handle = bossBattleServer;
         this.initialize();
     }
 

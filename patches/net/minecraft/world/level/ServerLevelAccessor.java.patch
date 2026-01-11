@@ -1,0 +1,12 @@
+--- a/net/minecraft/world/level/ServerLevelAccessor.java
++++ b/net/minecraft/world/level/ServerLevelAccessor.java
+@@ -13,4 +_,9 @@
+     default void addFreshEntityWithPassengers(Entity p_47206_) {
+         p_47206_.getSelfAndPassengers().forEach(this::addFreshEntity);
+     }
++
++    @Override
++    default ServerLevel getMinecraftWorld() {
++        return getLevel();
++    }
+ }

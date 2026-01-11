@@ -1,6 +1,13 @@
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
-@@ -153,7 +_,7 @@
+@@ -149,11 +_,14 @@
+ import net.minecraft.world.scores.ScoreHolder;
+ import net.minecraft.world.scores.Team;
+ import net.minecraft.world.waypoints.WaypointTransmitter;
++import org.bukkit.craftbukkit.entity.CraftEntity;
++import org.bukkit.event.entity.CreatureSpawnEvent;
++import org.bukkit.event.entity.EntityRemoveEvent;
+ import org.jetbrains.annotations.Contract;
  import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
@@ -9,7 +16,7 @@
      private static final Logger LOGGER = LogUtils.getLogger();
      public static final String TAG_ID = "id";
      public static final String TAG_UUID = "UUID";
-@@ -191,6 +_,7 @@
+@@ -191,11 +_,12 @@
      private static final int MAX_BLOCK_ITERATIONS_ALONG_TRAVEL_PER_TICK = 16;
      private static final double MAX_MOVEMENT_RESETTING_TRACE_DISTANCE = 8.0;
      private static double viewScale = 1.0;
@@ -17,6 +24,12 @@
      private final EntityType<?> type;
      private boolean requiresPrecisePosition;
      private int id = ENTITY_COUNTER.incrementAndGet();
+     public boolean blocksBuilding;
+-    private ImmutableList<Entity> passengers = ImmutableList.of();
++    public ImmutableList<Entity> passengers = ImmutableList.of();
+     protected int boardingCooldown;
+     private @Nullable Entity vehicle;
+     private Level level;
 @@ -229,12 +_,14 @@
      public double yOld;
      public double zOld;
@@ -33,6 +46,77 @@
      private final Set<TagKey<Fluid>> fluidOnEyes = new HashSet<>();
      public int invulnerableTime;
      protected boolean firstTick = true;
+@@ -260,7 +_,7 @@
+     private final VecDeltaCodec packetPositionCodec = new VecDeltaCodec();
+     public boolean needsSync;
+     public @Nullable PortalProcessor portalProcess;
+-    private int portalCooldown;
++    public int portalCooldown;
+     private boolean invulnerable;
+     protected UUID uuid = Mth.createInsecureUUID(this.random);
+     protected String stringUUID = this.uuid.toString();
+@@ -276,7 +_,7 @@
+     private boolean onGroundNoBlocks = false;
+     private float crystalSoundIntensity;
+     private int lastCrystalSoundPlayTick;
+-    private boolean hasVisualFire;
++    public boolean hasVisualFire;
+     private Vec3 lastKnownSpeed = Vec3.ZERO;
+     private @Nullable Vec3 lastKnownPosition;
+     private @Nullable BlockState inBlockState = null;
+@@ -287,6 +_,52 @@
+     private final InsideBlockEffectApplier.StepBasedCollector insideEffectCollector = new InsideBlockEffectApplier.StepBasedCollector();
+     private CustomData customData = CustomData.EMPTY;
+ 
++    // CraftBukkit start
++    public boolean forceDrops;
++    public boolean persist = true;
++    public boolean visibleByDefault = true;
++    public boolean valid;
++    public boolean inWorld = false;
++    public boolean generation;
++    public int maxAirTicks = getDefaultMaxAirSupply(); // CraftBukkit - SPIGOT-6907: re-implement LivingEntity#setMaximumAir()
++    public org.bukkit.projectiles.ProjectileSource projectileSource; // For projectiles only
++    public boolean lastDamageCancelled; // SPIGOT-5339, SPIGOT-6252, SPIGOT-6777: Keep track if the event was canceled
++    public boolean persistentInvisibility = false;
++    public BlockPos lastLavaContact;
++    // Marks an entity, that it was removed by a plugin via Entity#remove
++    // Main use case currently is for SPIGOT-7487, preventing dropping of leash when leash is removed
++    public boolean pluginRemoved = false;
++
++    private CraftEntity bukkitEntity;
++
++    public CraftEntity getBukkitEntity() {
++        if (bukkitEntity == null) {
++            bukkitEntity = CraftEntity.getEntity(level.getCraftServer(), this);
++        }
++        return bukkitEntity;
++    }
++
++    public CreatureSpawnEvent.SpawnReason spawnReason;  // Youer - Entity#getEntitySpawnReason
++    public EntityRemoveEvent.Cause removeReason;  // Youer - EntityRemoveEvent
++    public void spawnReason(CreatureSpawnEvent.SpawnReason spawnReason) {
++        this.spawnReason = spawnReason;
++    }
++    public void removeReason(EntityRemoveEvent.Cause removeReason) {
++        this.removeReason = removeReason;
++    }
++    public float getBukkitYaw() {
++        return this.yRot;
++    }
++
++    public boolean isChunkLoaded() {
++        return level.hasChunk((int) Math.floor(this.getX()) >> 4, (int) Math.floor(this.getZ()) >> 4);
++    }
++
++    public int getDefaultMaxAirSupply() {
++        return TOTAL_AIR_SUPPLY;
++    }
++    // CraftBukkit end
++
+     public Entity(EntityType<?> p_19870_, Level p_19871_) {
+         this.type = p_19870_;
+         this.level = p_19871_;
 @@ -306,7 +_,10 @@
          this.defineSynchedData(synchedentitydata$builder);
          this.entityData = synchedentitydata$builder.build();
@@ -289,6 +373,20 @@
      }
  
      public void setSwimming(boolean p_20283_) {
+@@ -2672,11 +_,11 @@
+         this.setSharedFlag(5, p_20304_);
+     }
+ 
+-    protected boolean getSharedFlag(int p_20292_) {
++    public boolean getSharedFlag(int p_20292_) {
+         return (this.entityData.get(DATA_SHARED_FLAGS_ID) & 1 << p_20292_) != 0;
+     }
+ 
+-    protected void setSharedFlag(int p_20116_, boolean p_20117_) {
++    public void setSharedFlag(int p_20116_, boolean p_20117_) {
+         byte b0 = this.entityData.get(DATA_SHARED_FLAGS_ID);
+         if (p_20117_) {
+             this.entityData.set(DATA_SHARED_FLAGS_ID, (byte)(b0 | 1 << p_20116_));
 @@ -2728,7 +_,7 @@
              this.igniteForSeconds(8.0F);
          }
@@ -307,11 +405,13 @@
      }
  
      public boolean is(Entity p_20356_) {
-@@ -2916,10 +_,11 @@
+@@ -2915,11 +_,12 @@
+             );
      }
  
-     protected final boolean isInvulnerableToBase(DamageSource p_20122_) {
+-    protected final boolean isInvulnerableToBase(DamageSource p_20122_) {
 -        return this.isRemoved()
++    public final boolean isInvulnerableToBase(DamageSource p_20122_) {
 +        boolean isVanillaInvulnerable = this.isRemoved()
              || this.invulnerable && !p_20122_.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && !p_20122_.isCreativePlayer()
              || p_20122_.is(DamageTypeTags.IS_FIRE) && this.fireImmune()
@@ -345,6 +445,15 @@
          this.dimensions = entitydimensions1;
          this.eyeHeight = entitydimensions1.eyeHeight();
          this.reapplyPosition();
+@@ -3523,7 +_,7 @@
+         return SoundSource.NEUTRAL;
+     }
+ 
+-    protected int getFireImmuneTicks() {
++    public int getFireImmuneTicks() {
+         return 0;
+     }
+ 
 @@ -3558,9 +_,36 @@
          return Mth.lerp(p_352259_, this.yRotO, this.yRot);
      }

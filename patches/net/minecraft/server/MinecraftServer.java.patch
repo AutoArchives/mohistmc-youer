@@ -1,5 +1,50 @@
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
+@@ -183,11 +_,14 @@
+ import net.minecraft.world.phys.Vec2;
+ import net.minecraft.world.phys.Vec3;
+ import net.minecraft.world.scores.ScoreboardSaveData;
++import org.bukkit.Bukkit;
++import org.bukkit.craftbukkit.CraftRegistry;
++import org.bukkit.craftbukkit.CraftServer;
+ import org.jspecify.annotations.Nullable;
+ import org.slf4j.Logger;
+ 
+ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTask> implements ServerInfo, CommandSource, ChunkIOErrorReporter {
+-    private static final Logger LOGGER = LogUtils.getLogger();
++    public static final Logger LOGGER = LogUtils.getLogger();
+     public static final String VANILLA_BRAND = "vanilla";
+     private static final float AVERAGE_TICK_TIME_SMOOTHING = 0.8F;
+     private static final int TICK_STATS_SPAN = 100;
+@@ -208,8 +_,8 @@
+         "Demo World", GameType.SURVIVAL, false, Difficulty.NORMAL, false, new GameRules(FeatureFlags.DEFAULT_FLAGS), WorldDataConfiguration.DEFAULT
+     );
+     public static final NameAndId ANONYMOUS_PLAYER_PROFILE = new NameAndId(Util.NIL_UUID, "Anonymous Player");
+-    protected final LevelStorageSource.LevelStorageAccess storageSource;
+-    protected final PlayerDataStorage playerDataStorage;
++    public final LevelStorageSource.LevelStorageAccess storageSource;
++    public final PlayerDataStorage playerDataStorage;
+     private final List<Runnable> tickables = Lists.newArrayList();
+     private MetricsRecorder metricsRecorder = InactiveMetricsRecorder.INSTANCE;
+     private Consumer<ProfileResults> onMetricsRecordingStopped = p_177903_ -> this.stopRecordingMetrics();
+@@ -248,7 +_,7 @@
+     private final NotificationManager notificationManager;
+     private final ServerActivityMonitor serverActivityMonitor;
+     private long lastServerStatus;
+-    private final Thread serverThread;
++    public final Thread serverThread;
+     private long lastTickNanos = Util.getNanos();
+     private long taskExecutionStartNanos = Util.getNanos();
+     private long idleTimeNanos;
+@@ -267,7 +_,7 @@
+     private float smoothedTickTimeMillis;
+     private final Executor executor;
+     private @Nullable String serverId;
+-    private MinecraftServer.ReloadableResources resources;
++    public MinecraftServer.ReloadableResources resources;
+     private final StructureTemplateManager structureTemplateManager;
+     private final ServerTickRateManager tickRateManager;
+     private final ServerDebugSubscribers debugSubscribers = new ServerDebugSubscribers(this);
 @@ -284,7 +_,7 @@
  
      public static <S extends MinecraftServer> S spin(Function<Thread, S> p_129873_) {
@@ -291,6 +336,29 @@
      public void dumpServerProperties(Path p_177911_) throws IOException {
      }
  
+@@ -1940,6 +_,22 @@
+         }
+     }
+ 
++    // CraftBukkit start
++    public boolean isDebugging() {
++        return false;
++    }
++
++    @Deprecated
++    public static MinecraftServer getServer() {
++        return (Bukkit.getServer() instanceof CraftServer) ? ((CraftServer) Bukkit.getServer()).getServer() : null;
++    }
++
++    @Deprecated
++    public static RegistryAccess getDefaultRegistryAccess() {
++        return CraftRegistry.getMinecraftRegistry();
++    }
++    // CraftBukkit end
++
+     private ProfilerFiller createProfiler() {
+         if (this.willStartRecordingMetrics) {
+             this.metricsRecorder = ActiveMetricsRecorder.createStarted(
 @@ -2005,6 +_,10 @@
          return this.worldData;
      }

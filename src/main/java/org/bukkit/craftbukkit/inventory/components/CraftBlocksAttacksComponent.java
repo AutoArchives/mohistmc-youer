@@ -14,8 +14,8 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.MinecraftKey;
-import net.minecraft.sounds.SoundEffect;
+import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.component.BlocksAttacks;
 import org.bukkit.Bukkit;
@@ -67,23 +67,23 @@ public final class CraftBlocksAttacksComponent implements BlocksAttacksComponent
         String bypassedBy = SerializableMeta.getString(map, "bypassed-by", true);
         TagKey<net.minecraft.world.damagesource.DamageType> tag = null;
         if (bypassedBy != null) {
-            tag = TagKey.create(Registries.DAMAGE_TYPE, MinecraftKey.parse(bypassedBy));
+            tag = TagKey.create(Registries.DAMAGE_TYPE, Identifier.parse(bypassedBy));
         }
 
-        Holder<SoundEffect> blockSound = null;
+        Holder<SoundEvent> blockSound = null;
         String blockSnd = SerializableMeta.getString(map, "block-sound", true);
         if (blockSnd != null) {
-            blockSound = BuiltInRegistries.SOUND_EVENT.get(MinecraftKey.parse(blockSnd)).orElse(null);
+            blockSound = BuiltInRegistries.SOUND_EVENT.get(Identifier.parse(blockSnd)).orElse(null);
         }
 
-        Holder<SoundEffect> disableSound = null;
+        Holder<SoundEvent> disableSound = null;
         String disableSnd = SerializableMeta.getString(map, "disable-sound", true);
         if (disableSnd != null) {
-            disableSound = BuiltInRegistries.SOUND_EVENT.get(MinecraftKey.parse(disableSnd)).orElse(null);
+            disableSound = BuiltInRegistries.SOUND_EVENT.get(Identifier.parse(disableSnd)).orElse(null);
         }
 
         this.handle = new BlocksAttacks(blockDelaySeconds, disableCooldownScale, reduction.build().stream().map(CraftDamageReduction::new).map(CraftDamageReduction::getHandle).toList(),
-                new net.minecraft.world.item.component.BlocksAttacks.b(itemDamageThreshold, itemDamageBase, itemDamageFactor),
+                new net.minecraft.world.item.component.BlocksAttacks.ItemDamageFunction(itemDamageThreshold, itemDamageBase, itemDamageFactor),
                 Optional.ofNullable(tag), Optional.ofNullable(blockSound), Optional.ofNullable(disableSound)
         );
     }
@@ -173,9 +173,9 @@ public final class CraftBlocksAttacksComponent implements BlocksAttacksComponent
     }
 
     private DamageReduction addRule(HolderSet<net.minecraft.world.damagesource.DamageType> types, float base, float factor, float horizontalBlockingAngle) {
-        BlocksAttacks.a reduction = new net.minecraft.world.item.component.BlocksAttacks.a(horizontalBlockingAngle, Optional.ofNullable(types), base, factor);
+        BlocksAttacks.DamageReduction reduction = new net.minecraft.world.item.component.BlocksAttacks.DamageReduction(horizontalBlockingAngle, Optional.ofNullable(types), base, factor);
 
-        List<BlocksAttacks.a> reductions = new ArrayList<>(handle.damageReductions().size() + 1);
+        List<BlocksAttacks.DamageReduction> reductions = new ArrayList<>(handle.damageReductions().size() + 1);
         reductions.addAll(handle.damageReductions());
         reductions.add(reduction);
 
@@ -187,7 +187,7 @@ public final class CraftBlocksAttacksComponent implements BlocksAttacksComponent
     public boolean removeDamageReduction(DamageReduction reduction) {
         Preconditions.checkArgument(reduction != null, "reduction must not be null");
 
-        List<BlocksAttacks.a> reductions = new ArrayList<>(handle.damageReductions());
+        List<BlocksAttacks.DamageReduction> reductions = new ArrayList<>(handle.damageReductions());
         boolean removed = reductions.remove(((CraftDamageReduction) reduction).handle);
         handle = new BlocksAttacks(handle.blockDelaySeconds(), handle.disableCooldownScale(), reductions, handle.itemDamage(), handle.bypassedBy(), handle.blockSound(), handle.disableSound());
 
@@ -201,10 +201,10 @@ public final class CraftBlocksAttacksComponent implements BlocksAttacksComponent
 
     @Override
     public void setItemDamageThreshold(float threshold) {
-        BlocksAttacks.b itemDamage = handle.itemDamage();
+        BlocksAttacks.ItemDamageFunction itemDamage = handle.itemDamage();
 
         handle = new BlocksAttacks(handle.blockDelaySeconds(), handle.disableCooldownScale(), handle.damageReductions(),
-                new net.minecraft.world.item.component.BlocksAttacks.b(threshold, itemDamage.base(), itemDamage.factor()),
+                new net.minecraft.world.item.component.BlocksAttacks.ItemDamageFunction(threshold, itemDamage.base(), itemDamage.factor()),
                 handle.bypassedBy(), handle.blockSound(), handle.disableSound());
     }
 
@@ -215,10 +215,10 @@ public final class CraftBlocksAttacksComponent implements BlocksAttacksComponent
 
     @Override
     public void setItemDamageBase(float base) {
-        BlocksAttacks.b itemDamage = handle.itemDamage();
+        BlocksAttacks.ItemDamageFunction itemDamage = handle.itemDamage();
 
         handle = new BlocksAttacks(handle.blockDelaySeconds(), handle.disableCooldownScale(), handle.damageReductions(),
-                new net.minecraft.world.item.component.BlocksAttacks.b(itemDamage.threshold(), base, itemDamage.factor()),
+                new net.minecraft.world.item.component.BlocksAttacks.ItemDamageFunction(itemDamage.threshold(), base, itemDamage.factor()),
                 handle.bypassedBy(), handle.blockSound(), handle.disableSound());
     }
 
@@ -229,10 +229,10 @@ public final class CraftBlocksAttacksComponent implements BlocksAttacksComponent
 
     @Override
     public void setItemDamageFactor(float factor) {
-        BlocksAttacks.b itemDamage = handle.itemDamage();
+        BlocksAttacks.ItemDamageFunction itemDamage = handle.itemDamage();
 
         handle = new BlocksAttacks(handle.blockDelaySeconds(), handle.disableCooldownScale(), handle.damageReductions(),
-                new net.minecraft.world.item.component.BlocksAttacks.b(itemDamage.threshold(), itemDamage.base(), factor),
+                new net.minecraft.world.item.component.BlocksAttacks.ItemDamageFunction(itemDamage.threshold(), itemDamage.base(), factor),
                 handle.bypassedBy(), handle.blockSound(), handle.disableSound());
     }
 
@@ -298,15 +298,15 @@ public final class CraftBlocksAttacksComponent implements BlocksAttacksComponent
     @SerializableAs("DamageReduction")
     public static class CraftDamageReduction implements DamageReduction {
 
-        private BlocksAttacks.a handle;
+        private BlocksAttacks.DamageReduction handle;
 
-        public CraftDamageReduction(BlocksAttacks.a handle) {
+        public CraftDamageReduction(BlocksAttacks.DamageReduction handle) {
             this.handle = handle;
         }
 
         public CraftDamageReduction(DamageReduction bukkit) {
-            BlocksAttacks.a toCopy = ((CraftDamageReduction) bukkit).handle;
-            this.handle = new BlocksAttacks.a(toCopy.horizontalBlockingAngle(), toCopy.type(), toCopy.base(), toCopy.factor());
+            BlocksAttacks.DamageReduction toCopy = ((CraftDamageReduction) bukkit).handle;
+            this.handle = new BlocksAttacks.DamageReduction(toCopy.horizontalBlockingAngle(), toCopy.type(), toCopy.base(), toCopy.factor());
         }
 
         public CraftDamageReduction(Map<String, Object> map) {
@@ -320,7 +320,7 @@ public final class CraftBlocksAttacksComponent implements BlocksAttacksComponent
                 typesSet = CraftHolderUtil.parse(types, Registries.DAMAGE_TYPE, CraftRegistry.getMinecraftRegistry(Registries.DAMAGE_TYPE));
             }
 
-            this.handle = new net.minecraft.world.item.component.BlocksAttacks.a(horizontalBlockingAngle, Optional.ofNullable(typesSet), base, factor);
+            this.handle = new net.minecraft.world.item.component.BlocksAttacks.DamageReduction(horizontalBlockingAngle, Optional.ofNullable(typesSet), base, factor);
         }
 
         @Override
@@ -338,7 +338,7 @@ public final class CraftBlocksAttacksComponent implements BlocksAttacksComponent
             return result;
         }
 
-        public BlocksAttacks.a getHandle() {
+        public BlocksAttacks.DamageReduction getHandle() {
             return handle;
         }
 
@@ -349,14 +349,14 @@ public final class CraftBlocksAttacksComponent implements BlocksAttacksComponent
 
         @Override
         public void setTypes(DamageType type) {
-            handle = new net.minecraft.world.item.component.BlocksAttacks.a(handle.horizontalBlockingAngle(),
+            handle = new net.minecraft.world.item.component.BlocksAttacks.DamageReduction(handle.horizontalBlockingAngle(),
                     Optional.ofNullable(type).map((t) -> HolderSet.direct(CraftDamageType.bukkitToMinecraftHolder(t))),
                     handle.base(), handle.factor());
         }
 
         @Override
         public void setTypes(Collection<DamageType> types) {
-            handle = new net.minecraft.world.item.component.BlocksAttacks.a(handle.horizontalBlockingAngle(),
+            handle = new net.minecraft.world.item.component.BlocksAttacks.DamageReduction(handle.horizontalBlockingAngle(),
                     Optional.ofNullable(types).map((t) -> HolderSet.direct(t.stream().map(CraftDamageType::bukkitToMinecraftHolder).toList())),
                     handle.base(), handle.factor());
         }
@@ -364,7 +364,7 @@ public final class CraftBlocksAttacksComponent implements BlocksAttacksComponent
         @Override
         public void setTypes(Tag<DamageType> tag) {
             Preconditions.checkArgument(tag == null || tag instanceof CraftDamageTag, "tag must be a damage tag");
-            handle = new net.minecraft.world.item.component.BlocksAttacks.a(handle.horizontalBlockingAngle(),
+            handle = new net.minecraft.world.item.component.BlocksAttacks.DamageReduction(handle.horizontalBlockingAngle(),
                     Optional.ofNullable(tag).map((t) -> ((CraftDamageTag) t).getHandle()),
                     handle.base(), handle.factor());
         }
@@ -376,7 +376,7 @@ public final class CraftBlocksAttacksComponent implements BlocksAttacksComponent
 
         @Override
         public void setBase(float base) {
-            handle = new net.minecraft.world.item.component.BlocksAttacks.a(handle.horizontalBlockingAngle(), handle.type(), base, handle.factor());
+            handle = new net.minecraft.world.item.component.BlocksAttacks.DamageReduction(handle.horizontalBlockingAngle(), handle.type(), base, handle.factor());
         }
 
         @Override
@@ -386,7 +386,7 @@ public final class CraftBlocksAttacksComponent implements BlocksAttacksComponent
 
         @Override
         public void setFactor(float factor) {
-            handle = new net.minecraft.world.item.component.BlocksAttacks.a(handle.horizontalBlockingAngle(), handle.type(), handle.base(), factor);
+            handle = new net.minecraft.world.item.component.BlocksAttacks.DamageReduction(handle.horizontalBlockingAngle(), handle.type(), handle.base(), factor);
         }
 
         @Override
@@ -396,7 +396,7 @@ public final class CraftBlocksAttacksComponent implements BlocksAttacksComponent
 
         @Override
         public void setHorizontalBlockingAngle(float horizontalBlockingAngle) {
-            handle = new net.minecraft.world.item.component.BlocksAttacks.a(horizontalBlockingAngle, handle.type(), handle.base(), handle.factor());
+            handle = new net.minecraft.world.item.component.BlocksAttacks.DamageReduction(horizontalBlockingAngle, handle.type(), handle.base(), handle.factor());
         }
 
         @Override

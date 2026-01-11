@@ -1,6 +1,22 @@
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
-@@ -127,6 +_,7 @@
+@@ -113,7 +_,7 @@
+     private static final int SEND_PLAYER_INFO_INTERVAL = 600;
+     private static final SimpleDateFormat BAN_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z", Locale.ROOT);
+     private final MinecraftServer server;
+-    private final List<ServerPlayer> players = Lists.newArrayList();
++    public final List<ServerPlayer> players = Lists.newArrayList();
+     private final Map<UUID, ServerPlayer> playersByUUID = Maps.newHashMap();
+     private final UserBanList bans;
+     private final IpBanList ipBans;
+@@ -121,12 +_,13 @@
+     private final UserWhiteList whitelist;
+     private final Map<UUID, ServerStatsCounter> stats = Maps.newHashMap();
+     private final Map<UUID, PlayerAdvancements> advancements = Maps.newHashMap();
+-    private final PlayerDataStorage playerIo;
++    public final PlayerDataStorage playerIo;
+     private final LayeredRegistryAccess<RegistryLayer> registries;
+     private int viewDistance;
      private int simulationDistance;
      private boolean allowCommandsForAllPlayers;
      private int sendAllPlayerInfoIn;
@@ -30,7 +46,7 @@
          this.sendPlayerPermissionLevel(p_11263_);
          p_11263_.getStats().markAllDirty();
          p_11263_.getRecipeBook().sendInitialRecipeBook(p_11263_);
-@@ -218,6 +_,9 @@
+@@ -218,9 +_,12 @@
          p_11263_.initInventoryMenu();
          this.server.notificationManager().playerJoined(p_11263_);
          servergamepacketlistenerimpl.resumeFlushing();
@@ -39,7 +55,11 @@
 +        net.neoforged.neoforge.event.EventHooks.firePlayerLoggedIn(p_11263_);
      }
  
-     protected void updateEntireScoreboard(ServerScoreboard p_11274_, ServerPlayer p_11275_) {
+-    protected void updateEntireScoreboard(ServerScoreboard p_11274_, ServerPlayer p_11275_) {
++    public void updateEntireScoreboard(ServerScoreboard p_11274_, ServerPlayer p_11275_) {
+         Set<Objective> set = Sets.newHashSet();
+ 
+         for (PlayerTeam playerteam : p_11274_.getPlayerTeams()) {
 @@ -287,6 +_,7 @@
      }
  

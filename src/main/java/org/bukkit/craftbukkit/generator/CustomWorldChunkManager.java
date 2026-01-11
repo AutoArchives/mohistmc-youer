@@ -20,7 +20,7 @@ public class CustomWorldChunkManager extends BiomeSource {
     private final BiomeProvider biomeProvider;
     private final Registry<net.minecraft.world.level.biome.Biome> registry;
 
-    private static List<Holder<net.minecraft.world.level.biome.Biome>> biomeListToBiomeBaseList(List<Biome> biomes, IRegistry<BiomeBase> registry) {
+    private static List<Holder<net.minecraft.world.level.biome.Biome>> biomeListToBiomeBaseList(List<Biome> biomes, Registry<net.minecraft.world.level.biome.Biome> registry) {
         List<Holder<net.minecraft.world.level.biome.Biome>> biomeBases = new ArrayList<>();
 
         for (Biome biome : biomes) {

@@ -18,6 +18,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
@@ -25,6 +26,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.network.chat.contents.PlainTextContents;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Util;
@@ -325,14 +327,14 @@ public final class CraftChatMessage {
         return out.toString();
     }
 
-    public static IChatBaseComponent fixComponent(IChatMutableComponent component) {
+    public static Component fixComponent(MutableComponent component) {
         Matcher matcher = LINK_PATTERN.matcher("");
         return fixComponent(component, matcher);
     }
 
     private static Component fixComponent(MutableComponent component, Matcher matcher) {
-        if (component.getContents() instanceof LiteralContents) {
-            LiteralContents text = ((LiteralContents) component.getContents());
+        if (component.getContents() instanceof PlainTextContents) {
+            PlainTextContents text = ((PlainTextContents) component.getContents());
             String msg = text.text();
             if (matcher.reset(msg).find()) {
                 matcher.reset();
@@ -412,20 +414,20 @@ public final class CraftChatMessage {
         private ChatSerializer() {
         }
 
-        private static MutableComponent deserialize(JsonElement jsonelement, HolderLookup.a holderlookup_a) {
+        private static MutableComponent deserialize(JsonElement jsonelement, HolderLookup.Provider holderlookup_a) {
             return (MutableComponent) ComponentSerialization.CODEC.parse(holderlookup_a.createSerializationContext(JsonOps.INSTANCE), jsonelement).getOrThrow(JsonParseException::new);
         }
 
-        private static JsonElement serialize(Component ichatbasecomponent, HolderLookup.a holderlookup_a) {
+        private static JsonElement serialize(Component ichatbasecomponent, HolderLookup.Provider holderlookup_a) {
             return ComponentSerialization.CODEC.encodeStart(holderlookup_a.createSerializationContext(JsonOps.INSTANCE), ichatbasecomponent).getOrThrow(JsonParseException::new);
         }
 
-        public static String toJson(Component ichatbasecomponent, HolderLookup.a holderlookup_a) {
+        public static String toJson(Component ichatbasecomponent, HolderLookup.Provider holderlookup_a) {
             return GSON.toJson(serialize(ichatbasecomponent, holderlookup_a));
         }
 
         @Nullable
-        public static MutableComponent fromJson(String s, HolderLookup.a holderlookup_a) {
+        public static MutableComponent fromJson(String s, HolderLookup.Provider holderlookup_a) {
             JsonElement jsonelement = JsonParser.parseString(s);
 
             return jsonelement == null ? null : deserialize(jsonelement, holderlookup_a);

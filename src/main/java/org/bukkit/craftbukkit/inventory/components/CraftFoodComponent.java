@@ -4,7 +4,7 @@ import com.google.common.base.Preconditions;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
-import net.minecraft.world.food.FoodInfo;
+import net.minecraft.world.food.FoodProperties;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.craftbukkit.inventory.SerializableMeta;
 import org.bukkit.inventory.meta.components.FoodComponent;
@@ -12,9 +12,9 @@ import org.bukkit.inventory.meta.components.FoodComponent;
 @SerializableAs("Food")
 public final class CraftFoodComponent implements FoodComponent {
 
-    private FoodInfo handle;
+    private FoodProperties handle;
 
-    public CraftFoodComponent(FoodInfo food) {
+    public CraftFoodComponent(FoodProperties food) {
         this.handle = food;
     }
 
@@ -27,7 +27,7 @@ public final class CraftFoodComponent implements FoodComponent {
         Float saturationModifier = SerializableMeta.getObject(Float.class, map, "saturation", false);
         Boolean canAlwaysEat = SerializableMeta.getBoolean(map, "can-always-eat");
 
-        this.handle = new FoodInfo(nutrition, saturationModifier, canAlwaysEat);
+        this.handle = new FoodProperties(nutrition, saturationModifier, canAlwaysEat);
     }
 
     @Override
@@ -40,7 +40,7 @@ public final class CraftFoodComponent implements FoodComponent {
         return result;
     }
 
-    public FoodInfo getHandle() {
+    public FoodProperties getHandle() {
         return handle;
     }
 
@@ -52,7 +52,7 @@ public final class CraftFoodComponent implements FoodComponent {
     @Override
     public void setNutrition(int nutrition) {
         Preconditions.checkArgument(nutrition >= 0, "Nutrition cannot be negative");
-        handle = new FoodInfo(nutrition, handle.saturation(), handle.canAlwaysEat());
+        handle = new FoodProperties(nutrition, handle.saturation(), handle.canAlwaysEat());
     }
 
     @Override
@@ -62,7 +62,7 @@ public final class CraftFoodComponent implements FoodComponent {
 
     @Override
     public void setSaturation(float saturation) {
-        handle = new FoodInfo(handle.nutrition(), saturation, handle.canAlwaysEat());
+        handle = new FoodProperties(handle.nutrition(), saturation, handle.canAlwaysEat());
     }
 
     @Override
@@ -72,7 +72,7 @@ public final class CraftFoodComponent implements FoodComponent {
 
     @Override
     public void setCanAlwaysEat(boolean canAlwaysEat) {
-        handle = new FoodInfo(handle.nutrition(), handle.saturation(), canAlwaysEat);
+        handle = new FoodProperties(handle.nutrition(), handle.saturation(), canAlwaysEat);
     }
 
     @Override

@@ -90,6 +90,15 @@
          if (this.canPlayerFitWithinBlocksAndEntitiesWhen(Pose.SWIMMING)) {
              Pose pose = this.getDesiredPose();
              Pose pose1;
+@@ -411,7 +_,7 @@
+     }
+ 
+     @Override
+-    protected int getFireImmuneTicks() {
++    public int getFireImmuneTicks() {
+         return 20;
+     }
+ 
 @@ -531,6 +_,7 @@
  
      @Override
