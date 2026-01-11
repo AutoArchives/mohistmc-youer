@@ -5,7 +5,7 @@ import org.bukkit.craftbukkit.block.data.CraftBlockData;
 
 public abstract class CraftMossyCarpet extends CraftBlockData implements MossyCarpet {
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean BOTTOM = getBoolean("bottom");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty BOTTOM = getBoolean("bottom");
     private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.data.type.MossyCarpet.Height>[] HEIGHTS = new org.bukkit.craftbukkit.block.data.CraftBlockStateEnum[]{
         getEnum("north", org.bukkit.block.data.type.MossyCarpet.Height.class),
         getEnum("east", org.bukkit.block.data.type.MossyCarpet.Height.class),

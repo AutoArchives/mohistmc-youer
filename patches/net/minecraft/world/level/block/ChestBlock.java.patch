@@ -1,5 +1,15 @@
 --- a/net/minecraft/world/level/block/ChestBlock.java
 +++ b/net/minecraft/world/level/block/ChestBlock.java
+@@ -292,7 +_,8 @@
+     }
+ 
+     @Override
+-    protected @Nullable MenuProvider getMenuProvider(BlockState p_51574_, Level p_51575_, BlockPos p_51576_) {
++    @Nullable
++    public MenuProvider getMenuProvider(BlockState p_51574_, Level p_51575_, BlockPos p_51576_) {
+         return this.combine(p_51574_, p_51575_, p_51576_, false).apply(MENU_PROVIDER_COMBINER).orElse(null);
+     }
+ 
 @@ -363,7 +_,8 @@
  
      @Override

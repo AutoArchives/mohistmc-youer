@@ -9,7 +9,7 @@ public final class CraftWeatheringCopperGolemStatue extends org.bukkit.craftbukk
         super();
     }
 
-    public CraftWeatheringCopperGolemStatue(net.minecraft.world.level.block.state.IBlockData state) {
+    public CraftWeatheringCopperGolemStatue(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
@@ -48,7 +48,7 @@ public final class CraftWeatheringCopperGolemStatue extends org.bukkit.craftbukk
 
     // org.bukkit.craftbukkit.block.data.CraftWaterlogged
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean WATERLOGGED = getBoolean(net.minecraft.world.level.block.WeatheringCopperGolemStatueBlock.class, "waterlogged");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty WATERLOGGED = getBoolean(net.minecraft.world.level.block.WeatheringCopperGolemStatueBlock.class, "waterlogged");
 
     @Override
     public boolean isWaterlogged() {

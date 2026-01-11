@@ -9,13 +9,13 @@ public final class CraftPitcherCrop extends org.bukkit.craftbukkit.block.data.Cr
         super();
     }
 
-    public CraftPitcherCrop(net.minecraft.world.level.block.state.IBlockData state) {
+    public CraftPitcherCrop(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.CraftAgeable
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateInteger AGE = getInteger(net.minecraft.world.level.block.PitcherCropBlock.class, "age");
+    private static final net.minecraft.world.level.block.state.properties.IntegerProperty AGE = getInteger(net.minecraft.world.level.block.PitcherCropBlock.class, "age");
 
     @Override
     public int getAge() {

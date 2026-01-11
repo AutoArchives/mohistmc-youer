@@ -7,7 +7,7 @@ import java.util.UUID;
 import net.minecraft.core.Holder;
 import net.minecraft.world.level.block.TrialSpawnerBlock;
 import net.minecraft.world.level.block.entity.TrialSpawnerBlockEntity;
-import net.minecraft.world.level.block.entity.trialspawner.TrialSpawnerData;
+import net.minecraft.world.level.block.entity.trialspawner.TrialSpawnerStateData;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -36,8 +36,8 @@ public class CraftTrialSpawner extends CraftBlockEntityState<TrialSpawnerBlockEn
 
     @Override
     public void setCooldownLength(int ticks) {
-        net.minecraft.world.level.block.entity.trialspawner.TrialSpawner.b oldConfig = getSnapshot().trialSpawner.config;
-        getSnapshot().trialSpawner.config = new net.minecraft.world.level.block.entity.trialspawner.TrialSpawner.b(oldConfig.normal(), oldConfig.ominous(), ticks, oldConfig.requiredPlayerRange());
+        net.minecraft.world.level.block.entity.trialspawner.TrialSpawner.FullConfig oldConfig = getSnapshot().trialSpawner.config;
+        getSnapshot().trialSpawner.config = new net.minecraft.world.level.block.entity.trialspawner.TrialSpawner.FullConfig(oldConfig.normal(), oldConfig.ominous(), ticks, oldConfig.requiredPlayerRange());
     }
 
     @Override
@@ -47,8 +47,8 @@ public class CraftTrialSpawner extends CraftBlockEntityState<TrialSpawnerBlockEn
 
     @Override
     public void setRequiredPlayerRange(int requiredPlayerRange) {
-        net.minecraft.world.level.block.entity.trialspawner.TrialSpawner.b oldConfig = getSnapshot().trialSpawner.config;
-        getSnapshot().trialSpawner.config = new net.minecraft.world.level.block.entity.trialspawner.TrialSpawner.b(oldConfig.normal(), oldConfig.ominous(), oldConfig.targetCooldownLength(), requiredPlayerRange);
+        net.minecraft.world.level.block.entity.trialspawner.TrialSpawner.FullConfig oldConfig = getSnapshot().trialSpawner.config;
+        getSnapshot().trialSpawner.config = new net.minecraft.world.level.block.entity.trialspawner.TrialSpawner.FullConfig(oldConfig.normal(), oldConfig.ominous(), oldConfig.targetCooldownLength(), requiredPlayerRange);
     }
 
     @Override
@@ -165,10 +165,10 @@ public class CraftTrialSpawner extends CraftBlockEntityState<TrialSpawnerBlockEn
     protected void applyTo(TrialSpawnerBlockEntity tileEntity) {
         super.applyTo(tileEntity);
 
-        tileEntity.trialSpawner.config = new net.minecraft.world.level.block.entity.trialspawner.TrialSpawner.b(Holder.direct(normalConfig.toMinecraft()), Holder.direct(ominousConfig.toMinecraft()), getCooldownLength(), getRequiredPlayerRange());
+        tileEntity.trialSpawner.config = new net.minecraft.world.level.block.entity.trialspawner.TrialSpawner.FullConfig(Holder.direct(normalConfig.toMinecraft()), Holder.direct(ominousConfig.toMinecraft()), getCooldownLength(), getRequiredPlayerRange());
     }
 
-    private TrialSpawnerData getTrialData() {
+    private TrialSpawnerStateData getTrialData() {
         return getSnapshot().getTrialSpawner().getStateData();
     }
 

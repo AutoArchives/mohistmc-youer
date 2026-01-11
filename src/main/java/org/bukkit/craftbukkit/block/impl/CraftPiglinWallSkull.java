@@ -9,7 +9,7 @@ public final class CraftPiglinWallSkull extends org.bukkit.craftbukkit.block.dat
         super();
     }
 
-    public CraftPiglinWallSkull(net.minecraft.world.level.block.state.IBlockData state) {
+    public CraftPiglinWallSkull(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
@@ -34,7 +34,7 @@ public final class CraftPiglinWallSkull extends org.bukkit.craftbukkit.block.dat
 
     // org.bukkit.craftbukkit.block.data.CraftPowerable
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean POWERED = getBoolean(net.minecraft.world.level.block.PiglinWallSkullBlock.class, "powered");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty POWERED = getBoolean(net.minecraft.world.level.block.PiglinWallSkullBlock.class, "powered");
 
     @Override
     public boolean isPowered() {

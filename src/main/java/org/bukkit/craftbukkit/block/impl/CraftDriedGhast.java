@@ -9,13 +9,13 @@ public final class CraftDriedGhast extends org.bukkit.craftbukkit.block.data.Cra
         super();
     }
 
-    public CraftDriedGhast(net.minecraft.world.level.block.state.IBlockData state) {
+    public CraftDriedGhast(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.type.CraftDriedGhast
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateInteger HYDRATION = getInteger(net.minecraft.world.level.block.DriedGhastBlock.class, "hydration");
+    private static final net.minecraft.world.level.block.state.properties.IntegerProperty HYDRATION = getInteger(net.minecraft.world.level.block.DriedGhastBlock.class, "hydration");
 
     @Override
     public int getHydration() {
@@ -53,7 +53,7 @@ public final class CraftDriedGhast extends org.bukkit.craftbukkit.block.data.Cra
 
     // org.bukkit.craftbukkit.block.data.CraftWaterlogged
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean WATERLOGGED = getBoolean(net.minecraft.world.level.block.DriedGhastBlock.class, "waterlogged");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty WATERLOGGED = getBoolean(net.minecraft.world.level.block.DriedGhastBlock.class, "waterlogged");
 
     @Override
     public boolean isWaterlogged() {

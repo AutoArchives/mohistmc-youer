@@ -9,13 +9,13 @@ public final class CraftLeafLitter extends org.bukkit.craftbukkit.block.data.Cra
         super();
     }
 
-    public CraftLeafLitter(net.minecraft.world.level.block.state.IBlockData state) {
+    public CraftLeafLitter(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.type.CraftLeafLitter
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateInteger SEGMENT_AMOUNT = getInteger(net.minecraft.world.level.block.LeafLitterBlock.class, "segment_amount");
+    private static final net.minecraft.world.level.block.state.properties.IntegerProperty SEGMENT_AMOUNT = getInteger(net.minecraft.world.level.block.LeafLitterBlock.class, "segment_amount");
 
     @Override
     public int getSegmentAmount() {

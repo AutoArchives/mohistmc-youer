@@ -9,14 +9,14 @@ public final class CraftVault extends org.bukkit.craftbukkit.block.data.CraftBlo
         super();
     }
 
-    public CraftVault(net.minecraft.world.level.block.state.IBlockData state) {
+    public CraftVault(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.type.CraftVault
 
     private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.data.type.Vault.State> VAULT_STATE = getEnum(net.minecraft.world.level.block.VaultBlock.class, "vault_state", org.bukkit.block.data.type.Vault.State.class);
-    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean OMINOUS = getBoolean(net.minecraft.world.level.block.VaultBlock.class, "ominous");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty OMINOUS = getBoolean(net.minecraft.world.level.block.VaultBlock.class, "ominous");
 
     @Override
     public org.bukkit.block.data.type.Vault.State getVaultState() {

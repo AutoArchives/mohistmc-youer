@@ -9,19 +9,19 @@ public final class CraftWeatheringCopperBars extends org.bukkit.craftbukkit.bloc
         super();
     }
 
-    public CraftWeatheringCopperBars(net.minecraft.world.level.block.state.IBlockData state) {
+    public CraftWeatheringCopperBars(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.CraftMultipleFacing
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean[] FACES = new net.minecraft.world.level.block.state.properties.BlockStateBoolean[]{
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty[] FACES = new net.minecraft.world.level.block.state.properties.BooleanProperty[]{
         getBoolean(net.minecraft.world.level.block.WeatheringCopperBarsBlock.class, "north", true), getBoolean(net.minecraft.world.level.block.WeatheringCopperBarsBlock.class, "east", true), getBoolean(net.minecraft.world.level.block.WeatheringCopperBarsBlock.class, "south", true), getBoolean(net.minecraft.world.level.block.WeatheringCopperBarsBlock.class, "west", true), getBoolean(net.minecraft.world.level.block.WeatheringCopperBarsBlock.class, "up", true), getBoolean(net.minecraft.world.level.block.WeatheringCopperBarsBlock.class, "down", true)
     };
 
     @Override
     public boolean hasFace(org.bukkit.block.BlockFace face) {
-        net.minecraft.world.level.block.state.properties.BlockStateBoolean state = FACES[face.ordinal()];
+        net.minecraft.world.level.block.state.properties.BooleanProperty state = FACES[face.ordinal()];
         if (state == null) {
             throw new IllegalArgumentException("Non-allowed face " + face + ". Check MultipleFacing.getAllowedFaces.");
         }
@@ -30,7 +30,7 @@ public final class CraftWeatheringCopperBars extends org.bukkit.craftbukkit.bloc
 
     @Override
     public void setFace(org.bukkit.block.BlockFace face, boolean has) {
-        net.minecraft.world.level.block.state.properties.BlockStateBoolean state = FACES[face.ordinal()];
+        net.minecraft.world.level.block.state.properties.BooleanProperty state = FACES[face.ordinal()];
         if (state == null) {
             throw new IllegalArgumentException("Non-allowed face " + face + ". Check MultipleFacing.getAllowedFaces.");
         }
@@ -65,7 +65,7 @@ public final class CraftWeatheringCopperBars extends org.bukkit.craftbukkit.bloc
 
     // org.bukkit.craftbukkit.block.data.CraftWaterlogged
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean WATERLOGGED = getBoolean(net.minecraft.world.level.block.WeatheringCopperBarsBlock.class, "waterlogged");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty WATERLOGGED = getBoolean(net.minecraft.world.level.block.WeatheringCopperBarsBlock.class, "waterlogged");
 
     @Override
     public boolean isWaterlogged() {

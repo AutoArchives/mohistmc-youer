@@ -9,7 +9,7 @@ public final class CraftDecoratedPot extends org.bukkit.craftbukkit.block.data.C
         super();
     }
 
-    public CraftDecoratedPot(net.minecraft.world.level.block.state.IBlockData state) {
+    public CraftDecoratedPot(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
@@ -34,7 +34,7 @@ public final class CraftDecoratedPot extends org.bukkit.craftbukkit.block.data.C
 
     // org.bukkit.craftbukkit.block.data.CraftWaterlogged
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean WATERLOGGED = getBoolean(net.minecraft.world.level.block.DecoratedPotBlock.class, "waterlogged");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty WATERLOGGED = getBoolean(net.minecraft.world.level.block.DecoratedPotBlock.class, "waterlogged");
 
     @Override
     public boolean isWaterlogged() {

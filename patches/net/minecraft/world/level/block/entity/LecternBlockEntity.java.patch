@@ -9,3 +9,12 @@
          @Override
          public int getContainerSize() {
              return 1;
+@@ -155,7 +_,7 @@
+         this.setChanged();
+     }
+ 
+-    void setPage(int p_59533_) {
++    public void setPage(int p_59533_) {
+         int i = Mth.clamp(p_59533_, 0, this.pageCount - 1);
+         if (i != this.page) {
+             this.page = i;

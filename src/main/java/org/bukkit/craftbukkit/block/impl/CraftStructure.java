@@ -9,13 +9,13 @@ public final class CraftStructure extends org.bukkit.craftbukkit.block.data.Craf
         super();
     }
 
-    public CraftStructure(net.minecraft.world.level.block.state.IBlockData state) {
+    public CraftStructure(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.type.CraftStructureBlock
 
-    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.data.type.StructureBlock.Mode> MODE = getEnum(net.minecraft.world.level.block.BlockStructure.class, "mode", org.bukkit.block.data.type.StructureBlock.Mode.class);
+    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.data.type.StructureBlock.Mode> MODE = getEnum(net.minecraft.world.level.block.StructureBlock.class, "mode", org.bukkit.block.data.type.StructureBlock.Mode.class);
 
     @Override
     public org.bukkit.block.data.type.StructureBlock.Mode getMode() {

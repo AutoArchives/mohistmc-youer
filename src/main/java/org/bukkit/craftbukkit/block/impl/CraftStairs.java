@@ -9,13 +9,13 @@ public final class CraftStairs extends org.bukkit.craftbukkit.block.data.CraftBl
         super();
     }
 
-    public CraftStairs(net.minecraft.world.level.block.state.IBlockData state) {
+    public CraftStairs(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.type.CraftStairs
 
-    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.data.type.Stairs.Shape> SHAPE = getEnum(net.minecraft.world.level.block.BlockStairs.class, "shape", org.bukkit.block.data.type.Stairs.Shape.class);
+    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.data.type.Stairs.Shape> SHAPE = getEnum(net.minecraft.world.level.block.StairBlock.class, "shape", org.bukkit.block.data.type.Stairs.Shape.class);
 
     @Override
     public org.bukkit.block.data.type.Stairs.Shape getShape() {
@@ -29,7 +29,7 @@ public final class CraftStairs extends org.bukkit.craftbukkit.block.data.CraftBl
 
     // org.bukkit.craftbukkit.block.data.CraftBisected
 
-    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.data.Bisected.Half> HALF = getEnum(net.minecraft.world.level.block.BlockStairs.class, "half", org.bukkit.block.data.Bisected.Half.class);
+    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.data.Bisected.Half> HALF = getEnum(net.minecraft.world.level.block.StairBlock.class, "half", org.bukkit.block.data.Bisected.Half.class);
 
     @Override
     public org.bukkit.block.data.Bisected.Half getHalf() {
@@ -43,7 +43,7 @@ public final class CraftStairs extends org.bukkit.craftbukkit.block.data.CraftBl
 
     // org.bukkit.craftbukkit.block.data.CraftDirectional
 
-    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.BlockFace> FACING = getEnum(net.minecraft.world.level.block.BlockStairs.class, "facing", org.bukkit.block.BlockFace.class);
+    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.BlockFace> FACING = getEnum(net.minecraft.world.level.block.StairBlock.class, "facing", org.bukkit.block.BlockFace.class);
 
     @Override
     public org.bukkit.block.BlockFace getFacing() {
@@ -62,7 +62,7 @@ public final class CraftStairs extends org.bukkit.craftbukkit.block.data.CraftBl
 
     // org.bukkit.craftbukkit.block.data.CraftWaterlogged
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean WATERLOGGED = getBoolean(net.minecraft.world.level.block.BlockStairs.class, "waterlogged");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty WATERLOGGED = getBoolean(net.minecraft.world.level.block.StairBlock.class, "waterlogged");
 
     @Override
     public boolean isWaterlogged() {

@@ -9,13 +9,13 @@ public final class CraftPistonMoving extends org.bukkit.craftbukkit.block.data.C
         super();
     }
 
-    public CraftPistonMoving(net.minecraft.world.level.block.state.IBlockData state) {
+    public CraftPistonMoving(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.type.CraftTechnicalPiston
 
-    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.data.type.TechnicalPiston.Type> TYPE = getEnum(net.minecraft.world.level.block.piston.BlockPistonMoving.class, "type", org.bukkit.block.data.type.TechnicalPiston.Type.class);
+    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.data.type.TechnicalPiston.Type> TYPE = getEnum(net.minecraft.world.level.block.piston.MovingPistonBlock.class, "type", org.bukkit.block.data.type.TechnicalPiston.Type.class);
 
     @Override
     public org.bukkit.block.data.type.TechnicalPiston.Type getType() {
@@ -29,7 +29,7 @@ public final class CraftPistonMoving extends org.bukkit.craftbukkit.block.data.C
 
     // org.bukkit.craftbukkit.block.data.CraftDirectional
 
-    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.BlockFace> FACING = getEnum(net.minecraft.world.level.block.piston.BlockPistonMoving.class, "facing", org.bukkit.block.BlockFace.class);
+    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.BlockFace> FACING = getEnum(net.minecraft.world.level.block.piston.MovingPistonBlock.class, "facing", org.bukkit.block.BlockFace.class);
 
     @Override
     public org.bukkit.block.BlockFace getFacing() {

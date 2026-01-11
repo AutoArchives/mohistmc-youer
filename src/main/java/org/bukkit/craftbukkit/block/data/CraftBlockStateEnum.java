@@ -2,27 +2,27 @@ package org.bukkit.craftbukkit.block.data;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
-import net.minecraft.core.EnumDirection;
-import net.minecraft.util.INamable;
-import net.minecraft.world.level.block.state.properties.BlockStateEnum;
+import net.minecraft.core.Direction;
+import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.block.CraftBlock;
 
-public record CraftBlockStateEnum<N extends Enum<N> & INamable, B extends Enum<B>>(BlockStateEnum<N> nms, Class<B> bukkit, N[] nmsValues, B[] bukkitValues) {
+public record CraftBlockStateEnum<N extends Enum<N> & StringRepresentable, B extends Enum<B>>(EnumProperty<N> nms, Class<B> bukkit, N[] nmsValues, B[] bukkitValues) {
 
-    public CraftBlockStateEnum(BlockStateEnum<N> nms, Class<B> bukkit) {
+    public CraftBlockStateEnum(EnumProperty<N> nms, Class<B> bukkit) {
         this(nms, bukkit, nms.getValueClass().getEnumConstants(), bukkit.getEnumConstants());
     }
 
     /**
-     * Convert an NMS Enum (usually a BlockStateEnum) to its appropriate Bukkit
+     * Convert an NMS Enum (usually a EnumProperty) to its appropriate Bukkit
      * enum from the given class.
      *
      * @throws IllegalStateException if the Enum could not be converted
      */
     B toBukkit(N nms) {
-        if (nms instanceof EnumDirection) {
-            return (B) CraftBlock.notchToBlockFace((EnumDirection) nms);
+        if (nms instanceof Direction) {
+            return (B) CraftBlock.notchToBlockFace((Direction) nms);
         }
         return bukkitValues[nms.ordinal()];
     }

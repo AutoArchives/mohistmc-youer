@@ -1,7 +1,7 @@
 package org.bukkit.craftbukkit.block;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.core.BlockPosition;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.SculkCatalystBlockEntity;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -26,7 +26,7 @@ public class CraftSculkCatalyst extends CraftBlockEntityState<SculkCatalystBlock
 
         // bloom() is for visual blooming effect, cursors are what changes the blocks.
         getTileEntity().getListener().bloom(world.getHandle(), getPosition(), getHandle(), world.getHandle().getRandom());
-        getTileEntity().getListener().getSculkSpreader().addCursors(new BlockPosition(block.getX(), block.getY(), block.getZ()), charge);
+        getTileEntity().getListener().getSculkSpreader().addCursors(new BlockPos(block.getX(), block.getY(), block.getZ()), charge);
     }
 
     @Override

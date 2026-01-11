@@ -9,13 +9,13 @@ public final class CraftPistonExtension extends org.bukkit.craftbukkit.block.dat
         super();
     }
 
-    public CraftPistonExtension(net.minecraft.world.level.block.state.IBlockData state) {
+    public CraftPistonExtension(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.type.CraftPistonHead
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean SHORT = getBoolean(net.minecraft.world.level.block.piston.BlockPistonExtension.class, "short");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty SHORT = getBoolean(net.minecraft.world.level.block.piston.PistonHeadBlock.class, "short");
 
     @Override
     public boolean isShort() {
@@ -29,7 +29,7 @@ public final class CraftPistonExtension extends org.bukkit.craftbukkit.block.dat
 
     // org.bukkit.craftbukkit.block.data.type.CraftTechnicalPiston
 
-    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.data.type.TechnicalPiston.Type> TYPE = getEnum(net.minecraft.world.level.block.piston.BlockPistonExtension.class, "type", org.bukkit.block.data.type.TechnicalPiston.Type.class);
+    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.data.type.TechnicalPiston.Type> TYPE = getEnum(net.minecraft.world.level.block.piston.PistonHeadBlock.class, "type", org.bukkit.block.data.type.TechnicalPiston.Type.class);
 
     @Override
     public org.bukkit.block.data.type.TechnicalPiston.Type getType() {
@@ -43,7 +43,7 @@ public final class CraftPistonExtension extends org.bukkit.craftbukkit.block.dat
 
     // org.bukkit.craftbukkit.block.data.CraftDirectional
 
-    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.BlockFace> FACING = getEnum(net.minecraft.world.level.block.piston.BlockPistonExtension.class, "facing", org.bukkit.block.BlockFace.class);
+    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.BlockFace> FACING = getEnum(net.minecraft.world.level.block.piston.PistonHeadBlock.class, "facing", org.bukkit.block.BlockFace.class);
 
     @Override
     public org.bukkit.block.BlockFace getFacing() {

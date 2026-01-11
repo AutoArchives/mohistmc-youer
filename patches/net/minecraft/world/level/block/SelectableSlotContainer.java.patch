@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/level/block/SelectableSlotContainer.java
++++ b/net/minecraft/world/level/block/SelectableSlotContainer.java
+@@ -43,7 +_,7 @@
+         }
+     }
+ 
+-    private static int getSection(float p_434560_, int p_433136_) {
++    static int getSection(float p_434560_, int p_433136_) {
+         float f = p_434560_ * 16.0F;
+         float f1 = 16.0F / p_433136_;
+         return Mth.clamp(Mth.floor(f / f1), 0, p_433136_ - 1);

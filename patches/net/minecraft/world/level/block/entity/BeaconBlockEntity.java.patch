@@ -1,5 +1,26 @@
 --- a/net/minecraft/world/level/block/entity/BeaconBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/BeaconBlockEntity.java
+@@ -68,12 +_,15 @@
+     private static final String TAG_SECONDARY = "secondary_effect";
+     List<BeaconBeamOwner.Section> beamSections = new ArrayList<>();
+     private List<BeaconBeamOwner.Section> checkingBeamSections = new ArrayList<>();
+-    int levels;
++    public int levels;
+     private int lastCheckY;
+-    @Nullable Holder<MobEffect> primaryPower;
+-    @Nullable Holder<MobEffect> secondaryPower;
+-    private @Nullable Component name;
+-    private LockCode lockKey = LockCode.NO_LOCK;
++    @Nullable
++    public Holder<MobEffect> primaryPower;
++    @Nullable
++    public Holder<MobEffect> secondaryPower;
++    @Nullable
++    public Component name;
++    public LockCode lockKey = LockCode.NO_LOCK;
+     private final ContainerData dataAccess = new ContainerData() {
+         @Override
+         public int get(int p_58711_) {
 @@ -137,8 +_,8 @@
  
          for (int i1 = 0; i1 < 10 && blockpos.getY() <= l; i1++) {

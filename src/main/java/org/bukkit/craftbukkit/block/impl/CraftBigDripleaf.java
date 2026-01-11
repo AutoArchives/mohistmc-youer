@@ -9,7 +9,7 @@ public final class CraftBigDripleaf extends org.bukkit.craftbukkit.block.data.Cr
         super();
     }
 
-    public CraftBigDripleaf(net.minecraft.world.level.block.state.IBlockData state) {
+    public CraftBigDripleaf(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
@@ -48,7 +48,7 @@ public final class CraftBigDripleaf extends org.bukkit.craftbukkit.block.data.Cr
 
     // org.bukkit.craftbukkit.block.data.CraftWaterlogged
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean WATERLOGGED = getBoolean(net.minecraft.world.level.block.BigDripleafBlock.class, "waterlogged");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty WATERLOGGED = getBoolean(net.minecraft.world.level.block.BigDripleafBlock.class, "waterlogged");
 
     @Override
     public boolean isWaterlogged() {

@@ -9,7 +9,7 @@ public final class CraftWeatheringLightningRod extends org.bukkit.craftbukkit.bl
         super();
     }
 
-    public CraftWeatheringLightningRod(net.minecraft.world.level.block.state.IBlockData state) {
+    public CraftWeatheringLightningRod(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
@@ -34,7 +34,7 @@ public final class CraftWeatheringLightningRod extends org.bukkit.craftbukkit.bl
 
     // org.bukkit.craftbukkit.block.data.CraftPowerable
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean POWERED = getBoolean(net.minecraft.world.level.block.WeatheringLightningRodBlock.class, "powered");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty POWERED = getBoolean(net.minecraft.world.level.block.WeatheringLightningRodBlock.class, "powered");
 
     @Override
     public boolean isPowered() {
@@ -48,7 +48,7 @@ public final class CraftWeatheringLightningRod extends org.bukkit.craftbukkit.bl
 
     // org.bukkit.craftbukkit.block.data.CraftWaterlogged
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean WATERLOGGED = getBoolean(net.minecraft.world.level.block.WeatheringLightningRodBlock.class, "waterlogged");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty WATERLOGGED = getBoolean(net.minecraft.world.level.block.WeatheringLightningRodBlock.class, "waterlogged");
 
     @Override
     public boolean isWaterlogged() {

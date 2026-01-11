@@ -9,7 +9,7 @@ public final class CraftAmethystCluster extends org.bukkit.craftbukkit.block.dat
         super();
     }
 
-    public CraftAmethystCluster(net.minecraft.world.level.block.state.IBlockData state) {
+    public CraftAmethystCluster(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
@@ -34,7 +34,7 @@ public final class CraftAmethystCluster extends org.bukkit.craftbukkit.block.dat
 
     // org.bukkit.craftbukkit.block.data.CraftWaterlogged
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean WATERLOGGED = getBoolean(net.minecraft.world.level.block.AmethystClusterBlock.class, "waterlogged");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty WATERLOGGED = getBoolean(net.minecraft.world.level.block.AmethystClusterBlock.class, "waterlogged");
 
     @Override
     public boolean isWaterlogged() {

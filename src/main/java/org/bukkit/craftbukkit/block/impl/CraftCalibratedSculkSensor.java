@@ -9,7 +9,7 @@ public final class CraftCalibratedSculkSensor extends org.bukkit.craftbukkit.blo
         super();
     }
 
-    public CraftCalibratedSculkSensor(net.minecraft.world.level.block.state.IBlockData state) {
+    public CraftCalibratedSculkSensor(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
@@ -48,7 +48,7 @@ public final class CraftCalibratedSculkSensor extends org.bukkit.craftbukkit.blo
 
     // org.bukkit.craftbukkit.block.data.CraftAnaloguePowerable
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateInteger POWER = getInteger(net.minecraft.world.level.block.CalibratedSculkSensorBlock.class, "power");
+    private static final net.minecraft.world.level.block.state.properties.IntegerProperty POWER = getInteger(net.minecraft.world.level.block.CalibratedSculkSensorBlock.class, "power");
 
     @Override
     public int getPower() {
@@ -67,7 +67,7 @@ public final class CraftCalibratedSculkSensor extends org.bukkit.craftbukkit.blo
 
     // org.bukkit.craftbukkit.block.data.CraftWaterlogged
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean WATERLOGGED = getBoolean(net.minecraft.world.level.block.CalibratedSculkSensorBlock.class, "waterlogged");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty WATERLOGGED = getBoolean(net.minecraft.world.level.block.CalibratedSculkSensorBlock.class, "waterlogged");
 
     @Override
     public boolean isWaterlogged() {

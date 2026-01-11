@@ -9,13 +9,13 @@ public final class CraftMinecartDetector extends org.bukkit.craftbukkit.block.da
         super();
     }
 
-    public CraftMinecartDetector(net.minecraft.world.level.block.state.IBlockData state) {
+    public CraftMinecartDetector(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.CraftPowerable
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean POWERED = getBoolean(net.minecraft.world.level.block.BlockMinecartDetector.class, "powered");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty POWERED = getBoolean(net.minecraft.world.level.block.DetectorRailBlock.class, "powered");
 
     @Override
     public boolean isPowered() {
@@ -29,7 +29,7 @@ public final class CraftMinecartDetector extends org.bukkit.craftbukkit.block.da
 
     // org.bukkit.craftbukkit.block.data.CraftRail
 
-    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.data.Rail.Shape> SHAPE = getEnum(net.minecraft.world.level.block.BlockMinecartDetector.class, "shape", org.bukkit.block.data.Rail.Shape.class);
+    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.data.Rail.Shape> SHAPE = getEnum(net.minecraft.world.level.block.DetectorRailBlock.class, "shape", org.bukkit.block.data.Rail.Shape.class);
 
     @Override
     public org.bukkit.block.data.Rail.Shape getShape() {
@@ -48,7 +48,7 @@ public final class CraftMinecartDetector extends org.bukkit.craftbukkit.block.da
 
     // org.bukkit.craftbukkit.block.data.CraftWaterlogged
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean WATERLOGGED = getBoolean(net.minecraft.world.level.block.BlockMinecartDetector.class, "waterlogged");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty WATERLOGGED = getBoolean(net.minecraft.world.level.block.DetectorRailBlock.class, "waterlogged");
 
     @Override
     public boolean isWaterlogged() {

@@ -9,13 +9,13 @@ public final class CraftPortal extends org.bukkit.craftbukkit.block.data.CraftBl
         super();
     }
 
-    public CraftPortal(net.minecraft.world.level.block.state.IBlockData state) {
+    public CraftPortal(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.CraftOrientable
 
-    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.Axis> AXIS = getEnum(net.minecraft.world.level.block.BlockPortal.class, "axis", org.bukkit.Axis.class);
+    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.Axis> AXIS = getEnum(net.minecraft.world.level.block.NetherPortalBlock.class, "axis", org.bukkit.Axis.class);
 
     @Override
     public org.bukkit.Axis getAxis() {

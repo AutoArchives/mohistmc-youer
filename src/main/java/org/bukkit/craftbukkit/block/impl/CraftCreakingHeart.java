@@ -9,14 +9,14 @@ public final class CraftCreakingHeart extends org.bukkit.craftbukkit.block.data.
         super();
     }
 
-    public CraftCreakingHeart(net.minecraft.world.level.block.state.IBlockData state) {
+    public CraftCreakingHeart(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.type.CraftCreakingHeart
 
     private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.data.type.CreakingHeart.State> CREAKING_HEART_STATE = getEnum(net.minecraft.world.level.block.CreakingHeartBlock.class, "creaking_heart_state", org.bukkit.block.data.type.CreakingHeart.State.class);
-    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean NATURAL = getBoolean(net.minecraft.world.level.block.CreakingHeartBlock.class, "natural");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty NATURAL = getBoolean(net.minecraft.world.level.block.CreakingHeartBlock.class, "natural");
 
     @Override
     public boolean isActive() {

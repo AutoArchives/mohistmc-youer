@@ -9,13 +9,13 @@ public final class CraftFlowerBed extends org.bukkit.craftbukkit.block.data.Craf
         super();
     }
 
-    public CraftFlowerBed(net.minecraft.world.level.block.state.IBlockData state) {
+    public CraftFlowerBed(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.type.CraftFlowerBed
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateInteger FLOWER_AMOUNT = getInteger(net.minecraft.world.level.block.FlowerBedBlock.class, "flower_amount");
+    private static final net.minecraft.world.level.block.state.properties.IntegerProperty FLOWER_AMOUNT = getInteger(net.minecraft.world.level.block.FlowerBedBlock.class, "flower_amount");
 
     @Override
     public int getFlowerAmount() {

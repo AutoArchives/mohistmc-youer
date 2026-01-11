@@ -2,12 +2,12 @@ package org.bukkit.craftbukkit.block;
 
 import com.google.common.base.Preconditions;
 import com.mojang.authlib.GameProfile;
-import net.minecraft.resources.MinecraftKey;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.players.NameAndId;
-import net.minecraft.util.SystemUtils;
+import net.minecraft.util.Util;
 import net.minecraft.world.item.component.ResolvableProfile;
-import net.minecraft.world.level.block.entity.TileEntitySkull;
+import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
@@ -25,12 +25,12 @@ import org.bukkit.craftbukkit.util.CraftNamespacedKey;
 import org.bukkit.profile.PlayerProfile;
 import org.jetbrains.annotations.Nullable;
 
-public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implements Skull {
+public class CraftSkull extends CraftBlockEntityState<SkullBlockEntity> implements Skull {
 
     private static final int MAX_OWNER_LENGTH = 16;
     private ResolvableProfile profile;
 
-    public CraftSkull(World world, TileEntitySkull tileEntity) {
+    public CraftSkull(World world, SkullBlockEntity tileEntity) {
         super(world, tileEntity);
     }
 
@@ -39,7 +39,7 @@ public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implement
     }
 
     @Override
-    public void load(TileEntitySkull skull) {
+    public void load(SkullBlockEntity skull) {
         super.load(skull);
 
         ResolvableProfile owner = skull.getOwnerProfile();
@@ -76,7 +76,7 @@ public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implement
     @Override
     public OfflinePlayer getOwningPlayer() {
         if (hasOwner()) {
-            if (!profile.partialProfile().id().equals(SystemUtils.NIL_UUID)) {
+            if (!profile.partialProfile().id().equals(Util.NIL_UUID)) {
                 return Bukkit.getOfflinePlayer(profile.partialProfile().id());
             }
 
@@ -119,7 +119,7 @@ public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implement
 
     @Override
     public NamespacedKey getNoteBlockSound() {
-        MinecraftKey key = getSnapshot().getNoteBlockSound();
+        Identifier key = getSnapshot().getNoteBlockSound();
         return (key != null) ? CraftNamespacedKey.fromMinecraft(key) : null;
     }
 
@@ -184,7 +184,7 @@ public class CraftSkull extends CraftBlockEntityState<TileEntitySkull> implement
     }
 
     @Override
-    protected void applyTo(TileEntitySkull skull) {
+    protected void applyTo(SkullBlockEntity skull) {
         super.applyTo(skull);
 
         if (getSkullType() == SkullType.PLAYER) {

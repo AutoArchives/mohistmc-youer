@@ -5,7 +5,7 @@ import org.bukkit.craftbukkit.block.data.CraftBlockData;
 
 public abstract class CraftLeafLitter extends CraftBlockData implements LeafLitter {
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateInteger SEGMENT_AMOUNT = getInteger("segment_amount");
+    private static final net.minecraft.world.level.block.state.properties.IntegerProperty SEGMENT_AMOUNT = getInteger("segment_amount");
 
     @Override
     public int getSegmentAmount() {

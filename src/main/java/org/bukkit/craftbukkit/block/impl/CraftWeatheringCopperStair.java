@@ -9,7 +9,7 @@ public final class CraftWeatheringCopperStair extends org.bukkit.craftbukkit.blo
         super();
     }
 
-    public CraftWeatheringCopperStair(net.minecraft.world.level.block.state.IBlockData state) {
+    public CraftWeatheringCopperStair(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
@@ -62,7 +62,7 @@ public final class CraftWeatheringCopperStair extends org.bukkit.craftbukkit.blo
 
     // org.bukkit.craftbukkit.block.data.CraftWaterlogged
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean WATERLOGGED = getBoolean(net.minecraft.world.level.block.WeatheringCopperStairBlock.class, "waterlogged");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty WATERLOGGED = getBoolean(net.minecraft.world.level.block.WeatheringCopperStairBlock.class, "waterlogged");
 
     @Override
     public boolean isWaterlogged() {

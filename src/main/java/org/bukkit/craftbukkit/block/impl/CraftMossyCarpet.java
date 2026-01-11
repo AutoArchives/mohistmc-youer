@@ -9,13 +9,13 @@ public final class CraftMossyCarpet extends org.bukkit.craftbukkit.block.data.Cr
         super();
     }
 
-    public CraftMossyCarpet(net.minecraft.world.level.block.state.IBlockData state) {
+    public CraftMossyCarpet(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.type.CraftMossyCarpet
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean BOTTOM = getBoolean(net.minecraft.world.level.block.MossyCarpetBlock.class, "bottom");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty BOTTOM = getBoolean(net.minecraft.world.level.block.MossyCarpetBlock.class, "bottom");
     private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.data.type.MossyCarpet.Height>[] HEIGHTS = new org.bukkit.craftbukkit.block.data.CraftBlockStateEnum[]{
         getEnum(net.minecraft.world.level.block.MossyCarpetBlock.class, "north", org.bukkit.block.data.type.MossyCarpet.Height.class),
         getEnum(net.minecraft.world.level.block.MossyCarpetBlock.class, "east", org.bukkit.block.data.type.MossyCarpet.Height.class),

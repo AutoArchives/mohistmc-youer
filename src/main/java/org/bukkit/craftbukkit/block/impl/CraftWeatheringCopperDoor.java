@@ -9,7 +9,7 @@ public final class CraftWeatheringCopperDoor extends org.bukkit.craftbukkit.bloc
         super();
     }
 
-    public CraftWeatheringCopperDoor(net.minecraft.world.level.block.state.IBlockData state) {
+    public CraftWeatheringCopperDoor(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
@@ -62,7 +62,7 @@ public final class CraftWeatheringCopperDoor extends org.bukkit.craftbukkit.bloc
 
     // org.bukkit.craftbukkit.block.data.CraftOpenable
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean OPEN = getBoolean(net.minecraft.world.level.block.WeatheringCopperDoorBlock.class, "open");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty OPEN = getBoolean(net.minecraft.world.level.block.WeatheringCopperDoorBlock.class, "open");
 
     @Override
     public boolean isOpen() {
@@ -76,7 +76,7 @@ public final class CraftWeatheringCopperDoor extends org.bukkit.craftbukkit.bloc
 
     // org.bukkit.craftbukkit.block.data.CraftPowerable
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean POWERED = getBoolean(net.minecraft.world.level.block.WeatheringCopperDoorBlock.class, "powered");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty POWERED = getBoolean(net.minecraft.world.level.block.WeatheringCopperDoorBlock.class, "powered");
 
     @Override
     public boolean isPowered() {

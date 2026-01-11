@@ -9,13 +9,13 @@ public final class CraftRedstoneComparator extends org.bukkit.craftbukkit.block.
         super();
     }
 
-    public CraftRedstoneComparator(net.minecraft.world.level.block.state.IBlockData state) {
+    public CraftRedstoneComparator(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.type.CraftComparator
 
-    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.data.type.Comparator.Mode> MODE = getEnum(net.minecraft.world.level.block.BlockRedstoneComparator.class, "mode", org.bukkit.block.data.type.Comparator.Mode.class);
+    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.data.type.Comparator.Mode> MODE = getEnum(net.minecraft.world.level.block.ComparatorBlock.class, "mode", org.bukkit.block.data.type.Comparator.Mode.class);
 
     @Override
     public org.bukkit.block.data.type.Comparator.Mode getMode() {
@@ -29,7 +29,7 @@ public final class CraftRedstoneComparator extends org.bukkit.craftbukkit.block.
 
     // org.bukkit.craftbukkit.block.data.CraftDirectional
 
-    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.BlockFace> FACING = getEnum(net.minecraft.world.level.block.BlockRedstoneComparator.class, "facing", org.bukkit.block.BlockFace.class);
+    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.BlockFace> FACING = getEnum(net.minecraft.world.level.block.ComparatorBlock.class, "facing", org.bukkit.block.BlockFace.class);
 
     @Override
     public org.bukkit.block.BlockFace getFacing() {
@@ -48,7 +48,7 @@ public final class CraftRedstoneComparator extends org.bukkit.craftbukkit.block.
 
     // org.bukkit.craftbukkit.block.data.CraftPowerable
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean POWERED = getBoolean(net.minecraft.world.level.block.BlockRedstoneComparator.class, "powered");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty POWERED = getBoolean(net.minecraft.world.level.block.ComparatorBlock.class, "powered");
 
     @Override
     public boolean isPowered() {

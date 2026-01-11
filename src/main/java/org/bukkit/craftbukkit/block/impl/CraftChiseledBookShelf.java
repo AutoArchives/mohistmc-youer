@@ -9,13 +9,13 @@ public final class CraftChiseledBookShelf extends org.bukkit.craftbukkit.block.d
         super();
     }
 
-    public CraftChiseledBookShelf(net.minecraft.world.level.block.state.IBlockData state) {
+    public CraftChiseledBookShelf(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.type.CraftChiseledBookshelf
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean[] SLOT_OCCUPIED = new net.minecraft.world.level.block.state.properties.BlockStateBoolean[]{
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty[] SLOT_OCCUPIED = new net.minecraft.world.level.block.state.properties.BooleanProperty[]{
         getBoolean(net.minecraft.world.level.block.ChiseledBookShelfBlock.class, "slot_0_occupied"), getBoolean(net.minecraft.world.level.block.ChiseledBookShelfBlock.class, "slot_1_occupied"), getBoolean(net.minecraft.world.level.block.ChiseledBookShelfBlock.class, "slot_2_occupied"),
         getBoolean(net.minecraft.world.level.block.ChiseledBookShelfBlock.class, "slot_3_occupied"), getBoolean(net.minecraft.world.level.block.ChiseledBookShelfBlock.class, "slot_4_occupied"), getBoolean(net.minecraft.world.level.block.ChiseledBookShelfBlock.class, "slot_5_occupied")
     };

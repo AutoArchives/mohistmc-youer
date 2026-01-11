@@ -9,13 +9,13 @@ public final class CraftChest extends org.bukkit.craftbukkit.block.data.CraftBlo
         super();
     }
 
-    public CraftChest(net.minecraft.world.level.block.state.IBlockData state) {
+    public CraftChest(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.type.CraftChest
 
-    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.data.type.Chest.Type> TYPE = getEnum(net.minecraft.world.level.block.BlockChest.class, "type", org.bukkit.block.data.type.Chest.Type.class);
+    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.data.type.Chest.Type> TYPE = getEnum(net.minecraft.world.level.block.ChestBlock.class, "type", org.bukkit.block.data.type.Chest.Type.class);
 
     @Override
     public org.bukkit.block.data.type.Chest.Type getType() {
@@ -29,7 +29,7 @@ public final class CraftChest extends org.bukkit.craftbukkit.block.data.CraftBlo
 
     // org.bukkit.craftbukkit.block.data.CraftDirectional
 
-    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.BlockFace> FACING = getEnum(net.minecraft.world.level.block.BlockChest.class, "facing", org.bukkit.block.BlockFace.class);
+    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.BlockFace> FACING = getEnum(net.minecraft.world.level.block.ChestBlock.class, "facing", org.bukkit.block.BlockFace.class);
 
     @Override
     public org.bukkit.block.BlockFace getFacing() {
@@ -48,7 +48,7 @@ public final class CraftChest extends org.bukkit.craftbukkit.block.data.CraftBlo
 
     // org.bukkit.craftbukkit.block.data.CraftWaterlogged
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean WATERLOGGED = getBoolean(net.minecraft.world.level.block.BlockChest.class, "waterlogged");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty WATERLOGGED = getBoolean(net.minecraft.world.level.block.ChestBlock.class, "waterlogged");
 
     @Override
     public boolean isWaterlogged() {

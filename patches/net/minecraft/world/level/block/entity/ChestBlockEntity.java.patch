@@ -1,9 +1,20 @@
 --- a/net/minecraft/world/level/block/entity/ChestBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/ChestBlockEntity.java
-@@ -187,6 +_,17 @@
+@@ -29,7 +_,7 @@
+     private static final int EVENT_SET_OPEN_COUNT = 1;
+     private static final Component DEFAULT_NAME = Component.translatable("container.chest");
+     private NonNullList<ItemStack> items = NonNullList.withSize(27, ItemStack.EMPTY);
+-    private final ContainerOpenersCounter openersCounter = new ContainerOpenersCounter() {
++    public final ContainerOpenersCounter openersCounter = new ContainerOpenersCounter() {
+         @Override
+         protected void onOpen(Level p_155357_, BlockPos p_155358_, BlockState p_155359_) {
+             if (p_155359_.getBlock() instanceof ChestBlock chestblock) {
+@@ -185,6 +_,17 @@
+     @Override
+     protected AbstractContainerMenu createMenu(int p_59082_, Inventory p_59083_) {
          return ChestMenu.threeRows(p_59082_, p_59083_, this);
-     }
- 
++    }
++
 +    @Override
 +    public void setBlockState(BlockState p_155251_) {
 +        var oldState = getBlockState();
@@ -13,8 +24,6 @@
 +                || (oldState.getValue(ChestBlock.TYPE) != p_155251_.getValue(ChestBlock.TYPE))) {
 +            this.invalidateCapabilities();
 +        }
-+    }
-+
+     }
+ 
      public void recheckOpen() {
-         if (!this.remove) {
-             this.openersCounter.recheckOpeners(this.getLevel(), this.getBlockPos(), this.getBlockState());

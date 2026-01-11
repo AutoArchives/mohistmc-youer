@@ -2,37 +2,36 @@ package org.bukkit.craftbukkit.block.banner;
 
 import com.google.common.base.Preconditions;
 import net.minecraft.core.Holder;
-import net.minecraft.core.IRegistry;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.world.level.block.entity.EnumBannerPatternType;
+import net.minecraft.world.level.block.entity.BannerPattern;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.block.banner.PatternType;
 import org.bukkit.craftbukkit.CraftRegistry;
 import org.bukkit.craftbukkit.registry.CraftOldEnumRegistryItem;
 
-public class CraftPatternType extends CraftOldEnumRegistryItem<PatternType, EnumBannerPatternType> implements PatternType {
+public class CraftPatternType extends CraftOldEnumRegistryItem<PatternType, BannerPattern> implements PatternType {
 
     private static int count = 0;
 
-    public static PatternType minecraftToBukkit(EnumBannerPatternType minecraft) {
+    public static PatternType minecraftToBukkit(BannerPattern minecraft) {
         return CraftRegistry.minecraftToBukkit(minecraft, Registries.BANNER_PATTERN, Registry.BANNER_PATTERN);
     }
 
-    public static PatternType minecraftHolderToBukkit(Holder<EnumBannerPatternType> minecraft) {
+    public static PatternType minecraftHolderToBukkit(Holder<BannerPattern> minecraft) {
         return minecraftToBukkit(minecraft.value());
     }
 
-    public static EnumBannerPatternType bukkitToMinecraft(PatternType bukkit) {
+    public static BannerPattern bukkitToMinecraft(PatternType bukkit) {
         return CraftRegistry.bukkitToMinecraft(bukkit);
     }
 
-    public static Holder<EnumBannerPatternType> bukkitToMinecraftHolder(PatternType bukkit) {
+    public static Holder<BannerPattern> bukkitToMinecraftHolder(PatternType bukkit) {
         Preconditions.checkArgument(bukkit != null);
 
-        IRegistry<EnumBannerPatternType> registry = CraftRegistry.getMinecraftRegistry(Registries.BANNER_PATTERN);
+        net.minecraft.core.Registry<BannerPattern> registry = CraftRegistry.getMinecraftRegistry(Registries.BANNER_PATTERN);
 
-        if (registry.wrapAsHolder(bukkitToMinecraft(bukkit)) instanceof Holder.c<EnumBannerPatternType> holder) {
+        if (registry.wrapAsHolder(bukkitToMinecraft(bukkit)) instanceof Holder.Reference<BannerPattern> holder) {
             return holder;
         }
 
@@ -40,7 +39,7 @@ public class CraftPatternType extends CraftOldEnumRegistryItem<PatternType, Enum
                 + ", this can happen if a plugin creates its own banner pattern without properly registering it.");
     }
 
-    public CraftPatternType(NamespacedKey key, Holder<EnumBannerPatternType> handle) {
+    public CraftPatternType(NamespacedKey key, Holder<BannerPattern> handle) {
         super(key, handle, count++);
     }
 

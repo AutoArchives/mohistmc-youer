@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/level/block/entity/BellBlockEntity.java
++++ b/net/minecraft/world/level/block/entity/BellBlockEntity.java
+@@ -32,7 +_,7 @@
+     public boolean shaking;
+     public Direction clickDirection;
+     private List<LivingEntity> nearbyEntities;
+-    private boolean resonating;
++    public boolean resonating;
+     private int resonationTicks;
+ 
+     public BellBlockEntity(BlockPos p_155173_, BlockState p_155174_) {

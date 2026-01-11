@@ -9,13 +9,13 @@ public final class CraftBell extends org.bukkit.craftbukkit.block.data.CraftBloc
         super();
     }
 
-    public CraftBell(net.minecraft.world.level.block.state.IBlockData state) {
+    public CraftBell(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.type.CraftBell
 
-    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.data.type.Bell.Attachment> ATTACHMENT = getEnum(net.minecraft.world.level.block.BlockBell.class, "attachment", org.bukkit.block.data.type.Bell.Attachment.class);
+    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.data.type.Bell.Attachment> ATTACHMENT = getEnum(net.minecraft.world.level.block.BellBlock.class, "attachment", org.bukkit.block.data.type.Bell.Attachment.class);
 
     @Override
     public org.bukkit.block.data.type.Bell.Attachment getAttachment() {
@@ -29,7 +29,7 @@ public final class CraftBell extends org.bukkit.craftbukkit.block.data.CraftBloc
 
     // org.bukkit.craftbukkit.block.data.CraftDirectional
 
-    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.BlockFace> FACING = getEnum(net.minecraft.world.level.block.BlockBell.class, "facing", org.bukkit.block.BlockFace.class);
+    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.BlockFace> FACING = getEnum(net.minecraft.world.level.block.BellBlock.class, "facing", org.bukkit.block.BlockFace.class);
 
     @Override
     public org.bukkit.block.BlockFace getFacing() {
@@ -48,7 +48,7 @@ public final class CraftBell extends org.bukkit.craftbukkit.block.data.CraftBloc
 
     // org.bukkit.craftbukkit.block.data.CraftPowerable
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean POWERED = getBoolean(net.minecraft.world.level.block.BlockBell.class, "powered");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty POWERED = getBoolean(net.minecraft.world.level.block.BellBlock.class, "powered");
 
     @Override
     public boolean isPowered() {

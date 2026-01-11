@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/level/block/entity/SculkCatalystBlockEntity.java
++++ b/net/minecraft/world/level/block/entity/SculkCatalystBlockEntity.java
+@@ -109,7 +_,7 @@
+             return this.sculkSpreader;
+         }
+ 
+-        private void bloom(ServerLevel p_281501_, BlockPos p_281448_, BlockState p_281966_, RandomSource p_283606_) {
++        public void bloom(ServerLevel p_281501_, BlockPos p_281448_, BlockState p_281966_, RandomSource p_283606_) {
+             p_281501_.setBlock(p_281448_, p_281966_.setValue(SculkCatalystBlock.PULSE, true), 3);
+             p_281501_.scheduleTick(p_281448_, p_281966_.getBlock(), 8);
+             p_281501_.sendParticles(ParticleTypes.SCULK_SOUL, p_281448_.getX() + 0.5, p_281448_.getY() + 1.15, p_281448_.getZ() + 0.5, 2, 0.2, 0.0, 0.2, 0.0);

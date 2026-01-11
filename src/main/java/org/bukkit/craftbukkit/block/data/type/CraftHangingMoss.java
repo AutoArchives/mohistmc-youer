@@ -5,7 +5,7 @@ import org.bukkit.craftbukkit.block.data.CraftBlockData;
 
 public abstract class CraftHangingMoss extends CraftBlockData implements HangingMoss {
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean TIP = getBoolean("tip");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty TIP = getBoolean("tip");
 
     @Override
     public boolean isTip() {

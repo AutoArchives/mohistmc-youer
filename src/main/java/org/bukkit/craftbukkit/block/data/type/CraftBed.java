@@ -6,7 +6,7 @@ import org.bukkit.craftbukkit.block.data.CraftBlockData;
 public abstract class CraftBed extends CraftBlockData implements Bed {
 
     private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.data.type.Bed.Part> PART = getEnum("part", org.bukkit.block.data.type.Bed.Part.class);
-    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean OCCUPIED = getBoolean("occupied");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty OCCUPIED = getBoolean("occupied");
 
     @Override
     public org.bukkit.block.data.type.Bed.Part getPart() {

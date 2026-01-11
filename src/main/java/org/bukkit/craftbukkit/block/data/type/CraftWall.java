@@ -5,7 +5,7 @@ import org.bukkit.craftbukkit.block.data.CraftBlockData;
 
 public abstract class CraftWall extends CraftBlockData implements Wall {
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean UP = getBoolean("up");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty UP = getBoolean("up");
     private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.data.type.Wall.Height>[] HEIGHTS = new org.bukkit.craftbukkit.block.data.CraftBlockStateEnum[]{
         getEnum("north", org.bukkit.block.data.type.Wall.Height.class),
         getEnum("east", org.bukkit.block.data.type.Wall.Height.class),

@@ -9,13 +9,13 @@ public final class CraftPumpkinCarved extends org.bukkit.craftbukkit.block.data.
         super();
     }
 
-    public CraftPumpkinCarved(net.minecraft.world.level.block.state.IBlockData state) {
+    public CraftPumpkinCarved(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.CraftDirectional
 
-    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.BlockFace> FACING = getEnum(net.minecraft.world.level.block.BlockPumpkinCarved.class, "facing", org.bukkit.block.BlockFace.class);
+    private static final org.bukkit.craftbukkit.block.data.CraftBlockStateEnum<?, org.bukkit.block.BlockFace> FACING = getEnum(net.minecraft.world.level.block.CarvedPumpkinBlock.class, "facing", org.bukkit.block.BlockFace.class);
 
     @Override
     public org.bukkit.block.BlockFace getFacing() {

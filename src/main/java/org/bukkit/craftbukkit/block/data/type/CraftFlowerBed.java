@@ -5,7 +5,7 @@ import org.bukkit.craftbukkit.block.data.CraftBlockData;
 
 public abstract class CraftFlowerBed extends CraftBlockData implements FlowerBed {
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateInteger FLOWER_AMOUNT = getInteger("flower_amount");
+    private static final net.minecraft.world.level.block.state.properties.IntegerProperty FLOWER_AMOUNT = getInteger("flower_amount");
 
     @Override
     public int getFlowerAmount() {

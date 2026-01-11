@@ -4,21 +4,21 @@ import com.google.common.base.Preconditions;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.function.Consumer;
-import net.minecraft.core.BlockPosition;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.world.EnumHand;
-import net.minecraft.world.entity.player.EntityHuman;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.BlockAccessAir;
+import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.BlockFire;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Fallable;
-import net.minecraft.world.level.block.state.BlockBase;
-import net.minecraft.world.level.block.state.IBlockData;
-import net.minecraft.world.phys.MovingObjectPositionBlock;
+import net.minecraft.world.level.block.FireBlock;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
@@ -69,10 +69,10 @@ public class CraftBlockType<B extends BlockData> extends CraftRegistryItem<Block
     }
 
     private static final Class<?>[] USE_WITHOUT_ITEM_ARGS = new Class[]{
-        IBlockData.class, net.minecraft.world.level.World.class, BlockPosition.class, EntityHuman.class, MovingObjectPositionBlock.class
+            BlockState.class, net.minecraft.world.level.Level.class, BlockPos.class, Player.class, BlockHitResult.class
     };
     private static final Class<?>[] USE_ITEM_ON_ARGS = new Class[]{
-        net.minecraft.world.item.ItemStack.class, IBlockData.class, net.minecraft.world.level.World.class, BlockPosition.class, EntityHuman.class, EnumHand.class, MovingObjectPositionBlock.class
+        net.minecraft.world.item.ItemStack.class, BlockState.class, net.minecraft.world.level.Level.class, BlockPos.class, Player.class, InteractionHand.class, BlockHitResult.class
     };
 
     private static boolean isInteractable(Block block) {
@@ -80,7 +80,7 @@ public class CraftBlockType<B extends BlockData> extends CraftRegistryItem<Block
 
         boolean hasMethod = hasMethod(clazz, USE_WITHOUT_ITEM_ARGS) || hasMethod(clazz, USE_ITEM_ON_ARGS);
 
-        if (!hasMethod && clazz.getSuperclass() != BlockBase.class) {
+        if (!hasMethod && clazz.getSuperclass() != BlockBehaviour.class) {
             clazz = clazz.getSuperclass();
 
             hasMethod = hasMethod(clazz, USE_WITHOUT_ITEM_ARGS) || hasMethod(clazz, USE_ITEM_ON_ARGS);
@@ -179,12 +179,12 @@ public class CraftBlockType<B extends BlockData> extends CraftRegistryItem<Block
 
     @Override
     public boolean isBurnable() {
-        return ((BlockFire) Blocks.FIRE).igniteOdds.getOrDefault(getHandle(), 0) > 0;
+        return ((FireBlock) Blocks.FIRE).igniteOdds.getOrDefault(getHandle(), 0) > 0;
     }
 
     @Override
     public boolean isOccluding() {
-        return getHandle().defaultBlockState().isRedstoneConductor(BlockAccessAir.INSTANCE, BlockPosition.ZERO);
+        return getHandle().defaultBlockState().isRedstoneConductor(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
     }
 
     @Override

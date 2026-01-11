@@ -9,13 +9,13 @@ public final class CraftSkull extends org.bukkit.craftbukkit.block.data.CraftBlo
         super();
     }
 
-    public CraftSkull(net.minecraft.world.level.block.state.IBlockData state) {
+    public CraftSkull(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
     // org.bukkit.craftbukkit.block.data.CraftPowerable
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateBoolean POWERED = getBoolean(net.minecraft.world.level.block.BlockSkull.class, "powered");
+    private static final net.minecraft.world.level.block.state.properties.BooleanProperty POWERED = getBoolean(net.minecraft.world.level.block.SkullBlock.class, "powered");
 
     @Override
     public boolean isPowered() {
@@ -29,7 +29,7 @@ public final class CraftSkull extends org.bukkit.craftbukkit.block.data.CraftBlo
 
     // org.bukkit.craftbukkit.block.data.CraftRotatable
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateInteger ROTATION = getInteger(net.minecraft.world.level.block.BlockSkull.class, "rotation");
+    private static final net.minecraft.world.level.block.state.properties.IntegerProperty ROTATION = getInteger(net.minecraft.world.level.block.SkullBlock.class, "rotation");
 
     @Override
     public org.bukkit.block.BlockFace getRotation() {

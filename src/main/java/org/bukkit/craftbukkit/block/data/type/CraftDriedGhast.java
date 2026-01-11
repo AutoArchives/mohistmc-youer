@@ -5,7 +5,7 @@ import org.bukkit.craftbukkit.block.data.CraftBlockData;
 
 public abstract class CraftDriedGhast extends CraftBlockData implements DriedGhast {
 
-    private static final net.minecraft.world.level.block.state.properties.BlockStateInteger HYDRATION = getInteger("hydration");
+    private static final net.minecraft.world.level.block.state.properties.IntegerProperty HYDRATION = getInteger("hydration");
 
     @Override
     public int getHydration() {

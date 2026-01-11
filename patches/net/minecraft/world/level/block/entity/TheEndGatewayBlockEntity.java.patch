@@ -1,5 +1,20 @@
 --- a/net/minecraft/world/level/block/entity/TheEndGatewayBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/TheEndGatewayBlockEntity.java
+@@ -37,10 +_,11 @@
+     private static final int GATEWAY_HEIGHT_ABOVE_SURFACE = 10;
+     private static final long DEFAULT_AGE = 0L;
+     private static final boolean DEFAULT_EXACT_TELEPORT = false;
+-    private long age = 0L;
++    public long age = 0L;
+     private int teleportCooldown;
+-    private @Nullable BlockPos exitPortal;
+-    private boolean exactTeleport = false;
++    @Nullable
++    public BlockPos exitPortal;
++    public boolean exactTeleport = false;
+ 
+     public TheEndGatewayBlockEntity(BlockPos p_155813_, BlockState p_155814_) {
+         super(BlockEntityType.END_GATEWAY, p_155813_, p_155814_);
 @@ -252,7 +_,7 @@
  
      @Override

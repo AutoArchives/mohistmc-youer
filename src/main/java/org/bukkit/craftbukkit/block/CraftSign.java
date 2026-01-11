@@ -2,8 +2,8 @@ package org.bukkit.craftbukkit.block;
 
 import com.google.common.base.Preconditions;
 import java.util.UUID;
-import net.minecraft.network.chat.IChatBaseComponent;
-import net.minecraft.world.level.block.entity.TileEntitySign;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
@@ -19,7 +19,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerSignOpenEvent;
 import org.jetbrains.annotations.NotNull;
 
-public class CraftSign<T extends TileEntitySign> extends CraftBlockEntityState<T> implements Sign {
+public class CraftSign<T extends SignBlockEntity> extends CraftBlockEntityState<T> implements Sign {
 
     private final CraftSignSide front;
     private final CraftSignSide back;
@@ -166,27 +166,27 @@ public class CraftSign<T extends TileEntitySign> extends CraftBlockEntityState<T
             return;
         }
 
-        TileEntitySign handle = ((CraftSign<?>) sign).getTileEntity();
+        SignBlockEntity handle = ((CraftSign<?>) sign).getTileEntity();
         handle.setAllowedPlayerEditor(player.getUniqueId());
 
         ((CraftPlayer) player).getHandle().openTextEdit(handle, Side.FRONT == side);
     }
 
-    public static IChatBaseComponent[] sanitizeLines(String[] lines) {
-        IChatBaseComponent[] components = new IChatBaseComponent[4];
+    public static Component[] sanitizeLines(String[] lines) {
+        Component[] components = new Component[4];
 
         for (int i = 0; i < 4; i++) {
             if (i < lines.length && lines[i] != null) {
                 components[i] = CraftChatMessage.fromString(lines[i])[0];
             } else {
-                components[i] = IChatBaseComponent.empty();
+                components[i] = Component.empty();
             }
         }
 
         return components;
     }
 
-    public static String[] revertComponents(IChatBaseComponent[] components) {
+    public static String[] revertComponents(Component[] components) {
         String[] lines = new String[components.length];
         for (int i = 0; i < lines.length; i++) {
             lines[i] = revertComponent(components[i]);
@@ -194,7 +194,7 @@ public class CraftSign<T extends TileEntitySign> extends CraftBlockEntityState<T
         return lines;
     }
 
-    private static String revertComponent(IChatBaseComponent component) {
+    private static String revertComponent(Component component) {
         return CraftChatMessage.fromComponent(component);
     }
 }

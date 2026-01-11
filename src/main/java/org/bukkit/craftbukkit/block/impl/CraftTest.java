@@ -9,7 +9,7 @@ public final class CraftTest extends org.bukkit.craftbukkit.block.data.CraftBloc
         super();
     }
 
-    public CraftTest(net.minecraft.world.level.block.state.IBlockData state) {
+    public CraftTest(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 
