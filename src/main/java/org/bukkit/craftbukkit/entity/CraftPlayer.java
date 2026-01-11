@@ -37,12 +37,8 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.AdvancementProgress;
-import net.minecraft.core.BlockPosition;
 import net.minecraft.core.Holder;
-import net.minecraft.core.SectionPosition;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.EnumProtocol;
-import net.minecraft.network.chat.IChatBaseComponent;
 import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.common.ClientboundClearDialogPacket;
@@ -68,54 +64,15 @@ import net.minecraft.network.protocol.game.ClientboundSetBorderWarningDistancePa
 import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
-import net.minecraft.network.protocol.game.PacketPlayOutBlockBreakAnimation;
-import net.minecraft.network.protocol.game.PacketPlayOutBlockChange;
-import net.minecraft.network.protocol.game.PacketPlayOutEntityEffect;
-import net.minecraft.network.protocol.game.PacketPlayOutEntityEquipment;
-import net.minecraft.network.protocol.game.PacketPlayOutEntitySound;
-import net.minecraft.network.protocol.game.PacketPlayOutExperience;
-import net.minecraft.network.protocol.game.PacketPlayOutGameStateChange;
-import net.minecraft.network.protocol.game.PacketPlayOutMap;
-import net.minecraft.network.protocol.game.PacketPlayOutMultiBlockChange;
-import net.minecraft.network.protocol.game.PacketPlayOutNamedSoundEffect;
-import net.minecraft.network.protocol.game.PacketPlayOutPlayerListHeaderFooter;
-import net.minecraft.network.protocol.game.PacketPlayOutRemoveEntityEffect;
-import net.minecraft.network.protocol.game.PacketPlayOutSpawnPosition;
-import net.minecraft.network.protocol.game.PacketPlayOutStopSound;
-import net.minecraft.network.protocol.game.PacketPlayOutTileEntityData;
-import net.minecraft.network.protocol.game.PacketPlayOutUpdateAttributes;
-import net.minecraft.network.protocol.game.PacketPlayOutUpdateHealth;
-import net.minecraft.network.protocol.game.PacketPlayOutWorldEvent;
-import net.minecraft.network.protocol.game.PacketPlayOutWorldParticles;
-import net.minecraft.resources.MinecraftKey;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.AdvancementDataPlayer;
-import net.minecraft.server.level.EntityPlayer;
-import net.minecraft.server.level.PlayerChunkMap;
-import net.minecraft.server.level.WorldServer;
-import net.minecraft.server.network.PlayerConnection;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.NameAndId;
-import net.minecraft.server.players.WhiteListEntry;
-import net.minecraft.sounds.SoundEffect;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityLiving;
-import net.minecraft.world.entity.EnumItemSlot;
-import net.minecraft.world.entity.ai.attributes.AttributeMapBase;
-import net.minecraft.world.entity.ai.attributes.AttributeModifiable;
-import net.minecraft.world.entity.ai.attributes.GenericAttributes;
-import net.minecraft.world.food.FoodMetaData;
-import net.minecraft.world.inventory.Container;
-import net.minecraft.world.item.EnumColor;
-import net.minecraft.world.level.EnumGamemode;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.SignText;
-import net.minecraft.world.level.block.entity.TileEntitySign;
-import net.minecraft.world.level.block.state.IBlockData;
-import net.minecraft.world.level.border.IWorldBorderListener;
-import net.minecraft.world.level.saveddata.maps.MapIcon;
+import net.minecraft.world.level.border.BorderChangeListener;
 import net.minecraft.world.level.saveddata.maps.MapId;
-import net.minecraft.world.level.saveddata.maps.WorldMap;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -223,9 +180,9 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     private boolean scaledHealth = false;
     private double healthScale = 20;
     private CraftWorldBorder clientWorldBorder = null;
-    private IWorldBorderListener clientWorldBorderListener = createWorldBorderListener();
+    private BorderChangeListener clientWorldBorderListener = createWorldBorderListener();
 
-    public CraftPlayer(CraftServer server, EntityPlayer entity) {
+    public CraftPlayer(CraftServer server, ServerPlayer entity) {
         super(server, entity);
 
         firstPlayed = System.currentTimeMillis();
@@ -940,8 +897,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         connection.send(new ClientboundSetBorderWarningDistancePacket(newWorldBorder));
     }
 
-    private IWorldBorderListener createWorldBorderListener() {
-        return new IWorldBorderListener() {
+    private BorderChangeListener createWorldBorderListener() {
+        return new BorderChangeListener() {
             @Override
             public void onSetSize(net.minecraft.world.level.border.WorldBorder border, double size) {
                 getHandle().connection.send(new ClientboundSetBorderSizePacket(border));
@@ -1739,11 +1696,11 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     @Override
-    public EntityPlayer getHandle() {
-        return (EntityPlayer) entity;
+    public ServerPlayer getHandle() {
+        return (ServerPlayer) entity;
     }
 
-    public void setHandle(final EntityPlayer entity) {
+    public void setHandle(final ServerPlayer entity) {
         super.setHandle(entity);
     }
 

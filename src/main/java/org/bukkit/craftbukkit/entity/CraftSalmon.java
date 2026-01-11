@@ -1,19 +1,18 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.world.entity.animal.fish.EntitySalmon;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Salmon;
 
 public class CraftSalmon extends CraftFish implements Salmon {
 
-    public CraftSalmon(CraftServer server, EntitySalmon entity) {
+    public CraftSalmon(CraftServer server, net.minecraft.world.entity.animal.fish.Salmon entity) {
         super(server, entity);
     }
 
     @Override
-    public EntitySalmon getHandle() {
-        return (EntitySalmon) super.getHandle();
+    public net.minecraft.world.entity.animal.fish.Salmon getHandle() {
+        return (net.minecraft.world.entity.animal.fish.Salmon) super.getHandle();
     }
 
     @Override
@@ -30,6 +29,6 @@ public class CraftSalmon extends CraftFish implements Salmon {
     public void setVariant(Variant variant) {
         Preconditions.checkArgument(variant != null, "variant");
 
-        getHandle().setVariant(EntitySalmon.Variant.values()[variant.ordinal()]);
+        getHandle().setVariant(net.minecraft.world.entity.animal.fish.Salmon.Variant.values()[variant.ordinal()]);
     }
 }

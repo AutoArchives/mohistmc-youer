@@ -1,0 +1,23 @@
+--- a/net/minecraft/world/entity/monster/Guardian.java
++++ b/net/minecraft/world/entity/monster/Guardian.java
+@@ -110,7 +_,7 @@
+         return 80;
+     }
+ 
+-    void setActiveAttackTarget(int p_32818_) {
++    public void setActiveAttackTarget(int p_32818_) {
+         this.entityData.set(DATA_ID_ATTACK_TARGET, p_32818_);
+     }
+ 
+@@ -341,9 +_,9 @@
+         }
+     }
+ 
+-    static class GuardianAttackGoal extends Goal {
++    public static class GuardianAttackGoal extends Goal {
+         private final Guardian guardian;
+-        private int attackTime;
++        public int attackTime;
+         private final boolean elder;
+ 
+         public GuardianAttackGoal(Guardian p_32871_) {

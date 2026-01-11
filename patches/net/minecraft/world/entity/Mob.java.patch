@@ -1,6 +1,13 @@
 --- a/net/minecraft/world/entity/Mob.java
 +++ b/net/minecraft/world/entity/Mob.java
-@@ -139,6 +_,11 @@
+@@ -134,11 +_,16 @@
+     private boolean canPickUpLoot = false;
+     private boolean persistenceRequired = false;
+     private final Map<PathType, Float> pathfindingMalus = Maps.newEnumMap(PathType.class);
+-    private Optional<ResourceKey<LootTable>> lootTable = Optional.empty();
+-    private long lootTableSeed;
++    public Optional<ResourceKey<LootTable>> lootTable = Optional.empty();
++    public long lootTableSeed;
      private Leashable.@Nullable LeashData leashData;
      private BlockPos homePosition = BlockPos.ZERO;
      private int homeRadius = -1;

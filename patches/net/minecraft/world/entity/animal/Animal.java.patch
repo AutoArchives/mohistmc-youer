@@ -1,5 +1,17 @@
 --- a/net/minecraft/world/entity/animal/Animal.java
 +++ b/net/minecraft/world/entity/animal/Animal.java
+@@ -42,8 +_,9 @@
+ public abstract class Animal extends AgeableMob {
+     protected static final int PARENT_AGE_AFTER_BREEDING = 6000;
+     private static final int DEFAULT_IN_LOVE_TIME = 0;
+-    private int inLove = 0;
+-    private @Nullable EntityReference<ServerPlayer> loveCause;
++    public int inLove = 0;
++    @Nullable
++    public EntityReference<ServerPlayer> loveCause;
+ 
+     protected Animal(EntityType<? extends Animal> p_27557_, Level p_27558_) {
+         super(p_27557_, p_27558_);
 @@ -208,6 +_,17 @@
  
      public void spawnChildFromBreeding(ServerLevel p_27564_, Animal p_27565_) {

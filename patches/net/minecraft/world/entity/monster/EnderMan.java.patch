@@ -25,6 +25,24 @@
      }
  
      @Override
+@@ -253,7 +_,7 @@
+         super.customServerAiStep(p_376787_);
+     }
+ 
+-    protected boolean teleport() {
++    public boolean teleport() {
+         if (!this.level().isClientSide() && this.isAlive()) {
+             double d0 = this.getX() + (this.random.nextDouble() - 0.5) * 64.0;
+             double d1 = this.getY() + (this.random.nextInt(64) - 32);
+@@ -264,7 +_,7 @@
+         }
+     }
+ 
+-    boolean teleportTowards(Entity p_32501_) {
++    public boolean teleportTowards(Entity p_32501_) {
+         Vec3 vec3 = new Vec3(this.getX() - p_32501_.getX(), this.getY(0.5) - p_32501_.getEyeY(), this.getZ() - p_32501_.getZ());
+         vec3 = vec3.normalize();
+         double d0 = 16.0;
 @@ -285,8 +_,10 @@
          boolean flag = blockstate.blocksMotion();
          boolean flag1 = blockstate.getFluidState().is(FluidTags.WATER);

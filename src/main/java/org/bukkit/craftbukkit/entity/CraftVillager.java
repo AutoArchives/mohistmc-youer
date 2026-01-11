@@ -7,17 +7,14 @@ import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import net.minecraft.core.BlockPosition;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.IRegistry;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.world.entity.monster.zombie.EntityZombie;
-import net.minecraft.world.entity.monster.zombie.EntityZombieVillager;
-import net.minecraft.world.entity.npc.villager.EntityVillager;
+import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.npc.villager.VillagerProfession;
 import net.minecraft.world.entity.npc.villager.VillagerType;
-import net.minecraft.world.level.block.BlockBed;
-import net.minecraft.world.level.block.state.IBlockData;
+import net.minecraft.world.level.block.BedBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
@@ -33,13 +30,13 @@ import org.bukkit.event.entity.EntityTransformEvent;
 
 public class CraftVillager extends CraftAbstractVillager implements Villager {
 
-    public CraftVillager(CraftServer server, EntityVillager entity) {
+    public CraftVillager(CraftServer server, net.minecraft.world.entity.npc.villager.Villager entity) {
         super(server, entity);
     }
 
     @Override
-    public EntityVillager getHandle() {
-        return (EntityVillager) entity;
+    public net.minecraft.world.entity.npc.villager.Villager getHandle() {
+        return (net.minecraft.world.entity.npc.villager.Villager) entity;
     }
 
     @Override
@@ -107,9 +104,9 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
         Preconditions.checkArgument(location.getWorld().equals(getWorld()), "Cannot sleep across worlds");
         Preconditions.checkState(!getHandle().generation, "Cannot sleep during world generation");
 
-        BlockPosition position = CraftLocation.toBlockPosition(location);
-        IBlockData iblockdata = getHandle().level().getBlockState(position);
-        if (!(iblockdata.getBlock() instanceof BlockBed)) {
+        BlockPos position = CraftLocation.toBlockPosition(location);
+        BlockState iblockdata = getHandle().level().getBlockState(position);
+        if (!(iblockdata.getBlock() instanceof BedBlock)) {
             return false;
         }
 
@@ -132,7 +129,7 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
 
     @Override
     public ZombieVillager zombify() {
-        EntityZombieVillager entityzombievillager = EntityZombie.convertVillagerToZombieVillager(getHandle().level().getMinecraftWorld(), getHandle(), getHandle().blockPosition(), isSilent(), EntityTransformEvent.TransformReason.INFECTION, CreatureSpawnEvent.SpawnReason.CUSTOM);
+        net.minecraft.world.entity.monster.zombie.ZombieVillager entityzombievillager = Zombie.convertVillagerToZombieVillager(getHandle().level().getMinecraftWorld(), getHandle(), getHandle().blockPosition(), isSilent(), EntityTransformEvent.TransformReason.INFECTION, CreatureSpawnEvent.SpawnReason.CUSTOM);
         return (entityzombievillager != null) ? (ZombieVillager) entityzombievillager.getBukkitEntity() : null;
     }
 
@@ -227,9 +224,9 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
         public static Holder<VillagerType> bukkitToMinecraftHolder(Type bukkit) {
             Preconditions.checkArgument(bukkit != null);
 
-            IRegistry<VillagerType> registry = CraftRegistry.getMinecraftRegistry(Registries.VILLAGER_TYPE);
+            net.minecraft.core.Registry<VillagerType> registry = CraftRegistry.getMinecraftRegistry(Registries.VILLAGER_TYPE);
 
-            if (registry.wrapAsHolder(bukkitToMinecraft(bukkit)) instanceof Holder.c<VillagerType> holder) {
+            if (registry.wrapAsHolder(bukkitToMinecraft(bukkit)) instanceof Holder.Reference<VillagerType> holder) {
                 return holder;
             }
 
@@ -265,9 +262,9 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
         public static Holder<VillagerProfession> bukkitToMinecraftHolder(Profession bukkit) {
             Preconditions.checkArgument(bukkit != null);
 
-            IRegistry<VillagerProfession> registry = CraftRegistry.getMinecraftRegistry(Registries.VILLAGER_PROFESSION);
+            net.minecraft.core.Registry<VillagerProfession> registry = CraftRegistry.getMinecraftRegistry(Registries.VILLAGER_PROFESSION);
 
-            if (registry.wrapAsHolder(bukkitToMinecraft(bukkit)) instanceof Holder.c<VillagerProfession> holder) {
+            if (registry.wrapAsHolder(bukkitToMinecraft(bukkit)) instanceof Holder.Reference<VillagerProfession> holder) {
                 return holder;
             }
 
@@ -285,19 +282,19 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
         }
     }
 
-    public static class CraftReputationType implements ReputationType, Handleable<net.minecraft.world.entity.ai.gossip.ReputationType> {
+    public static class CraftReputationType implements ReputationType, Handleable<net.minecraft.world.entity.ai.gossip.GossipType> {
 
         public static final Map<String, CraftReputationType> BY_ID = Stream
-                .of(net.minecraft.world.entity.ai.gossip.ReputationType.values())
+                .of(net.minecraft.world.entity.ai.gossip.GossipType.values())
                 .collect(Collectors.toMap(reputationType -> reputationType.id, CraftReputationType::new));
-        private final net.minecraft.world.entity.ai.gossip.ReputationType handle;
+        private final net.minecraft.world.entity.ai.gossip.GossipType handle;
 
-        public CraftReputationType(net.minecraft.world.entity.ai.gossip.ReputationType handle) {
+        public CraftReputationType(net.minecraft.world.entity.ai.gossip.GossipType handle) {
             this.handle = handle;
         }
 
         @Override
-        public net.minecraft.world.entity.ai.gossip.ReputationType getHandle() {
+        public net.minecraft.world.entity.ai.gossip.GossipType getHandle() {
             return handle;
         }
 
@@ -311,13 +308,13 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
             return handle.weight;
         }
 
-        public static net.minecraft.world.entity.ai.gossip.ReputationType bukkitToMinecraft(ReputationType bukkit) {
+        public static net.minecraft.world.entity.ai.gossip.GossipType bukkitToMinecraft(ReputationType bukkit) {
             Preconditions.checkArgument(bukkit != null);
 
             return ((CraftReputationType) bukkit).getHandle();
         }
 
-        public static ReputationType minecraftToBukkit(net.minecraft.world.entity.ai.gossip.ReputationType minecraft) {
+        public static ReputationType minecraftToBukkit(net.minecraft.world.entity.ai.gossip.GossipType minecraft) {
             Preconditions.checkArgument(minecraft != null);
 
             return switch (minecraft) {
@@ -330,28 +327,28 @@ public class CraftVillager extends CraftAbstractVillager implements Villager {
         }
     }
 
-    public static class CraftReputationEvent implements ReputationEvent, Handleable<net.minecraft.world.entity.ai.village.ReputationEvent> {
+    public static class CraftReputationEvent implements ReputationEvent, Handleable<net.minecraft.world.entity.ai.village.ReputationEventType> {
 
         private static final Map<String, ReputationEvent> ALL = Maps.newHashMap();
-        private final net.minecraft.world.entity.ai.village.ReputationEvent handle;
+        private final net.minecraft.world.entity.ai.village.ReputationEventType handle;
 
-        public CraftReputationEvent(net.minecraft.world.entity.ai.village.ReputationEvent handle) {
+        public CraftReputationEvent(net.minecraft.world.entity.ai.village.ReputationEventType handle) {
             this.handle = handle;
             ALL.put(handle.toString(), this);
         }
 
         @Override
-        public net.minecraft.world.entity.ai.village.ReputationEvent getHandle() {
+        public net.minecraft.world.entity.ai.village.ReputationEventType getHandle() {
             return handle;
         }
 
-        public static net.minecraft.world.entity.ai.village.ReputationEvent bukkitToMinecraft(ReputationEvent bukkit) {
+        public static net.minecraft.world.entity.ai.village.ReputationEventType bukkitToMinecraft(ReputationEvent bukkit) {
             Preconditions.checkArgument(bukkit != null);
 
             return ((CraftReputationEvent) bukkit).getHandle();
         }
 
-        public static ReputationEvent minecraftToBukkit(net.minecraft.world.entity.ai.village.ReputationEvent minecraft) {
+        public static ReputationEvent minecraftToBukkit(net.minecraft.world.entity.ai.village.ReputationEventType minecraft) {
             Preconditions.checkArgument(minecraft != null);
 
             ReputationEvent bukkit = ALL.get(minecraft.toString());

@@ -536,7 +536,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
         return Collections.unmodifiableCollection(chunks);
     }
 
-    public WorldServer getHandle() {
+    public ServerLevel getHandle() {
         return world;
     }
 

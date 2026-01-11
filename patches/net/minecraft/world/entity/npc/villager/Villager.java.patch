@@ -9,6 +9,15 @@
              return super.mobInteract(p_480051_, p_478071_);
          } else if (this.isBaby()) {
              this.setUnhappy();
+@@ -617,7 +_,7 @@
+         super.die(p_481224_);
+     }
+ 
+-    private void releaseAllPois() {
++    public void releaseAllPois() {
+         this.releasePoi(MemoryModuleType.HOME);
+         this.releasePoi(MemoryModuleType.JOB_SITE);
+         this.releasePoi(MemoryModuleType.POTENTIAL_JOB_SITE);
 @@ -771,10 +_,11 @@
  
      @Override

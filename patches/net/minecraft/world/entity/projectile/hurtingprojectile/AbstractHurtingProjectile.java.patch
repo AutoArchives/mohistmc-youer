@@ -19,3 +19,12 @@
                  this.hitTargetOrDeflectSelf(hitresult);
              }
  
+@@ -169,7 +_,7 @@
+         return 1.0F;
+     }
+ 
+-    private void assignDirectionalMovement(Vec3 p_481829_, double p_481510_) {
++    public void assignDirectionalMovement(Vec3 p_481829_, double p_481510_) {
+         this.setDeltaMovement(p_481829_.normalize().scale(p_481510_));
+         this.needsSync = true;
+     }

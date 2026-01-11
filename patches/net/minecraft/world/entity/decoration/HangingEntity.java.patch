@@ -1,5 +1,14 @@
 --- a/net/minecraft/world/entity/decoration/HangingEntity.java
 +++ b/net/minecraft/world/entity/decoration/HangingEntity.java
+@@ -57,7 +_,7 @@
+         this.entityData.set(DATA_DIRECTION, p_426128_);
+     }
+ 
+-    protected void setDirection(Direction p_31728_) {
++    public void setDirection(Direction p_31728_) {
+         Objects.requireNonNull(p_31728_);
+         Validate.isTrue(p_31728_.getAxis().isHorizontal());
+         this.setDirectionRaw(p_31728_);
 @@ -83,7 +_,7 @@
          if (this.hasLevelCollision(this.getPopBox())) {
              return false;

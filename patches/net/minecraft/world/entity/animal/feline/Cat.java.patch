@@ -1,5 +1,23 @@
 --- a/net/minecraft/world/entity/animal/feline/Cat.java
 +++ b/net/minecraft/world/entity/animal/feline/Cat.java
+@@ -119,7 +_,7 @@
+         return this.entityData.get(DATA_VARIANT_ID);
+     }
+ 
+-    private void setVariant(Holder<CatVariant> p_479249_) {
++    public void setVariant(Holder<CatVariant> p_479249_) {
+         this.entityData.set(DATA_VARIANT_ID, p_479249_);
+     }
+ 
+@@ -172,7 +_,7 @@
+         return DyeColor.byId(this.entityData.get(DATA_COLLAR_COLOR));
+     }
+ 
+-    private void setCollarColor(DyeColor p_480654_) {
++    public void setCollarColor(DyeColor p_480654_) {
+         this.entityData.set(DATA_COLLAR_COLOR, p_480654_.getId());
+     }
+ 
 @@ -385,9 +_,9 @@
                      }
                  } else if (this.isFood(itemstack) && this.getHealth() < this.getMaxHealth()) {

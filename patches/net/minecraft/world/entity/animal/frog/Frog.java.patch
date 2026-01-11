@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/entity/animal/frog/Frog.java
++++ b/net/minecraft/world/entity/animal/frog/Frog.java
+@@ -163,7 +_,7 @@
+         return this.entityData.get(DATA_VARIANT_ID);
+     }
+ 
+-    private void setVariant(Holder<FrogVariant> p_336047_) {
++    public void setVariant(Holder<FrogVariant> p_336047_) {
+         this.entityData.set(DATA_VARIANT_ID, p_336047_);
+     }
+ 

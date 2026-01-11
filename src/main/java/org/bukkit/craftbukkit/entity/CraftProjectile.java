@@ -1,13 +1,11 @@
 package org.bukkit.craftbukkit.entity;
 
-import net.minecraft.world.entity.EntityLiving;
-import net.minecraft.world.entity.projectile.IProjectile;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Projectile;
 import org.bukkit.projectiles.ProjectileSource;
 
 public abstract class CraftProjectile extends CraftEntity implements Projectile {
-    public CraftProjectile(CraftServer server, net.minecraft.world.entity.projectile.IProjectile entity) {
+    public CraftProjectile(CraftServer server, net.minecraft.world.entity.projectile.Projectile entity) {
         super(server, entity);
     }
 
@@ -18,8 +16,8 @@ public abstract class CraftProjectile extends CraftEntity implements Projectile 
 
     @Override
     public void setShooter(ProjectileSource shooter) {
-        if (shooter instanceof CraftLivingEntity) {
-            getHandle().setOwner((EntityLiving) ((CraftLivingEntity) shooter).entity);
+        if (shooter instanceof CraftLivingEntity craftLivingEntity) {
+            getHandle().setOwner(craftLivingEntity.entity);
         } else {
             getHandle().setOwner(null);
         }
@@ -35,8 +33,8 @@ public abstract class CraftProjectile extends CraftEntity implements Projectile 
     public void setBounce(boolean doesBounce) {}
 
     @Override
-    public IProjectile getHandle() {
-        return (IProjectile) entity;
+    public net.minecraft.world.entity.projectile.Projectile getHandle() {
+        return (net.minecraft.world.entity.projectile.Projectile) entity;
     }
 
     @Override

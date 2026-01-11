@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.animal.cow.CowVariant;
-import net.minecraft.world.entity.animal.cow.EntityCow;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.craftbukkit.CraftRegistry;
@@ -14,13 +13,13 @@ import org.bukkit.entity.Cow;
 
 public class CraftCow extends CraftAbstractCow implements Cow {
 
-    public CraftCow(CraftServer server, EntityCow entity) {
+    public CraftCow(CraftServer server, net.minecraft.world.entity.animal.cow.Cow entity) {
         super(server, entity);
     }
 
     @Override
-    public EntityCow getHandle() {
-        return (EntityCow) entity;
+    public net.minecraft.world.entity.animal.cow.Cow getHandle() {
+        return (net.minecraft.world.entity.animal.cow.Cow) entity;
     }
 
     @Override

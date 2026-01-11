@@ -45,3 +45,12 @@
      }
  
      @Override
+@@ -409,7 +_,7 @@
+         return Parrot.Variant.byId(this.entityData.get(DATA_VARIANT_ID));
+     }
+ 
+-    private void setVariant(Parrot.Variant p_478520_) {
++    public void setVariant(Parrot.Variant p_478520_) {
+         this.entityData.set(DATA_VARIANT_ID, p_478520_.id);
+     }
+ 

@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import net.minecraft.network.protocol.game.ClientboundBossEventPacket;
-import net.minecraft.server.level.ServerBossEvent
+import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.BossEvent;
 import org.bukkit.boss.BarColor;

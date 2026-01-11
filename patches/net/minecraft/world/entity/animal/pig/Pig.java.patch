@@ -1,5 +1,14 @@
 --- a/net/minecraft/world/entity/animal/pig/Pig.java
 +++ b/net/minecraft/world/entity/animal/pig/Pig.java
+@@ -57,7 +_,7 @@
+ public class Pig extends Animal implements ItemSteerable {
+     private static final EntityDataAccessor<Integer> DATA_BOOST_TIME = SynchedEntityData.defineId(Pig.class, EntityDataSerializers.INT);
+     private static final EntityDataAccessor<Holder<PigVariant>> DATA_VARIANT_ID = SynchedEntityData.defineId(Pig.class, EntityDataSerializers.PIG_VARIANT);
+-    private final ItemBasedSteering steering = new ItemBasedSteering(this.entityData, DATA_BOOST_TIME);
++    public final ItemBasedSteering steering = new ItemBasedSteering(this.entityData, DATA_BOOST_TIME);
+ 
+     public Pig(EntityType<? extends Pig> p_481572_, Level p_479012_) {
+         super(p_481572_, p_479012_);
 @@ -174,10 +_,11 @@
  
      @Override
@@ -13,3 +22,12 @@
              });
              if (zombifiedpiglin == null) {
                  super.thunderHit(p_480720_, p_481450_);
+@@ -229,7 +_,7 @@
+         return new Vec3(0.0, 0.6F * this.getEyeHeight(), this.getBbWidth() * 0.4F);
+     }
+ 
+-    private void setVariant(Holder<PigVariant> p_480526_) {
++    public void setVariant(Holder<PigVariant> p_480526_) {
+         this.entityData.set(DATA_VARIANT_ID, p_480526_);
+     }
+ 

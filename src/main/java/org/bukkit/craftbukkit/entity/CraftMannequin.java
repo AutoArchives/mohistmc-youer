@@ -1,10 +1,9 @@
 package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
-import net.minecraft.network.chat.IChatBaseComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Avatar;
-import net.minecraft.world.entity.EntityPose;
-import net.minecraft.world.entity.EnumMainHand;
+import net.minecraft.world.entity.HumanoidArm;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.profile.CraftPlayerProfile;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
@@ -32,14 +31,14 @@ public class CraftMannequin extends CraftLivingEntity implements Mannequin {
 
     @Override
     public MainHand getMainHand() {
-        return getHandle().getMainArm() == EnumMainHand.LEFT ? MainHand.LEFT : MainHand.RIGHT;
+        return getHandle().getMainArm() == HumanoidArm.LEFT ? MainHand.LEFT : MainHand.RIGHT;
     }
 
     @Override
     public void setMainHand(MainHand hand) {
         Preconditions.checkArgument(hand != null, "hand cannot be null");
 
-        getHandle().setMainArm((hand == MainHand.LEFT) ? EnumMainHand.LEFT : EnumMainHand.RIGHT);
+        getHandle().setMainArm((hand == MainHand.LEFT) ? HumanoidArm.LEFT : HumanoidArm.RIGHT);
     }
 
     @Override
@@ -83,7 +82,7 @@ public class CraftMannequin extends CraftLivingEntity implements Mannequin {
     public void setPose(Pose pose) {
         Preconditions.checkArgument(pose != null, "pose cannot be null");
 
-        EntityPose nmsPose = EntityPose.values()[pose.ordinal()];
+        Pose nmsPose = Pose.values()[pose.ordinal()];
         Preconditions.checkArgument(net.minecraft.world.entity.decoration.Mannequin.VALID_POSES.contains(nmsPose));
 
         getHandle().setPose(nmsPose);
@@ -101,7 +100,7 @@ public class CraftMannequin extends CraftLivingEntity implements Mannequin {
 
     @Override
     public String getDescripion() {
-        IChatBaseComponent description = getHandle().description;
+        Component description = getHandle().description;
 
         return (description != null) ? CraftChatMessage.fromComponent(description) : null;
     }

@@ -22,9 +22,12 @@
      };
      private static final Dynamic<?> EMPTY_BRAIN = new Dynamic<>(JavaOps.INSTANCE, Map.of("memories", Map.of()));
      private final AttributeMap attributes;
-@@ -268,6 +_,13 @@
+@@ -266,8 +_,15 @@
+     private final EnumMap<EquipmentSlot, Reference2ObjectMap<Enchantment, Set<EnchantmentLocationBasedEffect>>> activeLocationDependentEnchantments = new EnumMap<>(
+         EquipmentSlot.class
      );
-     protected final EntityEquipment equipment;
+-    protected final EntityEquipment equipment;
++    public final EntityEquipment equipment;
      private Waypoint.Icon locatorBarIcon = new Waypoint.Icon();
 +    /**
 +     * This field stores information about damage dealt to this entity.

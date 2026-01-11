@@ -3,8 +3,6 @@ package org.bukkit.craftbukkit.entity;
 import com.google.common.base.Preconditions;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.world.entity.EnumItemSlot;
-import net.minecraft.world.entity.animal.pig.EntityPig;
 import net.minecraft.world.entity.animal.pig.PigVariant;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -18,7 +16,7 @@ import org.bukkit.entity.Pig;
 
 public class CraftPig extends CraftAnimals implements Pig {
 
-    public CraftPig(CraftServer server, EntityPig entity) {
+    public CraftPig(CraftServer server, net.minecraft.world.entity.animal.pig.Pig entity) {
         super(server, entity);
     }
 
@@ -107,8 +105,8 @@ public class CraftPig extends CraftAnimals implements Pig {
     }
 
     @Override
-    public EntityPig getHandle() {
-        return (EntityPig) entity;
+    public net.minecraft.world.entity.animal.pig.Pig getHandle() {
+        return (net.minecraft.world.entity.animal.pig.Pig) entity;
     }
 
     @Override

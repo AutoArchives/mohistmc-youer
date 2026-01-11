@@ -1,5 +1,14 @@
 --- a/net/minecraft/world/entity/animal/bee/Bee.java
 +++ b/net/minecraft/world/entity/animal/bee/Bee.java
+@@ -135,7 +_,7 @@
+     private float rollAmountO;
+     private int timeSinceSting;
+     int ticksWithoutNectarSinceExitingHive = 0;
+-    private int stayOutOfHiveCountdown = 0;
++    public int stayOutOfHiveCountdown = 0;
+     private int numCropsGrownSincePollination = 0;
+     private static final int COOLDOWN_BEFORE_LOCATING_NEW_HIVE = 200;
+     int remainingCooldownBeforeLocatingNewHive;
 @@ -490,7 +_,7 @@
          if (this.hivePos == null) {
              return null;
@@ -7,6 +16,24 @@
 -            return this.isTooFarAway(this.hivePos) ? null : this.level().getBlockEntity(this.hivePos, BlockEntityType.BEEHIVE).orElse(null);
 +            return this.isTooFarAway(this.hivePos) ? null : this.level().getBlockEntity(this.hivePos) instanceof BeehiveBlockEntity hive ? hive : null;
          }
+     }
+ 
+@@ -502,7 +_,7 @@
+         return this.getFlag(8);
+     }
+ 
+-    void setHasNectar(boolean p_479143_) {
++    public void setHasNectar(boolean p_479143_) {
+         if (p_479143_) {
+             this.resetTicksWithoutNectarSinceExitingHive();
+         }
+@@ -514,7 +_,7 @@
+         return this.getFlag(4);
+     }
+ 
+-    private void setHasStung(boolean p_481211_) {
++    public void setHasStung(boolean p_481211_) {
+         this.setFlag(4, p_481211_);
      }
  
 @@ -652,8 +_,18 @@

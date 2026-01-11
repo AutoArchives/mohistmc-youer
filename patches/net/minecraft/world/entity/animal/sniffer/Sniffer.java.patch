@@ -1,5 +1,32 @@
 --- a/net/minecraft/world/entity/animal/sniffer/Sniffer.java
 +++ b/net/minecraft/world/entity/animal/sniffer/Sniffer.java
+@@ -148,7 +_,7 @@
+         return Leashable.createQuadLeashOffsets(this, -0.01, 0.63, 0.38, 1.15);
+     }
+ 
+-    private Sniffer.State getState() {
++    public Sniffer.State getState() {
+         return this.entityData.get(DATA_STATE);
+     }
+ 
+@@ -244,7 +_,7 @@
+         return this;
+     }
+ 
+-    Optional<BlockPos> calculateDigPosition() {
++    public Optional<BlockPos> calculateDigPosition() {
+         return IntStream.range(0, 5)
+             .mapToObj(p_273771_ -> LandRandomPos.getPos(this, 10 + 2 * p_273771_, 3))
+             .filter(Objects::nonNull)
+@@ -255,7 +_,7 @@
+             .findFirst();
+     }
+ 
+-    boolean canDig() {
++    public boolean canDig() {
+         return !this.isPanicking()
+             && !this.isTempted()
+             && !this.isBaby()
 @@ -297,7 +_,7 @@
                  if (this.tickCount % 10 == 0) {
                      this.level()
@@ -9,3 +36,20 @@
                          );
                  }
              }
+@@ -310,14 +_,14 @@
+         return this;
+     }
+ 
+-    private Sniffer storeExploredPosition(BlockPos p_273015_) {
++    public Sniffer storeExploredPosition(BlockPos p_273015_) {
+         List<GlobalPos> list = this.getExploredPositions().limit(20L).collect(Collectors.toList());
+         list.add(0, GlobalPos.of(this.level().dimension(), p_273015_));
+         this.getBrain().setMemory(MemoryModuleType.SNIFFER_EXPLORED_POSITIONS, list);
+         return this;
+     }
+ 
+-    private Stream<GlobalPos> getExploredPositions() {
++    public Stream<GlobalPos> getExploredPositions() {
+         return this.getBrain().getMemory(MemoryModuleType.SNIFFER_EXPLORED_POSITIONS).stream().flatMap(Collection::stream);
+     }
+ 

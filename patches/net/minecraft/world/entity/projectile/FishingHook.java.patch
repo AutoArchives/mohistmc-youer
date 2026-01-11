@@ -1,5 +1,26 @@
 --- a/net/minecraft/world/entity/projectile/FishingHook.java
 +++ b/net/minecraft/world/entity/projectile/FishingHook.java
+@@ -54,7 +_,7 @@
+     private boolean biting;
+     private int outOfWaterTime;
+     private static final int MAX_OUT_OF_WATER_TIME = 10;
+-    private static final EntityDataAccessor<Integer> DATA_HOOKED_ENTITY = SynchedEntityData.defineId(FishingHook.class, EntityDataSerializers.INT);
++    public static final EntityDataAccessor<Integer> DATA_HOOKED_ENTITY = SynchedEntityData.defineId(FishingHook.class, EntityDataSerializers.INT);
+     private static final EntityDataAccessor<Boolean> DATA_BITING = SynchedEntityData.defineId(FishingHook.class, EntityDataSerializers.BOOLEAN);
+     private int life;
+     private int nibble;
+@@ -62,8 +_,9 @@
+     private int timeUntilHooked;
+     private float fishAngle;
+     private boolean openWater = true;
+-    private @Nullable Entity hookedIn;
+-    private FishingHook.FishHookState currentState = FishingHook.FishHookState.FLYING;
++    @Nullable
++    public Entity hookedIn;
++    public FishingHook.FishHookState currentState = FishingHook.FishHookState.FLYING;
+     private final int luck;
+     private final int lureSpeed;
+     private final InterpolationHandler interpolationHandler = new InterpolationHandler(this);
 @@ -251,8 +_,8 @@
          if (p_37137_.canInteractWithLevel()) {
              ItemStack itemstack = p_37137_.getMainHandItem();
@@ -54,3 +75,12 @@
              return i;
          } else {
              return 0;
+@@ -507,7 +_,7 @@
+         super.handleEntityEvent(p_37123_);
+     }
+ 
+-    protected void pullEntity(Entity p_150156_) {
++    public void pullEntity(Entity p_150156_) {
+         Entity entity = this.getOwner();
+         if (entity != null) {
+             Vec3 vec3 = new Vec3(entity.getX() - this.getX(), entity.getY() - this.getY(), entity.getZ() - this.getZ()).scale(0.1);

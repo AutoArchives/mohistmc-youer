@@ -1,0 +1,29 @@
+--- a/net/minecraft/world/entity/decoration/ArmorStand.java
++++ b/net/minecraft/world/entity/decoration/ArmorStand.java
+@@ -86,7 +_,7 @@
+     private static final boolean DEFAULT_MARKER = false;
+     private boolean invisible = false;
+     public long lastHit;
+-    private int disabledSlots = 0;
++    public int disabledSlots = 0;
+ 
+     public ArmorStand(EntityType<? extends ArmorStand> p_31553_, Level p_31554_) {
+         super(p_31553_, p_31554_);
+@@ -454,7 +_,7 @@
+         return this.isMarker();
+     }
+ 
+-    private void setSmall(boolean p_31604_) {
++    public void setSmall(boolean p_31604_) {
+         this.entityData.set(DATA_CLIENT_FLAGS, this.setBit(this.entityData.get(DATA_CLIENT_FLAGS), 1, p_31604_));
+     }
+ 
+@@ -478,7 +_,7 @@
+         return (this.entityData.get(DATA_CLIENT_FLAGS) & 8) == 0;
+     }
+ 
+-    private void setMarker(boolean p_31682_) {
++    public void setMarker(boolean p_31682_) {
+         this.entityData.set(DATA_CLIENT_FLAGS, this.setBit(this.entityData.get(DATA_CLIENT_FLAGS), 16, p_31682_));
+     }
+ 

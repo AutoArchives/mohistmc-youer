@@ -5,8 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.effect.MobEffectList;
-import net.minecraft.world.entity.projectile.arrow.EntityTippedArrow;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.alchemy.PotionContents;
 import org.bukkit.Color;
 import org.bukkit.craftbukkit.CraftServer;
@@ -21,13 +20,13 @@ import org.bukkit.potion.PotionType;
 
 public class CraftArrow extends CraftAbstractArrow implements Arrow {
 
-    public CraftArrow(CraftServer server, EntityTippedArrow entity) {
+    public CraftArrow(CraftServer server, net.minecraft.world.entity.projectile.arrow.Arrow entity) {
         super(server, entity);
     }
 
     @Override
-    public EntityTippedArrow getHandle() {
-        return (EntityTippedArrow) entity;
+    public net.minecraft.world.entity.projectile.arrow.Arrow getHandle() {
+        return (net.minecraft.world.entity.projectile.arrow.Arrow) entity;
     }
 
     @Override
@@ -58,7 +57,7 @@ public class CraftArrow extends CraftAbstractArrow implements Arrow {
     @Override
     public List<PotionEffect> getCustomEffects() {
         ImmutableList.Builder<PotionEffect> builder = ImmutableList.builder();
-        for (MobEffect effect : getHandle().getPotionContents().customEffects()) {
+        for (MobEffectInstance effect : getHandle().getPotionContents().customEffects()) {
             builder.add(CraftPotionUtil.toBukkit(effect));
         }
         return builder.build();
@@ -66,7 +65,7 @@ public class CraftArrow extends CraftAbstractArrow implements Arrow {
 
     @Override
     public boolean hasCustomEffect(PotionEffectType type) {
-        for (MobEffect effect : getHandle().getPotionContents().customEffects()) {
+        for (MobEffectInstance effect : getHandle().getPotionContents().customEffects()) {
             if (CraftPotionUtil.equals(effect.getEffect(), type)) {
                 return true;
             }
@@ -84,7 +83,7 @@ public class CraftArrow extends CraftAbstractArrow implements Arrow {
         if (!hasCustomEffect(effect)) {
             return false;
         }
-        Holder<MobEffectList> minecraft = CraftPotionEffectType.bukkitToMinecraftHolder(effect);
+        Holder<MobEffect> minecraft = CraftPotionEffectType.bukkitToMinecraftHolder(effect);
 
         PotionContents old = getHandle().getPotionContents();
         getHandle().setPotionContents(new PotionContents(old.potion(), old.customColor(), old.customEffects().stream().filter((mobEffect) -> !mobEffect.getEffect().equals(minecraft)).toList(), old.customName()));

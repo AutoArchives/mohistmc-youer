@@ -8,27 +8,23 @@ import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.chat.IChatBaseComponent;
-import net.minecraft.server.level.EntityPlayer;
-import net.minecraft.server.level.PlayerChunkMap;
-import net.minecraft.server.level.WorldServer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ChunkMap;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerPlayerConnection;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityProcessor;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityTypes;
-import net.minecraft.world.entity.boss.enderdragon.EntityComplexPart;
-import net.minecraft.world.entity.boss.enderdragon.EntityEnderDragon;
-import net.minecraft.world.entity.player.EntityHuman;
-import net.minecraft.world.entity.projectile.arrow.EntityArrow;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.minecraft.world.phys.AxisAlignedBB;
-import net.minecraft.world.phys.Vec3D;
+import net.minecraft.world.phys.AABB;
 import org.bukkit.EntityEffect;
 import org.bukkit.Location;
 import org.bukkit.Server;
@@ -85,13 +81,13 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
         Preconditions.checkArgument(entity != null, "Unknown entity");
 
         // Special case human, since bukkit use Player interface for ...
-        if (entity instanceof EntityHuman && !(entity instanceof EntityPlayer)) {
-            return new CraftHumanEntity(server, (EntityHuman) entity);
+        if (entity instanceof net.minecraft.world.entity.player.Player && !(entity instanceof ServerPlayer)) {
+            return new CraftHumanEntity(server, (net.minecraft.world.entity.player.Player) entity);
         }
 
         // Special case complex part, since there is no extra entity type for them
-        if (entity instanceof EntityComplexPart complexPart) {
-            if (complexPart.parentMob instanceof EntityEnderDragon) {
+        if (entity instanceof EnderDragonPart complexPart) {
+            if (complexPart.parentMob instanceof EnderDragon) {
                 return new CraftEnderDragonPart(server, complexPart);
             } else {
                 return new CraftComplexPart(server, complexPart);
@@ -151,14 +147,14 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
 
     @Override
     public BoundingBox getBoundingBox() {
-        AxisAlignedBB bb = getHandle().getBoundingBox();
+        AABB bb = getHandle().getBoundingBox();
         return new BoundingBox(bb.minX, bb.minY, bb.minZ, bb.maxX, bb.maxY, bb.maxZ);
     }
 
     @Override
     public boolean isOnGround() {
-        if (entity instanceof EntityArrow) {
-            return ((EntityArrow) entity).isInGround();
+        if (entity instanceof AbstractArrow) {
+            return ((AbstractArrow) entity).isInGround();
         }
         return entity.onGround();
     }
@@ -838,7 +834,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
         input.child("BukkitValues").ifPresent((base) -> this.persistentDataContainer.putAll(base));
     }
 
-    protected NBTTagCompound save() {
+    protected CompoundTag save() {
         TagValueOutput nbttagcompound = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, getHandle().registryAccess());
 
         nbttagcompound.putString("id", getHandle().getEncodeId());
@@ -853,8 +849,8 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
             return;
         }
 
-        WorldServer world = ((CraftWorld) getWorld()).getHandle();
-        PlayerChunkMap.EntityTracker entityTracker = world.getChunkSource().chunkMap.entityMap.get(getEntityId());
+        ServerLevel world = ((CraftWorld) getWorld()).getHandle();
+        ChunkMap.TrackedEntity entityTracker = world.getChunkSource().chunkMap.entityMap.get(getEntityId());
 
         if (entityTracker == null) {
             return;
@@ -863,13 +859,13 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
         entityTracker.sendToTrackingPlayers(getHandle().getAddEntityPacket(entityTracker.serverEntity));
     }
 
-    public void update(EntityPlayer player) {
+    public void update(ServerPlayer player) {
         if (!getHandle().isAlive()) {
             return;
         }
 
-        WorldServer world = ((CraftWorld) getWorld()).getHandle();
-        PlayerChunkMap.EntityTracker entityTracker = world.getChunkSource().chunkMap.entityMap.get(getEntityId());
+        ServerLevel world = ((CraftWorld) getWorld()).getHandle();
+        ChunkMap.TrackedEntity entityTracker = world.getChunkSource().chunkMap.entityMap.get(getEntityId());
 
         if (entityTracker == null) {
             return;

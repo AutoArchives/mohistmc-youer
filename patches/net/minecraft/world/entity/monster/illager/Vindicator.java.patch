@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/entity/monster/illager/Vindicator.java
++++ b/net/minecraft/world/entity/monster/illager/Vindicator.java
+@@ -51,7 +_,7 @@
+     private static final String TAG_JOHNNY = "Johnny";
+     static final Predicate<Difficulty> DOOR_BREAKING_PREDICATE = p_480948_ -> p_480948_ == Difficulty.NORMAL || p_480948_ == Difficulty.HARD;
+     private static final boolean DEFAULT_JOHNNY = false;
+-    boolean isJohnny = false;
++    public boolean isJohnny = false;
+ 
+     public Vindicator(EntityType<? extends Vindicator> p_478828_, Level p_478631_) {
+         super(p_478828_, p_478631_);

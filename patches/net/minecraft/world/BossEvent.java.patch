@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/BossEvent.java
++++ b/net/minecraft/world/BossEvent.java
+@@ -8,7 +_,7 @@
+ 
+ public abstract class BossEvent {
+     private final UUID id;
+-    protected Component name;
++    public Component name;
+     protected float progress;
+     protected BossEvent.BossBarColor color;
+     protected BossEvent.BossBarOverlay overlay;

@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import net.minecraft.core.BlockPosition;
+import net.minecraft.core.Direction;
 import net.minecraft.core.EnumDirection;
 import net.minecraft.server.level.WorldServer;
 import net.minecraft.world.EnumHand;
@@ -280,7 +281,7 @@ public class CraftBlock implements Block {
         return "CraftBlock{pos=" + position + ",type=" + getType() + ",data=" + getNMS() + ",fluid=" + world.getFluidState(position) + '}';
     }
 
-    public static BlockFace notchToBlockFace(EnumDirection notch) {
+    public static BlockFace notchToBlockFace(Direction notch) {
         if (notch == null) {
             return BlockFace.SELF;
         }
@@ -302,23 +303,23 @@ public class CraftBlock implements Block {
         }
     }
 
-    public static EnumDirection blockFaceToNotch(BlockFace face) {
+    public static Direction blockFaceToNotch(BlockFace face) {
         if (face == null) {
             return null;
         }
         switch (face) {
             case DOWN:
-                return EnumDirection.DOWN;
+                return Direction.DOWN;
             case UP:
-                return EnumDirection.UP;
+                return Direction.UP;
             case NORTH:
-                return EnumDirection.NORTH;
+                return Direction.NORTH;
             case SOUTH:
-                return EnumDirection.SOUTH;
+                return Direction.SOUTH;
             case WEST:
-                return EnumDirection.WEST;
+                return Direction.WEST;
             case EAST:
-                return EnumDirection.EAST;
+                return Direction.EAST;
             default:
                 return null;
         }

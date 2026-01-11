@@ -2,9 +2,8 @@ package org.bukkit.craftbukkit.entity;
 
 import com.google.common.base.Preconditions;
 import java.util.stream.Collectors;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
-import net.minecraft.world.entity.vehicle.boat.EntityBoat;
 import org.bukkit.TreeSpecies;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Boat;
@@ -133,47 +132,47 @@ public abstract class CraftBoat extends CraftVehicle implements Boat {
         return "CraftBoat{boatType=" + getBoatType() + ",status=" + getStatus() + ",passengers=" + getPassengers().stream().map(Entity::toString).collect(Collectors.joining("-", "{", "}")) + "}";
     }
 
-    public static Boat.Type boatTypeFromNms(EntityTypes<?> boatType) {
-        if (boatType == EntityTypes.OAK_BOAT || boatType == EntityTypes.OAK_CHEST_BOAT) {
+    public static Boat.Type boatTypeFromNms(EntityType<?> boatType) {
+        if (boatType == EntityType.OAK_BOAT || boatType == EntityType.OAK_CHEST_BOAT) {
             return Type.OAK;
         }
 
-        if (boatType == EntityTypes.BIRCH_BOAT || boatType == EntityTypes.BIRCH_CHEST_BOAT) {
+        if (boatType == EntityType.BIRCH_BOAT || boatType == EntityType.BIRCH_CHEST_BOAT) {
             return Type.BIRCH;
         }
 
-        if (boatType == EntityTypes.ACACIA_BOAT || boatType == EntityTypes.ACACIA_CHEST_BOAT) {
+        if (boatType == EntityType.ACACIA_BOAT || boatType == EntityType.ACACIA_CHEST_BOAT) {
             return Type.ACACIA;
         }
 
-        if (boatType == EntityTypes.CHERRY_BOAT || boatType == EntityTypes.CHERRY_CHEST_BOAT) {
+        if (boatType == EntityType.CHERRY_BOAT || boatType == EntityType.CHERRY_CHEST_BOAT) {
             return Type.CHERRY;
         }
 
-        if (boatType == EntityTypes.JUNGLE_BOAT || boatType == EntityTypes.JUNGLE_CHEST_BOAT) {
+        if (boatType == EntityType.JUNGLE_BOAT || boatType == EntityType.JUNGLE_CHEST_BOAT) {
             return Type.JUNGLE;
         }
 
-        if (boatType == EntityTypes.SPRUCE_BOAT || boatType == EntityTypes.SPRUCE_CHEST_BOAT) {
+        if (boatType == EntityType.SPRUCE_BOAT || boatType == EntityType.SPRUCE_CHEST_BOAT) {
             return Type.SPRUCE;
         }
 
-        if (boatType == EntityTypes.DARK_OAK_BOAT || boatType == EntityTypes.DARK_OAK_CHEST_BOAT) {
+        if (boatType == EntityType.DARK_OAK_BOAT || boatType == EntityType.DARK_OAK_CHEST_BOAT) {
             return Type.DARK_OAK;
         }
 
-        if (boatType == EntityTypes.MANGROVE_BOAT || boatType == EntityTypes.MANGROVE_CHEST_BOAT) {
+        if (boatType == EntityType.MANGROVE_BOAT || boatType == EntityType.MANGROVE_CHEST_BOAT) {
             return Type.MANGROVE;
         }
 
-        if (boatType == EntityTypes.BAMBOO_RAFT || boatType == EntityTypes.BAMBOO_CHEST_RAFT) {
+        if (boatType == EntityType.BAMBOO_RAFT || boatType == EntityType.BAMBOO_CHEST_RAFT) {
             return Type.BAMBOO;
         }
 
         throw new EnumConstantNotPresentException(Type.class, boatType.toString());
     }
 
-    public static Status boatStatusFromNms(EntityBoat.EnumStatus enumStatus) {
+    public static Status boatStatusFromNms(net.minecraft.world.entity.vehicle.boat.AbstractBoat.Status enumStatus) {
         return switch (enumStatus) {
             default -> throw new EnumConstantNotPresentException(Status.class, enumStatus.name());
             case IN_AIR -> Status.IN_AIR;
@@ -185,24 +184,24 @@ public abstract class CraftBoat extends CraftVehicle implements Boat {
     }
 
     @Deprecated
-    public static TreeSpecies getTreeSpecies(EntityTypes<?> boatType) {
-        if (boatType == EntityTypes.SPRUCE_BOAT || boatType == EntityTypes.SPRUCE_CHEST_BOAT) {
+    public static TreeSpecies getTreeSpecies(EntityType<?> boatType) {
+        if (boatType == EntityType.SPRUCE_BOAT || boatType == EntityType.SPRUCE_CHEST_BOAT) {
             return TreeSpecies.REDWOOD;
         }
 
-        if (boatType == EntityTypes.BIRCH_BOAT || boatType == EntityTypes.BIRCH_CHEST_BOAT) {
+        if (boatType == EntityType.BIRCH_BOAT || boatType == EntityType.BIRCH_CHEST_BOAT) {
             return TreeSpecies.BIRCH;
         }
 
-        if (boatType == EntityTypes.JUNGLE_BOAT || boatType == EntityTypes.JUNGLE_CHEST_BOAT) {
+        if (boatType == EntityType.JUNGLE_BOAT || boatType == EntityType.JUNGLE_CHEST_BOAT) {
             return TreeSpecies.JUNGLE;
         }
 
-        if (boatType == EntityTypes.ACACIA_BOAT || boatType == EntityTypes.ACACIA_CHEST_BOAT) {
+        if (boatType == EntityType.ACACIA_BOAT || boatType == EntityType.ACACIA_CHEST_BOAT) {
             return TreeSpecies.ACACIA;
         }
 
-        if (boatType == EntityTypes.DARK_OAK_BOAT || boatType == EntityTypes.DARK_OAK_CHEST_BOAT) {
+        if (boatType == EntityType.DARK_OAK_BOAT || boatType == EntityType.DARK_OAK_CHEST_BOAT) {
             return TreeSpecies.DARK_OAK;
         }
 

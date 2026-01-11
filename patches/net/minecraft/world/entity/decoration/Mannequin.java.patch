@@ -1,0 +1,70 @@
+--- a/net/minecraft/world/entity/decoration/Mannequin.java
++++ b/net/minecraft/world/entity/decoration/Mannequin.java
+@@ -36,7 +_,7 @@
+     private static final byte ALL_LAYERS = (byte)Arrays.stream(PlayerModelPart.values())
+         .mapToInt(PlayerModelPart::getMask)
+         .reduce(0, (p_445827_, p_445561_) -> p_445827_ | p_445561_);
+-    private static final Set<Pose> VALID_POSES = Set.of(Pose.STANDING, Pose.CROUCHING, Pose.SWIMMING, Pose.FALL_FLYING, Pose.SLEEPING);
++    public static final Set<Pose> VALID_POSES = Set.of(Pose.STANDING, Pose.CROUCHING, Pose.SWIMMING, Pose.FALL_FLYING, Pose.SLEEPING);
+     public static final Codec<Pose> POSE_CODEC = Pose.CODEC
+         .validate(
+             p_450882_ -> VALID_POSES.contains(p_450882_)
+@@ -50,7 +_,7 @@
+             p_446234_ -> Arrays.stream(PlayerModelPart.values()).filter(p_445539_ -> (p_446234_ & p_445539_.getMask()) == 0).toList()
+         );
+     public static final ResolvableProfile DEFAULT_PROFILE = ResolvableProfile.Static.EMPTY;
+-    private static final Component DEFAULT_DESCRIPTION = Component.translatable("entity.minecraft.mannequin.label");
++    public static final Component DEFAULT_DESCRIPTION = Component.translatable("entity.minecraft.mannequin.label");
+     protected static EntityType.EntityFactory<Mannequin> constructor = Mannequin::new;
+     private static final String PROFILE_FIELD = "profile";
+     private static final String HIDDEN_LAYERS_FIELD = "hidden_layers";
+@@ -59,8 +_,8 @@
+     private static final String IMMOVABLE_FIELD = "immovable";
+     private static final String DESCRIPTION_FIELD = "description";
+     private static final String HIDE_DESCRIPTION_FIELD = "hide_description";
+-    private Component description = DEFAULT_DESCRIPTION;
+-    private boolean hideDescription = false;
++    public Component description = DEFAULT_DESCRIPTION;
++    public boolean hideDescription = false;
+ 
+     public Mannequin(EntityType<Mannequin> p_446465_, Level p_446512_) {
+         super(p_446465_, p_446512_);
+@@ -83,19 +_,19 @@
+         p_445864_.define(DATA_DESCRIPTION, Optional.of(DEFAULT_DESCRIPTION));
+     }
+ 
+-    protected ResolvableProfile getProfile() {
++    public ResolvableProfile getProfile() {
+         return this.entityData.get(DATA_PROFILE);
+     }
+ 
+-    private void setProfile(ResolvableProfile p_451368_) {
++    public void setProfile(ResolvableProfile p_451368_) {
+         this.entityData.set(DATA_PROFILE, p_451368_);
+     }
+ 
+-    private boolean getImmovable() {
++    public boolean getImmovable() {
+         return this.entityData.get(DATA_IMMOVABLE);
+     }
+ 
+-    private void setImmovable(boolean p_451403_) {
++    public void setImmovable(boolean p_451403_) {
+         this.entityData.set(DATA_IMMOVABLE, p_451403_);
+     }
+ 
+@@ -103,12 +_,12 @@
+         return this.entityData.get(DATA_DESCRIPTION).orElse(null);
+     }
+ 
+-    private void setDescription(Component p_451001_) {
++    public void setDescription(Component p_451001_) {
+         this.description = p_451001_;
+         this.updateDescription();
+     }
+ 
+-    private void setHideDescription(boolean p_451236_) {
++    public void setHideDescription(boolean p_451236_) {
+         this.hideDescription = p_451236_;
+         this.updateDescription();
+     }

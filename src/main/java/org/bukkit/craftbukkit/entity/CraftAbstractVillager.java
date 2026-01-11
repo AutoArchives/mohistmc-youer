@@ -1,8 +1,6 @@
 package org.bukkit.craftbukkit.entity;
 
-import net.minecraft.world.entity.npc.villager.EntityVillager;
-import net.minecraft.world.entity.npc.villager.EntityVillagerAbstract;
-import net.minecraft.world.item.trading.IMerchant;
+import net.minecraft.world.item.trading.Merchant;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.craftbukkit.inventory.CraftMerchant;
@@ -12,17 +10,17 @@ import org.bukkit.inventory.InventoryHolder;
 
 public class CraftAbstractVillager extends CraftAgeable implements CraftMerchant, AbstractVillager, InventoryHolder {
 
-    public CraftAbstractVillager(CraftServer server, EntityVillagerAbstract entity) {
+    public CraftAbstractVillager(CraftServer server, net.minecraft.world.entity.npc.villager.AbstractVillager entity) {
         super(server, entity);
     }
 
     @Override
-    public EntityVillagerAbstract getHandle() {
-        return (EntityVillager) entity;
+    public net.minecraft.world.entity.npc.villager.AbstractVillager getHandle() {
+        return (net.minecraft.world.entity.npc.villager.AbstractVillager) entity;
     }
 
     @Override
-    public IMerchant getMerchant() {
+    public Merchant getMerchant() {
         return getHandle();
     }
 

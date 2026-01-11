@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/entity/monster/Strider.java
++++ b/net/minecraft/world/entity/monster/Strider.java
+@@ -80,7 +_,7 @@
+     private static final float STEERING_MODIFIER = 0.55F;
+     private static final EntityDataAccessor<Integer> DATA_BOOST_TIME = SynchedEntityData.defineId(Strider.class, EntityDataSerializers.INT);
+     private static final EntityDataAccessor<Boolean> DATA_SUFFOCATING = SynchedEntityData.defineId(Strider.class, EntityDataSerializers.BOOLEAN);
+-    private final ItemBasedSteering steering = new ItemBasedSteering(this.entityData, DATA_BOOST_TIME);
++    public final ItemBasedSteering steering = new ItemBasedSteering(this.entityData, DATA_BOOST_TIME);
+     private @Nullable TemptGoal temptGoal;
+ 
+     public Strider(EntityType<? extends Strider> p_33862_, Level p_33863_) {

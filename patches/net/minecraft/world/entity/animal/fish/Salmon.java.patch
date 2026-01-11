@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/entity/animal/fish/Salmon.java
++++ b/net/minecraft/world/entity/animal/fish/Salmon.java
+@@ -102,7 +_,7 @@
+         p_479109_.copyFrom(DataComponents.SALMON_SIZE, this);
+     }
+ 
+-    private void setVariant(Salmon.Variant p_480528_) {
++    public void setVariant(Salmon.Variant p_480528_) {
+         this.entityData.set(DATA_TYPE, p_480528_.id);
+     }
+ 

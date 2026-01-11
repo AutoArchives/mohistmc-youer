@@ -4,8 +4,6 @@ import com.google.common.base.Preconditions;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.animal.feline.CatVariant;
-import net.minecraft.world.entity.animal.feline.EntityCat;
-import net.minecraft.world.item.EnumColor;
 import org.bukkit.DyeColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
@@ -16,13 +14,13 @@ import org.bukkit.entity.Cat;
 
 public class CraftCat extends CraftTameableAnimal implements Cat {
 
-    public CraftCat(CraftServer server, EntityCat entity) {
+    public CraftCat(CraftServer server, net.minecraft.world.entity.animal.feline.Cat entity) {
         super(server, entity);
     }
 
     @Override
-    public EntityCat getHandle() {
-        return (EntityCat) super.getHandle();
+    public net.minecraft.world.entity.animal.feline.Cat getHandle() {
+        return (net.minecraft.world.entity.animal.feline.Cat) super.getHandle();
     }
 
     @Override
@@ -49,7 +47,7 @@ public class CraftCat extends CraftTameableAnimal implements Cat {
 
     @Override
     public void setCollarColor(DyeColor color) {
-        getHandle().setCollarColor(EnumColor.byId(color.getWoolData()));
+        getHandle().setCollarColor(net.minecraft.world.item.DyeColor.byId(color.getWoolData()));
     }
 
     public static class CraftType extends CraftOldEnumRegistryItem<Type, CatVariant> implements Type {

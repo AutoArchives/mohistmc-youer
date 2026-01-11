@@ -4,21 +4,19 @@ import com.google.common.base.Preconditions;
 import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.world.entity.EntityReference;
-import net.minecraft.world.entity.animal.fox.EntityFox;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.AnimalTamer;
 import org.bukkit.entity.Fox;
-import org.bukkit.entity.Fox.Type;
 
 public class CraftFox extends CraftAnimals implements Fox {
 
-    public CraftFox(CraftServer server, EntityFox entity) {
+    public CraftFox(CraftServer server, net.minecraft.world.entity.animal.fox.Fox entity) {
         super(server, entity);
     }
 
     @Override
-    public EntityFox getHandle() {
-        return (EntityFox) super.getHandle();
+    public net.minecraft.world.entity.animal.fox.Fox getHandle() {
+        return (net.minecraft.world.entity.animal.fox.Fox) super.getHandle();
     }
 
     @Override
@@ -35,7 +33,7 @@ public class CraftFox extends CraftAnimals implements Fox {
     public void setFoxType(Type type) {
         Preconditions.checkArgument(type != null, "type");
 
-        getHandle().setVariant(EntityFox.Type.values()[type.ordinal()]);
+        getHandle().setVariant(net.minecraft.world.entity.animal.fox.Fox.Variant.values()[type.ordinal()]);
     }
 
     @Override
@@ -65,7 +63,7 @@ public class CraftFox extends CraftAnimals implements Fox {
 
     @Override
     public AnimalTamer getFirstTrustedPlayer() {
-        UUID uuid = getHandle().getEntityData().get(EntityFox.DATA_TRUSTED_ID_0).map(EntityReference::getUUID).orElse(null);
+        UUID uuid = getHandle().getEntityData().get(net.minecraft.world.entity.animal.fox.Fox.DATA_TRUSTED_ID_0).map(EntityReference::getUUID).orElse(null);
         if (uuid == null) {
             return null;
         }
@@ -81,15 +79,15 @@ public class CraftFox extends CraftAnimals implements Fox {
     @Override
     public void setFirstTrustedPlayer(AnimalTamer player) {
         if (player == null) {
-            Preconditions.checkState(getHandle().getEntityData().get(EntityFox.DATA_TRUSTED_ID_1).isEmpty(), "Must remove second trusted player first");
+            Preconditions.checkState(getHandle().getEntityData().get(net.minecraft.world.entity.animal.fox.Fox.DATA_TRUSTED_ID_1).isEmpty(), "Must remove second trusted player first");
         }
 
-        getHandle().getEntityData().set(EntityFox.DATA_TRUSTED_ID_0, player == null ? Optional.empty() : Optional.of(EntityReference.of(player.getUniqueId())));
+        getHandle().getEntityData().set(net.minecraft.world.entity.animal.fox.Fox.DATA_TRUSTED_ID_0, player == null ? Optional.empty() : Optional.of(EntityReference.of(player.getUniqueId())));
     }
 
     @Override
     public AnimalTamer getSecondTrustedPlayer() {
-        UUID uuid = getHandle().getEntityData().get(EntityFox.DATA_TRUSTED_ID_1).map(EntityReference::getUUID).orElse(null);
+        UUID uuid = getHandle().getEntityData().get(net.minecraft.world.entity.animal.fox.Fox.DATA_TRUSTED_ID_1).map(EntityReference::getUUID).orElse(null);
         if (uuid == null) {
             return null;
         }
@@ -105,10 +103,10 @@ public class CraftFox extends CraftAnimals implements Fox {
     @Override
     public void setSecondTrustedPlayer(AnimalTamer player) {
         if (player != null) {
-            Preconditions.checkState(getHandle().getEntityData().get(EntityFox.DATA_TRUSTED_ID_0).isPresent(), "Must add first trusted player first");
+            Preconditions.checkState(getHandle().getEntityData().get(net.minecraft.world.entity.animal.fox.Fox.DATA_TRUSTED_ID_0).isPresent(), "Must add first trusted player first");
         }
 
-        getHandle().getEntityData().set(EntityFox.DATA_TRUSTED_ID_1, player == null ? Optional.empty() : Optional.of(EntityReference.of(player.getUniqueId())));
+        getHandle().getEntityData().set(net.minecraft.world.entity.animal.fox.Fox.DATA_TRUSTED_ID_1, player == null ? Optional.empty() : Optional.of(EntityReference.of(player.getUniqueId())));
     }
 
     @Override

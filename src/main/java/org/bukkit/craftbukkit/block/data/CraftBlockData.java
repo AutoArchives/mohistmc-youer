@@ -312,7 +312,7 @@ public class CraftBlockData implements BlockData {
     }
 
     //
-    private static final Map<Class<? extends Block>, Function<IBlockData, CraftBlockData>> MAP = new HashMap<>();
+    private static final Map<Class<? extends Block>, Function<net.minecraft.world.level.block.state.BlockState, CraftBlockData>> MAP = new HashMap<>();
 
     static {
         //<editor-fold desc="CraftBlockData Registration" defaultstate="collapsed">
@@ -507,12 +507,12 @@ public class CraftBlockData implements BlockData {
         //</editor-fold>
     }
 
-    private static void register(Class<? extends Block> nms, Function<IBlockData, CraftBlockData> bukkit) {
+    private static void register(Class<? extends Block> nms, Function<net.minecraft.world.level.block.state.BlockState, CraftBlockData> bukkit) {
         Preconditions.checkState(MAP.put(nms, bukkit) == null, "Duplicate mapping %s->%s", nms, bukkit);
     }
 
     public static CraftBlockData newData(BlockType blockType, String data) {
-        IBlockData blockData;
+        net.minecraft.world.level.block.state.BlockState blockData;
         Block block = blockType == null ? null : ((CraftBlockType<?>) blockType).getHandle();
         Map<IBlockState<?>, Comparable<?>> parsed = null;
 
@@ -542,7 +542,7 @@ public class CraftBlockData implements BlockData {
         return craft;
     }
 
-    public static CraftBlockData fromData(IBlockData data) {
+    public static CraftBlockData fromData(net.minecraft.world.level.block.state.BlockState data) {
         return MAP.getOrDefault(data.getBlock().getClass(), CraftBlockData::new).apply(data);
     }
 
@@ -574,7 +574,7 @@ public class CraftBlockData implements BlockData {
         return isPreferredTool(state, nms);
     }
 
-    public static boolean isPreferredTool(IBlockData iblockdata, net.minecraft.world.item.ItemStack nmsItem) {
+    public static boolean isPreferredTool(net.minecraft.world.level.block.state.BlockState iblockdata, net.minecraft.world.item.ItemStack nmsItem) {
         return !iblockdata.requiresCorrectToolForDrops() || nmsItem.isCorrectToolForDrops(iblockdata);
     }
 
@@ -633,7 +633,7 @@ public class CraftBlockData implements BlockData {
     @Override
     public void copyTo(BlockData blockData) {
         CraftBlockData other = (CraftBlockData) blockData;
-        IBlockData nms = other.state;
+        net.minecraft.world.level.block.state.BlockState nms = other.state;
         for (IBlockState<?> property : state.getBlock().getStateDefinition().getProperties()) {
             if (nms.hasProperty(property)) {
                 nms = copyProperty(state, nms, property);
@@ -643,7 +643,7 @@ public class CraftBlockData implements BlockData {
         other.state = nms;
     }
 
-    private <T extends Comparable<T>> IBlockData copyProperty(IBlockData source, IBlockData target, IBlockState<T> property) {
+    private <T extends Comparable<T>> net.minecraft.world.level.block.state.BlockState copyProperty(net.minecraft.world.level.block.state.BlockState source, net.minecraft.world.level.block.state.BlockState target, IBlockState<T> property) {
         return target.setValue(property, source.getValue(property));
     }
 

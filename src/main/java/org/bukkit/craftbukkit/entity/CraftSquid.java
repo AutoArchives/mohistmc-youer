@@ -1,18 +1,17 @@
 package org.bukkit.craftbukkit.entity;
 
-import net.minecraft.world.entity.animal.squid.EntitySquid;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Squid;
 
 public class CraftSquid extends CraftAgeable implements Squid {
 
-    public CraftSquid(CraftServer server, EntitySquid entity) {
+    public CraftSquid(CraftServer server, net.minecraft.world.entity.animal.squid.Squid entity) {
         super(server, entity);
     }
 
     @Override
-    public EntitySquid getHandle() {
-        return (EntitySquid) entity;
+    public net.minecraft.world.entity.animal.squid.Squid getHandle() {
+        return (net.minecraft.world.entity.animal.squid.Squid) entity;
     }
 
     @Override

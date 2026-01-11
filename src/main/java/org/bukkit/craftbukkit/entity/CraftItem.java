@@ -3,7 +3,7 @@ package org.bukkit.craftbukkit.entity;
 import java.util.UUID;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityReference;
-import net.minecraft.world.entity.item.EntityItem;
+import net.minecraft.world.entity.item.ItemEntity;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.Item;
@@ -11,13 +11,13 @@ import org.bukkit.inventory.ItemStack;
 
 public class CraftItem extends CraftEntity implements Item {
 
-    public CraftItem(CraftServer server, EntityItem entity) {
+    public CraftItem(CraftServer server, ItemEntity entity) {
         super(server, entity);
     }
 
     @Override
-    public EntityItem getHandle() {
-        return (EntityItem) entity;
+    public ItemEntity getHandle() {
+        return (ItemEntity) entity;
     }
 
     @Override

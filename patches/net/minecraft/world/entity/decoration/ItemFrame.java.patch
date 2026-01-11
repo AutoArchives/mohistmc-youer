@@ -1,5 +1,25 @@
 --- a/net/minecraft/world/entity/decoration/ItemFrame.java
 +++ b/net/minecraft/world/entity/decoration/ItemFrame.java
+@@ -52,8 +_,8 @@
+     private static final float DEFAULT_DROP_CHANCE = 1.0F;
+     private static final boolean DEFAULT_INVISIBLE = false;
+     private static final boolean DEFAULT_FIXED = false;
+-    private float dropChance = 1.0F;
+-    private boolean fixed = false;
++    public float dropChance = 1.0F;
++    public boolean fixed = false;
+ 
+     public ItemFrame(EntityType<? extends ItemFrame> p_31761_, Level p_31762_) {
+         super(p_31761_, p_31762_);
+@@ -78,7 +_,7 @@
+     }
+ 
+     @Override
+-    protected void setDirection(Direction p_31793_) {
++    public void setDirection(Direction p_31793_) {
+         Objects.requireNonNull(p_31793_);
+         super.setDirectionRaw(p_31793_);
+         if (p_31793_.getAxis().isHorizontal()) {
 @@ -245,7 +_,7 @@
      private void removeFramedMap(ItemStack p_31811_) {
          MapId mapid = this.getFramedMapId(p_31811_);

@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/entity/decoration/painting/Painting.java
++++ b/net/minecraft/world/entity/decoration/painting/Painting.java
+@@ -60,7 +_,7 @@
+         }
+     }
+ 
+-    private void setVariant(Holder<PaintingVariant> p_481528_) {
++    public void setVariant(Holder<PaintingVariant> p_481528_) {
+         this.entityData.set(DATA_PAINTING_VARIANT_ID, p_481528_);
+     }
+ 

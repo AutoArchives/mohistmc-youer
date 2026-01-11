@@ -19,6 +19,15 @@
  
      public ServerPlayer(MinecraftServer p_254143_, ServerLevel p_254435_, GameProfile p_253651_, ClientInformation p_301997_) {
          super(p_254435_, p_253651_);
+@@ -541,7 +_,7 @@
+         this.lastSentExp = -1;
+     }
+ 
+-    private void initMenu(AbstractContainerMenu p_143400_) {
++    public void initMenu(AbstractContainerMenu p_143400_) {
+         p_143400_.addSlotListener(this.containerListener);
+         p_143400_.setSynchronizer(this.containerSynchronizer);
+     }
 @@ -661,7 +_,11 @@
                  }
  
@@ -390,3 +399,21 @@
      }
  
      @Override
+@@ -2235,7 +_,7 @@
+         return this.shoulderEntityLeft;
+     }
+ 
+-    protected void setShoulderEntityLeft(CompoundTag p_446288_) {
++    public void setShoulderEntityLeft(CompoundTag p_446288_) {
+         this.shoulderEntityLeft = p_446288_;
+         this.setShoulderParrotLeft(extractParrotVariant(p_446288_));
+     }
+@@ -2244,7 +_,7 @@
+         return this.shoulderEntityRight;
+     }
+ 
+-    protected void setShoulderEntityRight(CompoundTag p_445961_) {
++    public void setShoulderEntityRight(CompoundTag p_445961_) {
+         this.shoulderEntityRight = p_445961_;
+         this.setShoulderParrotRight(extractParrotVariant(p_445961_));
+     }

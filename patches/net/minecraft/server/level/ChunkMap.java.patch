@@ -9,7 +9,14 @@
      private final Long2ObjectLinkedOpenHashMap<ChunkHolder> pendingUnloads = new Long2ObjectLinkedOpenHashMap<>();
      private final List<ChunkGenerationTask> pendingGenerationTasks = new ArrayList<>();
      final ServerLevel level;
-@@ -150,7 +_,7 @@
+@@ -144,13 +_,13 @@
+     private final ChunkMap.DistanceManager distanceManager;
+     private final String storageName;
+     private final PlayerMap playerMap = new PlayerMap();
+-    private final Int2ObjectMap<ChunkMap.TrackedEntity> entityMap = new Int2ObjectOpenHashMap<>();
++    public final Int2ObjectMap<ChunkMap.TrackedEntity> entityMap = new Int2ObjectOpenHashMap<>();
+     private final Long2ByteMap chunkTypeCache = new Long2ByteOpenHashMap();
+     private final Long2LongMap nextChunkSaveTime = new Long2LongOpenHashMap();
      private final LongSet chunksToEagerlySave = new LongLinkedOpenHashSet();
      private final Queue<Runnable> unloadQueue = Queues.newConcurrentLinkedQueue();
      private final AtomicInteger activeChunkWrites = new AtomicInteger();
@@ -136,6 +143,17 @@
      class DistanceManager extends net.minecraft.server.level.DistanceManager {
          protected DistanceManager(TicketStorage p_394597_, Executor p_140459_, Executor p_140460_) {
              super(p_394597_, p_140459_, p_140460_);
+@@ -1331,8 +_,8 @@
+         }
+     }
+ 
+-    class TrackedEntity implements ServerEntity.Synchronizer {
+-        final ServerEntity serverEntity;
++    public class TrackedEntity implements ServerEntity.Synchronizer {
++        public final ServerEntity serverEntity;
+         final Entity entity;
+         private final int range;
+         SectionPos lastSectionPos;
 @@ -1441,5 +_,20 @@
                  this.updatePlayer(serverplayer);
              }

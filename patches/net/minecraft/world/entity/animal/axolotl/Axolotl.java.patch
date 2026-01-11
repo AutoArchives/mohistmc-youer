@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/entity/animal/axolotl/Axolotl.java
++++ b/net/minecraft/world/entity/animal/axolotl/Axolotl.java
+@@ -241,7 +_,7 @@
+         return Axolotl.Variant.byId(this.entityData.get(DATA_VARIANT));
+     }
+ 
+-    private void setVariant(Axolotl.Variant p_149118_) {
++    public void setVariant(Axolotl.Variant p_149118_) {
+         this.entityData.set(DATA_VARIANT, p_149118_.getId());
+     }
+ 

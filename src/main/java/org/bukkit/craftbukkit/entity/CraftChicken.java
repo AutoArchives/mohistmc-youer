@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.animal.chicken.ChickenVariant;
-import net.minecraft.world.entity.animal.chicken.EntityChicken;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.craftbukkit.CraftRegistry;
@@ -14,13 +13,13 @@ import org.bukkit.entity.Chicken;
 
 public class CraftChicken extends CraftAnimals implements Chicken {
 
-    public CraftChicken(CraftServer server, EntityChicken entity) {
+    public CraftChicken(CraftServer server, net.minecraft.world.entity.animal.chicken.Chicken entity) {
         super(server, entity);
     }
 
     @Override
-    public EntityChicken getHandle() {
-        return (EntityChicken) entity;
+    public net.minecraft.world.entity.animal.chicken.Chicken getHandle() {
+        return (net.minecraft.world.entity.animal.chicken.Chicken) entity;
     }
 
     @Override

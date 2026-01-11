@@ -1,5 +1,16 @@
 --- a/net/minecraft/world/entity/monster/piglin/Piglin.java
 +++ b/net/minecraft/world/entity/monster/piglin/Piglin.java
+@@ -78,8 +_,8 @@
+     private static final double PROBABILITY_OF_SPAWNING_WITH_CROSSBOW_INSTEAD_OF_SWORD = 0.5;
+     private static final boolean DEFAULT_IS_BABY = false;
+     private static final boolean DEFAULT_CANNOT_HUNT = false;
+-    private final SimpleContainer inventory = new SimpleContainer(8);
+-    private boolean cannotHunt = false;
++    public final SimpleContainer inventory = new SimpleContainer(8);
++    public boolean cannotHunt = false;
+     protected static final ImmutableList<SensorType<? extends Sensor<? super Piglin>>> SENSOR_TYPES = ImmutableList.of(
+         SensorType.NEAREST_LIVING_ENTITIES, SensorType.NEAREST_PLAYERS, SensorType.NEAREST_ITEMS, SensorType.HURT_BY, SensorType.PIGLIN_SPECIFIC_SENSOR
+     );
 @@ -354,7 +_,7 @@
          } else if (this.isChargingCrossbow()) {
              return PiglinArmPose.CROSSBOW_CHARGE;

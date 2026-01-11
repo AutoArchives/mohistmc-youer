@@ -1,5 +1,17 @@
 --- a/net/minecraft/world/entity/animal/allay/Allay.java
 +++ b/net/minecraft/world/entity/animal/allay/Allay.java
+@@ -104,8 +_,9 @@
+     private final VibrationSystem.User vibrationUser;
+     private final DynamicGameEventListener<Allay.JukeboxListener> dynamicJukeboxListener;
+     private final SimpleContainer inventory = new SimpleContainer(1);
+-    private @Nullable BlockPos jukeboxPos;
+-    private long duplicationCooldown = 0L;
++    @Nullable
++    public BlockPos jukeboxPos;
++    public long duplicationCooldown = 0L;
+     private float holdingItemAnimationTicks;
+     private float holdingItemAnimationTicks0;
+     private float dancingAnimationTicks;
 @@ -354,9 +_,9 @@
      public boolean wantsToPickUp(ServerLevel p_376111_, ItemStack p_218387_) {
          ItemStack itemstack = this.getItemInHand(InteractionHand.MAIN_HAND);
@@ -12,3 +24,26 @@
      }
  
      private boolean allayConsidersItemEqual(ItemStack p_252278_, ItemStack p_250405_) {
+@@ -469,7 +_,7 @@
+         this.entityData.set(DATA_CAN_DUPLICATE, p_404640_ == 0L);
+     }
+ 
+-    private void duplicateAllay() {
++    public void duplicateAllay() {
+         Allay allay = EntityType.ALLAY.create(this.level(), EntitySpawnReason.BREEDING);
+         if (allay != null) {
+             allay.snapTo(this.position());
+@@ -480,11 +_,11 @@
+         }
+     }
+ 
+-    private void resetDuplicationCooldown() {
++    public void resetDuplicationCooldown() {
+         this.setDuplicationCooldown(6000L);
+     }
+ 
+-    private boolean canDuplicate() {
++    public boolean canDuplicate() {
+         return this.entityData.get(DATA_CAN_DUPLICATE);
+     }
+ 

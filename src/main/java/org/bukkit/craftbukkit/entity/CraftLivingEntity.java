@@ -13,44 +13,16 @@ import java.util.function.Consumer;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.protocol.game.ClientboundHurtAnimationPacket;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.level.WorldServer;
-import net.minecraft.sounds.SoundEffect;
-import net.minecraft.sounds.SoundEffects;
-import net.minecraft.world.EnumHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.entity.EntityInsentient;
-import net.minecraft.world.entity.EntityLiving;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Leashable;
-import net.minecraft.world.entity.ai.attributes.GenericAttributes;
-import net.minecraft.world.entity.decoration.EntityArmorStand;
 import net.minecraft.world.entity.decoration.Mannequin;
-import net.minecraft.world.entity.player.EntityHuman;
-import net.minecraft.world.entity.projectile.EntityFireworks;
-import net.minecraft.world.entity.projectile.EntityFishingHook;
-import net.minecraft.world.entity.projectile.EntityLlamaSpit;
-import net.minecraft.world.entity.projectile.EntityProjectile;
-import net.minecraft.world.entity.projectile.EntityShulkerBullet;
-import net.minecraft.world.entity.projectile.arrow.EntityArrow;
-import net.minecraft.world.entity.projectile.arrow.EntitySpectralArrow;
-import net.minecraft.world.entity.projectile.arrow.EntityThrownTrident;
-import net.minecraft.world.entity.projectile.arrow.EntityTippedArrow;
-import net.minecraft.world.entity.projectile.hurtingprojectile.EntityDragonFireball;
-import net.minecraft.world.entity.projectile.hurtingprojectile.EntityFireball;
-import net.minecraft.world.entity.projectile.hurtingprojectile.EntityLargeFireball;
-import net.minecraft.world.entity.projectile.hurtingprojectile.EntitySmallFireball;
-import net.minecraft.world.entity.projectile.hurtingprojectile.EntityWitherSkull;
-import net.minecraft.world.entity.projectile.throwableitemprojectile.EntityEgg;
-import net.minecraft.world.entity.projectile.throwableitemprojectile.EntityEnderPearl;
-import net.minecraft.world.entity.projectile.throwableitemprojectile.EntitySnowball;
-import net.minecraft.world.entity.projectile.throwableitemprojectile.EntityThrownExpBottle;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownLingeringPotion;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownSplashPotion;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.Consumable;
-import net.minecraft.world.phys.Vec3D;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.waypoints.Waypoint;
 import net.minecraft.world.waypoints.WaypointStyleAssets;
 import org.bukkit.Color;
@@ -114,7 +86,7 @@ import org.bukkit.util.Vector;
 public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     private CraftEntityEquipment equipment;
 
-    public CraftLivingEntity(final CraftServer server, final EntityLiving entity) {
+    public CraftLivingEntity(final CraftServer server, final net.minecraft.world.entity.LivingEntity entity) {
         super(server, entity);
 
         if (entity instanceof EntityInsentient || entity instanceof EntityArmorStand || entity instanceof Mannequin) {
@@ -397,11 +369,11 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     }
 
     @Override
-    public EntityLiving getHandle() {
-        return (EntityLiving) entity;
+    public net.minecraft.world.entity.LivingEntity getHandle() {
+        return (net.minecraft.world.entity.LivingEntity) entity;
     }
 
-    public void setHandle(final EntityLiving entity) {
+    public void setHandle(final net.minecraft.world.entity.LivingEntity entity) {
         super.setHandle(entity);
     }
 
