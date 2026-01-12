@@ -38,6 +38,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.util.datafix.fixes.References;
+import net.minecraft.world.entity.ai.village.ReputationEventType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.alchemy.Potion;
@@ -441,7 +442,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
 
     @Override
     public Villager.ReputationEvent createReputationEvent(String key) {
-        return Optional.ofNullable(ReputationEvent.BY_ID.get(key)).map(CraftVillager.CraftReputationEvent::new)
+        return Optional.ofNullable(ReputationEventType.BY_ID.get(key)).map(CraftVillager.CraftReputationEvent::new)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid ReputationEvent key: " + key));
     }
 

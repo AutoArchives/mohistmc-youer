@@ -61,7 +61,7 @@ public class CraftChunk implements Chunk {
     private static final byte[] EMPTY_LIGHT = new byte[2048];
 
     public CraftChunk(net.minecraft.world.level.chunk.LevelChunk chunk) {
-        worldServer = chunk.level;
+        worldServer = chunk.q;
         x = chunk.getPos().x;
         z = chunk.getPos().z;
     }
@@ -336,7 +336,7 @@ public class CraftChunk implements Chunk {
 
             if (biome != null) {
                 data.put("biomes", biomeCodec.encodeStart(NbtOps.INSTANCE, cs[i].getBiomes()).getOrThrow());
-                biome[i] = biomeCodec.parse(NbtOps.INSTANCE, data.getCompoundOrEmpty("biomes")).getOrThrow(SerializableChunkData.a::new);
+                biome[i] = biomeCodec.parse(NbtOps.INSTANCE, data.getCompoundOrEmpty("biomes")).getOrThrow(SerializableChunkData.ChunkReadException::new);
             }
         }
 

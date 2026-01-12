@@ -29,7 +29,7 @@ public class CraftMusicInstrument extends MusicInstrument implements HolderHandl
     public static MusicInstrument minecraftHolderToBukkit(Holder<Instrument> minecraft) {
         Preconditions.checkArgument(minecraft != null);
 
-        if (minecraft instanceof Holder.c<Instrument> holder) {
+        if (minecraft instanceof Holder.Reference<Instrument> holder) {
             MusicInstrument bukkit = Registry.INSTRUMENT.get(CraftNamespacedKey.fromMinecraft(holder.key().identifier()));
 
             Preconditions.checkArgument(bukkit != null);
