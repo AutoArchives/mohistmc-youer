@@ -1,5 +1,23 @@
 --- a/net/minecraft/world/level/chunk/LevelChunk.java
 +++ b/net/minecraft/world/level/chunk/LevelChunk.java
+@@ -94,6 +_,7 @@
+     private final LevelChunkTicks<Block> blockTicks;
+     private final LevelChunkTicks<Fluid> fluidTicks;
+     private LevelChunk.UnsavedListener unsavedListener = p_381697_ -> {};
++    public ServerLevel q; // CraftBukkit - type
+ 
+     public LevelChunk(Level p_187945_, ChunkPos p_187946_) {
+         this(p_187945_, p_187946_, UpgradeData.EMPTY, new LevelChunkTicks<>(), new LevelChunkTicks<>(), 0L, null, null, null);
+@@ -112,6 +_,9 @@
+     ) {
+         super(p_196855_, p_196856_, p_196854_, p_196854_.palettedContainerFactory(), p_196859_, p_196860_, p_196862_);
+         this.level = p_196854_;
++        if (p_196854_ != null && p_196854_ instanceof ServerLevel) {
++            this.q = ((ServerLevel) p_196854_);
++        }
+         this.gameEventListenerRegistrySections = new Int2ObjectOpenHashMap<>();
+ 
+         for (Heightmap.Types heightmap$types : Heightmap.Types.values()) {
 @@ -154,6 +_,7 @@
          this.setAllStarts(p_196851_.getAllStarts());
          this.setAllReferences(p_196851_.getAllReferences());

@@ -1,6 +1,6 @@
 package com.mohistmc.youer.bukkit.entity;
 
-import net.minecraft.world.entity.projectile.Fireball;
+import net.minecraft.world.entity.projectile.hurtingprojectile.Fireball;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.entity.CraftFireball;
 

@@ -1,5 +1,14 @@
 --- a/net/minecraft/world/level/chunk/storage/EntityStorage.java
 +++ b/net/minecraft/world/level/chunk/storage/EntityStorage.java
+@@ -34,7 +_,7 @@
+     private final ServerLevel level;
+     private final SimpleRegionStorage simpleRegionStorage;
+     private final LongSet emptyChunks = new LongOpenHashSet();
+-    private final ConsecutiveExecutor entityDeserializerQueue;
++    public final ConsecutiveExecutor entityDeserializerQueue;
+ 
+     public EntityStorage(SimpleRegionStorage p_321748_, ServerLevel p_196924_, Executor p_196928_) {
+         this.simpleRegionStorage = p_321748_;
 @@ -108,9 +_,13 @@
                              TagValueOutput tagvalueoutput = TagValueOutput.createWithContext(
                                  problemreporter$scopedcollector.forChild(p_421446_.problemPath()), p_421446_.registryAccess()

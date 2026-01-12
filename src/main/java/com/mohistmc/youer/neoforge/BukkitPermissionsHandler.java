@@ -19,7 +19,7 @@ package com.mohistmc.youer.neoforge;
 
 import java.util.Set;
 import java.util.UUID;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.server.permission.handler.IPermissionHandler;
 import net.neoforged.neoforge.server.permission.nodes.PermissionDynamicContext;
@@ -30,8 +30,8 @@ import org.bukkit.Bukkit;
 public record BukkitPermissionsHandler(IPermissionHandler delegate) implements IPermissionHandler {
 
     @Override
-    public ResourceLocation getIdentifier() {
-        return ResourceLocation.fromNamespaceAndPath("youer", "permission");
+    public Identifier getIdentifier() {
+        return Identifier.fromNamespaceAndPath("youer", "permission");
     }
 
     @Override

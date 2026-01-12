@@ -37,7 +37,7 @@ public class DemoGUI {
             @Override
             public void ClickAction(ClickType type, Player u, ItemStack itemStack) {
                 if (!type.isShiftClick() && type.isLeftClick()) {
-                    u.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
+                    u.closeInventory();
                 }
             }
         });

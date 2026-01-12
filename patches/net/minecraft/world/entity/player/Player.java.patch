@@ -1,6 +1,10 @@
 --- a/net/minecraft/world/entity/player/Player.java
 +++ b/net/minecraft/world/entity/player/Player.java
-@@ -123,6 +_,7 @@
+@@ -120,9 +_,11 @@
+ import net.minecraft.world.phys.Vec3;
+ import net.minecraft.world.scores.PlayerTeam;
+ import net.minecraft.world.scores.Team;
++import org.bukkit.craftbukkit.entity.CraftHumanEntity;
  import org.jspecify.annotations.Nullable;
  
  public abstract class Player extends Avatar implements ContainerUser, net.neoforged.neoforge.common.extensions.IPlayerExtension {
@@ -24,7 +28,7 @@
      protected final float defaultFlySpeed = 0.02F;
      private int lastLevelUpTime;
      private final GameProfile gameProfile;
-@@ -177,6 +_,10 @@
+@@ -177,6 +_,20 @@
      public @Nullable Entity currentExplosionCause;
      private boolean ignoreFallDamageFromCurrentImpulse = false;
      private int currentImpulseContextResetGraceTime = 0;
@@ -32,6 +36,16 @@
 +    private final java.util.Collection<MutableComponent> suffixes = new java.util.LinkedList<>();
 +    @Nullable
 +    private Pose forcedPose = null;
++
++    // CraftBukkit start
++    public boolean fauxSleeping;
++    public int oldLevel = -1;
++
++    @Override
++    public CraftHumanEntity getBukkitEntity() {
++        return (CraftHumanEntity) super.getBukkitEntity();
++    }
++    // CraftBukkit end
  
      public Player(Level p_250508_, GameProfile p_252153_) {
          super(EntityType.PLAYER, p_250508_);

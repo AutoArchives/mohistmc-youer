@@ -18,8 +18,8 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.stats.StatType;
 import net.minecraft.world.entity.MobCategory;
@@ -66,8 +66,8 @@ public class NeoForgeInjectBukkit {
                     .put(World.Environment.THE_END, LevelStem.END)
                     .build());
 
-    public static Map<Villager.Profession, ResourceLocation> profession = new HashMap<>();
-    public static Map<ResourceLocation, org.bukkit.attribute.Attribute> attributemap = new HashMap<>();
+    public static Map<Villager.Profession, Identifier> profession = new HashMap<>();
+    public static Map<Identifier, org.bukkit.attribute.Attribute> attributemap = new HashMap<>();
     public static Map<StatType<?>, Statistic> statisticMap = new HashMap<>();
     public static Map<net.minecraft.world.level.biome.Biome, Biome> biomeBiomeMap = new HashMap<>();
     public static Map<MobCategory, SpawnCategory> spawnCategoryMap = new HashMap<>();
@@ -92,7 +92,7 @@ public class NeoForgeInjectBukkit {
         reloadBukkitRegistries();
     }
 
-    private static String getMaterialName(ResourceLocation resourceLocation, boolean isMod) {
+    private static String getMaterialName(Identifier resourceLocation, boolean isMod) {
         return isMod ?
                 MohistDynamEnum.normalizeName(resourceLocation.toString()) :
                 MohistDynamEnum.normalizeName(resourceLocation.getPath());
@@ -104,7 +104,7 @@ public class NeoForgeInjectBukkit {
                 .map(Enum::name)
                 .toList());
         for (Item item : registry) {
-            ResourceLocation resourceLocation = registry.getKey(item);
+            Identifier resourceLocation = registry.getKey(item);
             boolean isMod = isMods(resourceLocation);
             String materialName = getMaterialName(resourceLocation, isMod);
 
@@ -130,7 +130,7 @@ public class NeoForgeInjectBukkit {
                 .map(Enum::name)
                 .toList());
         for (Block block : registry) {
-            ResourceLocation resourceLocation = registry.getKey(block);
+            Identifier resourceLocation = registry.getKey(block);
             boolean isMod = isMods(resourceLocation);
             String materialName = getMaterialName(resourceLocation, isMod);
 
@@ -154,7 +154,7 @@ public class NeoForgeInjectBukkit {
     public static void addEnumMaterialsInBlockEntityType() {
         var registry = BuiltInRegistries.BLOCK_ENTITY_TYPE;
         for (BlockEntityType<?> entityType : registry) {
-            ResourceLocation resourceLocation = registry.getKey(entityType);
+            Identifier resourceLocation = registry.getKey(entityType);
             if (isMods(resourceLocation)) {
                 String materialName = MohistDynamEnum.normalizeName(resourceLocation.toString());
                 Youer.LOGGER.error("Discover entity blocks:{} - {}", entityType, materialName);
@@ -165,7 +165,7 @@ public class NeoForgeInjectBukkit {
     public static void addEnumEffectAndPotion() {
         var registry = BuiltInRegistries.POTION;
         for (Potion potion : registry) {
-            ResourceLocation resourceLocation = registry.getKey(potion);
+            Identifier resourceLocation = registry.getKey(potion);
             if (resourceLocation != null) {
                 String name = MohistDynamEnum.normalizeName(resourceLocation.toString());
                 if (isMods(resourceLocation)) {
@@ -186,7 +186,7 @@ public class NeoForgeInjectBukkit {
     public static void addEnumParticle() {
         var registry = BuiltInRegistries.PARTICLE_TYPE;
         for (ParticleType<?> particleType : registry) {
-            ResourceLocation resourceLocation = registry.getKey(particleType);
+            Identifier resourceLocation = registry.getKey(particleType);
             String name = MohistDynamEnum.normalizeName(resourceLocation.toString());
             if (!resourceLocation.getNamespace().equals(NamespacedKey.MINECRAFT)) {
                 Particle particle = MohistDynamEnum.addEnum(Particle.class, name);
@@ -201,7 +201,7 @@ public class NeoForgeInjectBukkit {
         List<String> map = new ArrayList<>();
         var registry = ServerAPI.getNMSServer().registryAccess().registryOrThrow(Registries.BIOME);
         for (net.minecraft.world.level.biome.Biome biome : registry) {
-            ResourceLocation resourceLocation = registry.getKey(biome);
+            Identifier resourceLocation = registry.getKey(biome);
             String biomeName = MohistDynamEnum.normalizeName(resourceLocation.toString());
             if (isMods(resourceLocation) && !map.contains(biomeName)) {
                 map.add(biomeName);
@@ -238,7 +238,7 @@ public class NeoForgeInjectBukkit {
                 .map(Enum::name)
                 .toList();
         for (net.minecraft.world.entity.EntityType<?> entity : registry) {
-            ResourceLocation resourceLocation = registry.getKey(entity);
+            Identifier resourceLocation = registry.getKey(entity);
             if (resourceLocation == null) continue;
             boolean isMod = isMods(resourceLocation);
             String entityName = getMaterialName(resourceLocation, isMod);
@@ -274,7 +274,7 @@ public class NeoForgeInjectBukkit {
     public static void addEnumAttribute() {
         var registry = BuiltInRegistries.ATTRIBUTE;
         for (Attribute attribute : registry) {
-            ResourceLocation resourceLocation = registry.getKey(attribute);
+            Identifier resourceLocation = registry.getKey(attribute);
             if (isMods(resourceLocation)) {
                 String name = MohistDynamEnum.normalizeName(resourceLocation.getPath());
                 org.bukkit.attribute.Attribute ab = MohistDynamEnum.addEnum(org.bukkit.attribute.Attribute.class, name, List.of(String.class), List.of(resourceLocation.toString()));
@@ -289,7 +289,7 @@ public class NeoForgeInjectBukkit {
     public static void addFluid() {
         var registry = BuiltInRegistries.FLUID;
         for (net.minecraft.world.level.material.Fluid fluidType : registry) {
-            ResourceLocation resourceLocation = registry.getKey(fluidType);
+            Identifier resourceLocation = registry.getKey(fluidType);
             if (isMods(resourceLocation)) {
                 String name = MohistDynamEnum.normalizeName(resourceLocation.getPath());
                 Fluid fluid = MohistDynamEnum.addEnum(Fluid.class, name);
@@ -301,7 +301,7 @@ public class NeoForgeInjectBukkit {
     public static void addStatistic() {
         var registry = BuiltInRegistries.STAT_TYPE;
         for (StatType<?> statType : registry) {
-            ResourceLocation resourceLocation = registry.getKey(statType);
+            Identifier resourceLocation = registry.getKey(statType);
             if (isMods(resourceLocation)) {
                 String name = MohistDynamEnum.normalizeName(resourceLocation.getPath());
                 Statistic statistic = MohistDynamEnum.addEnum(Statistic.class, name);
@@ -337,11 +337,11 @@ public class NeoForgeInjectBukkit {
 
     public static void addEnumArt() {
         int i = Art.values().length;
-        var registry = ServerAPI.getNMSServer().registryAccess().registryOrThrow(Registries.PAINTING_VARIANT);
+        var registry = ServerAPI.getNMSServer().registryAccess().lookupOrThrow(Registries.PAINTING_VARIANT);
         for (var entry : registry) {
             int width = entry.width();
             int height = entry.height();
-            ResourceLocation resourceLocation = registry.getKey(entry);
+            Identifier resourceLocation = registry.getKey(entry);
             if (isMods(resourceLocation)) {
                 String name = MohistDynamEnum.normalizeName(resourceLocation.toString());
                 String lookupName = resourceLocation.getPath().toLowerCase(Locale.ROOT);
@@ -359,7 +359,7 @@ public class NeoForgeInjectBukkit {
     public static void addModSound() {
         var registry = BuiltInRegistries.SOUND_EVENT;
         for (SoundEvent statType : registry) {
-            ResourceLocation resourceLocation = registry.getKey(statType);
+            Identifier resourceLocation = registry.getKey(statType);
             if (isMods(resourceLocation)) {
                 String name = resourceLocation.getPath().replace(".", "_").toUpperCase(Locale.ROOT);
                 Sound sound = MohistDynamEnum.addEnum(Sound.class, name, List.of(String.class), List.of(resourceLocation.toString()));
@@ -369,7 +369,7 @@ public class NeoForgeInjectBukkit {
         }
     }
 
-    public static boolean isMods(ResourceLocation resourceLocation) {
+    public static boolean isMods(Identifier resourceLocation) {
         return resourceLocation != null && !resourceLocation.getNamespace().equals(NamespacedKey.MINECRAFT);
     }
 

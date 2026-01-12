@@ -137,7 +137,7 @@ public class ItemStackFactory {
     public ItemStackFactory head(String base64) {
         SkullMeta meta = (SkullMeta) this.item.getItemMeta();
         if (player != null) {
-            meta.displayName(player.name());
+            meta.setDisplayName(player.getName());
             ItemAPI.setSkullTexture(meta, base64);
             this.item.setItemMeta(meta);
         }
@@ -148,11 +148,11 @@ public class ItemStackFactory {
     public ItemStack buildHead() {
         if (isSkull() && player != null) {
             SkullMeta meta = (SkullMeta) this.item.getItemMeta();
-            meta.displayName(player.name());
+            meta.setDisplayName(player.getName());
             meta.setOwningPlayer(player);
             this.item.setItemMeta(meta);
         } else {
-            this.item = item.withType(Material.PLAYER_HEAD);
+            item.setType(Material.PLAYER_HEAD);
             SkullMeta meta = (SkullMeta) this.item.getItemMeta();
             this.item.setItemMeta(meta);
         }

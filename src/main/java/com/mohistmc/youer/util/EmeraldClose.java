@@ -4,8 +4,8 @@ import com.mohistmc.youer.YouerConfig;
 import java.util.Collection;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.monster.Evoker;
-import net.minecraft.world.entity.monster.Vindicator;
+import net.minecraft.world.entity.monster.illager.Evoker;
+import net.minecraft.world.entity.monster.illager.Vindicator;
 import net.minecraft.world.item.Items;
 
 public class EmeraldClose {

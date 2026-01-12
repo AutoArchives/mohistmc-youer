@@ -144,6 +144,39 @@
      }
  
      public void sendAllPlayerInfo(ServerPlayer p_11293_) {
+@@ -758,14 +_,28 @@
+     }
+ 
+     public ServerStatsCounter getPlayerStats(Player p_11240_) {
+-        GameProfile gameprofile = p_11240_.getGameProfile();
+-        return this.stats.computeIfAbsent(gameprofile.id(), p_460349_ -> {
++        // CraftBukkit start
++        return getPlayerStats(p_11240_.nameAndId());
++    }
++
++    public ServerStatsCounter getPlayerStats(ServerPlayer entityhuman) {
++        NameAndId gameprofile = entityhuman.nameAndId();
++        ServerStatsCounter serverstatisticmanager = entityhuman.getStats();
++        return serverstatisticmanager == null ? getPlayerStats(gameprofile) : serverstatisticmanager;
++    }
++
++    public ServerStatsCounter getPlayerStats(NameAndId gameprofile) {
++        ServerPlayer entityhuman = this.getPlayer(gameprofile.id());
++        ServerStatsCounter serverstatisticmanager = entityhuman == null ? null : entityhuman.getStats();
++        if (serverstatisticmanager == null) {
+             Path path = this.locateStatsFile(gameprofile);
++
+             return new ServerStatsCounter(this.server, path);
+-        });
++        }
++        return serverstatisticmanager;
+     }
+ 
+-    private Path locateStatsFile(GameProfile p_460971_) {
++    private Path locateStatsFile(NameAndId p_460971_) {
+         Path path = this.server.getWorldPath(LevelResource.PLAYER_STATS_DIR);
+         Path path1 = path.resolve(p_460971_.id() + ".json");
+         if (Files.exists(path1)) {
 @@ -797,6 +_,8 @@
              this.advancements.put(uuid, playeradvancements);
          }

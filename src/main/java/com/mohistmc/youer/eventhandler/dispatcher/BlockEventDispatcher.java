@@ -194,45 +194,4 @@ public class BlockEventDispatcher {
             event.setCanceled(true);
         }
     }
-
-    @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void onPlayerBedEnter(CanPlayerSleepEvent event) {
-        var problem = event.getProblem();
-        if (problem != null) {
-            var player = event.getEntity();
-            var level = event.getLevel();
-            var blockposition = event.getPos();
-            var blockstate = event.getState();
-            io.papermc.paper.event.player.PlayerBedFailEnterEvent eventPapaer = new io.papermc.paper.event.player.PlayerBedFailEnterEvent(
-                    player.getBukkitEntity(),
-                    io.papermc.paper.event.player.PlayerBedFailEnterEvent.FailReason.values()[problem.ordinal()],
-                    org.bukkit.craftbukkit.block.CraftBlock.at(level, blockposition),
-                    !level.dimensionType().bedWorks(),
-                    io.papermc.paper.adventure.PaperAdventure.asAdventure(problem.getMessage()));
-            if (!eventPapaer.callEvent()) {
-                return;
-            }
-            // Paper end - PlayerBedFailEnterEvent
-            // CraftBukkit start - handling bed explosion from below here
-            if (eventPapaer.getWillExplode()) { // Paper - PlayerBedFailEnterEvent
-                org.bukkit.block.BlockState blockState2 = CraftBlock.at(level, blockposition).getState(); // CraftBukkit - capture BlockState before remove block
-                level.removeBlock(blockposition, false);
-                BlockPos blockpos = blockposition.relative(blockstate.getValue(HorizontalDirectionalBlock.FACING).getOpposite());
-                if (level.getBlockState(blockpos).getBlock() instanceof BedBlock) {
-                    level.removeBlock(blockpos, false);
-                }
-
-                Vec3 vec3 = blockposition.getCenter();
-                level.explode(null, level.damageSources().badRespawnPointExplosionCB(vec3, blockState2), null, vec3, 5.0F, true, Level.ExplosionInteraction.BLOCK);
-            } else {
-                // CraftBukkit end
-                if (problem.getMessage() != null) {
-                    final net.kyori.adventure.text.Component message = eventPapaer.getMessage(); // Paper - PlayerBedFailEnterEvent
-                    if (message != null)
-                        problem.setPaperMessage(io.papermc.paper.adventure.PaperAdventure.asVanilla(message)); // Paper - PlayerBedFailEnterEvent
-                }
-            }
-            event.setProblem(problem);
-        }
-    }
 }

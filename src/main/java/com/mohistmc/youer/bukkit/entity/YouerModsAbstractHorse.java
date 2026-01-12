@@ -1,6 +1,6 @@
 package com.mohistmc.youer.bukkit.entity;
 
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.entity.CraftAbstractHorse;
 import org.bukkit.entity.EntityCategory;

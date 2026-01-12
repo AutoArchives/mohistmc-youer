@@ -1,5 +1,32 @@
 --- a/net/minecraft/world/level/storage/LevelStorageSource.java
 +++ b/net/minecraft/world/level/storage/LevelStorageSource.java
+@@ -401,14 +_,25 @@
+ 
+     public class LevelStorageAccess implements AutoCloseable {
+         final DirectoryLock lock;
+-        final LevelStorageSource.LevelDirectory levelDirectory;
++        public final LevelStorageSource.LevelDirectory levelDirectory;
+         private final String levelId;
+         private final Map<LevelResource, Path> resources = Maps.newHashMap();
++        // CraftBukkit start
++        public final ResourceKey<LevelStem> dimensionType;
+ 
+         LevelStorageAccess(String p_289967_, Path p_289988_) throws IOException {
+             this.levelId = p_289967_;
+             this.levelDirectory = new LevelStorageSource.LevelDirectory(p_289988_);
+             this.lock = DirectoryLock.create(p_289988_);
++            this.dimensionType = null;
++        }
++
++        LevelStorageAccess(final String s, final Path path, final ResourceKey<LevelStem> dimensionType) throws IOException {
++            this.dimensionType = dimensionType;
++            // CraftBukkit end
++            this.levelId = s;
++            this.levelDirectory = new LevelStorageSource.LevelDirectory(path);
++            this.lock = DirectoryLock.create(path);
+         }
+ 
+         public long estimateDiskSpace() {
 @@ -457,6 +_,19 @@
              }
          }

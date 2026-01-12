@@ -9,6 +9,23 @@
      private final EntityLookup<T> visibleEntityStorage;
      final EntitySectionStorage<T> sectionStorage;
      private final LevelEntityGetter<T> entityGetter;
+@@ -52,6 +_,16 @@
+         this.entityGetter = new LevelEntityGetterAdapter<>(this.visibleEntityStorage, this.sectionStorage);
+     }
+ 
++    // CraftBukkit start - add method to get all entities in chunk
++    public List<Entity> getEntities(ChunkPos chunkCoordIntPair) {
++        return sectionStorage.getExistingSectionsInChunk(chunkCoordIntPair.toLong()).flatMap(EntitySection::getEntities).map(entity -> (Entity) entity).collect(Collectors.toList());
++    }
++
++    public boolean isPending(long pair) {
++        return chunkLoadStatuses.get(pair) == ChunkLoadStatus.PENDING;
++    }
++    // CraftBukkit end
++
+     void removeSectionIfEmpty(long p_157510_, EntitySection<T> p_157511_) {
+         if (p_157511_.isEmpty()) {
+             this.sectionStorage.remove(p_157510_);
 @@ -71,7 +_,16 @@
          return this.addEntity(p_157534_, false);
      }
@@ -26,6 +43,18 @@
          if (!this.addEntityUuid(p_157539_)) {
              return false;
          } else {
+@@ -82,6 +_,11 @@
+             if (!p_157540_) {
+                 this.callbacks.onCreated(p_157539_);
+             }
++            // CraftBukkit - Mark entity as in world
++            if (p_157539_ instanceof Entity entity) {
++                entity.inWorld = true;
++            }
++            // CraftBukkit end
+ 
+             Visibility visibility = getEffectiveStatus(p_157539_, entitysection.getStatus());
+             if (visibility.isAccessible()) {
 @@ -105,11 +_,17 @@
      }
  

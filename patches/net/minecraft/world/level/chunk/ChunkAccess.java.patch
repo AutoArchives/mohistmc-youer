@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/level/chunk/ChunkAccess.java
 +++ b/net/minecraft/world/level/chunk/ChunkAccess.java
-@@ -71,12 +_,12 @@
+@@ -71,15 +_,20 @@
      protected @Nullable NoiseChunk noiseChunk;
      protected final UpgradeData upgradeData;
      protected @Nullable BlendingData blendingData;
@@ -15,6 +15,14 @@
      protected final LevelHeightAccessor levelHeightAccessor;
      protected final LevelChunkSection[] sections;
  
++    // CraftBukkit start - SPIGOT-6814: move to IChunkAccess to account for 1.17 to 1.18 chunk upgrading.
++    private static final org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry DATA_TYPE_REGISTRY = new org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry();
++    public org.bukkit.craftbukkit.persistence.DirtyCraftPersistentDataContainer persistentDataContainer = new org.bukkit.craftbukkit.persistence.DirtyCraftPersistentDataContainer(DATA_TYPE_REGISTRY);
++    // CraftBukkit end
++
+     public ChunkAccess(
+         ChunkPos p_187621_,
+         UpgradeData p_187622_,
 @@ -318,10 +_,14 @@
  
      @Override

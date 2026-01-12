@@ -1,6 +1,6 @@
 package com.mohistmc.youer.bukkit.entity;
 
-import net.minecraft.world.entity.animal.AbstractGolem;
+import net.minecraft.world.entity.animal.golem.AbstractGolem;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.entity.CraftGolem;
 

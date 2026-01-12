@@ -3,7 +3,7 @@ package com.mohistmc.youer.api;
 import com.mohistmc.youer.feature.ban.BanConfig;
 import java.util.Objects;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import org.bukkit.entity.EntityType;
 
@@ -24,7 +24,7 @@ public class EntityAPI {
     }
 
     public static net.minecraft.world.entity.EntityType<?> getType(String resourceLocation) {
-        return BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.parse(resourceLocation));
+        return BuiltInRegistries.ENTITY_TYPE.get(Identifier.parse(resourceLocation)).get().value();
     }
 
     public static String resourceLocation(Entity nmsEntity) {

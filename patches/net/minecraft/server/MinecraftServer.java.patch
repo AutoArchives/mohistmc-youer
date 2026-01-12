@@ -1,5 +1,13 @@
 --- a/net/minecraft/server/MinecraftServer.java
 +++ b/net/minecraft/server/MinecraftServer.java
+@@ -44,6 +_,7 @@
+ import java.util.function.Consumer;
+ import java.util.function.Function;
+ import java.util.stream.Collectors;
++import joptsimple.OptionSet;
+ import net.minecraft.CrashReport;
+ import net.minecraft.CrashReportCategory;
+ import net.minecraft.ReportType;
 @@ -183,11 +_,14 @@
  import net.minecraft.world.phys.Vec2;
  import net.minecraft.world.phys.Vec3;
@@ -45,8 +53,28 @@
      private final StructureTemplateManager structureTemplateManager;
      private final ServerTickRateManager tickRateManager;
      private final ServerDebugSubscribers debugSubscribers = new ServerDebugSubscribers(this);
-@@ -284,7 +_,7 @@
+@@ -282,9 +_,27 @@
+     private final DiscontinuousFrame tickFrame;
+     private final PacketProcessor packetProcessor;
  
++    // CraftBukkit start
++    public WorldLoader.DataLoadContext worldLoader;
++    public org.bukkit.craftbukkit.CraftServer server;
++    public OptionSet options;
++    public org.bukkit.command.ConsoleCommandSender console;
++    // public Terminal terminal;
++    public static int currentTick = (int) (System.currentTimeMillis() / 50);
++    public java.util.Queue<Runnable> processQueue = new java.util.concurrent.ConcurrentLinkedQueue<Runnable>();
++    public int autosavePeriod;
++    public Commands vanillaCommandDispatcher;
++    private boolean forceTicks;
++    // CraftBukkit end
++
++    public void worldLoader(WorldLoader.DataLoadContext worldLoader, OptionSet options) {
++        this.worldLoader = worldLoader;
++        this.options = options;
++    }
++
      public static <S extends MinecraftServer> S spin(Function<Thread, S> p_129873_) {
          AtomicReference<S> atomicreference = new AtomicReference<>();
 -        Thread thread = new Thread(() -> atomicreference.get().runServer(), "Server thread");

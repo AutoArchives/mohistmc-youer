@@ -17,7 +17,6 @@
 
 package com.mohistmc.youer.bukkit.inventory;
 
-import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
@@ -44,16 +43,6 @@ import org.bukkit.inventory.InventoryHolder;
  * @date 2020/4/10 13:39
  */
 public class InventoryOwner {
-
-    private static final AtomicReference<org.bukkit.event.inventory.InventoryCloseEvent.Reason> close$Reason = new AtomicReference<>(org.bukkit.event.inventory.InventoryCloseEvent.Reason.UNKNOWN);
-
-    public static org.bukkit.event.inventory.InventoryCloseEvent.Reason getClose$Reason() {
-        return close$Reason.getAndSet(org.bukkit.event.inventory.InventoryCloseEvent.Reason.UNKNOWN);
-    }
-
-    public static void setClose$Reason(org.bukkit.event.inventory.InventoryCloseEvent.Reason reason) {
-        close$Reason.set(reason);
-    }
 
     public static Inventory getInventory(Container inventory) {
         InventoryHolder owner = get(inventory);
