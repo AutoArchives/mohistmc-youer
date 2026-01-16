@@ -20,31 +20,31 @@
 +import org.jline.reader.UserInterruptException;
 +// CraftBukkit end
 +
- public class DedicatedServer extends MinecraftServer implements IMinecraftServer {
+ public class DedicatedServer extends MinecraftServer implements ServerInterface {
  
-     static final Logger LOGGER = LogUtils.getLogger();
+     private static final Logger LOGGER = LogUtils.getLogger();
 @@ -82,7 +98,7 @@
      private static final int CONVERSION_RETRIES = 2;
-     private final List<ServerCommand> consoleInput = Collections.synchronizedList(Lists.newArrayList());
-     private @Nullable RemoteStatusListener queryThreadGs4;
--    private final RemoteControlCommandListener rconConsoleSource;
+     private final List<ConsoleInput> consoleInput = Collections.synchronizedList(Lists.newArrayList());
+     private @Nullable QueryThreadGs4 queryThreadGs4;
+-    private final RconConsoleSource rconConsoleSource;
 +    // private final RemoteControlCommandListener rconConsoleSource; // CraftBukkit - remove field
-     private @Nullable RemoteControlListener rconThread;
+     private @Nullable RconThread rconThread;
      public DedicatedServerSettings settings;
-     private @Nullable ServerGUI gui;
+     private @Nullable MinecraftServerGui gui;
 @@ -94,10 +110,12 @@
      private @Nullable ManagementServer jsonRpcServer;
      private long lastHeartbeat;
  
--    public DedicatedServer(Thread thread, Convertable.ConversionSession convertable_conversionsession, ResourcePackRepository resourcepackrepository, WorldStem worldstem, DedicatedServerSettings dedicatedserversettings, DataFixer datafixer, Services services) {
--        super(thread, convertable_conversionsession, resourcepackrepository, worldstem, Proxy.NO_PROXY, datafixer, services, LoggingLevelLoadListener.forDedicatedServer());
+-    public DedicatedServer(Thread thread, LevelStorageSource.LevelStorageAccess levelstoragesource_levelstorageaccess, PackRepository packrepository, WorldStem worldstem, DedicatedServerSettings dedicatedserversettings, DataFixer datafixer, Services services) {
+-        super(thread, levelstoragesource_levelstorageaccess, packrepository, worldstem, Proxy.NO_PROXY, datafixer, services, LoggingLevelLoadListener.forDedicatedServer());
 +    // CraftBukkit start - Signature changed
-+    public DedicatedServer(joptsimple.OptionSet options, WorldLoader.a worldLoader, Thread thread, Convertable.ConversionSession convertable_conversionsession, ResourcePackRepository resourcepackrepository, WorldStem worldstem, DedicatedServerSettings dedicatedserversettings, DataFixer datafixer, Services services) {
-+        super(options, worldLoader, thread, convertable_conversionsession, resourcepackrepository, worldstem, Proxy.NO_PROXY, datafixer, services, LoggingLevelLoadListener.forDedicatedServer());
++    public DedicatedServer(joptsimple.OptionSet options, WorldLoader.DataLoadContext worldLoader, Thread thread, LevelStorageSource.LevelStorageAccess levelstoragesource_levelstorageaccess, PackRepository packrepository, WorldStem worldstem, DedicatedServerSettings dedicatedserversettings, DataFixer datafixer, Services services) {
++        super(options, worldLoader, thread, levelstoragesource_levelstorageaccess, packrepository, worldstem, Proxy.NO_PROXY, datafixer, services, LoggingLevelLoadListener.forDedicatedServer());
 +        // CraftBukkit end
          this.settings = dedicatedserversettings;
--        this.rconConsoleSource = new RemoteControlCommandListener(this);
-+        // this.rconConsoleSource = new RemoteControlCommandListener(this); // CraftBukkit - remove field
+-        this.rconConsoleSource = new RconConsoleSource(this);
++        // this.rconConsoleSource = new RconConsoleSource(this); // CraftBukkit - remove field
          this.serverTextFilter = ServerTextFilter.createFromConfig(dedicatedserversettings.getProperties());
          this.serverLinks = createServerLinks(dedicatedserversettings);
          if (dedicatedserversettings.getProperties().codeOfConduct) {
@@ -167,19 +167,19 @@
              DedicatedServer.LOGGER.warn("**** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!");
              DedicatedServer.LOGGER.warn("The server will make no attempt to authenticate usernames. Beware.");
 @@ -260,19 +343,19 @@
-         if (!NameReferencingFileConverter.serverReadyAfterUserconversion(this)) {
+         if (!OldUsersConverter.serverReadyAfterUserconversion(this)) {
              return false;
          } else {
 -            this.setPlayerList(new DedicatedPlayerList(this, this.registries(), this.playerDataStorage));
 +            // this.setPlayerList(new DedicatedPlayerList(this, this.registries(), this.playerDataStorage)); // CraftBukkit - moved up
              this.tickTimeLogger = new RemoteSampleLogger(TpsDebugDimensions.values().length, this.debugSubscribers(), RemoteDebugSampleType.TICK_TIME);
-             long j = SystemUtils.getNanos();
+             long j = Util.getNanos();
  
              this.services.nameToIdCache().resolveOfflineUsers(!this.usesAuthentication());
              DedicatedServer.LOGGER.info("Preparing level \"{}\"", this.getLevelIdName());
 -            this.loadLevel();
 +            this.loadLevel(storageSource.getLevelId()); // CraftBukkit
-             long k = SystemUtils.getNanos() - j;
+             long k = Util.getNanos() - j;
              String s3 = String.format(Locale.ROOT, "%.3fs", (double) k / 1.0E9D);
  
              DedicatedServer.LOGGER.info("Done ({})! For help, type \"help\"", s3);
@@ -199,17 +199,17 @@
      @Override
 @@ -479,7 +563,15 @@
          while (!this.consoleInput.isEmpty()) {
-             ServerCommand servercommand = (ServerCommand) this.consoleInput.remove(0);
+             ConsoleInput consoleinput = (ConsoleInput) this.consoleInput.remove(0);
  
--            this.getCommands().performPrefixedCommand(servercommand.source, servercommand.msg);
+-            this.getCommands().performPrefixedCommand(consoleinput.source, consoleinput.msg);
 +            // CraftBukkit start - ServerCommand for preprocessing
-+            ServerCommandEvent event = new ServerCommandEvent(console, servercommand.msg);
++            ServerCommandEvent event = new ServerCommandEvent(console, consoleinput.msg);
 +            server.getPluginManager().callEvent(event);
 +            if (event.isCancelled()) continue;
-+            servercommand = new ServerCommand(event.getCommand(), servercommand.source);
++            consoleinput = new ConsoleInput(event.getCommand(), consoleinput.source);
 +
 +            // this.getCommands().performPrefixedCommand(servercommand.source, servercommand.msg); // Called in dispatchServerCommand
-+            server.dispatchServerCommand(console, servercommand);
++            server.dispatchServerCommand(console, consoleinput);
 +            // CraftBukkit end
          }
  
@@ -252,17 +252,17 @@
 +        throw new UnsupportedOperationException("Not supported - remote source required.");
 +    }
 +
-+    public String runCommand(RemoteControlCommandListener rconConsoleSource, String s) {
++    public String runCommand(RconConsoleSource rconConsoleSource, String s) {
 +        rconConsoleSource.prepareForCommand();
          this.executeBlocking(() -> {
 -            this.getCommands().performPrefixedCommand(this.rconConsoleSource.createCommandSourceStack(), s);
-+            CommandListenerWrapper wrapper = rconConsoleSource.createCommandSourceStack();
++            CommandSourceStack wrapper = rconConsoleSource.createCommandSourceStack();
 +            RemoteServerCommandEvent event = new RemoteServerCommandEvent(rconConsoleSource.getBukkitSender(wrapper), s);
 +            server.getPluginManager().callEvent(event);
 +            if (event.isCancelled()) {
 +                return;
 +            }
-+            ServerCommand serverCommand = new ServerCommand(event.getCommand(), wrapper);
++            ConsoleInput serverCommand = new ConsoleInput(event.getCommand(), wrapper);
 +            server.dispatchServerCommand(event.getSender(), serverCommand);
          });
 -        return this.rconConsoleSource.getCommandResponse();
@@ -282,7 +282,7 @@
 +    }
 +
 +    @Override
-+    public CommandSender getBukkitSender(CommandListenerWrapper wrapper) {
++    public CommandSender getBukkitSender(CommandSourceStack wrapper) {
 +        return console;
 +    }
 +    // CraftBukkit end

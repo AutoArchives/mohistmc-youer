@@ -1,5 +1,14 @@
 --- a/net/minecraft/server/ReloadableServerResources.java
 +++ b/net/minecraft/server/ReloadableServerResources.java
+@@ -22,7 +_,7 @@
+     private static final Logger LOGGER = LogUtils.getLogger();
+     private static final CompletableFuture<Unit> DATA_RELOAD_INITIAL_TASK = CompletableFuture.completedFuture(Unit.INSTANCE);
+     private final ReloadableServerRegistries.Holder fullRegistryHolder;
+-    private final Commands commands;
++    public Commands commands;
+     private final RecipeManager recipes;
+     private final ServerAdvancementManager advancements;
+     private final ServerFunctionLibrary functionLibrary;
 @@ -42,6 +_,9 @@
          this.commands = new Commands(p_206858_, CommandBuildContext.simple(p_361583_, p_250695_));
          this.advancements = new ServerAdvancementManager(p_361583_);

@@ -28,7 +28,7 @@
 +    public void remove(Entity.RemovalReason entity_removalreason, EntityRemoveEvent.Cause cause) {
 +        // CraftBukkit end
          if (!this.level().isClientSide() && entity_removalreason.shouldDestroy()) {
-             InventoryUtils.dropContents(this.level(), (Entity) this, this);
+             Containers.dropContents(this.level(), (Entity) this, this);
          }
  
 -        super.remove(entity_removalreason);
@@ -38,7 +38,7 @@
      @Override
 @@ -206,4 +222,51 @@
      public void stopOpen(ContainerUser containeruser) {
-         this.level().gameEvent(GameEvent.CONTAINER_CLOSE, this.position(), GameEvent.a.of((Entity) containeruser.getLivingEntity()));
+         this.level().gameEvent(GameEvent.CONTAINER_CLOSE, this.position(), GameEvent.Context.of((Entity) containeruser.getLivingEntity()));
      }
 +
 +    // CraftBukkit start

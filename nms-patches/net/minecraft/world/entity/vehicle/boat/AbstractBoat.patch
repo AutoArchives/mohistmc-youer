@@ -1,7 +1,7 @@
 --- a/net/minecraft/world/entity/vehicle/boat/AbstractBoat.java
 +++ b/net/minecraft/world/entity/vehicle/boat/AbstractBoat.java
 @@ -51,6 +51,15 @@
- import net.minecraft.world.phys.shapes.VoxelShapes;
+ import net.minecraft.world.phys.shapes.VoxelShape;
  import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
@@ -15,9 +15,9 @@
 +
  public abstract class AbstractBoat extends VehicleEntity implements Leashable {
  
-     private static final DataWatcherObject<Boolean> DATA_ID_PADDLE_LEFT = DataWatcher.<Boolean>defineId(AbstractBoat.class, DataWatcherRegistry.BOOLEAN);
+     private static final EntityDataAccessor<Boolean> DATA_ID_PADDLE_LEFT = SynchedEntityData.<Boolean>defineId(AbstractBoat.class, EntityDataSerializers.BOOLEAN);
 @@ -83,6 +92,14 @@
-     private Leashable.@Nullable a leashData;
+     private Leashable.@Nullable LeashData leashData;
      private final Supplier<Item> dropItem;
  
 +    // CraftBukkit start
@@ -28,8 +28,8 @@
 +    public boolean landBoats = false;
 +    // CraftBukkit end
 +
-     public AbstractBoat(EntityTypes<? extends AbstractBoat> entitytypes, World world, Supplier<Item> supplier) {
-         super(entitytypes, world);
+     public AbstractBoat(EntityType<? extends AbstractBoat> entitytype, Level level, Supplier<Item> supplier) {
+         super(entitytype, level);
          this.dropItem = supplier;
 @@ -178,9 +195,29 @@
      public void push(Entity entity) {
@@ -70,7 +70,7 @@
      public void tick() {
          this.oldStatus = this.status;
 @@ -248,6 +286,21 @@
-             this.setDeltaMovement(Vec3D.ZERO);
+             this.setDeltaMovement(Vec3.ZERO);
          }
  
 +        // CraftBukkit start

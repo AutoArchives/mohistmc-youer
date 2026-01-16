@@ -1,5 +1,48 @@
 --- a/net/minecraft/world/level/block/ChestBlock.java
 +++ b/net/minecraft/world/level/block/ChestBlock.java
+@@ -129,6 +_,42 @@
+         }
+     };
+ 
++    // CraftBukkit start
++    public static class DoubleInventory implements MenuProvider {
++
++        private final ChestBlockEntity tileentitychest;
++        private final ChestBlockEntity tileentitychest1;
++        public final CompoundContainer inventorylargechest;
++
++        public DoubleInventory(ChestBlockEntity chestblockentity, ChestBlockEntity chestblockentity1, CompoundContainer compoundcontainer) {
++            this.tileentitychest = chestblockentity;
++            this.tileentitychest1 = chestblockentity1;
++            this.inventorylargechest = compoundcontainer;
++        }
++
++        @Override
++        public @Nullable AbstractContainerMenu createMenu(int i, Inventory inventory, Player player) {
++            if (tileentitychest.canOpen(player) && tileentitychest1.canOpen(player)) {
++                tileentitychest.unpackLootTable(inventory.player);
++                tileentitychest1.unpackLootTable(inventory.player);
++                return ChestMenu.sixRows(i, inventory, inventorylargechest);
++            } else {
++                Direction direction = ChestBlock.getConnectedDirection(tileentitychest.getBlockState());
++                Vec3 vec3 = tileentitychest.getBlockPos().getCenter();
++                Vec3 vec31 = vec3.add((double) direction.getStepX() / 2.0D, 0.0D, (double) direction.getStepZ() / 2.0D);
++
++                BaseContainerBlockEntity.sendChestLockedNotifications(vec31, player, this.getDisplayName());
++                return null;
++            }
++        }
++
++        @Override
++        public Component getDisplayName() {
++            return (Component) (tileentitychest.hasCustomName() ? tileentitychest.getDisplayName() : (tileentitychest1.hasCustomName() ? tileentitychest1.getDisplayName() : Component.translatable("container.chestDouble")));
++        }
++    };
++    // CraftBukkit end
++
+     @Override
+     public MapCodec<? extends ChestBlock> codec() {
+         return CODEC;
 @@ -292,7 +_,8 @@
      }
  

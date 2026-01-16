@@ -1,8 +1,8 @@
 --- a/net/minecraft/world/entity/animal/cow/AbstractCow.java
 +++ b/net/minecraft/world/entity/animal/cow/AbstractCow.java
 @@ -28,6 +28,12 @@
- import net.minecraft.world.level.World;
- import net.minecraft.world.level.block.state.IBlockData;
+ import net.minecraft.world.level.Level;
+ import net.minecraft.world.level.block.state.BlockState;
  
 +// CraftBukkit start
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
@@ -10,24 +10,24 @@
 +import org.bukkit.event.player.PlayerBucketFillEvent;
 +// CraftBukkit end
 +
- public abstract class AbstractCow extends EntityAnimal {
+ public abstract class AbstractCow extends Animal {
  
-     private static final EntitySize BABY_DIMENSIONS = EntityTypes.COW.getDimensions().scale(0.5F).withEyeHeight(0.665F);
+     private static final EntityDimensions BABY_DIMENSIONS = EntityType.COW.getDimensions().scale(0.5F).withEyeHeight(0.665F);
 @@ -89,8 +95,16 @@
-         ItemStack itemstack = entityhuman.getItemInHand(enumhand);
+         ItemStack itemstack = player.getItemInHand(interactionhand);
  
          if (itemstack.is(Items.BUCKET) && !this.isBaby()) {
 +            // CraftBukkit start - Got milk?
-+            PlayerBucketFillEvent event = CraftEventFactory.callPlayerBucketFillEvent(entityhuman.level(), entityhuman, this.blockPosition(), this.blockPosition(), null, itemstack, Items.MILK_BUCKET, enumhand);
++            PlayerBucketFillEvent event = CraftEventFactory.callPlayerBucketFillEvent(player.level(), player, this.blockPosition(), this.blockPosition(), null, itemstack, Items.MILK_BUCKET, interactionhand);
 +
 +            if (event.isCancelled()) {
-+                return EnumInteractionResult.PASS;
++                return InteractionResult.PASS;
 +            }
 +            // CraftBukkit end
 +
-             entityhuman.playSound(SoundEffects.COW_MILK, 1.0F, 1.0F);
--            ItemStack itemstack1 = ItemLiquidUtil.createFilledResult(itemstack, entityhuman, Items.MILK_BUCKET.getDefaultInstance());
-+            ItemStack itemstack1 = ItemLiquidUtil.createFilledResult(itemstack, entityhuman, CraftItemStack.asNMSCopy(event.getItemStack())); // CraftBukkit
+             player.playSound(SoundEvents.COW_MILK, 1.0F, 1.0F);
+-            ItemStack itemstack1 = ItemUtils.createFilledResult(itemstack, player, Items.MILK_BUCKET.getDefaultInstance());
++            ItemStack itemstack1 = ItemUtils.createFilledResult(itemstack, player, CraftItemStack.asNMSCopy(event.getItemStack())); // CraftBukkit
  
-             entityhuman.setItemInHand(enumhand, itemstack1);
-             return EnumInteractionResult.SUCCESS;
+             player.setItemInHand(interactionhand, itemstack1);
+             return InteractionResult.SUCCESS;

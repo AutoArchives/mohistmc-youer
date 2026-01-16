@@ -2,7 +2,7 @@ package com.mohistmc.youer.feature;
 
 import com.mohistmc.youer.YouerConfig;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 import org.bukkit.GameRule;
 import org.bukkit.entity.Player;
 
@@ -20,7 +20,7 @@ public class KeepInventory {
     }
 
     public static boolean inventory(ServerPlayer player) {
-        if (player.level().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY)) {
+        if (player.level().getGameRules().get(GameRules.KEEP_INVENTORY)) {
             return true;
         }
         Player bukkit_player = player.getBukkitEntity();
@@ -42,7 +42,7 @@ public class KeepInventory {
 
 
     public static boolean exp(ServerPlayer player) {
-        if (player.level().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY)) {
+        if (player.level().getGameRules().get(GameRules.KEEP_INVENTORY)) {
             return true;
         }
         Player bukkit_player = player.getBukkitEntity();

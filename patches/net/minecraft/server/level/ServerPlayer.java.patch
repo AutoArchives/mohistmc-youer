@@ -1,10 +1,37 @@
 --- a/net/minecraft/server/level/ServerPlayer.java
 +++ b/net/minecraft/server/level/ServerPlayer.java
-@@ -200,6 +_,7 @@
+@@ -22,6 +_,8 @@
+ import java.util.Set;
+ import java.util.UUID;
+ import java.util.concurrent.CompletableFuture;
++import java.util.concurrent.atomic.AtomicBoolean;
++import java.util.concurrent.atomic.AtomicReference;
+ import java.util.function.Consumer;
+ import java.util.stream.Collectors;
+ import net.minecraft.ChatFormatting;
+@@ -116,6 +_,7 @@
+ import net.minecraft.world.MenuProvider;
+ import net.minecraft.world.attribute.BedRule;
+ import net.minecraft.world.attribute.EnvironmentAttributes;
++import net.minecraft.world.damagesource.CombatTracker;
+ import net.minecraft.world.damagesource.DamageSource;
+ import net.minecraft.world.damagesource.DamageTypes;
+ import net.minecraft.world.effect.MobEffectInstance;
+@@ -152,6 +_,7 @@
+ import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEnderpearl;
+ import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
+ import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
++import net.minecraft.world.food.FoodData;
+ import net.minecraft.world.inventory.AbstractContainerMenu;
+ import net.minecraft.world.inventory.ContainerListener;
+ import net.minecraft.world.inventory.ContainerSynchronizer;
+@@ -200,6 +_,9 @@
  import net.minecraft.world.scores.Scoreboard;
  import net.minecraft.world.scores.Team;
  import net.minecraft.world.scores.criteria.ObjectiveCriteria;
++import org.bukkit.WeatherType;
 +import org.bukkit.craftbukkit.entity.CraftPlayer;
++import org.bukkit.event.player.PlayerSpawnChangeEvent;
  import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
@@ -46,11 +73,27 @@
              ServerPlayer.this.connection.send(new ClientboundContainerSetDataPacket(p_143455_.containerId, p_143456_, p_143457_));
          }
  
-@@ -362,6 +_,7 @@
+@@ -362,6 +_,23 @@
      private Set<DebugSubscription<?>> requestedDebugSubscriptions = Set.of();
      private int containerCounter;
      public boolean wonGame;
 +    private long lastDayTimeTick = -1L; // Neo: Used to limit TIME_SINCE_REST increases when day length is non-standard. No need to persist, at most Phantoms will spawn one tick too early for each save/load cycle.
++
++    // CraftBukkit start
++    public CraftPlayer.TransferCookieConnection transferCookieConnection;
++    public String displayName;
++    public Component listName;
++    public int listOrder = 0;
++    public org.bukkit.Location compassTarget;
++    public int newExp = 0;
++    public int newLevel = 0;
++    public int newTotalExp = 0;
++    public boolean keepLevel = false;
++    public double maxHealthCache;
++    public boolean joining = true;
++    public boolean sentListPacket = false;
++    public String kickLeaveMessage = null; // SPIGOT-3034: Forward leave message to PlayerQuitEvent
++    // CraftBukkit end
  
      public ServerPlayer(MinecraftServer p_254143_, ServerLevel p_254435_, GameProfile p_253651_, ClientInformation p_301997_) {
          super(p_254435_, p_253651_);
@@ -335,14 +378,33 @@
      }
  
      public int getTabListOrder() {
-@@ -1979,6 +_,7 @@
+@@ -1978,7 +_,13 @@
+         this.setRespawnPosition(p_348642_.respawnConfig, false);
      }
  
++    // Youer start
++    private final AtomicBoolean setRespawnPosition$canCancel = new AtomicBoolean(true);
++    public boolean setRespawnPosition$canCancel() {
++        return setRespawnPosition$canCancel.getAndSet(true);
++    }
      public void setRespawnPosition(ServerPlayer.@Nullable RespawnConfig p_405460_, boolean p_9162_) {
 +        if (net.neoforged.neoforge.event.EventHooks.onPlayerSpawnSet(this, p_405460_)) return;
          if (p_9162_ && p_405460_ != null && !p_405460_.isSamePosition(this.respawnConfig)) {
              this.sendSystemMessage(SPAWN_SET_MESSAGE);
          }
+@@ -1986,6 +_,12 @@
+         this.respawnConfig = p_405460_;
+     }
+ 
++    public boolean setRespawnPosition(ServerPlayer.@Nullable RespawnConfig p_405460_, boolean p_9162_, PlayerSpawnChangeEvent.Cause cause) {
++        setRespawnPosition(p_405460_, p_9162_);
++        return setRespawnPosition$canCancel.getAndSet(true);
++    }
++    // Youer end
++
+     public SectionPos getLastSectionPos() {
+         return this.lastSectionPos;
+     }
 @@ -2016,6 +_,75 @@
          return itementity;
      }
@@ -463,14 +525,147 @@
          this.shoulderEntityRight = p_445961_;
          this.setShoulderParrotRight(extractParrotVariant(p_445961_));
      }
-@@ -2312,5 +_,10 @@
-                 .apply(p_433952_, ServerPlayer.SavedPosition::new)
-         );
-         public static final ServerPlayer.SavedPosition EMPTY = new ServerPlayer.SavedPosition(Optional.empty(), Optional.empty(), Optional.empty());
+@@ -2272,6 +_,143 @@
+     public Set<DebugSubscription<?>> debugSubscriptions() {
+         return !this.server.debugSubscribers().hasRequiredPermissions(this) ? Set.of() : this.requestedDebugSubscriptions;
+     }
++
++    // CraftBukkit start - Add per-player time and weather.
++    public long timeOffset = 0;
++    public boolean relativeTime = true;
++
++    public long getPlayerTime() {
++        if (this.relativeTime) {
++            // Adds timeOffset to the current server time.
++            return this.level().getDayTime() + this.timeOffset;
++        } else {
++            // Adds timeOffset to the beginning of this day.
++            return this.level().getDayTime() - (this.level().getDayTime() % 24000) + this.timeOffset;
++        }
++    }
++
++    public WeatherType weather = null;
++
++    public WeatherType getPlayerWeather() {
++        return this.weather;
++    }
++
++    public void setPlayerWeather(WeatherType type, boolean plugin) {
++        if (!plugin && this.weather != null) {
++            return;
++        }
++
++        if (plugin) {
++            this.weather = type;
++        }
++
++        if (type == WeatherType.DOWNFALL) {
++            this.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.STOP_RAINING, 0));
++        } else {
++            this.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.START_RAINING, 0));
++        }
++    }
++
++    private float pluginRainPosition;
++    private float pluginRainPositionPrevious;
++
++    public void updateWeather(float oldRain, float newRain, float oldThunder, float newThunder) {
++        if (this.weather == null) {
++            // Vanilla
++            if (oldRain != newRain) {
++                this.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.RAIN_LEVEL_CHANGE, newRain));
++            }
++        } else {
++            // Plugin
++            if (pluginRainPositionPrevious != pluginRainPosition) {
++                this.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.RAIN_LEVEL_CHANGE, pluginRainPosition));
++            }
++        }
++
++        if (oldThunder != newThunder) {
++            if (weather == WeatherType.DOWNFALL || weather == null) {
++                this.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.THUNDER_LEVEL_CHANGE, newThunder));
++            } else {
++                this.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.THUNDER_LEVEL_CHANGE, 0));
++            }
++        }
++    }
++
++    public void tickWeather() {
++        if (this.weather == null) return;
++
++        pluginRainPositionPrevious = pluginRainPosition;
++        if (weather == WeatherType.DOWNFALL) {
++            pluginRainPosition += 0.01;
++        } else {
++            pluginRainPosition -= 0.01;
++        }
++
++        pluginRainPosition = Mth.clamp(pluginRainPosition, 0.0F, 1.0F);
++    }
++
++    public void resetPlayerWeather() {
++        this.weather = null;
++        this.setPlayerWeather(this.level().getLevelData().isRaining() ? WeatherType.DOWNFALL : WeatherType.CLEAR, false);
++    }
++
++    @Override
++    public String toString() {
++        return super.toString() + "(" + this.getScoreboardName() + " at " + this.getX() + "," + this.getY() + "," + this.getZ() + ")";
++    }
++
++    // SPIGOT-1903, MC-98153
++    public void forceSetPositionRotation(double x, double y, double z, float yaw, float pitch) {
++        this.snapTo(x, y, z, yaw, pitch);
++        this.connection.resetPosition();
++    }
++
++    @Override
++    public boolean isImmobile() {
++        return super.isImmobile() || !getBukkitEntity().isOnline();
++    }
++
++    public void reset() {
++        float exp = 0;
++
++        if (this.keepLevel) { // CraftBukkit - SPIGOT-6687: Only use keepLevel (was pre-set with RULE_KEEPINVENTORY value in PlayerDeathEvent)
++            exp = this.experienceProgress;
++            this.newTotalExp = this.totalExperience;
++            this.newLevel = this.experienceLevel;
++        }
++
++        this.setHealth(this.getMaxHealth());
++        this.stopUsingItem(); // CraftBukkit - SPIGOT-6682: Clear active item on reset
++        this.setRemainingFireTicks(0);
++        this.fallDistance = 0;
++        this.foodData = new FoodData();
++        this.experienceLevel = this.newLevel;
++        this.totalExperience = this.newTotalExp;
++        this.experienceProgress = 0;
++        this.deathTime = 0;
++        this.setArrowCount(0, true); // CraftBukkit - ArrowBodyCountChangeEvent
++        this.removeAllEffects(org.bukkit.event.entity.EntityPotionEffectEvent.Cause.DEATH);
++        this.effectsDirty = true;
++        this.containerMenu = this.inventoryMenu;
++        this.lastHurtByPlayer = null;
++        this.lastHurtByMob = null;
++        this.combatTracker = new CombatTracker(this);
++        this.lastSentExp = -1;
++        if (this.keepLevel) { // CraftBukkit - SPIGOT-6687: Only use keepLevel (was pre-set with RULE_KEEPINVENTORY value in PlayerDeathEvent)
++            this.experienceProgress = exp;
++        } else {
++            this.giveExperiencePoints(this.newExp);
++        }
++        this.keepLevel = false;
++        this.setDeltaMovement(0, 0, 0); // CraftBukkit - SPIGOT-6948: Reset velocity on death
++        this.skipDropExperience = false; // CraftBukkit - SPIGOT-7462: Reset experience drop skip, so that further deaths drop xp
 +    }
 +
 +    @Override
 +    public CraftPlayer getBukkitEntity() {
 +        return (CraftPlayer) super.getBukkitEntity();
-     }
- }
++    }
++    // CraftBukkit end
+ 
+     public record RespawnConfig(LevelData.RespawnData respawnData, boolean forced) {
+         public static final Codec<ServerPlayer.RespawnConfig> CODEC = RecordCodecBuilder.create(

@@ -2,7 +2,6 @@ package com.mohistmc.youer.bukkit;
 
 import com.mohistmc.youer.util.I18n;
 import com.mojang.authlib.GameProfile;
-import io.papermc.paper.configuration.GlobalConfiguration;
 import java.util.concurrent.ExecutionException;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.network.ServerLoginPacketListenerImpl;
@@ -34,6 +33,7 @@ public class LoginHandler {
         }
     }
 
+    /*
     public void fireEvents(ServerLoginPacketListenerImpl serverLoginPacketListener, GameProfile gameprofile) throws Exception {
         // Paper start - Velocity support
         if (serverLoginPacketListener.velocityLoginMessageId == -1 && GlobalConfiguration.get().proxies.velocity.enabled) {
@@ -76,4 +76,5 @@ public class LoginHandler {
         ServerLoginPacketListenerImpl.LOGGER.info("UUID of player {} is {}", gameprofile.getName(), gameprofile.getId());
         // CraftBukkit end
     }
+     */
 }

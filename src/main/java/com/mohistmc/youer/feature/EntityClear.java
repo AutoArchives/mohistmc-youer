@@ -1,12 +1,12 @@
 package com.mohistmc.youer.feature;
 
+import com.mohistmc.tools.NamedThreadFactory;
 import com.mohistmc.youer.YouerConfig;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.thread.NamedThreadFactory;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;

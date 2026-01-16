@@ -1,36 +1,34 @@
 --- a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownSplashPotion.java
 +++ b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownSplashPotion.java
-@@ -18,6 +18,16 @@
- import net.minecraft.world.phys.AxisAlignedBB;
- import net.minecraft.world.phys.MovingObjectPosition;
+@@ -18,6 +18,14 @@
+ import net.minecraft.world.phys.AABB;
+ import net.minecraft.world.phys.HitResult;
  
 +// CraftBukkit start
 +import java.util.HashMap;
 +import java.util.Map;
-+import net.minecraft.server.level.EntityPlayer;
++import net.minecraft.server.level.ServerPlayer;
 +import net.minecraft.world.effect.MobEffects;
-+import net.minecraft.world.phys.MovingObjectPosition;
 +import org.bukkit.craftbukkit.entity.CraftLivingEntity;
-+import org.bukkit.entity.LivingEntity;
 +// CraftBukkit end
 +
- public class ThrownSplashPotion extends EntityPotion {
+ public class ThrownSplashPotion extends AbstractThrownPotion {
  
-     public ThrownSplashPotion(EntityTypes<? extends ThrownSplashPotion> entitytypes, World world) {
-@@ -46,6 +56,7 @@
-         AxisAlignedBB axisalignedbb1 = axisalignedbb.inflate(4.0D, 2.0D, 4.0D);
-         List<EntityLiving> list = this.level().<EntityLiving>getEntitiesOfClass(EntityLiving.class, axisalignedbb1);
-         float f1 = ProjectileHelper.computeMargin(this);
-+        Map<LivingEntity, Double> affected = new HashMap<LivingEntity, Double>(); // CraftBukkit
+     public ThrownSplashPotion(EntityType<? extends ThrownSplashPotion> entitytype, Level level) {
+@@ -46,6 +54,7 @@
+         AABB aabb1 = aabb.inflate(4.0D, 2.0D, 4.0D);
+         List<LivingEntity> list = this.level().<LivingEntity>getEntitiesOfClass(LivingEntity.class, aabb1);
+         float f1 = ProjectileUtil.computeMargin(this);
++        Map<org.bukkit.entity.LivingEntity, Double> affected = new HashMap<>(); // CraftBukkit
  
          if (!list.isEmpty()) {
              Entity entity = this.getEffectSource();
-@@ -57,8 +68,38 @@
+@@ -57,8 +66,38 @@
                      if (d0 < 16.0D) {
                          double d1 = 1.0D - Math.sqrt(d0) / 4.0D;
  
 +                        // CraftBukkit start
-+                        affected.put((LivingEntity) entityliving.getBukkitEntity(), d1);
++                        affected.put((org.bukkit.entity.LivingEntity) livingentity.getBukkitEntity(), d1);
 +                    }
 +                }
 +            }
@@ -38,38 +36,38 @@
 +
 +        {
 +            {
-+                org.bukkit.event.entity.PotionSplashEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callPotionSplashEvent(this, movingobjectposition, affected);
++                org.bukkit.event.entity.PotionSplashEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callPotionSplashEvent(this, hitresult, affected);
 +                if (!event.isCancelled() && list != null && !list.isEmpty()) { // do not process effects if there are no effects to process
 +                    Entity entity1 = this.getEffectSource();
-+                    for (LivingEntity victim : event.getAffectedEntities()) {
++                    for (org.bukkit.entity.LivingEntity victim : event.getAffectedEntities()) {
 +                        if (!(victim instanceof CraftLivingEntity)) {
 +                            continue;
 +                        }
 +
-+                        EntityLiving entityliving = ((CraftLivingEntity) victim).getHandle();
++                        LivingEntity livingentity = ((CraftLivingEntity) victim).getHandle();
 +                        double d1 = event.getIntensity(victim);
 +                        // CraftBukkit end
 +
-                         for (MobEffect mobeffect : iterable) {
-                             Holder<MobEffectList> holder = mobeffect.getEffect();
+                         for (MobEffectInstance mobeffectinstance : iterable) {
+                             Holder<MobEffect> holder = mobeffectinstance.getEffect();
 +                            // CraftBukkit start - Abide by PVP settings - for players only!
-+                            if (!this.level().getWorld().getPVP() && this.getOwner() instanceof EntityPlayer && entityliving instanceof EntityPlayer && entityliving != this.getOwner()) {
-+                                MobEffectList mobeffectlist = (MobEffectList) holder.value();
-+                                if (mobeffectlist == MobEffects.SLOWNESS || mobeffectlist == MobEffects.MINING_FATIGUE || mobeffectlist == MobEffects.INSTANT_DAMAGE || mobeffectlist == MobEffects.BLINDNESS
-+                                        || mobeffectlist == MobEffects.HUNGER || mobeffectlist == MobEffects.WEAKNESS || mobeffectlist == MobEffects.POISON) {
++                            if (!this.level().getWorld().getPVP() && this.getOwner() instanceof ServerPlayer && livingentity instanceof ServerPlayer && livingentity != this.getOwner()) {
++                                MobEffect mobeffect = (MobEffect) holder.value();
++                                if (mobeffect == MobEffects.SLOWNESS || mobeffect == MobEffects.MINING_FATIGUE || mobeffect == MobEffects.INSTANT_DAMAGE || mobeffect == MobEffects.BLINDNESS
++                                        || mobeffect == MobEffects.HUNGER || mobeffect == MobEffects.WEAKNESS || mobeffect == MobEffects.POISON) {
 +                                    continue;
 +                                }
 +                            }
 +                            // CraftBukkit end
  
-                             if (((MobEffectList) holder.value()).isInstantenous()) {
-                                 ((MobEffectList) holder.value()).applyInstantenousEffect(worldserver, this, this.getOwner(), entityliving, mobeffect.getAmplifier(), d1);
-@@ -69,7 +110,7 @@
-                                 MobEffect mobeffect1 = new MobEffect(holder, i, mobeffect.getAmplifier(), mobeffect.isAmbient(), mobeffect.isVisible());
+                             if (((MobEffect) holder.value()).isInstantenous()) {
+                                 ((MobEffect) holder.value()).applyInstantenousEffect(serverlevel, this, this.getOwner(), livingentity, mobeffectinstance.getAmplifier(), d1);
+@@ -69,7 +108,7 @@
+                                 MobEffectInstance mobeffectinstance1 = new MobEffectInstance(holder, i, mobeffectinstance.getAmplifier(), mobeffectinstance.isAmbient(), mobeffectinstance.isVisible());
  
-                                 if (!mobeffect1.endsWithin(20)) {
--                                    entityliving.addEffect(mobeffect1, entity);
-+                                    entityliving.addEffect(mobeffect1, entity1, org.bukkit.event.entity.EntityPotionEffectEvent.Cause.POTION_SPLASH); // CraftBukkit
+                                 if (!mobeffectinstance1.endsWithin(20)) {
+-                                    livingentity.addEffect(mobeffectinstance1, entity);
++                                    livingentity.addEffect(mobeffectinstance1, entity1, org.bukkit.event.entity.EntityPotionEffectEvent.Cause.POTION_SPLASH); // CraftBukkit
                                  }
                              }
                          }

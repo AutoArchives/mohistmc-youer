@@ -115,6 +115,19 @@
          return p_21437_;
      }
  
+@@ -1062,6 +_,12 @@
+         this.persistenceRequired = true;
+     }
+ 
++    // CraftBukkit start
++    public void setPersistenceRequired(boolean persistenceRequired) {
++        this.persistenceRequired = persistenceRequired;
++    }
++    // CraftBukkit end
++
+     @Override
+     public void setDropChance(EquipmentSlot p_21410_, float p_21411_) {
+         this.dropChances = this.dropChances.withEquipmentChance(p_21410_, p_21411_);
 @@ -1199,6 +_,7 @@
              } else {
                  p_371709_.type().convert(this, t, p_371709_);

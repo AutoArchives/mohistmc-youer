@@ -3,9 +3,9 @@
 @@ -216,6 +216,7 @@
      }
  
-     public void addListener(IWorldBorderListener iworldborderlistener) {
-+        if (listeners.contains(iworldborderlistener)) return; // CraftBukkit
-         this.listeners.add(iworldborderlistener);
+     public void addListener(BorderChangeListener borderchangelistener) {
++        if (listeners.contains(borderchangelistener)) return; // CraftBukkit
+         this.listeners.add(borderchangelistener);
      }
  
 @@ -297,7 +298,13 @@

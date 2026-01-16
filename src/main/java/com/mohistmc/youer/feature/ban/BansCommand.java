@@ -16,7 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -71,7 +71,7 @@ public class BansCommand extends Command {
                         sender.sendMessage(ChatColor.RED + "This recipe already exists.");
                         return false;
                     }
-                    if (!BanRecipe.CACHE.contains(ResourceLocation.parse(name))) {
+                    if (!BanRecipe.CACHE.contains(Identifier.parse(name))) {
                         sender.sendMessage(ChatColor.RED + "This recipe does not exist.");
                         return false;
                     }
@@ -414,7 +414,7 @@ public class BansCommand extends Command {
         }
         if (args.length == 3 && args[0].equals("add") && args[1].equals("recipe") && (sender.isOp() || testPermission(sender))) {
             return BanRecipe.CACHE.stream()
-                    .map(ResourceLocation::toString)
+                    .map(Identifier::toString)
                     .toList();
         }
 

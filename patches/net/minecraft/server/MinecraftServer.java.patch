@@ -44,9 +44,12 @@
      private long lastTickNanos = Util.getNanos();
      private long taskExecutionStartNanos = Util.getNanos();
      private long idleTimeNanos;
-@@ -267,7 +_,7 @@
+@@ -265,9 +_,9 @@
+     private boolean enforceWhitelist;
+     private boolean usingWhitelist;
      private float smoothedTickTimeMillis;
-     private final Executor executor;
+-    private final Executor executor;
++    public final Executor executor;
      private @Nullable String serverId;
 -    private MinecraftServer.ReloadableResources resources;
 +    public MinecraftServer.ReloadableResources resources;
@@ -118,6 +121,15 @@
              ChunkPos chunkpos = new ChunkPos(serverchunkcache.randomState().sampler().findSpawnPosition());
              p_435683_.start(LevelLoadListener.Stage.PREPARE_GLOBAL_SPAWN, 0);
              p_435683_.updateFocus(p_177897_.dimension(), chunkpos);
+@@ -567,7 +_,7 @@
+         serverleveldata.setGameType(GameType.SPECTATOR);
+     }
+ 
+-    private void prepareLevels() {
++    public void prepareLevels() {
+         ChunkLoadCounter chunkloadcounter = new ChunkLoadCounter();
+ 
+         for (ServerLevel serverlevel : this.levels.values()) {
 @@ -575,6 +_,7 @@
                  TicketStorage ticketstorage = serverlevel.getDataStorage().get(TicketStorage.TYPE);
                  if (ticketstorage != null) {

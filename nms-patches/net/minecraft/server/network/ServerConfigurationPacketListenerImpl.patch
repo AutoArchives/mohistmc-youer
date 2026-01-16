@@ -5,7 +5,7 @@
  import org.slf4j.Logger;
  
 +// CraftBukkit start
-+import net.minecraft.server.level.EntityPlayer;
++import net.minecraft.server.level.ServerPlayer;
 +import org.bukkit.craftbukkit.CraftServerLinks;
 +import org.bukkit.event.player.PlayerLinksSendEvent;
 +// CraftBukkit end
@@ -17,11 +17,11 @@
      private @Nullable SynchronizeRegistriesTask synchronizeRegistriesTask;
      private @Nullable PrepareSpawnTask prepareSpawnTask;
  
--    public ServerConfigurationPacketListenerImpl(MinecraftServer minecraftserver, NetworkManager networkmanager, CommonListenerCookie commonlistenercookie) {
--        super(minecraftserver, networkmanager, commonlistenercookie);
+-    public ServerConfigurationPacketListenerImpl(MinecraftServer minecraftserver, Connection connection, CommonListenerCookie commonlistenercookie) {
+-        super(minecraftserver, connection, commonlistenercookie);
 +    // CraftBukkit start
-+    public ServerConfigurationPacketListenerImpl(MinecraftServer minecraftserver, NetworkManager networkmanager, CommonListenerCookie commonlistenercookie, EntityPlayer player) {
-+        super(minecraftserver, networkmanager, commonlistenercookie, player);
++    public ServerConfigurationPacketListenerImpl(MinecraftServer minecraftserver, Connection connection, CommonListenerCookie commonlistenercookie, ServerPlayer player) {
++        super(minecraftserver, connection, commonlistenercookie, player);
 +        // CraftBukkit end
          this.gameProfile = commonlistenercookie.gameProfile();
          this.clientInformation = commonlistenercookie.clientInformation();
@@ -52,17 +52,17 @@
                  return;
              }
  
--            IChatBaseComponent ichatbasecomponent = playerlist.canPlayerLogin(this.connection.getRemoteAddress(), new NameAndId(this.gameProfile));
-+            IChatBaseComponent ichatbasecomponent = null; // CraftBukkit - login checks already completed
+-            Component component = playerlist.canPlayerLogin(this.connection.getRemoteAddress(), new NameAndId(this.gameProfile));
++            Component component = null; // CraftBukkit - login checks already completed
  
-             if (ichatbasecomponent != null) {
-                 this.disconnect(ichatbasecomponent);
+             if (component != null) {
+                 this.disconnect(component);
                  return;
              }
  
 +            // CraftBukkit start
-+            EntityPlayer entityplayer = this.player;
-+            entityplayer.updateOptions(this.clientInformation);
++            ServerPlayer serverplayer = this.player;
++            serverplayer.updateOptions(this.clientInformation);
 +            // CraftBukkit end
              ((PrepareSpawnTask) Objects.requireNonNull(this.prepareSpawnTask)).spawnPlayer(this.connection, this.createCookie(this.clientInformation));
          } catch (Exception exception) {

@@ -78,3 +78,26 @@
          WorldDimensions.Complete worlddimensions$complete = worlddimensions.bake(p_443610_);
          Lifecycle lifecycle = worlddimensions$complete.lifecycle().add(p_443153_.datapackWorldgen().allRegistriesLifecycle());
          return new WorldLoader.DataLoadOutput<>(
+@@ -321,14 +_,14 @@
+         return new WorldLoader.InitConfig(worldloader$packconfig, Commands.CommandSelection.DEDICATED, p_248563_.functionPermissions);
+     }
+ 
+-    private static void forceUpgrade(
+-        LevelStorageSource.LevelStorageAccess p_195489_,
+-        WorldData p_401284_,
+-        DataFixer p_195490_,
+-        boolean p_195491_,
+-        BooleanSupplier p_195492_,
+-        RegistryAccess p_323503_,
+-        boolean p_321704_
++    public static void forceUpgrade(
++            LevelStorageSource.LevelStorageAccess p_195489_,
++            WorldData p_401284_,
++            DataFixer p_195490_,
++            boolean p_195491_,
++            BooleanSupplier p_195492_,
++            RegistryAccess p_323503_,
++            boolean p_321704_
+     ) {
+         LOGGER.info("Forcing world upgrade!");
+ 

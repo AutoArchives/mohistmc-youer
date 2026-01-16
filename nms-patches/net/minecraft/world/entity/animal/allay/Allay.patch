@@ -6,10 +6,10 @@
      private float spinningAnimationTicks0;
 +    public boolean forceDancing = false; // CraftBukkit
  
-     public Allay(EntityTypes<? extends Allay> entitytypes, World world) {
-         super(entitytypes, world);
+     public Allay(EntityType<? extends Allay> entitytype, Level level) {
+         super(entitytype, level);
 @@ -106,6 +107,12 @@
-         this.dynamicJukeboxListener = new DynamicGameEventListener<Allay.a>(new Allay.a(this.vibrationUser.getPositionSource(), ((GameEvent) GameEvent.JUKEBOX_PLAY.value()).notificationRadius()));
+         this.dynamicJukeboxListener = new DynamicGameEventListener<Allay.JukeboxListener>(new Allay.JukeboxListener(this.vibrationUser.getPositionSource(), ((GameEvent) GameEvent.JUKEBOX_PLAY.value()).notificationRadius()));
      }
  
 +    // CraftBukkit start
@@ -19,17 +19,17 @@
 +    // CraftBukkit end
 +
      @Override
-     protected BehaviorController.b<Allay> brainProvider() {
-         return BehaviorController.<Allay>provider(Allay.MEMORY_TYPES, Allay.SENSOR_TYPES);
+     protected Brain.Provider<Allay> brainProvider() {
+         return Brain.<Allay>provider(Allay.MEMORY_TYPES, Allay.SENSOR_TYPES);
 @@ -118,7 +125,7 @@
  
      @Override
-     public BehaviorController<Allay> getBrain() {
+     public Brain<Allay> getBrain() {
 -        return super.getBrain();
-+        return (BehaviorController<Allay>) super.getBrain(); // CraftBukkit - decompile error
++        return (Brain<Allay>) super.getBrain(); // CraftBukkit - decompile error
      }
  
-     public static AttributeProvider.Builder createAttributes() {
+     public static AttributeSupplier.Builder createAttributes() {
 @@ -210,7 +217,7 @@
      public void aiStep() {
          super.aiStep();
@@ -40,19 +40,19 @@
  
          if (this.isDancing() && this.shouldStopDancing() && this.tickCount % 20 == 0) {
 @@ -280,7 +287,12 @@
-         ItemStack itemstack1 = this.getItemInHand(EnumHand.MAIN_HAND);
+         ItemStack itemstack1 = this.getItemInHand(InteractionHand.MAIN_HAND);
  
-         if (this.isDancing() && itemstack.is(TagsItem.DUPLICATES_ALLAYS) && this.canDuplicate()) {
+         if (this.isDancing() && itemstack.is(ItemTags.DUPLICATES_ALLAYS) && this.canDuplicate()) {
 -            this.duplicateAllay();
 +            // CraftBukkit start - handle cancel duplication
 +            Allay allay = this.duplicateAllay();
 +            if (allay == null) {
-+                return EnumInteractionResult.SUCCESS;
++                return InteractionResult.SUCCESS;
 +            }
 +            // CraftBukkit end
              this.level().broadcastEntityEvent(this, (byte) 18);
-             this.level().playSound(entityhuman, (Entity) this, SoundEffects.AMETHYST_BLOCK_CHIME, SoundCategory.NEUTRAL, 2.0F, 1.0F);
-             this.removeInteractionItem(entityhuman, itemstack);
+             this.level().playSound(player, (Entity) this, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.NEUTRAL, 2.0F, 1.0F);
+             this.removeInteractionItem(player, itemstack);
 @@ -383,6 +395,7 @@
      }
  
@@ -67,7 +67,7 @@
  
 -    public void duplicateAllay() {
 +    public Allay duplicateAllay() { // CraftBukkit - return allay
-         Allay allay = EntityTypes.ALLAY.create(this.level(), EntitySpawnReason.BREEDING);
+         Allay allay = EntityType.ALLAY.create(this.level(), EntitySpawnReason.BREEDING);
  
          if (allay != null) {
 @@ -466,9 +479,9 @@

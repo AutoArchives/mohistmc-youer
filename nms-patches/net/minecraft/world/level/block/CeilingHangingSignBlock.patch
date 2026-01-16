@@ -3,8 +3,8 @@
 @@ -158,6 +158,6 @@
  
      @Override
-     public <T extends TileEntity> @Nullable BlockEntityTicker<T> getTicker(World world, IBlockData iblockdata, TileEntityTypes<T> tileentitytypes) {
--        return createTickerHelper(tileentitytypes, TileEntityTypes.HANGING_SIGN, TileEntitySign::tick);
+     public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level level, BlockState blockstate, BlockEntityType<T> blockentitytype) {
+-        return createTickerHelper(blockentitytype, BlockEntityType.HANGING_SIGN, SignBlockEntity::tick);
 +        return null; // Craftbukkit - remove unnecessary sign ticking
      }
  }

@@ -8,16 +8,16 @@
 +import java.util.Objects;
 +// CraftBukkit end
 +
- public class TicketStorage extends PersistentBase {
+ public class TicketStorage extends SavedData {
  
      private static final int INITIAL_TICKET_LIST_CAPACITY = 4;
 @@ -95,7 +99,7 @@
              Long2ObjectMap.Entry<List<Ticket>> long2objectmap_entry = (Entry) objectiterator.next();
-             ChunkCoordIntPair chunkcoordintpair = new ChunkCoordIntPair(long2objectmap_entry.getLongKey());
+             ChunkPos chunkpos = new ChunkPos(long2objectmap_entry.getLongKey());
  
 -            for (Ticket ticket : (List) long2objectmap_entry.getValue()) {
 +            for (Ticket ticket : long2objectmap_entry.getValue()) { // CraftBukkit - decompile error
-                 biconsumer.accept(chunkcoordintpair, ticket);
+                 biconsumer.accept(chunkpos, ticket);
              }
          }
 @@ -108,7 +112,7 @@

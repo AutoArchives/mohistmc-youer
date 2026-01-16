@@ -178,6 +178,7 @@ dependencies {
         exclude group: 'com.opencsv'
     }
     libraries 'org.apache.logging.log4j:log4j-iostreams:2.24.1'
+    libraries 'org.jline:jline:3.30.4'
     // spigot
     libraries 'commons-codec:commons-codec:1.19.0'
     libraries 'net.sf.jopt-simple:jopt-simple:5.0.4'

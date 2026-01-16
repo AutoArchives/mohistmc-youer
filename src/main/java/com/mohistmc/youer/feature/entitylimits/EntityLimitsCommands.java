@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.SpawnEggItem;
 import org.bukkit.ChatColor;
@@ -99,7 +99,7 @@ public class EntityLimitsCommands extends Command {
                     allSize.addAndGet(entity.getValue());
                 }
                 for (EntityLimits s : EntityLimitsConfig.INSTANCE.getEntityLimits()) {
-                    var type = BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.parse(s.getEntityName()));
+                    var type = BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.parse(s.getEntityName()));
                     String topChunk = "";
                     int maxCount = 0;
                     if (entityChunkCount.containsKey(type)) {
@@ -144,7 +144,7 @@ public class EntityLimitsCommands extends Command {
             try {
                 int limit = Integer.parseInt(args[1]);
                 ItemStack itemInHand = player.getInventory().getItemInMainHand();
-                if (itemInHand.isEmpty()) {
+                if (itemInHand.getType().isAir()) {
                     player.sendMessage(ChatColor.RED + "你必须手持一个刷怪蛋来添加实体限制！");
                     return false;
                 }

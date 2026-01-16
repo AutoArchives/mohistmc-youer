@@ -14,7 +14,7 @@
 +import org.bukkit.entity.HumanEntity;
 +// CraftBukkit end
 +
- public class DecoratedPotBlockEntity extends TileEntity implements RandomizableContainer, ContainerSingleItem.a {
+ public class DecoratedPotBlockEntity extends BlockEntity implements ContainerSingleItem.BlockContainerSingleItem, RandomizableContainer {
  
 +    // CraftBukkit start - add fields and methods
 +    public List<HumanEntity> transaction = new ArrayList<>();

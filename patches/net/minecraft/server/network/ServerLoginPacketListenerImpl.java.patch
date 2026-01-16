@@ -1,0 +1,11 @@
+--- a/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
++++ b/net/minecraft/server/network/ServerLoginPacketListenerImpl.java
+@@ -51,7 +_,7 @@
+     static final Logger LOGGER = LogUtils.getLogger();
+     private static final int MAX_TICKS_BEFORE_LOGIN = 600;
+     private final byte[] challenge;
+-    final MinecraftServer server;
++    public final MinecraftServer server;
+     final Connection connection;
+     final ServerActivityMonitor serverActivityMonitor;
+     private volatile ServerLoginPacketListenerImpl.State state = ServerLoginPacketListenerImpl.State.HELLO;

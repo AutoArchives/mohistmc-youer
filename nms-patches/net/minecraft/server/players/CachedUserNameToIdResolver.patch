@@ -1,8 +1,8 @@
 --- a/net/minecraft/server/players/CachedUserNameToIdResolver.java
 +++ b/net/minecraft/server/players/CachedUserNameToIdResolver.java
 @@ -123,7 +123,7 @@
-             cachedusernametoidresolver_a.setLastAccess(this.getNextOperation());
-             optional = Optional.of(cachedusernametoidresolver_a.nameAndId());
+             cachedusernametoidresolver_gameprofileinfo.setLastAccess(this.getNextOperation());
+             optional = Optional.of(cachedusernametoidresolver_gameprofileinfo.nameAndId());
          } else {
 -            Optional<NameAndId> optional1 = this.lookupGameProfile(this.profileRepository, s1);
 +            Optional<NameAndId> optional1 = this.lookupGameProfile(this.profileRepository, s); // CraftBukkit - use correct case for offline players
@@ -14,7 +14,7 @@
  
              jsonarray.forEach((jsonelement) -> {
 -                Optional optional = readGameProfile(jsonelement, dateformat);
-+                Optional<CachedUserNameToIdResolver.a> optional = readGameProfile(jsonelement, dateformat); // CraftBukkit - decompile error
++                Optional<CachedUserNameToIdResolver.GameProfileInfo> optional = readGameProfile(jsonelement, dateformat); // CraftBukkit - decompile error
  
                  Objects.requireNonNull(list);
                  optional.ifPresent(list::add);

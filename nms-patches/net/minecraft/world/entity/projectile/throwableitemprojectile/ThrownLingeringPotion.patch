@@ -1,27 +1,16 @@
 --- a/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownLingeringPotion.java
 +++ b/net/minecraft/world/entity/projectile/throwableitemprojectile/ThrownLingeringPotion.java
-@@ -11,6 +11,10 @@
- import net.minecraft.world.level.World;
- import net.minecraft.world.phys.MovingObjectPosition;
- 
-+// CraftBukkit start
-+import net.minecraft.world.phys.MovingObjectPosition;
-+// CraftBukkit end
-+
- public class ThrownLingeringPotion extends EntityPotion {
- 
-     public ThrownLingeringPotion(EntityTypes<? extends ThrownLingeringPotion> entitytypes, World world) {
-@@ -45,6 +49,13 @@
-         entityareaeffectcloud.setWaitTime(10);
-         entityareaeffectcloud.setRadiusPerTick(-entityareaeffectcloud.getRadius() / (float) entityareaeffectcloud.getDuration());
-         entityareaeffectcloud.applyComponentsFromItemStack(itemstack);
--        worldserver.addFreshEntity(entityareaeffectcloud);
+@@ -45,6 +45,13 @@
+         areaeffectcloud.setWaitTime(10);
+         areaeffectcloud.setRadiusPerTick(-areaeffectcloud.getRadius() / (float) areaeffectcloud.getDuration());
+         areaeffectcloud.applyComponentsFromItemStack(itemstack);
+-        serverlevel.addFreshEntity(areaeffectcloud);
 +        // CraftBukkit start
-+        org.bukkit.event.entity.LingeringPotionSplashEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callLingeringPotionSplashEvent(this, movingobjectposition, entityareaeffectcloud);
-+        if (!(event.isCancelled() || entityareaeffectcloud.isRemoved())) {
-+            this.level().addFreshEntity(entityareaeffectcloud);
++        org.bukkit.event.entity.LingeringPotionSplashEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callLingeringPotionSplashEvent(this, hitresult, areaeffectcloud);
++        if (!(event.isCancelled() || areaeffectcloud.isRemoved())) {
++            this.level().addFreshEntity(areaeffectcloud);
 +        } else {
-+            entityareaeffectcloud.discard(null); // CraftBukkit - add Bukkit remove cause
++            areaeffectcloud.discard(null); // CraftBukkit - add Bukkit remove cause
 +        }
 +        // CraftBukkit end
      }

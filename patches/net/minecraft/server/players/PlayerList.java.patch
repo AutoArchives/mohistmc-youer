@@ -1,5 +1,14 @@
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
+@@ -99,6 +_,8 @@
+ import net.minecraft.world.scores.Objective;
+ import net.minecraft.world.scores.PlayerTeam;
+ import net.minecraft.world.scores.Team;
++import org.bukkit.Location;
++import org.bukkit.event.player.PlayerRespawnEvent;
+ import org.jspecify.annotations.Nullable;
+ import org.slf4j.Logger;
+ 
 @@ -113,7 +_,7 @@
      private static final int SEND_PLAYER_INFO_INTERVAL = 600;
      private static final SimpleDateFormat BAN_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z", Locale.ROOT);
@@ -76,7 +85,19 @@
          ServerLevel serverlevel = p_11287_.level();
          p_11287_.awardStat(Stats.LEAVE_GAME);
          this.save(p_11287_);
-@@ -389,13 +_,20 @@
+@@ -385,17 +_,32 @@
+         return !set.isEmpty();
+     }
+ 
++    public ServerPlayer respawn(ServerPlayer serverplayer, boolean flag, Entity.RemovalReason entity_removalreason, PlayerRespawnEvent.RespawnReason reason, Location location) {
++        return respawn(serverplayer, flag, entity_removalreason);
++    }
++
++    public ServerPlayer respawn(ServerPlayer serverplayer, boolean flag, Entity.RemovalReason entity_removalreason, PlayerRespawnEvent.RespawnReason reason) {
++        return respawn(serverplayer, flag, entity_removalreason, PlayerRespawnEvent.RespawnReason.PLUGIN, null);
++    }
++
+     public ServerPlayer respawn(ServerPlayer p_11237_, boolean p_11238_, Entity.RemovalReason p_348558_) {
          TeleportTransition teleporttransition = p_11237_.findRespawnPositionAndUseSpawnBlock(!p_11238_, TeleportTransition.DO_NOTHING);
          this.players.remove(p_11237_);
          p_11237_.level().removePlayerImmediately(p_11237_, p_348558_);

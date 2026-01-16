@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.MapMaker;
+import com.mohistmc.youer.Youer;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.CommandNode;
@@ -942,87 +943,12 @@ public final class CraftServer implements Server {
 
     @Override
     public void reload() {
-        reloadCount++;
-        configuration = YamlConfiguration.loadConfiguration(getConfigFile());
-        commandsConfiguration = YamlConfiguration.loadConfiguration(getCommandsConfigFile());
-
-        console.settings = new DedicatedServerSettings(console.options);
-        DedicatedServerProperties config = console.settings.getProperties();
-
-        overrideSpawnLimits();
-        warningState = WarningState.value(configuration.getString("settings.deprecated-verbose"));
-        TicketType.pluginTimeout = configuration.getInt("chunk-gc.period-in-ticks");
-        minimumAPI = ApiVersion.getOrCreateVersion(configuration.getString("settings.minimum-api"));
-        printSaveWarning = false;
-        console.autosavePeriod = configuration.getInt("ticks-per.autosave");
-        loadIcon();
-        loadCompatibilities();
-        CraftMagicNumbers.INSTANCE.getCommodore().updateReroute(activeCompatibilities::contains);
-
-        try {
-            playerList.getIpBans().load();
-        } catch (IOException ex) {
-            logger.log(Level.WARNING, "Failed to load banned-ips.json, " + ex.getMessage());
-        }
-        try {
-            playerList.getBans().load();
-        } catch (IOException ex) {
-            logger.log(Level.WARNING, "Failed to load banned-players.json, " + ex.getMessage());
-        }
-
-        org.spigotmc.SpigotConfig.init((File) console.options.valueOf("spigot-settings")); // Spigot
-        for (ServerLevel world : console.getAllLevels()) {
-            world.serverLevelData.setDifficulty(config.difficulty.get());
-
-            for (SpawnCategory spawnCategory : SpawnCategory.values()) {
-                if (CraftSpawnCategory.isValidForLimits(spawnCategory)) {
-                    long ticksPerCategorySpawn = this.getTicksPerSpawns(spawnCategory);
-                    if (ticksPerCategorySpawn < 0) {
-                        world.ticksPerSpawnCategory.put(spawnCategory, CraftSpawnCategory.getDefaultTicksPerSpawn(spawnCategory));
-                    } else {
-                        world.ticksPerSpawnCategory.put(spawnCategory, ticksPerCategorySpawn);
-                    }
-                }
-            }
-            world.spigotConfig.init(); // Spigot
-        }
-
-        pluginManager.clearPlugins();
-        commandMap.clearCommands();
-        reloadData();
-        org.spigotmc.SpigotConfig.registerCommands(); // Spigot
-        overrideAllCommandBlockCommands = commandsConfiguration.getStringList("command-block-overrides").contains("*");
-        ignoreVanillaPermissions = commandsConfiguration.getBoolean("ignore-vanilla-permissions");
-
-        int pollCount = 0;
-
-        // Wait for at most 2.5 seconds for plugins to close their threads
-        while (pollCount < 50 && getScheduler().getActiveWorkers().size() > 0) {
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException e) {}
-            pollCount++;
-        }
-
-        List<BukkitWorker> overdueWorkers = getScheduler().getActiveWorkers();
-        for (BukkitWorker worker : overdueWorkers) {
-            Plugin plugin = worker.getOwner();
-            getLogger().log(Level.SEVERE, String.format(
-                "Nag author(s): '%s' of '%s' about the following: %s",
-                plugin.getDescription().getAuthors(),
-                plugin.getDescription().getFullName(),
-                "This plugin is not properly shutting down its async tasks when it is being reloaded.  This may cause conflicts with the newly loaded version of the plugin"
-            ));
-        }
-        loadPlugins();
-        enablePlugins(PluginLoadOrder.STARTUP);
-        enablePlugins(PluginLoadOrder.POSTWORLD);
-        getPluginManager().callEvent(new ServerLoadEvent(ServerLoadEvent.LoadType.RELOAD));
+        Youer.LOGGER.warn("For your server security, Bukkit reloading is not supported by Youer.");
     }
 
     @Override
     public void reloadData() {
-        ReloadCommand.reload(console);
+        //ReloadCommand.reload(console);
     }
 
     private void loadIcon() {

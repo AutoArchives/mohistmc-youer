@@ -1,6 +1,6 @@
 --- a/net/minecraft/server/dedicated/DedicatedServer.java
 +++ b/net/minecraft/server/dedicated/DedicatedServer.java
-@@ -84,7 +_,7 @@
+@@ -84,15 +_,16 @@
      private @Nullable QueryThreadGs4 queryThreadGs4;
      private final RconConsoleSource rconConsoleSource;
      private @Nullable RconThread rconThread;
@@ -9,7 +9,9 @@
      private @Nullable MinecraftServerGui gui;
      private final @Nullable ServerTextFilter serverTextFilter;
      private @Nullable RemoteSampleLogger tickTimeLogger;
-@@ -93,6 +_,7 @@
+     private boolean isTickTimeLoggingEnabled;
+-    private final ServerLinks serverLinks;
++    public ServerLinks serverLinks;
      private final Map<String, String> codeOfConductTexts;
      private @Nullable ManagementServer jsonRpcServer;
      private long lastHeartbeat;

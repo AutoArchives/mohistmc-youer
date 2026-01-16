@@ -15,7 +15,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -23,7 +22,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.SpawnEggItem;
 import org.apache.logging.log4j.LogManager;
@@ -167,7 +166,7 @@ public class ItemAPI {
 
     public static void name(ItemStack itemStack, String name) {
         ItemMeta im = itemStack.getItemMeta();
-        im.displayName(ColorAPI.adventure(name));
+        im.setDisplayName(ColorAPI.string(name));
         itemStack.setItemMeta(im);
     }
 
@@ -179,8 +178,8 @@ public class ItemAPI {
 
     public static void lore(ItemStack itemStack, List<String> lores) {
         ItemMeta im = itemStack.getItemMeta();
-        List<Component> lores_ = lores.stream().map(ColorAPI::adventure).collect(Collectors.toList());
-        im.lore(lores_);
+        List<String> lores_ = lores.stream().map(ColorAPI::string).collect(Collectors.toList());
+        im.setLore(lores_);
         itemStack.setItemMeta(im);
     }
 
@@ -246,7 +245,7 @@ public class ItemAPI {
         }
     }
 
-    public static Material get(ResourceLocation key) {
+    public static Material get(Identifier key) {
         return BuiltInRegistries.ITEM.get(key).getDefaultInstance().asBukkitCopy().getType();
     }
 

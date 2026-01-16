@@ -1,5 +1,51 @@
 --- a/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerCommonPacketListenerImpl.java
+@@ -7,6 +_,7 @@
+ import net.minecraft.CrashReportCategory;
+ import net.minecraft.ReportedException;
+ import net.minecraft.network.Connection;
++import net.minecraft.network.ConnectionProtocol;
+ import net.minecraft.network.DisconnectionDetails;
+ import net.minecraft.network.PacketSendListener;
+ import net.minecraft.network.chat.Component;
+@@ -23,14 +_,36 @@
+ import net.minecraft.network.protocol.cookie.ServerboundCookieResponsePacket;
+ import net.minecraft.server.MinecraftServer;
+ import net.minecraft.server.level.ClientInformation;
++import net.minecraft.server.level.ServerPlayer;
+ import net.minecraft.server.players.NameAndId;
+ import net.minecraft.util.Util;
+ import net.minecraft.util.VisibleForDebug;
+ import net.minecraft.util.profiling.Profiler;
++import org.bukkit.craftbukkit.entity.CraftPlayer;
+ import org.jspecify.annotations.Nullable;
+ import org.slf4j.Logger;
+ 
+-public abstract class ServerCommonPacketListenerImpl implements ServerCommonPacketListener {
++public abstract class ServerCommonPacketListenerImpl implements ServerCommonPacketListener, CraftPlayer.TransferCookieConnection {
++    @Override
++    public boolean isTransferred() {
++        return this.transferred;
++    }
++
++    @Override
++    public ConnectionProtocol getProtocol() {
++        return protocol();
++    }
++
++    @Override
++    public void sendPacket(Packet<?> packet) {
++        send(packet);
++    }
++
++    @Override
++    public void kickPlayer(Component reason) {
++        disconnect(reason);
++    }
++    // CraftBukkit end
+     private static final Logger LOGGER = LogUtils.getLogger();
+     public static final int LATENCY_CHECK_INTERVAL = 15000;
+     private static final int CLOSED_LISTENER_TIMEOUT = 15000;
 @@ -46,6 +_,10 @@
      private boolean closed = false;
      private int latency;
@@ -11,12 +57,27 @@
  
      public ServerCommonPacketListenerImpl(MinecraftServer p_295057_, Connection p_294822_, CommonListenerCookie p_301980_) {
          this.server = p_295057_;
-@@ -53,6 +_,8 @@
+@@ -53,6 +_,23 @@
          this.keepAliveTime = Util.getMillis();
          this.latency = p_301980_.latency();
          this.transferred = p_301980_.transferred();
 +        // Neo: Set the connection type based on the cookie from the previous phase.
 +        this.connectionType = p_301980_.connectionType();
++        // CraftBukkit start - add fields and methods
++        this.cserver = p_295057_.server;
++    }
++    protected ServerPlayer player;
++    protected final org.bukkit.craftbukkit.CraftServer cserver;
++    public boolean processedDisconnect;
++
++    public void setPlayer(ServerPlayer player) {
++        this.player = player;
++        this.player.transferCookieConnection = this;
++    }
++
++    public CraftPlayer getCraftPlayer() {
++        return (this.player == null) ? null : (CraftPlayer) this.player.getBukkitEntity();
++        // CraftBukkit end
      }
  
      private void close() {
