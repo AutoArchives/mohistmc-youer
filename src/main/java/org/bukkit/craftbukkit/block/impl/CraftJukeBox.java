@@ -3,13 +3,13 @@
  */
 package org.bukkit.craftbukkit.block.impl;
 
-public final class CraftJukeBox extends org.bukkit.craftbukkit.block.data.CraftBlockData implements org.bukkit.block.data.type.Jukebox {
+public final class CraftJukebox extends org.bukkit.craftbukkit.block.data.CraftBlockData implements org.bukkit.block.data.type.Jukebox {
 
-    public CraftJukeBox() {
+    public CraftJukebox() {
         super();
     }
 
-    public CraftJukeBox(net.minecraft.world.level.block.state.BlockState state) {
+    public CraftJukebox(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 

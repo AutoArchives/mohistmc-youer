@@ -18,7 +18,7 @@ public class LazyPlayerSet extends LazyHashSet<Player> {
     @Override
     HashSet<Player> makeReference() {
         Preconditions.checkState(reference == null, "Reference already created!");
-        List<ServerPlayer> players = server.getPlayerList().getPlayers();
+        List<ServerPlayer> players = server.getPlayerList().players;
         HashSet<Player> reference = new HashSet<Player>(players.size());
         for (ServerPlayer player : players) {
             reference.add(player.getBukkitEntity());

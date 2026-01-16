@@ -11,6 +11,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import org.bukkit.Location;
 import org.bukkit.Raid;
+import org.bukkit.Raid.RaidStatus;
 import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.entity.Raider;
 
@@ -19,9 +20,9 @@ public final class CraftRaid implements Raid {
     private final net.minecraft.world.entity.raid.Raid handle;
     private final Level world;
 
-    public CraftRaid(net.minecraft.world.entity.raid.Raid handle, Level world) {
+    public CraftRaid(net.minecraft.world.entity.raid.Raid handle, Level level) {
         this.handle = handle;
-        this.world = world;
+        this.world = level;
     }
 
     @Override

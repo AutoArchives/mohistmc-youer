@@ -42,7 +42,7 @@ public class CraftBossBar implements BossBar {
     }
 
     public CraftBossBar(ServerBossEvent bossBattleServer) {
-        handle = bossBattleServer;
+        this.handle = bossBattleServer;
         this.initialize();
     }
 
@@ -102,29 +102,29 @@ public class CraftBossBar implements BossBar {
 
     @Override
     public void setTitle(String title) {
-        handle.setName(CraftChatMessage.fromString(title, true)[0]);
+        handle.name = CraftChatMessage.fromString(title, true)[0];
         handle.broadcast(ClientboundBossEventPacket::createUpdateNamePacket);
     }
 
     @Override
     public BarColor getColor() {
-        return convertColor(handle.getColor());
+        return convertColor(handle.color);
     }
 
     @Override
     public void setColor(BarColor color) {
-        handle.setColor(convertColor(color));
+        handle.color = convertColor(color);
         handle.broadcast(ClientboundBossEventPacket::createUpdateStylePacket);
     }
 
     @Override
     public BarStyle getStyle() {
-        return convertStyle(handle.getOverlay());
+        return convertStyle(handle.overlay);
     }
 
     @Override
     public void setStyle(BarStyle style) {
-        handle.setOverlay(convertStyle(style));
+        handle.overlay = convertStyle(style);
         handle.broadcast(ClientboundBossEventPacket::createUpdateStylePacket);
     }
 
@@ -195,7 +195,7 @@ public class CraftBossBar implements BossBar {
 
     @Override
     public boolean isVisible() {
-        return handle.isVisible();
+        return handle.visible;
     }
 
     @Override

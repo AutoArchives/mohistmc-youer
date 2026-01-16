@@ -2,7 +2,6 @@ package org.bukkit.craftbukkit.inventory;
 
 import com.google.common.base.Preconditions;
 import net.minecraft.world.Containers;
-import net.minecraft.world.Containers;
 import net.minecraft.world.entity.player.Player;
 import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 import org.bukkit.event.inventory.InventoryType;

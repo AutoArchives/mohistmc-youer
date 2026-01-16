@@ -40,6 +40,6 @@ public class CraftCopperGolem extends CraftGolem implements CopperGolem {
     public void setWeatherState(CopperWeatherState state) {
         Preconditions.checkArgument(state != null, "state cannot be null");
 
-        getHandle().setWeatherState(WeatheringCopper.a.valueOf(state.name()));
+        getHandle().setWeatherState(WeatheringCopper.WeatherState.valueOf(state.name()));
     }
 }

@@ -3,13 +3,13 @@
  */
 package org.bukkit.craftbukkit.block.impl;
 
-public final class CraftTripwire extends org.bukkit.craftbukkit.block.data.CraftBlockData implements org.bukkit.block.data.type.Tripwire, org.bukkit.block.data.Attachable, org.bukkit.block.data.MultipleFacing, org.bukkit.block.data.Powerable {
+public final class CraftTripWire extends org.bukkit.craftbukkit.block.data.CraftBlockData implements org.bukkit.block.data.type.Tripwire, org.bukkit.block.data.Attachable, org.bukkit.block.data.MultipleFacing, org.bukkit.block.data.Powerable {
 
-    public CraftTripwire() {
+    public CraftTripWire() {
         super();
     }
 
-    public CraftTripwire(net.minecraft.world.level.block.state.BlockState state) {
+    public CraftTripWire(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 

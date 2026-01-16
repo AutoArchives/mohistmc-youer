@@ -6,6 +6,7 @@ import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
+import net.minecraft.world.level.block.entity.BeehiveBlockEntity.BeeReleaseStatus;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Beehive;
@@ -70,7 +71,7 @@ public class CraftBeehive extends CraftBlockEntityState<BeehiveBlockEntity> impl
 
         if (isPlaced()) {
             BeehiveBlockEntity beehive = ((BeehiveBlockEntity) this.getTileEntityFromWorld());
-            for (Entity bee : beehive.releaseBees(this.getHandle(), BeehiveBlockEntity.BeeReleaseStatus.BEE_RELEASED, true)) {
+            for (Entity bee : beehive.releaseBees(this.getHandle(), BeeReleaseStatus.BEE_RELEASED, true)) {
                 bees.add((Bee) bee.getBukkitEntity());
             }
         }

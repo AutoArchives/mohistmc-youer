@@ -14,6 +14,7 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ProtoChunk;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
@@ -22,7 +23,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.TreeType;
 import org.bukkit.World;
-import org.bukkit.block.Biome;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftRegionAccessor;
@@ -68,7 +68,7 @@ public class CraftLimitedRegion extends CraftRegionAccessor implements LimitedRe
     public WorldGenLevel getHandle() {
         WorldGenLevel handle = weakAccess.get();
 
-        Preconditions.checkState(handle != null, "WorldGenLevel no longer present, are you using it in a different tick?");
+        Preconditions.checkState(handle != null, "GeneratorAccessSeed no longer present, are you using it in a different tick?");
 
         return handle;
     }
@@ -161,13 +161,13 @@ public class CraftLimitedRegion extends CraftRegionAccessor implements LimitedRe
     }
 
     @Override
-    public Biome getBiome(int x, int y, int z) {
+    public org.bukkit.block.Biome getBiome(int x, int y, int z) {
         Preconditions.checkArgument(isInRegion(x, y, z), "Coordinates %s, %s, %s are not in the region", x, y, z);
         return super.getBiome(x, y, z);
     }
 
     @Override
-    public void setBiome(int x, int y, int z, Holder<net.minecraft.world.level.biome.Biome> biomeBase) {
+    public void setBiome(int x, int y, int z, Holder<Biome> biomeBase) {
         Preconditions.checkArgument(isInRegion(x, y, z), "Coordinates %s, %s, %s are not in the region", x, y, z);
         ChunkAccess chunk = getHandle().getChunk(x >> 4, z >> 4, ChunkStatus.EMPTY);
         chunk.setBiome(x >> 2, y >> 2, z >> 2, biomeBase);

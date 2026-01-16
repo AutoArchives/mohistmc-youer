@@ -24,7 +24,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
@@ -40,8 +39,6 @@ import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ChunkMap;
-import net.minecraft.server.level.DistanceManager;
-import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.Ticket;
@@ -50,8 +47,6 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
-import net.minecraft.util.NullOps;
-import net.minecraft.world.attribute.BedRule;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -62,12 +57,10 @@ import net.minecraft.world.entity.raid.Raids;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Explosion;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.TicketStorage;
 import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ImposterProtoChunk;
-import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.gamerules.GameRuleTypeVisitor;
 import net.minecraft.world.level.gamerules.GameRules;
@@ -127,7 +120,6 @@ import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.FallingBlock;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LightningStrike;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -226,8 +218,8 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
     @Override
     public Chunk getChunkAt(int x, int z) {
-        net.minecraft.world.level.chunk.LevelChunk chunk = (net.minecraft.world.level.chunk.LevelChunk) this.world.getChunk(x, z, ChunkStatus.FULL, true);
-        return new CraftChunk(chunk);
+        net.minecraft.world.level.chunk.LevelChunk levelchunk = (net.minecraft.world.level.chunk.LevelChunk) this.world.getChunk(x, z, ChunkStatus.FULL, true);
+        return new CraftChunk(levelchunk);
     }
 
     @NotNull
@@ -289,6 +281,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
     @Override
     public boolean unloadChunkRequest(int x, int z) {
+        org.spigotmc.AsyncCatcher.catchOp("chunk unload"); // Spigot
         if (isChunkLoaded(x, z)) {
             world.getChunkSource().removeTicketWithRadius(TicketType.PLUGIN, new ChunkPos(x, z), 1);
         }
@@ -297,13 +290,14 @@ public class CraftWorld extends CraftRegionAccessor implements World {
     }
 
     private boolean unloadChunk0(int x, int z, boolean save) {
+        org.spigotmc.AsyncCatcher.catchOp("chunk unload"); // Spigot
         if (!isChunkLoaded(x, z)) {
             return true;
         }
-        net.minecraft.world.level.chunk.LevelChunk chunk = world.getChunk(x, z);
+        net.minecraft.world.level.chunk.LevelChunk levelchunk = world.getChunk(x, z);
 
         if (!save) {
-            chunk.tryMarkSaved(); // Use method call to account for persistentDataContainer
+            levelchunk.tryMarkSaved(); // Use method call to account for persistentDataContainer
         }
         unloadChunkRequest(x, z);
 
@@ -313,6 +307,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
     @Override
     public boolean regenerateChunk(int x, int z) {
+        org.spigotmc.AsyncCatcher.catchOp("chunk regenerate"); // Spigot
         throw new UnsupportedOperationException("Not supported in this Minecraft version! Unless you can fix it, this is not a bug :)");
         /*
         if (!unloadChunk0(x, z, false)) {
@@ -342,11 +337,11 @@ public class CraftWorld extends CraftRegionAccessor implements World {
         if (playerChunk == null) return false;
 
         playerChunk.getTickingChunkFuture().thenAccept(either -> {
-            either.ifSuccess(chunk -> {
+            either.ifSuccess(levelchunk -> {
                 List<ServerPlayer> playersInRange = playerChunk.playerProvider.getPlayers(playerChunk.getPos(), false);
                 if (playersInRange.isEmpty()) return;
 
-                ClientboundLevelChunkWithLightPacket refreshPacket = new ClientboundLevelChunkWithLightPacket(chunk, world.getLightEngine(), null, null);
+                ClientboundLevelChunkWithLightPacket refreshPacket = new ClientboundLevelChunkWithLightPacket(levelchunk, world.getLightEngine(), null, null);
                 for (ServerPlayer player : playersInRange) {
                     if (player.connection == null) continue;
 
@@ -390,6 +385,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
     @Override
     public boolean loadChunk(int x, int z, boolean generate) {
+        org.spigotmc.AsyncCatcher.catchOp("chunk load"); // Spigot
         ChunkAccess chunk = world.getChunkSource().getChunk(x, z, generate ? ChunkStatus.FULL : ChunkStatus.EMPTY, true);
 
         // If generate = false, but the chunk already exists, we will get this back.
@@ -640,7 +636,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
         world.captureTreeGeneration = false;
         if (grownTree) { // Copy block data to delegate
             for (BlockState blockstate : world.capturedBlockStates.values()) {
-                BlockPosition position = ((CraftBlockState) blockstate).getPosition();
+                BlockPos position = ((CraftBlockState) blockstate).getPosition();
                 net.minecraft.world.level.block.state.BlockState oldBlock = world.getBlockState(position);
                 int flag = ((CraftBlockState) blockstate).getFlag();
                 delegate.setBlockData(blockstate.getX(), blockstate.getY(), blockstate.getZ(), blockstate.getBlockData());
@@ -657,7 +653,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
     @Override
     public String getName() {
-        return world.I.getLevelName();
+        return world.serverLevelData.getLevelName();
     }
 
     @Override
@@ -746,7 +742,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
         }
 
         net.minecraft.world.entity.Entity entity = (source == null) ? null : ((CraftEntity) source).getHandle();
-        return !world.explode0(entity, Explosion.getDefaultDamageSource(world, entity), null, x, y, z, power, setFire, explosionType, Particles.EXPLOSION, Particles.EXPLOSION_EMITTER, net.minecraft.world.level.World.DEFAULT_EXPLOSION_BLOCK_PARTICLES, SoundEffects.GENERIC_EXPLODE).wasCanceled;
+        return !world.explode0(entity, Explosion.getDefaultDamageSource(world, entity), null, x, y, z, power, setFire, explosionType, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, net.minecraft.world.level.Level.DEFAULT_EXPLOSION_BLOCK_PARTICLES, SoundEvents.GENERIC_EXPLODE).wasCanceled;
     }
 
     @Override
@@ -851,12 +847,12 @@ public class CraftWorld extends CraftRegionAccessor implements World {
     public void setBiome(int x, int y, int z, Holder<net.minecraft.world.level.biome.Biome> bb) {
         BlockPos pos = new BlockPos(x, 0, z);
         if (this.world.hasChunkAt(pos)) {
-            net.minecraft.world.level.chunk.LevelChunk chunk = this.world.getChunkAt(pos);
+            net.minecraft.world.level.chunk.LevelChunk levelchunk = this.world.getChunkAt(pos);
 
-            if (chunk != null) {
-                chunk.setBiome(x >> 2, y >> 2, z >> 2, bb);
+            if (levelchunk != null) {
+                levelchunk.setBiome(x >> 2, y >> 2, z >> 2, bb);
 
-                chunk.markUnsaved(); // SPIGOT-2890
+                levelchunk.markUnsaved(); // SPIGOT-2890
             }
         }
     }
@@ -925,6 +921,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
     @Override
     public Collection<Entity> getNearbyEntities(BoundingBox boundingBox, Predicate<? super Entity> filter) {
+        org.spigotmc.AsyncCatcher.catchOp("getNearbyEntities"); // Spigot
         Preconditions.checkArgument(boundingBox != null, "BoundingBox cannot be null");
 
         AABB bb = new AABB(boundingBox.getMinX(), boundingBox.getMinY(), boundingBox.getMinZ(), boundingBox.getMaxX(), boundingBox.getMaxY(), boundingBox.getMaxZ());
@@ -1066,11 +1063,11 @@ public class CraftWorld extends CraftRegionAccessor implements World {
     public List<Player> getPlayers() {
         List<Player> list = new ArrayList<Player>(world.players().size());
 
-        for (net.minecraft.world.entity.player.Player human : world.players()) {
-            HumanEntity bukkitEntity = human.getBukkitEntity();
+        for (ServerPlayer human : world.players()) {
+            Player bukkitEntity = human.getBukkitEntity();
 
-            if ((bukkitEntity != null) && (bukkitEntity instanceof Player)) {
-                list.add((Player) bukkitEntity);
+            if (bukkitEntity != null) {
+                list.add(bukkitEntity);
             }
         }
 
@@ -1079,6 +1076,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
     @Override
     public void save() {
+        org.spigotmc.AsyncCatcher.catchOp("world save"); // Spigot
         this.server.checkSaveState();
         boolean oldSave = world.noSave;
 
@@ -1100,7 +1098,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
     @Override
     public void setDifficulty(Difficulty difficulty) {
-        this.getHandle().I.setDifficulty(net.minecraft.world.Difficulty.byId(difficulty.getValue()));
+        this.getHandle().serverLevelData.setDifficulty(net.minecraft.world.Difficulty.byId(difficulty.getValue()));
     }
 
     @Override
@@ -1136,12 +1134,12 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
     @Override
     public int getWeatherDuration() {
-        return world.I.getRainTime();
+        return world.serverLevelData.getRainTime();
     }
 
     @Override
     public void setWeatherDuration(int duration) {
-        world.I.setRainTime(duration);
+        world.serverLevelData.setRainTime(duration);
     }
 
     @Override
@@ -1151,19 +1149,19 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
     @Override
     public void setThundering(boolean thundering) {
-        world.I.setThundering(thundering);
+        world.serverLevelData.setThundering(thundering);
         setThunderDuration(0); // Reset weather duration (legacy behaviour)
         setClearWeatherDuration(0); // Reset clear weather duration (reset "/weather clear" commands)
     }
 
     @Override
     public int getThunderDuration() {
-        return world.I.getThunderTime();
+        return world.serverLevelData.getThunderTime();
     }
 
     @Override
     public void setThunderDuration(int duration) {
-        world.I.setThunderTime(duration);
+        world.serverLevelData.setThunderTime(duration);
     }
 
     @Override
@@ -1173,12 +1171,12 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
     @Override
     public void setClearWeatherDuration(int duration) {
-        world.I.setClearWeatherTime(duration);
+        world.serverLevelData.setClearWeatherTime(duration);
     }
 
     @Override
     public int getClearWeatherDuration() {
-        return world.I.getClearWeatherTime();
+        return world.serverLevelData.getClearWeatherTime();
     }
 
     @Override
@@ -1410,7 +1408,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
     @Override
     public boolean canGenerateStructures() {
-        return world.I.worldGenOptions().generateStructures();
+        return world.serverLevelData.worldGenOptions().generateStructures();
     }
 
     @Override
@@ -1420,7 +1418,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
     @Override
     public void setHardcore(boolean hardcore) {
-        world.I.settings.hardcore = hardcore;
+        world.serverLevelData.settings.hardcore = hardcore;
     }
 
     @Override
@@ -1695,7 +1693,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
     public void playSound(Entity entity, Sound sound, org.bukkit.SoundCategory category, float volume, float pitch, long seed) {
         if (!(entity instanceof CraftEntity craftEntity) || entity.getWorld() != this || sound == null || category == null) return;
 
-        ClientboundSoundPacket packet = new ClientboundSoundPacket(CraftSound.bukkitToMinecraftHolder(sound), net.minecraft.sounds.SoundSource.valueOf(category.name()), craftEntity.getHandle(), volume, pitch, seed);
+        ClientboundSoundEntityPacket packet = new ClientboundSoundEntityPacket(CraftSound.bukkitToMinecraftHolder(sound), net.minecraft.sounds.SoundSource.valueOf(category.name()), craftEntity.getHandle(), volume, pitch, seed);
         ChunkMap.TrackedEntity entityTracker = getHandle().getChunkSource().chunkMap.entityMap.get(entity.getEntityId());
         if (entityTracker != null) {
             entityTracker.sendToTrackingPlayersAndSelf(packet);
@@ -1706,7 +1704,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
     public void playSound(Entity entity, String sound, org.bukkit.SoundCategory category, float volume, float pitch, long seed) {
         if (!(entity instanceof CraftEntity craftEntity) || entity.getWorld() != this || sound == null || category == null) return;
 
-        ClientboundSoundPacket packet = new ClientboundSoundPacket(Holder.direct(SoundEvent.createVariableRangeEvent(Identifier.parse(sound))), net.minecraft.sounds.SoundSource.valueOf(category.name()), craftEntity.getHandle(), volume, pitch, seed);
+        ClientboundSoundEntityPacket packet = new ClientboundSoundEntityPacket(Holder.direct(SoundEvent.createVariableRangeEvent(Identifier.parse(sound))), net.minecraft.sounds.SoundSource.valueOf(category.name()), craftEntity.getHandle(), volume, pitch, seed);
         ChunkMap.TrackedEntity entityTracker = getHandle().getChunkSource().chunkMap.entityMap.get(entity.getEntityId());
         if (entityTracker != null) {
             entityTracker.sendToTrackingPlayersAndSelf(packet);
@@ -2027,4 +2025,27 @@ public class CraftWorld extends CraftRegionAccessor implements World {
             this.persistentDataContainer.putAll((CompoundTag) c);
         }
     }
+
+    // Spigot start
+    private final org.bukkit.World.Spigot spigot = new org.bukkit.World.Spigot()
+    {
+
+        @Override
+        public LightningStrike strikeLightning(Location loc, boolean isSilent)
+        {
+            return CraftWorld.this.strikeLightning(loc);
+        }
+
+        @Override
+        public LightningStrike strikeLightningEffect(Location loc, boolean isSilent)
+        {
+            return CraftWorld.this.strikeLightningEffect(loc);
+        }
+    };
+
+    public org.bukkit.World.Spigot spigot()
+    {
+        return spigot;
+    }
+    // Spigot end
 }

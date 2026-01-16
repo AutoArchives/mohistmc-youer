@@ -15,7 +15,7 @@ public record CraftBlockStateEnum<N extends Enum<N> & StringRepresentable, B ext
     }
 
     /**
-     * Convert an NMS Enum (usually a EnumProperty) to its appropriate Bukkit
+     * Convert an NMS Enum (usually a BlockStateEnum) to its appropriate Bukkit
      * enum from the given class.
      *
      * @throws IllegalStateException if the Enum could not be converted

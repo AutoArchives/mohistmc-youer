@@ -69,7 +69,7 @@ public class CraftBlockType<B extends BlockData> extends CraftRegistryItem<Block
     }
 
     private static final Class<?>[] USE_WITHOUT_ITEM_ARGS = new Class[]{
-            BlockState.class, net.minecraft.world.level.Level.class, BlockPos.class, Player.class, BlockHitResult.class
+        BlockState.class, net.minecraft.world.level.Level.class, BlockPos.class, Player.class, BlockHitResult.class
     };
     private static final Class<?>[] USE_ITEM_ON_ARGS = new Class[]{
         net.minecraft.world.item.ItemStack.class, BlockState.class, net.minecraft.world.level.Level.class, BlockPos.class, Player.class, InteractionHand.class, BlockHitResult.class

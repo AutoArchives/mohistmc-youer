@@ -1,9 +1,6 @@
 package org.bukkit.craftbukkit.util;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Vec3i;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.phys.Vec3;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -28,8 +25,8 @@ public final class CraftLocation {
     public static Location toBukkit(BlockPos blockPosition) {
         return toBukkit(blockPosition, (World) null);
     }
-    public static Location toBukkit(BlockPos blockPosition, net.minecraft.world.level.Level world) {
-        return toBukkit(blockPosition, world.getWorld(), 0.0F, 0.0F);
+    public static Location toBukkit(BlockPos blockPosition, net.minecraft.world.level.Level level) {
+        return toBukkit(blockPosition, level.getWorld(), 0.0F, 0.0F);
     }
     public static Location toBukkit(BlockPos blockPosition, World world) {
         return toBukkit(blockPosition, world, 0.0F, 0.0F);

@@ -111,11 +111,11 @@ import net.minecraft.world.level.block.entity.SignText;
 import net.minecraft.world.level.border.BorderChangeListener;
 import net.minecraft.world.level.saveddata.maps.MapDecoration;
 import net.minecraft.world.level.saveddata.maps.MapId;
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.minecraft.world.level.storage.WorldData;
 import org.bukkit.BanEntry;
 import org.bukkit.BanList;
 import org.bukkit.Bukkit;
@@ -203,6 +203,8 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.profile.PlayerProfile;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
+
+import net.md_5.bungee.api.chat.BaseComponent; // Spigot
 
 @DelegateDeserialization(CraftOfflinePlayer.class)
 public class CraftPlayer extends CraftHumanEntity implements Player {
@@ -425,9 +427,9 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             name = getName();
         }
         getHandle().listName = name.equals(getName()) ? null : CraftChatMessage.fromStringOrNull(name);
-        for (EntityPlayer player : (List<EntityPlayer>) server.getHandle().players) {
+        for (ServerPlayer player : (List<ServerPlayer>) server.getHandle().players) {
             if (player.getBukkitEntity().canSee(this)) {
-                player.connection.send(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.a.UPDATE_DISPLAY_NAME, getHandle()));
+                player.connection.send(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_DISPLAY_NAME, getHandle()));
             }
         }
     }
@@ -505,6 +507,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void kickPlayer(String message) {
+        org.spigotmc.AsyncCatcher.catchOp("player kick"); // Spigot
         getHandle().transferCookieConnection.kickPlayer(CraftChatMessage.fromStringOrEmpty(message, true));
     }
 
@@ -555,7 +558,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         if (instrumentSound == null) return;
 
         float pitch = note.getPitch();
-        getHandle().connection.send(new ClientboundSoundPacket(CraftSound.bukkitToMinecraftHolder(instrumentSound), net.minecraft.sounds.SoundCategory.RECORDS, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), 3.0f, pitch, getHandle().getRandom().nextLong()));
+        getHandle().connection.send(new ClientboundSoundPacket(CraftSound.bukkitToMinecraftHolder(instrumentSound), net.minecraft.sounds.SoundSource.RECORDS, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), 3.0f, pitch, getHandle().getRandom().nextLong()));
     }
 
     @Override
@@ -666,7 +669,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     public void stopSound(String sound, org.bukkit.SoundCategory category) {
         if (getHandle().connection == null) return;
 
-        getHandle().connection.send(new ClientboundStopSoundPacket(Identifier.parse(sound), category == null ? net.minecraft.sounds.SoundCategory.MASTER : net.minecraft.sounds.SoundCategory.valueOf(category.name())));
+        getHandle().connection.send(new ClientboundStopSoundPacket(Identifier.parse(sound), category == null ? net.minecraft.sounds.SoundSource.MASTER : net.minecraft.sounds.SoundSource.valueOf(category.name())));
     }
 
     @Override
@@ -987,7 +990,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             }
         }
 
-        ClientboundMapItemDataPacket packet = new ClientboundMapItemDataPacket(new MapId(map.getId()), map.getScale().getValue(), map.isLocked(), icons, new WorldMap.c(0, 0, 128, 128, data.buffer));
+        ClientboundMapItemDataPacket packet = new ClientboundMapItemDataPacket(new MapId(map.getId()), map.getScale().getValue(), map.isLocked(), icons, new MapItemSavedData.MapPatch(0, 0, 128, 128, data.buffer));
         getHandle().connection.send(packet);
     }
 
@@ -1130,8 +1133,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public void loadData() {
-        Optional<ValueInput> optional = server.getHandle().playerIo.load(nameAndId()).map((nbttagcompound) -> {
-            return TagValueInput.create(ProblemReporter.DISCARDING, getHandle().registryAccess(), nbttagcompound);
+        Optional<ValueInput> optional = server.getHandle().playerIo.load(nameAndId()).map((compoundtag) -> {
+            return TagValueInput.create(ProblemReporter.DISCARDING, getHandle().registryAccess(), compoundtag);
         });
         optional.ifPresent(getHandle()::load);
     }
@@ -1992,11 +1995,11 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public boolean setWindowProperty(Property prop, int value) {
-        AbstractContainerMenu container = getHandle().containerMenu;
-        if (container.getBukkitView().getType() != prop.getType()) {
+        AbstractContainerMenu abstractcontainermenu = getHandle().containerMenu;
+        if (abstractcontainermenu.getBukkitView().getType() != prop.getType()) {
             return false;
         }
-        container.setData(prop.getId(), value);
+        abstractcontainermenu.setData(prop.getId(), value);
         return true;
     }
 
@@ -2175,7 +2178,15 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
             }
         }
         AttributeInstance dummy = new AttributeInstance(Attributes.MAX_HEALTH, (attribute) -> { });
-        dummy.setBaseValue(scaledHealth ? healthScale : getMaxHealth());
+        // Spigot start
+        double healthMod = scaledHealth ? healthScale : getMaxHealth();
+        if ( healthMod >= Float.MAX_VALUE || healthMod <= 0 )
+        {
+            healthMod = 20; // Reset health
+            getServer().getLogger().warning( getName() + " tried to crash the server with a large health attribute" );
+        }
+        dummy.setBaseValue(healthMod);
+        // Spigot end
         collection.add(dummy);
     }
 
@@ -2285,8 +2296,8 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
     @Override
     public <T> void spawnParticle(Particle particle, double x, double y, double z, int count, double offsetX, double offsetY, double offsetZ, double extra, T data, boolean force) {
-        ClientboundLevelParticlesPacket packetplayoutworldparticles = new ClientboundLevelParticlesPacket(CraftParticle.createParticleParam(particle, data), force, false /* TODO: Expose override limiter */, (float) x, (float) y, (float) z, (float) offsetX, (float) offsetY, (float) offsetZ, (float) extra, count);
-        getHandle().connection.send(packetplayoutworldparticles);
+        ClientboundLevelParticlesPacket clientboundlevelparticlespacket = new ClientboundLevelParticlesPacket(CraftParticle.createParticleParam(particle, data), force, false /* TODO: Expose override limiter */, (float) x, (float) y, (float) z, (float) offsetX, (float) offsetY, (float) offsetZ, (float) extra, count);
+        getHandle().connection.send(clientboundlevelparticlespacket);
     }
 
     @Override
@@ -2372,6 +2383,20 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         showDialog(nms.orElseThrow(() -> new IllegalArgumentException("Dialog does not exist on server: " + dialog)));
     }
 
+    // Spigot start
+    @Override
+    public void showDialog(net.md_5.bungee.api.dialog.Dialog dialog) {
+        Preconditions.checkArgument(dialog != null, "Dialog cannot be null");
+
+        com.google.gson.JsonElement json = CraftChatMessage.getBungee().getDialogSerializer().toJson(dialog);
+        net.minecraft.server.dialog.Dialog nms = net.minecraft.server.dialog.Dialog.DIRECT_CODEC
+                .parse(getHandle().level().registryAccess().createSerializationContext(com.mojang.serialization.JsonOps.INSTANCE), json)
+                .getOrThrow();
+
+        showDialog(Holder.direct(nms));
+    }
+    // Spigot end
+
     private void showDialog(Holder<net.minecraft.server.dialog.Dialog> dialog) {
         if (getHandle().connection == null) {
             return;
@@ -2383,4 +2408,87 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
 
         getHandle().openDialog(dialog);
     }
+
+    // Spigot start
+    private final Player.Spigot spigot = new Player.Spigot()
+    {
+
+        @Override
+        public InetSocketAddress getRawAddress()
+        {
+            return (InetSocketAddress) getHandle().connection.getRawAddress();
+        }
+
+        @Override
+        public void respawn()
+        {
+            if ( getHealth() <= 0 && isOnline() )
+            {
+                server.getServer().getPlayerList().respawn( getHandle(), false, Entity.RemovalReason.KILLED, org.bukkit.event.player.PlayerRespawnEvent.RespawnReason.PLUGIN );
+            }
+        }
+
+        @Override
+        public Set<Player> getHiddenPlayers()
+        {
+            Set<Player> ret = new HashSet<>();
+            for ( Player p : getServer().getOnlinePlayers() )
+            {
+                if ( !CraftPlayer.this.canSee(p) )
+                {
+                    ret.add( p );
+                }
+            }
+
+            return java.util.Collections.unmodifiableSet( ret );
+        }
+
+        @Override
+        public void sendMessage(BaseComponent component) {
+          sendMessage( new BaseComponent[] { component } );
+        }
+
+        @Override
+        public void sendMessage(BaseComponent... components) {
+           this.sendMessage(net.md_5.bungee.api.ChatMessageType.SYSTEM, components);
+        }
+
+        @Override
+        public void sendMessage(UUID sender, BaseComponent component) {
+            this.sendMessage(net.md_5.bungee.api.ChatMessageType.CHAT, sender, component);
+        }
+
+        @Override
+        public void sendMessage(UUID sender, BaseComponent... components) {
+            this.sendMessage(net.md_5.bungee.api.ChatMessageType.CHAT, sender, components);
+        }
+
+        @Override
+        public void sendMessage(net.md_5.bungee.api.ChatMessageType position, BaseComponent component) {
+            sendMessage( position, new BaseComponent[] { component } );
+        }
+
+        @Override
+        public void sendMessage(net.md_5.bungee.api.ChatMessageType position, BaseComponent... components) {
+            this.sendMessage(position, null, components);
+        }
+
+        @Override
+        public void sendMessage(net.md_5.bungee.api.ChatMessageType position, UUID sender, BaseComponent component) {
+            sendMessage( position, sender, new BaseComponent[] { component } );
+        }
+
+        @Override
+        public void sendMessage(net.md_5.bungee.api.ChatMessageType position, UUID sender, BaseComponent... components) {
+            if ( getHandle().connection == null ) return;
+
+            getHandle().connection.send(new net.minecraft.network.protocol.game.ClientboundSystemChatPacket(components, position == net.md_5.bungee.api.ChatMessageType.ACTION_BAR));
+        }
+    };
+
+    public Player.Spigot spigot()
+    {
+        return spigot;
+    }
+    // Spigot end
 }

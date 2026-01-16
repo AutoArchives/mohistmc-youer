@@ -24,6 +24,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.Property;
 import org.bukkit.Material;
@@ -48,8 +49,8 @@ public final class CraftLegacy {
     private static final Set<String> whitelistedStates = new HashSet<>(Arrays.asList("explode", "check_decay", "decayable", "facing"));
     private static final Map<MaterialData, Item> materialToItem = new HashMap<>(16384);
     private static final Map<Item, MaterialData> itemToMaterial = new HashMap<>(1024);
-    private static final Map<MaterialData, net.minecraft.world.level.block.state.BlockState> materialToData = new HashMap<>(4096);
-    private static final Map<net.minecraft.world.level.block.state.BlockState, MaterialData> dataToMaterial = new HashMap<>(4096);
+    private static final Map<MaterialData, BlockState> materialToData = new HashMap<>(4096);
+    private static final Map<BlockState, MaterialData> dataToMaterial = new HashMap<>(4096);
     private static final Map<MaterialData, Block> materialToBlock = new HashMap<>(4096);
     private static final Map<Block, MaterialData> blockToMaterial = new HashMap<>(1024);
 
@@ -80,7 +81,7 @@ public final class CraftLegacy {
 
         if (mappedData == null && material.isBlock()) {
             Block block = CraftMagicNumbers.getBlock(material);
-            net.minecraft.world.level.block.state.BlockState blockData = block.defaultBlockState();
+            BlockState blockData = block.defaultBlockState();
 
             // Try exact match first
             mappedData = dataToMaterial.get(blockData);
@@ -100,13 +101,13 @@ public final class CraftLegacy {
         return (mappedData == null) ? new MaterialData(Material.LEGACY_AIR) : mappedData;
     }
 
-    public static net.minecraft.world.level.block.state.BlockState fromLegacyData(Material material, byte data) {
+    public static BlockState fromLegacyData(Material material, byte data) {
         Preconditions.checkArgument(material.isLegacy(), "fromLegacyData on modern Material");
 
         MaterialData materialData = new MaterialData(material, data);
 
         // Try exact match first
-        net.minecraft.world.level.block.state.BlockState converted = materialToData.get(materialData);
+        BlockState converted = materialToData.get(materialData);
         if (converted != null) {
             return converted;
         }
@@ -135,7 +136,7 @@ public final class CraftLegacy {
         // Fallback to matching block
         if (material.isBlock()) {
             // Try exact match first
-            net.minecraft.world.level.block.state.BlockState converted = materialToData.get(materialData);
+            BlockState converted = materialToData.get(materialData);
             if (converted != null) {
                 return converted.getBlock().asItem();
             }
@@ -151,15 +152,15 @@ public final class CraftLegacy {
         return Items.AIR;
     }
 
-    public static byte toLegacyData(net.minecraft.world.level.block.state.BlockState blockData) {
+    public static byte toLegacyData(BlockState blockData) {
         return toLegacy(blockData).getData();
     }
 
-    public static Material toLegacyMaterial(net.minecraft.world.level.block.state.BlockState blockData) {
+    public static Material toLegacyMaterial(BlockState blockData) {
         return toLegacy(blockData).getItemType();
     }
 
-    public static MaterialData toLegacy(net.minecraft.world.level.block.state.BlockState blockData) {
+    public static MaterialData toLegacy(BlockState blockData) {
         MaterialData mappedData;
 
         // Try exact match first
@@ -202,7 +203,7 @@ public final class CraftLegacy {
 
         if (mappedData == null) {
             // Try exact match first
-            net.minecraft.world.level.block.state.BlockState iblock = materialToData.get(materialData);
+            BlockState iblock = materialToData.get(materialData);
             if (iblock != null) {
                 mappedData = CraftMagicNumbers.getMaterial(iblock.getBlock());
             }
@@ -345,7 +346,7 @@ public final class CraftLegacy {
                     if (block == null) {
                         continue;
                     }
-                    net.minecraft.world.level.block.state.BlockState blockData = block.defaultBlockState();
+                    BlockState blockData = block.defaultBlockState();
                     StateDefinition states = block.getStateDefinition();
 
                     Optional<CompoundTag> propMap = blockTag.getElement("Properties").result();

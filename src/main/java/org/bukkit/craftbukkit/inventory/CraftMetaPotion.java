@@ -12,7 +12,7 @@ import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
 import org.bukkit.Color;
@@ -76,12 +76,12 @@ class CraftMetaPotion extends CraftMetaItem implements PotionMeta {
                 customName = name;
             });
 
-            List<MobEffect> list = potionContents.customEffects();
+            List<MobEffectInstance> list = potionContents.customEffects();
             int length = list.size();
             customEffects = new ArrayList<>(length);
 
             for (int i = 0; i < length; i++) {
-                MobEffect effect = list.get(i);
+                MobEffectInstance effect = list.get(i);
                 PotionEffectType type = CraftPotionEffectType.minecraftHolderToBukkit(effect.getEffect());
                 // SPIGOT-4047: Vanilla just disregards these
                 if (type == null) {
@@ -147,10 +147,10 @@ class CraftMetaPotion extends CraftMetaItem implements PotionMeta {
         Optional<Integer> potionColor = (hasColor()) ? Optional.of(this.color.asRGB()) : Optional.empty();
         Optional<String> customName = Optional.ofNullable(this.customName);
 
-        List<MobEffect> effectList = new ArrayList<>();
+        List<MobEffectInstance> effectList = new ArrayList<>();
         if (customEffects != null) {
             for (PotionEffect effect : customEffects) {
-                effectList.add(new MobEffect(CraftPotionEffectType.bukkitToMinecraftHolder(effect.getType()), effect.getDuration(), effect.getAmplifier(), effect.isAmbient(), effect.hasParticles(), effect.hasIcon()));
+                effectList.add(new MobEffectInstance(CraftPotionEffectType.bukkitToMinecraftHolder(effect.getType()), effect.getDuration(), effect.getAmplifier(), effect.isAmbient(), effect.hasParticles(), effect.hasIcon()));
             }
         }
 

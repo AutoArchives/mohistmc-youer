@@ -10,7 +10,6 @@ import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ClientboundMountScreenOpenPacket;
 import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
 import net.minecraft.resources.Identifier;
@@ -146,19 +145,19 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         Preconditions.checkArgument(location.getWorld() != null, "Location needs to be in a world");
         Preconditions.checkArgument(location.getWorld().equals(getWorld()), "Cannot sleep across worlds");
 
-        BlockPos blockposition = CraftLocation.toBlockPosition(location);
-        BlockState iblockdata = getHandle().level().getBlockState(blockposition);
-        if (!(iblockdata.getBlock() instanceof BedBlock)) {
+        BlockPos blockpos = CraftLocation.toBlockPosition(location);
+        BlockState blockstate = getHandle().level().getBlockState(blockpos);
+        if (!(blockstate.getBlock() instanceof BedBlock)) {
             return false;
         }
 
-        if (getHandle().startSleepInBed(blockposition, force).left().isPresent()) {
+        if (getHandle().startSleepInBed(blockpos, force).left().isPresent()) {
             return false;
         }
 
         // From BlockBed
-        iblockdata = iblockdata.setValue(BedBlock.OCCUPIED, true);
-        getHandle().level().setBlock(blockposition, iblockdata, 4);
+        blockstate = blockstate.setValue(BedBlock.OCCUPIED, true);
+        getHandle().level().setBlock(blockpos, blockstate, 4);
 
         return true;
     }
@@ -335,16 +334,16 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
     private static void openCustomInventory(Inventory inventory, ServerPlayer player, MenuType<?> windowType) {
         if (player.connection == null) return;
         Preconditions.checkArgument(windowType != null, "Unknown windowType");
-        AbstractContainerMenu container = new CraftContainer(inventory, player, player.nextContainerCounter());
+        AbstractContainerMenu abstractcontainermenu = new CraftContainer(inventory, player, player.nextContainerCounter());
 
-        container = CraftEventFactory.callInventoryOpenEvent(player, container);
-        if (container == null) return;
+        abstractcontainermenu = CraftEventFactory.callInventoryOpenEvent(player, abstractcontainermenu);
+        if (abstractcontainermenu == null) return;
 
-        String title = container.getBukkitView().getTitle();
+        String title = abstractcontainermenu.getBukkitView().getTitle();
 
-        player.connection.send(new ClientboundOpenScreenPacket(container.containerId, windowType, CraftChatMessage.fromString(title)[0]));
-        player.containerMenu = container;
-        player.initMenu(container);
+        player.connection.send(new ClientboundOpenScreenPacket(abstractcontainermenu.containerId, windowType, CraftChatMessage.fromString(title)[0]));
+        player.containerMenu = abstractcontainermenu;
+        player.initMenu(abstractcontainermenu);
     }
 
     @Override
@@ -397,16 +396,16 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
             ((ServerPlayer) getHandle()).connection.handleContainerClose(new ServerboundContainerClosePacket(getHandle().containerMenu.containerId));
         }
         ServerPlayer player = (ServerPlayer) getHandle();
-        AbstractContainerMenu container;
+        AbstractContainerMenu abstractcontainermenu;
         if (inventory instanceof CraftInventoryView) {
-            container = ((CraftInventoryView) inventory).getHandle();
+            abstractcontainermenu = ((CraftInventoryView) inventory).getHandle();
         } else {
-            container = new CraftContainer(inventory, this.getHandle(), player.nextContainerCounter());
+            abstractcontainermenu = new CraftContainer(inventory, this.getHandle(), player.nextContainerCounter());
         }
 
         // Trigger an INVENTORY_OPEN event
-        container = CraftEventFactory.callInventoryOpenEvent(player, container);
-        if (container == null) {
+        abstractcontainermenu = CraftEventFactory.callInventoryOpenEvent(player, abstractcontainermenu);
+        if (abstractcontainermenu == null) {
             return;
         }
 
@@ -414,13 +413,13 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         MenuType<?> windowType = CraftContainer.getNotchInventoryType(inventory.getTopInventory());
         // we can open these now delegeate for now
         if (windowType == MenuType.MERCHANT) {
-            CraftMenus.openMerchantMenu(player, (MerchantMenu) container);
+            CraftMenus.openMerchantMenu(player, (MerchantMenu) abstractcontainermenu);
             return;
         }
         String title = inventory.getTitle();
-        player.connection.send(new ClientboundMountScreenOpenPacket(container.containerId, windowType, CraftChatMessage.fromString(title)[0]));
-        player.containerMenu = container;
-        player.initMenu(container);
+        player.connection.send(new ClientboundOpenScreenPacket(abstractcontainermenu.containerId, windowType, CraftChatMessage.fromString(title)[0]));
+        player.containerMenu = abstractcontainermenu;
+        player.initMenu(abstractcontainermenu);
     }
 
     @Override

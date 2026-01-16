@@ -3,13 +3,13 @@
  */
 package org.bukkit.craftbukkit.block.impl;
 
-public final class CraftRedstoneOre extends org.bukkit.craftbukkit.block.data.CraftBlockData implements org.bukkit.block.data.Lightable {
+public final class CraftRedStoneOre extends org.bukkit.craftbukkit.block.data.CraftBlockData implements org.bukkit.block.data.Lightable {
 
-    public CraftRedstoneOre() {
+    public CraftRedStoneOre() {
         super();
     }
 
-    public CraftRedstoneOre(net.minecraft.world.level.block.state.BlockState state) {
+    public CraftRedStoneOre(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 

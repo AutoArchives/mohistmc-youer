@@ -69,7 +69,7 @@ public final class CraftEquippableComponent implements EquippableComponent {
         Boolean canBeSheared = SerializableMeta.getObject(Boolean.class, map, "can-be-sheared", true);
 
         Sound shearSound = null;
-        String shearSnd = SerializableMeta.getString(map, "equip-sound", true);
+        String shearSnd = SerializableMeta.getString(map, "shearing-sound", true);
         if (shearSnd != null) {
             shearSound = Registry.SOUNDS.get(NamespacedKey.fromString(shearSnd));
         }

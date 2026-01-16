@@ -58,10 +58,10 @@ public class CraftBlockProjectileSource implements BlockProjectileSource {
     public <T extends Projectile> T launchProjectile(Class<? extends T> projectile, Vector velocity) {
         Preconditions.checkArgument(getBlock().getType() == Material.DISPENSER, "Block is no longer dispenser");
         // Copied from BlockDispenser.dispense()
-        BlockSource sourceblock = new BlockSource((ServerLevel) dispenserBlock.getLevel(), dispenserBlock.getBlockPos(), dispenserBlock.getBlockState(), dispenserBlock);
+        BlockSource blocksource = new BlockSource((ServerLevel) dispenserBlock.getLevel(), dispenserBlock.getBlockPos(), dispenserBlock.getBlockState(), dispenserBlock);
         // Copied from DispenseBehaviorProjectile
-        Direction enumdirection = (Direction) sourceblock.state().getValue(DispenserBlock.FACING);
-        net.minecraft.world.level.Level world = dispenserBlock.getLevel();
+        Direction direction = (Direction) blocksource.state().getValue(DispenserBlock.FACING);
+        net.minecraft.world.level.Level level = dispenserBlock.getLevel();
         net.minecraft.world.item.Item item = null;
 
         if (Snowball.class.isAssignableFrom(projectile)) {
@@ -102,31 +102,31 @@ public class CraftBlockProjectileSource implements BlockProjectileSource {
         ProjectileItem projectileItem = (ProjectileItem) item;
         ProjectileItem.DispenseConfig dispenseConfig = projectileItem.createDispenseConfig();
 
-        Position iposition = dispenseConfig.positionFunction().getDispensePosition(sourceblock, enumdirection);
-        net.minecraft.world.entity.projectile.Projectile launch = projectileItem.asProjectile(world, iposition, itemstack, enumdirection);
+        Position position = dispenseConfig.positionFunction().getDispensePosition(blocksource, direction);
+        net.minecraft.world.entity.projectile.Projectile launch = projectileItem.asProjectile(level, position, itemstack, direction);
 
         if (Fireball.class.isAssignableFrom(projectile)) {
             AbstractHurtingProjectile customFireball = null;
             if (WitherSkull.class.isAssignableFrom(projectile)) {
-                launch = customFireball = EntityType.WITHER_SKULL.create(world, EntitySpawnReason.TRIGGERED);
+                launch = customFireball = EntityType.WITHER_SKULL.create(level, EntitySpawnReason.TRIGGERED);
             } else if (DragonFireball.class.isAssignableFrom(projectile)) {
-                launch = EntityType.DRAGON_FIREBALL.create(world, EntitySpawnReason.TRIGGERED);
+                launch = EntityType.DRAGON_FIREBALL.create(level, EntitySpawnReason.TRIGGERED);
             } else if (BreezeWindCharge.class.isAssignableFrom(projectile)) {
-                launch = customFireball = EntityType.BREEZE_WIND_CHARGE.create(world, EntitySpawnReason.TRIGGERED);
+                launch = customFireball = EntityType.BREEZE_WIND_CHARGE.create(level, EntitySpawnReason.TRIGGERED);
             } else if (LargeFireball.class.isAssignableFrom(projectile)) {
-                launch = customFireball = EntityType.FIREBALL.create(world, EntitySpawnReason.TRIGGERED);
+                launch = customFireball = EntityType.FIREBALL.create(level, EntitySpawnReason.TRIGGERED);
             }
 
             if (customFireball != null) {
-                customFireball.setPos(iposition.x(), iposition.y(), iposition.z());
+                customFireball.setPos(position.x(), position.y(), position.z());
 
                 // Values from ItemFireball
-                RandomSource randomsource = world.getRandom();
-                double d0 = randomsource.triangle((double) enumdirection.getStepX(), 0.11485000000000001D);
-                double d1 = randomsource.triangle((double) enumdirection.getStepY(), 0.11485000000000001D);
-                double d2 = randomsource.triangle((double) enumdirection.getStepZ(), 0.11485000000000001D);
-                Vec3 vec3d = new Vec3(d0, d1, d2);
-                customFireball.assignDirectionalMovement(vec3d, 0.1D);
+                RandomSource randomsource = level.getRandom();
+                double d0 = randomsource.triangle((double) direction.getStepX(), 0.11485000000000001D);
+                double d1 = randomsource.triangle((double) direction.getStepY(), 0.11485000000000001D);
+                double d2 = randomsource.triangle((double) direction.getStepZ(), 0.11485000000000001D);
+                Vec3 vec3 = new Vec3(d0, d1, d2);
+                customFireball.assignDirectionalMovement(vec3, 0.1D);
             }
         }
 
@@ -134,13 +134,13 @@ public class CraftBlockProjectileSource implements BlockProjectileSource {
             arrow.pickup = net.minecraft.world.entity.projectile.arrow.AbstractArrow.Pickup.ALLOWED;
         }
         launch.projectileSource = this;
-        projectileItem.shoot(launch, (double) enumdirection.getStepX(), (double) enumdirection.getStepY(), (double) enumdirection.getStepZ(), dispenseConfig.power(), dispenseConfig.uncertainty());
+        projectileItem.shoot(launch, (double) direction.getStepX(), (double) direction.getStepY(), (double) direction.getStepZ(), dispenseConfig.power(), dispenseConfig.uncertainty());
 
         if (velocity != null) {
             ((T) launch.getBukkitEntity()).setVelocity(velocity);
         }
 
-        world.addFreshEntity(launch);
+        level.addFreshEntity(launch);
         return (T) launch.getBukkitEntity();
     }
 }

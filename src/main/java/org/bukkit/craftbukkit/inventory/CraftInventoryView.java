@@ -22,12 +22,12 @@ public class CraftInventoryView<T extends AbstractContainerMenu, I extends Inven
     private final String originalTitle;
     private String title;
 
-    public CraftInventoryView(HumanEntity player, I viewing, T container) {
+    public CraftInventoryView(HumanEntity player, I viewing, T abstractcontainermenu) {
         // TODO: Should we make sure it really IS a CraftHumanEntity first? And a CraftInventory?
         this.player = (CraftHumanEntity) player;
         this.viewing = viewing;
-        this.container = container;
-        this.originalTitle = CraftChatMessage.fromComponent(container.getTitle());
+        this.container = abstractcontainermenu;
+        this.originalTitle = CraftChatMessage.fromComponent(abstractcontainermenu.getTitle());
         this.title = originalTitle;
     }
 

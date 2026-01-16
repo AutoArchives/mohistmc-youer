@@ -9,8 +9,8 @@ public class CraftDimensionUtil {
     private CraftDimensionUtil() {
     }
 
-    public static ResourceKey<Level> getMainDimensionKey(Level world) {
-        ResourceKey<LevelStem> typeKey = world.getTypeKey();
+    public static ResourceKey<Level> getMainDimensionKey(Level level) {
+        ResourceKey<LevelStem> typeKey = level.getTypeKey();
         if (typeKey == LevelStem.OVERWORLD) {
             return Level.OVERWORLD;
         } else if (typeKey == LevelStem.NETHER) {
@@ -19,6 +19,6 @@ public class CraftDimensionUtil {
             return Level.END;
         }
 
-        return world.dimension();
+        return level.dimension();
     }
 }

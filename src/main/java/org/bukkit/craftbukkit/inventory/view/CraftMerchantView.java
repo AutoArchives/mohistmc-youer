@@ -12,7 +12,7 @@ public class CraftMerchantView extends CraftInventoryView<MerchantMenu, Merchant
 
     private final net.minecraft.world.item.trading.Merchant trader;
 
-    public CraftMerchantView(final HumanEntity player, final MerchantInventory viewing, final MerchantMenu container, final IMerchant trader) {
+    public CraftMerchantView(final HumanEntity player, final MerchantInventory viewing, final MerchantMenu container, final net.minecraft.world.item.trading.Merchant trader) {
         super(player, viewing, container);
         this.trader = trader;
     }

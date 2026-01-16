@@ -58,7 +58,6 @@ import net.minecraft.world.ticks.LevelTickAccess;
 import net.minecraft.world.ticks.ScheduledTick;
 import net.minecraft.world.ticks.TickPriority;
 import org.bukkit.event.entity.CreatureSpawnEvent;
-import org.jetbrains.annotations.Nullable;
 
 public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
 
@@ -78,8 +77,8 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public boolean ensureCanWrite(BlockPos blockposition) {
-        return handle.ensureCanWrite(blockposition);
+    public boolean ensureCanWrite(BlockPos blockpos) {
+        return handle.ensureCanWrite(blockpos);
     }
 
     @Override
@@ -113,13 +112,13 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public <T> ScheduledTick<T> createTick(BlockPos blockposition, T t0, int i, TickPriority ticklistpriority) {
-        return handle.createTick(blockposition, t0, i, ticklistpriority);
+    public <T> ScheduledTick<T> createTick(BlockPos blockpos, T t0, int i, TickPriority tickpriority) {
+        return handle.createTick(blockpos, t0, i, tickpriority);
     }
 
     @Override
-    public <T> ScheduledTick<T> createTick(BlockPos blockposition, T t0, int i) {
-        return handle.createTick(blockposition, t0, i);
+    public <T> ScheduledTick<T> createTick(BlockPos blockpos, T t0, int i) {
+        return handle.createTick(blockpos, t0, i);
     }
 
     @Override
@@ -128,8 +127,8 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public DifficultyInstance getCurrentDifficultyAt(BlockPos blockposition) {
-        return handle.getCurrentDifficultyAt(blockposition);
+    public DifficultyInstance getCurrentDifficultyAt(BlockPos blockpos) {
+        return handle.getCurrentDifficultyAt(blockpos);
     }
 
     @Override
@@ -158,73 +157,73 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public void updateNeighborsAt(BlockPos blockposition, Block block) {
-        handle.updateNeighborsAt(blockposition, block);
+    public void updateNeighborsAt(BlockPos blockpos, Block block) {
+        handle.updateNeighborsAt(blockpos, block);
     }
 
     @Override
-    public void neighborShapeChanged(Direction enumdirection, BlockPos blockposition, BlockPos blockposition1, BlockState iblockdata, int i, int j) {
-        handle.neighborShapeChanged(enumdirection, blockposition, blockposition1, iblockdata, i, j);
+    public void neighborShapeChanged(Direction direction, BlockPos blockpos, BlockPos blockpos1, BlockState blockstate, int i, int j) {
+        handle.neighborShapeChanged(direction, blockpos, blockpos1, blockstate, i, j);
     }
 
     @Override
-    public void playSound(Entity entity, BlockPos blockposition, SoundEvent soundeffect, SoundSource soundcategory) {
-        handle.playSound(entity, blockposition, soundeffect, soundcategory);
+    public void playSound(Entity entity, BlockPos blockpos, SoundEvent soundevent, SoundSource soundsource) {
+        handle.playSound(entity, blockpos, soundevent, soundsource);
     }
 
     @Override
-    public void playSound(Entity entity, BlockPos blockposition, SoundEvent soundeffect, SoundSource soundcategory, float f, float f1) {
-        handle.playSound(entity, blockposition, soundeffect, soundcategory, f, f1);
+    public void playSound(Entity entity, BlockPos blockpos, SoundEvent soundevent, SoundSource soundsource, float f, float f1) {
+        handle.playSound(entity, blockpos, soundevent, soundsource, f, f1);
     }
 
     @Override
-    public void addParticle(ParticleOptions particleparam, double d0, double d1, double d2, double d3, double d4, double d5) {
-        handle.addParticle(particleparam, d0, d1, d2, d3, d4, d5);
+    public void addParticle(ParticleOptions particleoptions, double d0, double d1, double d2, double d3, double d4, double d5) {
+        handle.addParticle(particleoptions, d0, d1, d2, d3, d4, d5);
     }
 
     @Override
-    public void levelEvent(Entity entity, int i, BlockPos blockposition, int j) {
-        handle.levelEvent(entity, i, blockposition, j);
+    public void levelEvent(Entity entity, int i, BlockPos blockpos, int j) {
+        handle.levelEvent(entity, i, blockpos, j);
     }
 
     @Override
-    public void levelEvent(int i, BlockPos blockposition, int j) {
-        handle.levelEvent(i, blockposition, j);
+    public void levelEvent(int i, BlockPos blockpos, int j) {
+        handle.levelEvent(i, blockpos, j);
     }
 
     @Override
-    public void gameEvent(Holder<GameEvent> holder, Vec3 vec3d, GameEvent.Context gameevent_a) {
-        handle.gameEvent(holder, vec3d, gameevent_a);
+    public void gameEvent(Holder<GameEvent> holder, Vec3 vec3, GameEvent.Context gameevent_a) {
+        handle.gameEvent(holder, vec3, gameevent_a);
     }
 
     @Override
-    public void gameEvent(Entity entity, Holder<GameEvent> holder, Vec3 vec3d) {
-        handle.gameEvent(entity, holder, vec3d);
+    public void gameEvent(Entity entity, Holder<GameEvent> holder, Vec3 vec3) {
+        handle.gameEvent(entity, holder, vec3);
     }
 
     @Override
-    public void gameEvent(Entity entity, Holder<GameEvent> holder, BlockPos blockposition) {
-        handle.gameEvent(entity, holder, blockposition);
+    public void gameEvent(Entity entity, Holder<GameEvent> holder, BlockPos blockpos) {
+        handle.gameEvent(entity, holder, blockpos);
     }
 
     @Override
-    public void gameEvent(Holder<GameEvent> holder, BlockPos blockposition, GameEvent.Context gameevent_a) {
-        handle.gameEvent(holder, blockposition, gameevent_a);
+    public void gameEvent(Holder<GameEvent> holder, BlockPos blockpos, GameEvent.Context gameevent_a) {
+        handle.gameEvent(holder, blockpos, gameevent_a);
     }
 
     @Override
-    public void gameEvent(ResourceKey<GameEvent> resourcekey, BlockPos blockposition, GameEvent.Context gameevent_a) {
-        handle.gameEvent(resourcekey, blockposition, gameevent_a);
+    public void gameEvent(ResourceKey<GameEvent> resourcekey, BlockPos blockpos, GameEvent.Context gameevent_a) {
+        handle.gameEvent(resourcekey, blockpos, gameevent_a);
     }
 
     @Override
-    public <T extends BlockEntity> Optional<T> getBlockEntity(BlockPos blockposition, BlockEntityType<T> tileentitytypes) {
-        return handle.getBlockEntity(blockposition, tileentitytypes);
+    public <T extends BlockEntity> Optional<T> getBlockEntity(BlockPos blockpos, BlockEntityType<T> blockentitytype) {
+        return handle.getBlockEntity(blockpos, blockentitytype);
     }
 
     @Override
-    public List<VoxelShape> getEntityCollisions(Entity entity, AABB axisalignedbb) {
-        return handle.getEntityCollisions(entity, axisalignedbb);
+    public List<VoxelShape> getEntityCollisions(Entity entity, AABB aabb) {
+        return handle.getEntityCollisions(entity, aabb);
     }
 
     @Override
@@ -233,8 +232,8 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public BlockPos getHeightmapPos(Heightmap.Types heightmap_type, BlockPos blockposition) {
-        return handle.getHeightmapPos(heightmap_type, blockposition);
+    public BlockPos getHeightmapPos(Heightmap.Types heightmap_type, BlockPos blockpos) {
+        return handle.getHeightmapPos(heightmap_type, blockpos);
     }
 
     @Override
@@ -258,18 +257,18 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public Holder<Biome> getBiome(BlockPos blockposition) {
-        return handle.getBiome(blockposition);
+    public Holder<Biome> getBiome(BlockPos blockpos) {
+        return handle.getBiome(blockpos);
     }
 
     @Override
-    public Stream<BlockState> getBlockStatesIfLoaded(AABB axisalignedbb) {
-        return handle.getBlockStatesIfLoaded(axisalignedbb);
+    public Stream<BlockState> getBlockStatesIfLoaded(AABB aabb) {
+        return handle.getBlockStatesIfLoaded(aabb);
     }
 
     @Override
-    public int getBlockTint(BlockPos blockposition, ColorResolver colorresolver) {
-        return handle.getBlockTint(blockposition, colorresolver);
+    public int getBlockTint(BlockPos blockpos, ColorResolver colorresolver) {
+        return handle.getBlockTint(blockpos, colorresolver);
     }
 
     @Override
@@ -308,28 +307,28 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public boolean isEmptyBlock(BlockPos blockposition) {
-        return handle.isEmptyBlock(blockposition);
+    public boolean isEmptyBlock(BlockPos blockpos) {
+        return handle.isEmptyBlock(blockpos);
     }
 
     @Override
-    public boolean canSeeSkyFromBelowWater(BlockPos blockposition) {
-        return handle.canSeeSkyFromBelowWater(blockposition);
+    public boolean canSeeSkyFromBelowWater(BlockPos blockpos) {
+        return handle.canSeeSkyFromBelowWater(blockpos);
     }
 
     @Override
-    public float getPathfindingCostFromLightLevels(BlockPos blockposition) {
-        return handle.getPathfindingCostFromLightLevels(blockposition);
+    public float getPathfindingCostFromLightLevels(BlockPos blockpos) {
+        return handle.getPathfindingCostFromLightLevels(blockpos);
     }
 
     @Override
-    public float getLightLevelDependentMagicValue(BlockPos blockposition) {
-        return handle.getLightLevelDependentMagicValue(blockposition);
+    public float getLightLevelDependentMagicValue(BlockPos blockpos) {
+        return handle.getLightLevelDependentMagicValue(blockpos);
     }
 
     @Override
-    public ChunkAccess getChunk(BlockPos blockposition) {
-        return handle.getChunk(blockposition);
+    public ChunkAccess getChunk(BlockPos blockpos) {
+        return handle.getChunk(blockpos);
     }
 
     @Override
@@ -348,23 +347,23 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public boolean isWaterAt(BlockPos blockposition) {
-        return handle.isWaterAt(blockposition);
+    public boolean isWaterAt(BlockPos blockpos) {
+        return handle.isWaterAt(blockpos);
     }
 
     @Override
-    public boolean containsAnyLiquid(AABB axisalignedbb) {
-        return handle.containsAnyLiquid(axisalignedbb);
+    public boolean containsAnyLiquid(AABB aabb) {
+        return handle.containsAnyLiquid(aabb);
     }
 
     @Override
-    public int getMaxLocalRawBrightness(BlockPos blockposition) {
-        return handle.getMaxLocalRawBrightness(blockposition);
+    public int getMaxLocalRawBrightness(BlockPos blockpos) {
+        return handle.getMaxLocalRawBrightness(blockpos);
     }
 
     @Override
-    public int getMaxLocalRawBrightness(BlockPos blockposition, int i) {
-        return handle.getMaxLocalRawBrightness(blockposition, i);
+    public int getMaxLocalRawBrightness(BlockPos blockpos, int i) {
+        return handle.getMaxLocalRawBrightness(blockpos, i);
     }
 
     @Override
@@ -373,13 +372,13 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public boolean hasChunkAt(BlockPos blockposition) {
-        return handle.hasChunkAt(blockposition);
+    public boolean hasChunkAt(BlockPos blockpos) {
+        return handle.hasChunkAt(blockpos);
     }
 
     @Override
-    public boolean hasChunksAt(BlockPos blockposition, BlockPos blockposition1) {
-        return handle.hasChunksAt(blockposition, blockposition1);
+    public boolean hasChunksAt(BlockPos blockpos, BlockPos blockpos1) {
+        return handle.hasChunksAt(blockpos, blockpos1);
     }
 
     @Override
@@ -408,8 +407,8 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public float getShade(Direction enumdirection, boolean flag) {
-        return handle.getShade(enumdirection, flag);
+    public float getShade(Direction direction, boolean flag) {
+        return handle.getShade(direction, flag);
     }
 
     @Override
@@ -418,18 +417,18 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public int getBrightness(LightLayer enumskyblock, BlockPos blockposition) {
-        return handle.getBrightness(enumskyblock, blockposition);
+    public int getBrightness(LightLayer lightlayer, BlockPos blockpos) {
+        return handle.getBrightness(lightlayer, blockpos);
     }
 
     @Override
-    public int getRawBrightness(BlockPos blockposition, int i) {
-        return handle.getRawBrightness(blockposition, i);
+    public int getRawBrightness(BlockPos blockpos, int i) {
+        return handle.getRawBrightness(blockpos, i);
     }
 
     @Override
-    public boolean canSeeSky(BlockPos blockposition) {
-        return handle.canSeeSky(blockposition);
+    public boolean canSeeSky(BlockPos blockpos) {
+        return handle.canSeeSky(blockpos);
     }
 
     @Override
@@ -438,8 +437,8 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public boolean isUnobstructed(BlockState iblockdata, BlockPos blockposition, CollisionContext voxelshapecollision) {
-        return handle.isUnobstructed(iblockdata, blockposition, voxelshapecollision);
+    public boolean isUnobstructed(BlockState blockstate, BlockPos blockpos, CollisionContext collisioncontext) {
+        return handle.isUnobstructed(blockstate, blockpos, collisioncontext);
     }
 
     @Override
@@ -448,8 +447,8 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public boolean noCollision(AABB axisalignedbb) {
-        return handle.noCollision(axisalignedbb);
+    public boolean noCollision(AABB aabb) {
+        return handle.noCollision(aabb);
     }
 
     @Override
@@ -458,113 +457,113 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public boolean noCollision(Entity entity, AABB axisalignedbb) {
-        return handle.noCollision(entity, axisalignedbb);
+    public boolean noCollision(Entity entity, AABB aabb) {
+        return handle.noCollision(entity, aabb);
     }
 
     @Override
-    public boolean noCollision(Entity entity, AABB axisalignedbb, boolean flag) {
-        return handle.noCollision(entity, axisalignedbb, flag);
+    public boolean noCollision(Entity entity, AABB aabb, boolean flag) {
+        return handle.noCollision(entity, aabb, flag);
     }
 
     @Override
-    public boolean noBlockCollision(Entity entity, AABB axisalignedbb) {
-        return handle.noBlockCollision(entity, axisalignedbb);
+    public boolean noBlockCollision(Entity entity, AABB aabb) {
+        return handle.noBlockCollision(entity, aabb);
     }
 
     @Override
-    public Iterable<VoxelShape> getCollisions(Entity entity, AABB axisalignedbb) {
-        return handle.getCollisions(entity, axisalignedbb);
+    public Iterable<VoxelShape> getCollisions(Entity entity, AABB aabb) {
+        return handle.getCollisions(entity, aabb);
     }
 
     @Override
-    public Iterable<VoxelShape> getBlockCollisions(Entity entity, AABB axisalignedbb) {
-        return handle.getBlockCollisions(entity, axisalignedbb);
+    public Iterable<VoxelShape> getBlockCollisions(Entity entity, AABB aabb) {
+        return handle.getBlockCollisions(entity, aabb);
     }
 
     @Override
-    public Iterable<VoxelShape> getBlockAndLiquidCollisions(Entity entity, AABB axisalignedbb) {
-        return handle.getBlockAndLiquidCollisions(entity, axisalignedbb);
+    public Iterable<VoxelShape> getBlockAndLiquidCollisions(Entity entity, AABB aabb) {
+        return handle.getBlockAndLiquidCollisions(entity, aabb);
     }
 
     @Override
-    public BlockHitResult clipIncludingBorder(ClipContext raytrace) {
-        return handle.clipIncludingBorder(raytrace);
+    public BlockHitResult clipIncludingBorder(ClipContext clipcontext) {
+        return handle.clipIncludingBorder(clipcontext);
     }
 
     @Override
-    public boolean collidesWithSuffocatingBlock(Entity entity, AABB axisalignedbb) {
-        return handle.collidesWithSuffocatingBlock(entity, axisalignedbb);
+    public boolean collidesWithSuffocatingBlock(Entity entity, AABB aabb) {
+        return handle.collidesWithSuffocatingBlock(entity, aabb);
     }
 
     @Override
-    public Optional<BlockPos> findSupportingBlock(Entity entity, AABB axisalignedbb) {
-        return handle.findSupportingBlock(entity, axisalignedbb);
+    public Optional<BlockPos> findSupportingBlock(Entity entity, AABB aabb) {
+        return handle.findSupportingBlock(entity, aabb);
     }
 
     @Override
-    public Optional<Vec3> findFreePosition(Entity entity, VoxelShape voxelshape, Vec3 vec3d, double d0, double d1, double d2) {
-        return handle.findFreePosition(entity, voxelshape, vec3d, d0, d1, d2);
+    public Optional<Vec3> findFreePosition(Entity entity, VoxelShape voxelshape, Vec3 vec3, double d0, double d1, double d2) {
+        return handle.findFreePosition(entity, voxelshape, vec3, d0, d1, d2);
     }
 
     @Override
-    public int getDirectSignal(BlockPos blockposition, Direction enumdirection) {
-        return handle.getDirectSignal(blockposition, enumdirection);
+    public int getDirectSignal(BlockPos blockpos, Direction direction) {
+        return handle.getDirectSignal(blockpos, direction);
     }
 
     @Override
-    public int getDirectSignalTo(BlockPos blockposition) {
-        return handle.getDirectSignalTo(blockposition);
+    public int getDirectSignalTo(BlockPos blockpos) {
+        return handle.getDirectSignalTo(blockpos);
     }
 
     @Override
-    public int getControlInputSignal(BlockPos blockposition, Direction enumdirection, boolean flag) {
-        return handle.getControlInputSignal(blockposition, enumdirection, flag);
+    public int getControlInputSignal(BlockPos blockpos, Direction direction, boolean flag) {
+        return handle.getControlInputSignal(blockpos, direction, flag);
     }
 
     @Override
-    public boolean hasSignal(BlockPos blockposition, Direction enumdirection) {
-        return handle.hasSignal(blockposition, enumdirection);
+    public boolean hasSignal(BlockPos blockpos, Direction direction) {
+        return handle.hasSignal(blockpos, direction);
     }
 
     @Override
-    public int getSignal(BlockPos blockposition, Direction enumdirection) {
-        return handle.getSignal(blockposition, enumdirection);
+    public int getSignal(BlockPos blockpos, Direction direction) {
+        return handle.getSignal(blockpos, direction);
     }
 
     @Override
-    public boolean hasNeighborSignal(BlockPos blockposition) {
-        return handle.hasNeighborSignal(blockposition);
+    public boolean hasNeighborSignal(BlockPos blockpos) {
+        return handle.hasNeighborSignal(blockpos);
     }
 
     @Override
-    public int getBestNeighborSignal(BlockPos blockposition) {
-        return handle.getBestNeighborSignal(blockposition);
+    public int getBestNeighborSignal(BlockPos blockpos) {
+        return handle.getBestNeighborSignal(blockpos);
     }
 
     @Override
-    public BlockEntity getBlockEntity(BlockPos blockposition) {
-        return handle.getBlockEntity(blockposition);
+    public BlockEntity getBlockEntity(BlockPos blockpos) {
+        return handle.getBlockEntity(blockpos);
     }
 
     @Override
-    public BlockState getBlockState(BlockPos blockposition) {
-        return handle.getBlockState(blockposition);
+    public BlockState getBlockState(BlockPos blockpos) {
+        return handle.getBlockState(blockpos);
     }
 
     @Override
-    public FluidState getFluidState(BlockPos blockposition) {
-        return handle.getFluidState(blockposition);
+    public FluidState getFluidState(BlockPos blockpos) {
+        return handle.getFluidState(blockpos);
     }
 
     @Override
-    public int getLightEmission(BlockPos blockposition) {
-        return handle.getLightEmission(blockposition);
+    public int getLightEmission(BlockPos blockpos) {
+        return handle.getLightEmission(blockpos);
     }
 
     @Override
-    public Stream<BlockState> getBlockStates(AABB axisalignedbb) {
-        return handle.getBlockStates(axisalignedbb);
+    public Stream<BlockState> getBlockStates(AABB aabb) {
+        return handle.getBlockStates(aabb);
     }
 
     @Override
@@ -573,18 +572,18 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public BlockHitResult clip(ClipContext raytrace1, BlockPos blockposition) {
-        return handle.clip(raytrace1, blockposition);
+    public BlockHitResult clip(ClipContext clipcontext1, BlockPos blockpos) {
+        return handle.clip(clipcontext1, blockpos);
     }
 
     @Override
-    public BlockHitResult clip(ClipContext raytrace) {
-        return handle.clip(raytrace);
+    public BlockHitResult clip(ClipContext clipcontext) {
+        return handle.clip(clipcontext);
     }
 
     @Override
-    public BlockHitResult clipWithInteractionOverride(Vec3 vec3d, Vec3 vec3d1, BlockPos blockposition, VoxelShape voxelshape, BlockState iblockdata) {
-        return handle.clipWithInteractionOverride(vec3d, vec3d1, blockposition, voxelshape, iblockdata);
+    public BlockHitResult clipWithInteractionOverride(Vec3 vec3, Vec3 vec31, BlockPos blockpos, VoxelShape voxelshape, BlockState blockstate) {
+        return handle.clipWithInteractionOverride(vec3, vec31, blockpos, voxelshape, blockstate);
     }
 
     @Override
@@ -593,23 +592,23 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public double getBlockFloorHeight(BlockPos blockposition) {
-        return handle.getBlockFloorHeight(blockposition);
+    public double getBlockFloorHeight(BlockPos blockpos) {
+        return handle.getBlockFloorHeight(blockpos);
     }
 
     @Override
-    public List<Entity> getEntities(Entity entity, AABB axisalignedbb, Predicate<? super Entity> predicate) {
-        return handle.getEntities(entity, axisalignedbb, predicate);
+    public List<Entity> getEntities(Entity entity, AABB aabb, Predicate<? super Entity> predicate) {
+        return handle.getEntities(entity, aabb, predicate);
     }
 
     @Override
-    public <T extends Entity> List<T> getEntities(EntityTypeTest<Entity, T> entitytypetest, AABB axisalignedbb, Predicate<? super T> predicate) {
-        return handle.getEntities(entitytypetest, axisalignedbb, predicate);
+    public <T extends Entity> List<T> getEntities(EntityTypeTest<Entity, T> entitytypetest, AABB aabb, Predicate<? super T> predicate) {
+        return handle.getEntities(entitytypetest, aabb, predicate);
     }
 
     @Override
-    public <T extends Entity> List<T> getEntitiesOfClass(Class<T> oclass, AABB axisalignedbb, Predicate<? super T> predicate) {
-        return handle.getEntitiesOfClass(oclass, axisalignedbb, predicate);
+    public <T extends Entity> List<T> getEntitiesOfClass(Class<T> oclass, AABB aabb, Predicate<? super T> predicate) {
+        return handle.getEntitiesOfClass(oclass, aabb, predicate);
     }
 
     @Override
@@ -618,13 +617,13 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public List<Entity> getEntities(Entity entity, AABB axisalignedbb) {
-        return handle.getEntities(entity, axisalignedbb);
+    public List<Entity> getEntities(Entity entity, AABB aabb) {
+        return handle.getEntities(entity, aabb);
     }
 
     @Override
-    public <T extends Entity> List<T> getEntitiesOfClass(Class<T> oclass, AABB axisalignedbb) {
-        return handle.getEntitiesOfClass(oclass, axisalignedbb);
+    public <T extends Entity> List<T> getEntitiesOfClass(Class<T> oclass, AABB aabb) {
+        return handle.getEntitiesOfClass(oclass, aabb);
     }
 
     @Override
@@ -653,33 +652,33 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public boolean setBlock(BlockPos blockposition, BlockState iblockdata, int i, int j) {
-        return handle.setBlock(blockposition, iblockdata, i, j);
+    public boolean setBlock(BlockPos blockpos, BlockState blockstate, int i, int j) {
+        return handle.setBlock(blockpos, blockstate, i, j);
     }
 
     @Override
-    public boolean setBlock(BlockPos blockposition, BlockState iblockdata, int i) {
-        return handle.setBlock(blockposition, iblockdata, i);
+    public boolean setBlock(BlockPos blockpos, BlockState blockstate, int i) {
+        return handle.setBlock(blockpos, blockstate, i);
     }
 
     @Override
-    public boolean removeBlock(BlockPos blockposition, boolean flag) {
-        return handle.removeBlock(blockposition, flag);
+    public boolean removeBlock(BlockPos blockpos, boolean flag) {
+        return handle.removeBlock(blockpos, flag);
     }
 
     @Override
-    public boolean destroyBlock(BlockPos blockposition, boolean flag) {
-        return handle.destroyBlock(blockposition, flag);
+    public boolean destroyBlock(BlockPos blockpos, boolean flag) {
+        return handle.destroyBlock(blockpos, flag);
     }
 
     @Override
-    public boolean destroyBlock(BlockPos blockposition, boolean flag, Entity entity) {
-        return handle.destroyBlock(blockposition, flag, entity);
+    public boolean destroyBlock(BlockPos blockpos, boolean flag, Entity entity) {
+        return handle.destroyBlock(blockpos, flag, entity);
     }
 
     @Override
-    public boolean destroyBlock(BlockPos blockposition, boolean flag, Entity entity, int i) {
-        return handle.destroyBlock(blockposition, flag, entity, i);
+    public boolean destroyBlock(BlockPos blockpos, boolean flag, Entity entity, int i) {
+        return handle.destroyBlock(blockpos, flag, entity, i);
     }
 
     @Override
@@ -718,8 +717,8 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public boolean isOutsideBuildHeight(BlockPos blockposition) {
-        return handle.isOutsideBuildHeight(blockposition);
+    public boolean isOutsideBuildHeight(BlockPos blockpos) {
+        return handle.isOutsideBuildHeight(blockpos);
     }
 
     @Override
@@ -748,13 +747,13 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public void scheduleTick(BlockPos blockposition, Block block, int i, TickPriority ticklistpriority) {
-        handle.scheduleTick(blockposition, block, i, ticklistpriority);
+    public void scheduleTick(BlockPos blockpos, Block block, int i, TickPriority tickpriority) {
+        handle.scheduleTick(blockpos, block, i, tickpriority);
     }
 
     @Override
-    public void scheduleTick(BlockPos blockposition, Block block, int i) {
-        handle.scheduleTick(blockposition, block, i);
+    public void scheduleTick(BlockPos blockpos, Block block, int i) {
+        handle.scheduleTick(blockpos, block, i);
     }
 
     @Override
@@ -763,23 +762,23 @@ public abstract class DelegatedGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public void scheduleTick(BlockPos blockposition, Fluid fluidtype, int i, TickPriority ticklistpriority) {
-        handle.scheduleTick(blockposition, fluidtype, i, ticklistpriority);
+    public void scheduleTick(BlockPos blockpos, Fluid fluid, int i, TickPriority tickpriority) {
+        handle.scheduleTick(blockpos, fluid, i, tickpriority);
     }
 
     @Override
-    public void scheduleTick(BlockPos blockposition, Fluid fluidtype, int i) {
-        handle.scheduleTick(blockposition, fluidtype, i);
+    public void scheduleTick(BlockPos blockpos, Fluid fluid, int i) {
+        handle.scheduleTick(blockpos, fluid, i);
     }
 
     @Override
-    public boolean isStateAtPosition(BlockPos blockposition, Predicate<BlockState> predicate) {
-        return handle.isStateAtPosition(blockposition, predicate);
+    public boolean isStateAtPosition(BlockPos blockpos, Predicate<BlockState> predicate) {
+        return handle.isStateAtPosition(blockpos, predicate);
     }
 
     @Override
-    public boolean isFluidAtPosition(BlockPos blockposition, Predicate<FluidState> predicate) {
-        return handle.isFluidAtPosition(blockposition, predicate);
+    public boolean isFluidAtPosition(BlockPos blockpos, Predicate<FluidState> predicate) {
+        return handle.isFluidAtPosition(blockpos, predicate);
     }
 
     @Override

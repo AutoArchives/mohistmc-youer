@@ -395,24 +395,24 @@ public class CraftBlock implements Block {
     @Override
     public int getBlockPower(BlockFace face) {
         int power = 0;
-        net.minecraft.world.level.Level world = this.world.getMinecraftWorld();
+        net.minecraft.world.level.Level level = this.world.getMinecraftWorld();
         int x = getX();
         int y = getY();
         int z = getZ();
-        if ((face == BlockFace.DOWN || face == BlockFace.SELF) && world.hasSignal(new BlockPos(x, y - 1, z), Direction.DOWN)) power = getPower(power, world.getBlockState(new BlockPos(x, y - 1, z)));
-        if ((face == BlockFace.UP || face == BlockFace.SELF) && world.hasSignal(new BlockPos(x, y + 1, z), Direction.UP)) power = getPower(power, world.getBlockState(new BlockPos(x, y + 1, z)));
-        if ((face == BlockFace.EAST || face == BlockFace.SELF) && world.hasSignal(new BlockPos(x + 1, y, z), Direction.EAST)) power = getPower(power, world.getBlockState(new BlockPos(x + 1, y, z)));
-        if ((face == BlockFace.WEST || face == BlockFace.SELF) && world.hasSignal(new BlockPos(x - 1, y, z), Direction.WEST)) power = getPower(power, world.getBlockState(new BlockPos(x - 1, y, z)));
-        if ((face == BlockFace.NORTH || face == BlockFace.SELF) && world.hasSignal(new BlockPos(x, y, z - 1), Direction.NORTH)) power = getPower(power, world.getBlockState(new BlockPos(x, y, z - 1)));
-        if ((face == BlockFace.SOUTH || face == BlockFace.SELF) && world.hasSignal(new BlockPos(x, y, z + 1), Direction.SOUTH)) power = getPower(power, world.getBlockState(new BlockPos(x, y, z + 1)));
+        if ((face == BlockFace.DOWN || face == BlockFace.SELF) && level.hasSignal(new BlockPos(x, y - 1, z), Direction.DOWN)) power = getPower(power, level.getBlockState(new BlockPos(x, y - 1, z)));
+        if ((face == BlockFace.UP || face == BlockFace.SELF) && level.hasSignal(new BlockPos(x, y + 1, z), Direction.UP)) power = getPower(power, level.getBlockState(new BlockPos(x, y + 1, z)));
+        if ((face == BlockFace.EAST || face == BlockFace.SELF) && level.hasSignal(new BlockPos(x + 1, y, z), Direction.EAST)) power = getPower(power, level.getBlockState(new BlockPos(x + 1, y, z)));
+        if ((face == BlockFace.WEST || face == BlockFace.SELF) && level.hasSignal(new BlockPos(x - 1, y, z), Direction.WEST)) power = getPower(power, level.getBlockState(new BlockPos(x - 1, y, z)));
+        if ((face == BlockFace.NORTH || face == BlockFace.SELF) && level.hasSignal(new BlockPos(x, y, z - 1), Direction.NORTH)) power = getPower(power, level.getBlockState(new BlockPos(x, y, z - 1)));
+        if ((face == BlockFace.SOUTH || face == BlockFace.SELF) && level.hasSignal(new BlockPos(x, y, z + 1), Direction.SOUTH)) power = getPower(power, level.getBlockState(new BlockPos(x, y, z + 1)));
         return power > 0 ? power : (face == BlockFace.SELF ? isBlockIndirectlyPowered() : isBlockFaceIndirectlyPowered(face)) ? 15 : 0;
     }
 
-    private static int getPower(int i, net.minecraft.world.level.block.state.BlockState iblockdata) {
-        if (!iblockdata.is(Blocks.REDSTONE_WIRE)) {
+    private static int getPower(int i, net.minecraft.world.level.block.state.BlockState blockstate) {
+        if (!blockstate.is(Blocks.REDSTONE_WIRE)) {
             return i;
         } else {
-            int j = iblockdata.getValue(RedStoneWireBlock.POWER);
+            int j = blockstate.getValue(RedStoneWireBlock.POWER);
 
             return j > i ? j : i;
         }
@@ -446,14 +446,14 @@ public class CraftBlock implements Block {
     @Override
     public boolean breakNaturally(ItemStack item) {
         // Order matters here, need to drop before setting to air so skulls can get their data
-        net.minecraft.world.level.block.state.BlockState iblockdata = this.getNMS();
-        net.minecraft.world.level.block.Block block = iblockdata.getBlock();
+        net.minecraft.world.level.block.state.BlockState blockstate = this.getNMS();
+        net.minecraft.world.level.block.Block block = blockstate.getBlock();
         net.minecraft.world.item.ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
         boolean result = false;
 
         // Modelled off EntityHuman#hasBlock
-        if (block != Blocks.AIR && (item == null || !iblockdata.requiresCorrectToolForDrops() || nmsItem.isCorrectToolForDrops(iblockdata))) {
-            net.minecraft.world.level.block.Block.dropResources(iblockdata, world.getMinecraftWorld(), position, world.getBlockEntity(position), null, nmsItem);
+        if (block != Blocks.AIR && (item == null || !blockstate.requiresCorrectToolForDrops() || nmsItem.isCorrectToolForDrops(blockstate))) {
+            net.minecraft.world.level.block.Block.dropResources(blockstate, world.getMinecraftWorld(), position, world.getBlockEntity(position), null, nmsItem);
             result = true;
         }
 
@@ -511,12 +511,12 @@ public class CraftBlock implements Block {
 
     @Override
     public Collection<ItemStack> getDrops(ItemStack item, Entity entity) {
-        net.minecraft.world.level.block.state.BlockState iblockdata = getNMS();
+        net.minecraft.world.level.block.state.BlockState blockstate = getNMS();
         net.minecraft.world.item.ItemStack nms = CraftItemStack.asNMSCopy(item);
 
         // Modelled off EntityHuman#hasBlock
-        if (item == null || CraftBlockData.isPreferredTool(iblockdata, nms)) {
-            return net.minecraft.world.level.block.Block.getDrops(iblockdata, (ServerLevel) world.getMinecraftWorld(), position, world.getBlockEntity(position), entity == null ? null : ((CraftEntity) entity).getHandle(), nms)
+        if (item == null || CraftBlockData.isPreferredTool(blockstate, nms)) {
+            return net.minecraft.world.level.block.Block.getDrops(blockstate, (ServerLevel) world.getMinecraftWorld(), position, world.getBlockEntity(position), entity == null ? null : ((CraftEntity) entity).getHandle(), nms)
                     .stream().map(CraftItemStack::asBukkitCopy).collect(Collectors.toList());
         } else {
             return Collections.emptyList();
@@ -525,9 +525,9 @@ public class CraftBlock implements Block {
 
     @Override
     public boolean isPreferredTool(ItemStack item) {
-        net.minecraft.world.level.block.state.BlockState iblockdata = getNMS();
+        net.minecraft.world.level.block.state.BlockState blockstate = getNMS();
         net.minecraft.world.item.ItemStack nms = CraftItemStack.asNMSCopy(item);
-        return CraftBlockData.isPreferredTool(iblockdata, nms);
+        return CraftBlockData.isPreferredTool(blockstate, nms);
     }
 
     @Override
@@ -605,10 +605,10 @@ public class CraftBlock implements Block {
     @Override
     public boolean canPlace(BlockData data) {
         Preconditions.checkArgument(data != null, "BlockData cannot be null");
-        net.minecraft.world.level.block.state.BlockState iblockdata = ((CraftBlockData) data).getState();
-        net.minecraft.world.level.Level world = this.world.getMinecraftWorld();
+        net.minecraft.world.level.block.state.BlockState blockstate = ((CraftBlockData) data).getState();
+        net.minecraft.world.level.Level level = this.world.getMinecraftWorld();
 
-        return iblockdata.canSurvive(world, this.position);
+        return blockstate.canSurvive(level, this.position);
     }
 
     @Override

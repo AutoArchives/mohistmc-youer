@@ -11,8 +11,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.core.GlobalPos;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.UserWhiteListEntry;
 import net.minecraft.stats.ServerStatsCounter;
@@ -21,7 +21,6 @@ import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.level.storage.PlayerDataStorage;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.WorldData;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.bukkit.BanEntry;
@@ -206,8 +205,8 @@ public class CraftOfflinePlayer implements OfflinePlayer, ConfigurationSerializa
     }
 
     private ValueInput getData() {
-        return storage.load(profile).map((nbttagcompound) -> {
-            return TagValueInput.create(ProblemReporter.DISCARDING, server.console.registryAccess(), nbttagcompound);
+        return storage.load(profile).map((compoundtag) -> {
+            return TagValueInput.create(ProblemReporter.DISCARDING, server.console.registryAccess(), compoundtag);
         }).orElse(null);
     }
 

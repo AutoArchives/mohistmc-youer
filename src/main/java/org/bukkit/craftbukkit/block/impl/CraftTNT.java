@@ -3,13 +3,13 @@
  */
 package org.bukkit.craftbukkit.block.impl;
 
-public final class CraftTNT extends org.bukkit.craftbukkit.block.data.CraftBlockData implements org.bukkit.block.data.type.TNT {
+public final class CraftTnt extends org.bukkit.craftbukkit.block.data.CraftBlockData implements org.bukkit.block.data.type.TNT {
 
-    public CraftTNT() {
+    public CraftTnt() {
         super();
     }
 
-    public CraftTNT(net.minecraft.world.level.block.state.BlockState state) {
+    public CraftTnt(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 

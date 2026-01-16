@@ -26,6 +26,7 @@ import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.bukkit.EntityEffect;
 import org.bukkit.Location;
 import org.bukkit.Server;
@@ -61,6 +62,8 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.NumberConversions;
 import org.bukkit.util.Vector;
+
+import net.md_5.bungee.api.chat.BaseComponent; // Spigot
 
 public abstract class CraftEntity implements org.bukkit.entity.Entity {
     private static PermissibleBase perm;
@@ -206,7 +209,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
         if (location.getWorld() != null && !location.getWorld().equals(getWorld())) {
             // Prevent teleportation to an other world during world generation
             Preconditions.checkState(!entity.generation, "Cannot teleport entity to an other world during world generation");
-            entity.teleport(new TeleportTransition(((CraftWorld) location.getWorld()).getHandle(), CraftLocation.toVec3D(location), Vec3D.ZERO, location.getPitch(), location.getYaw(), Set.of(), TeleportTransition.DO_NOTHING, TeleportCause.PLUGIN));
+            entity.teleport(new TeleportTransition(((CraftWorld) location.getWorld()).getHandle(), CraftLocation.toVec3D(location), Vec3.ZERO, location.getPitch(), location.getYaw(), Set.of(), TeleportTransition.DO_NOTHING, TeleportCause.PLUGIN));
             return true;
         }
 
@@ -231,6 +234,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
     @Override
     public List<org.bukkit.entity.Entity> getNearbyEntities(double x, double y, double z) {
         Preconditions.checkState(!entity.generation, "Cannot get nearby entities during world generation");
+        org.spigotmc.AsyncCatcher.catchOp("getNearbyEntities"); // Spigot
 
         List<Entity> notchEntityList = entity.level().getEntities(entity, entity.getBoundingBox().inflate(x, y, z), Predicates.alwaysTrue());
         List<org.bukkit.entity.Entity> bukkitEntityList = new java.util.ArrayList<org.bukkit.entity.Entity>(notchEntityList.size());
@@ -892,4 +896,35 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
         }
         return perm;
     }
+
+    // Spigot start
+    private final org.bukkit.entity.Entity.Spigot spigot = new org.bukkit.entity.Entity.Spigot()
+    {
+
+        @Override
+        public void sendMessage(net.md_5.bungee.api.chat.BaseComponent component)
+        {
+        }
+
+        @Override
+        public void sendMessage(net.md_5.bungee.api.chat.BaseComponent... components)
+        {
+        }
+
+        @Override
+        public void sendMessage(UUID sender, BaseComponent... components)
+        {
+        }
+
+        @Override
+        public void sendMessage(UUID sender, BaseComponent component)
+        {
+        }
+    };
+
+    public org.bukkit.entity.Entity.Spigot spigot()
+    {
+        return spigot;
+    }
+    // Spigot end
 }

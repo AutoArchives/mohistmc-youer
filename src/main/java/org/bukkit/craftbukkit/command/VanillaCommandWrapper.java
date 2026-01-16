@@ -7,9 +7,10 @@ import com.mojang.brigadier.tree.CommandNode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import net.minecraft.commands.Commands;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.vehicle.minecart.MinecartCommandBlock;
 import net.minecraft.world.level.BaseCommandBlock;
 import org.bukkit.Location;
 import org.bukkit.command.BlockCommandSender;
@@ -66,7 +67,7 @@ public final class VanillaCommandWrapper extends BukkitCommand {
         if (sender instanceof CraftEntity entity) {
             ServerLevel world = (ServerLevel) entity.getHandle().level();
             if (sender instanceof CommandMinecart) {
-                BaseCommandBlock commandBlock = ((CraftMinecartCommand) sender).getHandle().getCommandBlock();
+                BaseCommandBlock commandBlock = ((MinecartCommandBlock) ((CraftMinecartCommand) sender).getHandle()).getCommandBlock();
                 return commandBlock.createCommandSourceStack(world, commandBlock.createSource(world));
             }
 

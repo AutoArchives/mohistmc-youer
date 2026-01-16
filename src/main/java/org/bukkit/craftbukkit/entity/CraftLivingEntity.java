@@ -18,7 +18,6 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -461,64 +460,64 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
     public <T extends Projectile> T launchProjectile(Class<? extends T> projectile, Vector velocity) {
         Preconditions.checkState(!getHandle().generation, "Cannot launch projectile during world generation");
 
-        net.minecraft.world.level.Level world = ((CraftWorld) getWorld()).getHandle();
+        net.minecraft.world.level.Level level = ((CraftWorld) getWorld()).getHandle();
         net.minecraft.world.entity.Entity launch = null;
 
         if (Snowball.class.isAssignableFrom(projectile)) {
-            launch = new net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball(world, getHandle(), new net.minecraft.world.item.ItemStack(Items.SNOWBALL));
+            launch = new net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball(level, getHandle(), new net.minecraft.world.item.ItemStack(Items.SNOWBALL));
             ((ThrowableProjectile) launch).shootFromRotation(getHandle(), getHandle().getXRot(), getHandle().getYRot(), 0.0F, 1.5F, 1.0F); // ItemSnowball
         } else if (Egg.class.isAssignableFrom(projectile)) {
-            launch = new ThrownEgg(world, getHandle(), new net.minecraft.world.item.ItemStack(Items.EGG));
+            launch = new ThrownEgg(level, getHandle(), new net.minecraft.world.item.ItemStack(Items.EGG));
             ((ThrowableProjectile) launch).shootFromRotation(getHandle(), getHandle().getXRot(), getHandle().getYRot(), 0.0F, 1.5F, 1.0F); // ItemEgg
         } else if (EnderPearl.class.isAssignableFrom(projectile)) {
-            launch = new ThrownEnderpearl(world, getHandle(), new net.minecraft.world.item.ItemStack(Items.ENDER_PEARL));
+            launch = new ThrownEnderpearl(level, getHandle(), new net.minecraft.world.item.ItemStack(Items.ENDER_PEARL));
             ((ThrowableProjectile) launch).shootFromRotation(getHandle(), getHandle().getXRot(), getHandle().getYRot(), 0.0F, 1.5F, 1.0F); // ItemEnderPearl
         } else if (AbstractArrow.class.isAssignableFrom(projectile)) {
             if (TippedArrow.class.isAssignableFrom(projectile)) {
-                launch = new net.minecraft.world.entity.projectile.arrow.Arrow(world, getHandle(), new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.ARROW), null);
+                launch = new net.minecraft.world.entity.projectile.arrow.Arrow(level, getHandle(), new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.ARROW), null);
                 ((Arrow) launch.getBukkitEntity()).setBasePotionType(PotionType.WATER);
             } else if (SpectralArrow.class.isAssignableFrom(projectile)) {
-                launch = new net.minecraft.world.entity.projectile.arrow.SpectralArrow(world, getHandle(), new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.SPECTRAL_ARROW), null);
+                launch = new net.minecraft.world.entity.projectile.arrow.SpectralArrow(level, getHandle(), new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.SPECTRAL_ARROW), null);
             } else if (Trident.class.isAssignableFrom(projectile)) {
-                launch = new ThrownTrident(world, getHandle(), new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.TRIDENT));
+                launch = new ThrownTrident(level, getHandle(), new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.TRIDENT));
             } else {
-                launch = new net.minecraft.world.entity.projectile.arrow.Arrow(world, getHandle(), new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.ARROW), null);
+                launch = new net.minecraft.world.entity.projectile.arrow.Arrow(level, getHandle(), new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.ARROW), null);
             }
             ((net.minecraft.world.entity.projectile.arrow.AbstractArrow) launch).shootFromRotation(getHandle(), getHandle().getXRot(), getHandle().getYRot(), 0.0F, 3.0F, 1.0F); // ItemBow
         } else if (ThrownPotion.class.isAssignableFrom(projectile)) {
             if (LingeringPotion.class.isAssignableFrom(projectile)) {
-                launch = new ThrownLingeringPotion(world, getHandle(), new net.minecraft.world.item.ItemStack(Items.LINGERING_POTION));
+                launch = new ThrownLingeringPotion(level, getHandle(), new net.minecraft.world.item.ItemStack(Items.LINGERING_POTION));
             } else {
-                launch = new ThrownSplashPotion(world, getHandle(), new net.minecraft.world.item.ItemStack(Items.SPLASH_POTION));
+                launch = new ThrownSplashPotion(level, getHandle(), new net.minecraft.world.item.ItemStack(Items.SPLASH_POTION));
             }
             ((ThrowableProjectile) launch).shootFromRotation(getHandle(), getHandle().getXRot(), getHandle().getYRot(), -20.0F, 0.5F, 1.0F); // ItemSplashPotion
         } else if (ThrownExpBottle.class.isAssignableFrom(projectile)) {
-            launch = new ThrownExperienceBottle(world, getHandle(), new net.minecraft.world.item.ItemStack(Items.EXPERIENCE_BOTTLE));
+            launch = new ThrownExperienceBottle(level, getHandle(), new net.minecraft.world.item.ItemStack(Items.EXPERIENCE_BOTTLE));
             ((ThrowableProjectile) launch).shootFromRotation(getHandle(), getHandle().getXRot(), getHandle().getYRot(), -20.0F, 0.7F, 1.0F); // ItemExpBottle
-        } else if (FishHook.class.isAssignableFrom(projectile) && getHandle() instanceof net.minecraft.world.entity.player.Player) {
-            launch = new FishingHook((net.minecraft.world.entity.player.Player) getHandle(), world, 0, 0);
+        } else if (FishHook.class.isAssignableFrom(projectile) && getHandle() instanceof Player) {
+            launch = new FishingHook((net.minecraft.world.entity.player.Player) getHandle(), level, 0, 0);
         } else if (Fireball.class.isAssignableFrom(projectile)) {
             Location location = getEyeLocation();
             Vector direction = location.getDirection().multiply(10);
             Vec3 vec = new Vec3(direction.getX(), direction.getY(), direction.getZ());
 
             if (SmallFireball.class.isAssignableFrom(projectile)) {
-                launch = new net.minecraft.world.entity.projectile.hurtingprojectile.SmallFireball(world, getHandle(), vec);
+                launch = new net.minecraft.world.entity.projectile.hurtingprojectile.SmallFireball(level, getHandle(), vec);
             } else if (WitherSkull.class.isAssignableFrom(projectile)) {
-                launch = new net.minecraft.world.entity.projectile.hurtingprojectile.WitherSkull(world, getHandle(), vec);
+                launch = new net.minecraft.world.entity.projectile.hurtingprojectile.WitherSkull(level, getHandle(), vec);
             } else if (DragonFireball.class.isAssignableFrom(projectile)) {
-                launch = new net.minecraft.world.entity.projectile.hurtingprojectile.DragonFireball(world, getHandle(), vec);
+                launch = new net.minecraft.world.entity.projectile.hurtingprojectile.DragonFireball(level, getHandle(), vec);
             } else if (AbstractWindCharge.class.isAssignableFrom(projectile)) {
                 if (BreezeWindCharge.class.isAssignableFrom(projectile)) {
-                    launch = EntityType.BREEZE_WIND_CHARGE.create(world, EntitySpawnReason.TRIGGERED);
+                    launch = EntityType.BREEZE_WIND_CHARGE.create(level, EntitySpawnReason.TRIGGERED);
                 } else {
-                    launch = EntityType.WIND_CHARGE.create(world, EntitySpawnReason.TRIGGERED);
+                    launch = EntityType.WIND_CHARGE.create(level, EntitySpawnReason.TRIGGERED);
                 }
 
                 ((net.minecraft.world.entity.projectile.hurtingprojectile.windcharge.AbstractWindCharge) launch).setOwner(getHandle());
                 ((net.minecraft.world.entity.projectile.hurtingprojectile.windcharge.AbstractWindCharge) launch).shootFromRotation(getHandle(), getHandle().getXRot(), getHandle().getYRot(), 0.0F, 1.5F, 1.0F); // WindChargeItem
             } else {
-                launch = new LargeFireball(world, getHandle(), vec, 1);
+                launch = new LargeFireball(level, getHandle(), vec, 1);
             }
 
             ((AbstractHurtingProjectile) launch).projectileSource = this;
@@ -527,7 +526,7 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
             Location location = getEyeLocation();
             Vector direction = location.getDirection();
 
-            launch = EntityType.LLAMA_SPIT.create(world, EntitySpawnReason.TRIGGERED);
+            launch = EntityType.LLAMA_SPIT.create(level, EntitySpawnReason.TRIGGERED);
 
             ((net.minecraft.world.entity.projectile.LlamaSpit) launch).setOwner(getHandle());
             ((net.minecraft.world.entity.projectile.LlamaSpit) launch).shoot(direction.getX(), direction.getY(), direction.getZ(), 1.5F, 10.0F); // EntityLlama
@@ -535,12 +534,12 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
         } else if (ShulkerBullet.class.isAssignableFrom(projectile)) {
             Location location = getEyeLocation();
 
-            launch = new net.minecraft.world.entity.projectile.ShulkerBullet(world, getHandle(), null, null);
+            launch = new net.minecraft.world.entity.projectile.ShulkerBullet(level, getHandle(), null, null);
             launch.snapTo(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
         } else if (Firework.class.isAssignableFrom(projectile)) {
             Location location = getEyeLocation();
 
-            launch = new FireworkRocketEntity(world, net.minecraft.world.item.ItemStack.EMPTY, getHandle());
+            launch = new FireworkRocketEntity(level, net.minecraft.world.item.ItemStack.EMPTY, getHandle());
             launch.snapTo(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
         }
 
@@ -550,7 +549,7 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
             ((T) launch.getBukkitEntity()).setVelocity(velocity);
         }
 
-        world.addFreshEntity(launch);
+        level.addFreshEntity(launch);
         return (T) launch.getBukkitEntity();
     }
 
@@ -808,17 +807,17 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
 
         net.minecraft.world.item.ItemStack nms = CraftItemStack.asNMSCopy(itemStack);
         Consumable consumable = nms.get(DataComponents.CONSUMABLE);
-        SoundEvent soundeffect = SoundEvents.GENERIC_DRINK.value();
+        SoundEvent soundevent = SoundEvents.GENERIC_DRINK.value();
 
         if (consumable != null) {
             if (getHandle() instanceof Consumable.OverrideConsumeSound consumable_b) {
-                soundeffect = consumable_b.getConsumeSound(nms);
+                soundevent = consumable_b.getConsumeSound(nms);
             } else {
-                soundeffect = (SoundEvent) consumable.sound().value();
+                soundevent = (SoundEvent) consumable.sound().value();
             }
         }
 
-        return CraftSound.minecraftToBukkit(soundeffect);
+        return CraftSound.minecraftToBukkit(soundevent);
     }
 
     @Override
@@ -864,10 +863,10 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
 
     private void mutateIcon(Consumer<Waypoint.Icon> consumer) {
         net.minecraft.world.entity.LivingEntity handle = getHandle();
-        ServerLevel worldserver = (ServerLevel) handle.level();
+        ServerLevel serverlevel = (ServerLevel) handle.level();
 
-        worldserver.getWaypointManager().untrackWaypoint(handle);
+        serverlevel.getWaypointManager().untrackWaypoint(handle);
         consumer.accept(handle.waypointIcon());
-        worldserver.getWaypointManager().trackWaypoint(handle);
+        serverlevel.getWaypointManager().trackWaypoint(handle);
     }
 }

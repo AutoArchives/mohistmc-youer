@@ -82,7 +82,7 @@ public class CraftMannequin extends CraftLivingEntity implements Mannequin {
     public void setPose(Pose pose) {
         Preconditions.checkArgument(pose != null, "pose cannot be null");
 
-        Pose nmsPose = Pose.values()[pose.ordinal()];
+        net.minecraft.world.entity.Pose nmsPose = net.minecraft.world.entity.Pose.values()[pose.ordinal()];
         Preconditions.checkArgument(net.minecraft.world.entity.decoration.Mannequin.VALID_POSES.contains(nmsPose));
 
         getHandle().setPose(nmsPose);

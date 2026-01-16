@@ -482,7 +482,7 @@ public final class CraftBlockStates {
         return getBlockState(null, blockPosition, blockData, tileEntity);
     }
 
-    // See BlockStateFactory#createBlockState(World, BlockPos, net.minecraft.world.level.block.state.BlockState, TileEntity)
+    // See BlockStateFactory#createBlockState(World, BlockPosition, IBlockData, TileEntity)
     private static CraftBlockState getBlockState(World world, BlockPos blockPosition, net.minecraft.world.level.block.state.BlockState blockData, BlockEntity tileEntity) {
         Material material = CraftBlockType.minecraftToBukkit(blockData.getBlock());
         BlockStateFactory<?> factory;

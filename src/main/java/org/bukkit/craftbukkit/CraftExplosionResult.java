@@ -8,10 +8,10 @@ public final class CraftExplosionResult {
 
     private CraftExplosionResult() {}
 
-    public static ExplosionResult toBukkit(Explosion.BlockInteraction effect) {
-        Preconditions.checkArgument(effect != null, "explosion effect cannot be null");
+    public static ExplosionResult toBukkit(Explosion.BlockInteraction blockinteraction) {
+        Preconditions.checkArgument(blockinteraction != null, "explosion effect cannot be null");
 
-        switch (effect) {
+        switch (blockinteraction) {
             case KEEP:
                 return ExplosionResult.KEEP;
             case DESTROY:
@@ -21,7 +21,7 @@ public final class CraftExplosionResult {
             case TRIGGER_BLOCK:
                 return ExplosionResult.TRIGGER_BLOCK;
             default:
-                throw new IllegalArgumentException("There is no ExplosionResult which matches " + effect);
+                throw new IllegalArgumentException("There is no ExplosionResult which matches " + blockinteraction);
         }
     }
 }

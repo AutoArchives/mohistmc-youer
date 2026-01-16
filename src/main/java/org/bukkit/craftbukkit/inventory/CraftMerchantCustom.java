@@ -48,8 +48,8 @@ public class CraftMerchantCustom implements CraftMerchant {
         }
 
         @Override
-        public void setTradingPlayer(Player entityhuman) {
-            this.tradingPlayer = entityhuman;
+        public void setTradingPlayer(Player player) {
+            this.tradingPlayer = player;
         }
 
         @Override
@@ -63,9 +63,9 @@ public class CraftMerchantCustom implements CraftMerchant {
         }
 
         @Override
-        public void notifyTrade(MerchantOffer merchantrecipe) {
+        public void notifyTrade(MerchantOffer merchantoffer) {
             // increase recipe's uses
-            merchantrecipe.increaseUses();
+            merchantoffer.increaseUses();
         }
 
         @Override
@@ -96,7 +96,7 @@ public class CraftMerchantCustom implements CraftMerchant {
         }
 
         @Override
-        public void overrideOffers(MerchantOffers merchantrecipelist) {
+        public void overrideOffers(MerchantOffers merchantoffers) {
         }
 
         @Override
@@ -105,8 +105,8 @@ public class CraftMerchantCustom implements CraftMerchant {
         }
 
         @Override
-        public boolean stillValid(Player entityhuman) {
-            return this.tradingPlayer == entityhuman;
+        public boolean stillValid(Player player) {
+            return this.tradingPlayer == player;
         }
     }
 }

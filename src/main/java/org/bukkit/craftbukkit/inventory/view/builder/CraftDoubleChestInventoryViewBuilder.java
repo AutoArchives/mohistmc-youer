@@ -4,8 +4,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.DoubleBlockCombiner;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import org.bukkit.inventory.InventoryView;
@@ -24,12 +24,12 @@ public class CraftDoubleChestInventoryViewBuilder<V extends InventoryView> exten
         }
 
         ChestBlock chest = (ChestBlock) Blocks.CHEST;
-        final DoubleBlockCombiner.NeighborCombineResult<? extends ChestBlockEntity> result = chest.combine(super.world.getBlockState(super.position), super.world, super.position, false);
-        if (result instanceof DoubleBlockCombiner.NeighborCombineResult.Single<? extends ChestBlockEntity>) {
+        final DoubleBlockCombiner.NeighborCombineResult<? extends ChestBlockEntity> neighborcombineresult = chest.combine(super.world.getBlockState(super.position), super.world, super.position, false);
+        if (neighborcombineresult instanceof DoubleBlockCombiner.NeighborCombineResult.Single<? extends ChestBlockEntity>) {
             return handle.create(player.nextContainerCounter(), player.getInventory());
         }
 
-        final MenuProvider combined = result.apply(ChestBlock.MENU_PROVIDER_COMBINER).orElse(null);
+        final MenuProvider combined = neighborcombineresult.apply(ChestBlock.MENU_PROVIDER_COMBINER).orElse(null);
         if (combined == null) {
             return handle.create(player.nextContainerCounter(), player.getInventory());
         }

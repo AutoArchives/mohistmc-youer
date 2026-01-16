@@ -4,10 +4,11 @@ import com.google.common.base.Preconditions;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.network.protocol.game.ClientboundSetHeldSlotPacket;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Inventory;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.EntityEquipment;
-import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 public class CraftInventoryPlayer extends CraftInventory implements org.bukkit.inventory.PlayerInventory, EntityEquipment {
@@ -16,13 +17,13 @@ public class CraftInventoryPlayer extends CraftInventory implements org.bukkit.i
     }
 
     @Override
-    public net.minecraft.world.entity.player.Inventory getInventory() {
-        return (net.minecraft.world.entity.player.Inventory) inventory;
+    public Inventory getInventory() {
+        return (Inventory) inventory;
     }
 
     @Override
     public int getSize() {
-        return net.minecraft.world.entity.player.Inventory.SLOT_OFFHAND + 1;
+        return Inventory.SLOT_OFFHAND + 1;
     }
 
     @Override
@@ -47,7 +48,7 @@ public class CraftInventoryPlayer extends CraftInventory implements org.bukkit.i
 
     @Override
     public ItemStack getItemInOffHand() {
-        return CraftItemStack.asCraftMirror(getInventory().getItem(net.minecraft.world.entity.player.Inventory.SLOT_OFFHAND));
+        return CraftItemStack.asCraftMirror(getInventory().getItem(Inventory.SLOT_OFFHAND));
     }
 
     @Override
@@ -106,7 +107,7 @@ public class CraftInventoryPlayer extends CraftInventory implements org.bukkit.i
         // to reverse the order of the index from 8. That means we need 0 to correspond to 8, 1 to correspond to 7,
         // 2 to correspond to 6, and 3 to correspond to 5. We do this simply by taking the result of (index - 36) and
         // subtracting that value from 8.
-        if (index < net.minecraft.world.entity.player.Inventory.getSelectionSize()) {
+        if (index < Inventory.getSelectionSize()) {
             index += 36;
         } else if (index > 39) {
             index += 5; // Off hand
@@ -117,7 +118,7 @@ public class CraftInventoryPlayer extends CraftInventory implements org.bukkit.i
     }
 
     @Override
-    public void setItem(EquipmentSlot slot, ItemStack item) {
+    public void setItem(org.bukkit.inventory.EquipmentSlot slot, ItemStack item) {
         Preconditions.checkArgument(slot != null, "slot must not be null");
 
         switch (slot) {
@@ -145,12 +146,12 @@ public class CraftInventoryPlayer extends CraftInventory implements org.bukkit.i
     }
 
     @Override
-    public void setItem(EquipmentSlot slot, ItemStack item, boolean silent) {
+    public void setItem(org.bukkit.inventory.EquipmentSlot slot, ItemStack item, boolean silent) {
         setItem(slot, item); // Silence doesn't apply to players
     }
 
     @Override
-    public ItemStack getItem(EquipmentSlot slot) {
+    public ItemStack getItem(org.bukkit.inventory.EquipmentSlot slot) {
         Preconditions.checkArgument(slot != null, "slot must not be null");
 
         switch (slot) {
@@ -178,34 +179,34 @@ public class CraftInventoryPlayer extends CraftInventory implements org.bukkit.i
 
     @Override
     public void setHeldItemSlot(int slot) {
-        Preconditions.checkArgument(slot >= 0 && slot < net.minecraft.world.entity.player.Inventory.getSelectionSize(), "Slot (%s) is not between 0 and %s inclusive", slot, PlayerInventory.getSelectionSize() - 1);
+        Preconditions.checkArgument(slot >= 0 && slot < Inventory.getSelectionSize(), "Slot (%s) is not between 0 and %s inclusive", slot, Inventory.getSelectionSize() - 1);
         this.getInventory().setSelectedSlot(slot);
         ((CraftPlayer) this.getHolder()).getHandle().connection.send(new ClientboundSetHeldSlotPacket(slot));
     }
 
     @Override
     public ItemStack getHelmet() {
-        return getItem(net.minecraft.world.entity.EquipmentSlot.HEAD.getIndex(net.minecraft.world.entity.player.Inventory.INVENTORY_SIZE));
+        return getItem(EquipmentSlot.HEAD.getIndex(Inventory.INVENTORY_SIZE));
     }
 
     @Override
     public ItemStack getChestplate() {
-        return getItem(net.minecraft.world.entity.EquipmentSlot.CHEST.getIndex(net.minecraft.world.entity.player.Inventory.INVENTORY_SIZE));
+        return getItem(EquipmentSlot.CHEST.getIndex(Inventory.INVENTORY_SIZE));
     }
 
     @Override
     public ItemStack getLeggings() {
-        return getItem(net.minecraft.world.entity.EquipmentSlot.LEGS.getIndex(net.minecraft.world.entity.player.Inventory.INVENTORY_SIZE));
+        return getItem(EquipmentSlot.LEGS.getIndex(Inventory.INVENTORY_SIZE));
     }
 
     @Override
     public ItemStack getBoots() {
-        return getItem(net.minecraft.world.entity.EquipmentSlot.FEET.getIndex(net.minecraft.world.entity.player.Inventory.INVENTORY_SIZE));
+        return getItem(EquipmentSlot.FEET.getIndex(Inventory.INVENTORY_SIZE));
     }
 
     @Override
     public void setHelmet(ItemStack helmet) {
-        setItem(net.minecraft.world.entity.EquipmentSlot.HEAD.getIndex(net.minecraft.world.entity.player.Inventory.INVENTORY_SIZE), helmet);
+        setItem(EquipmentSlot.HEAD.getIndex(Inventory.INVENTORY_SIZE), helmet);
     }
 
     @Override
@@ -215,7 +216,7 @@ public class CraftInventoryPlayer extends CraftInventory implements org.bukkit.i
 
     @Override
     public void setChestplate(ItemStack chestplate) {
-        setItem(net.minecraft.world.entity.EquipmentSlot.CHEST.getIndex(net.minecraft.world.entity.player.Inventory.INVENTORY_SIZE), chestplate);
+        setItem(EquipmentSlot.CHEST.getIndex(Inventory.INVENTORY_SIZE), chestplate);
     }
 
     @Override
@@ -225,7 +226,7 @@ public class CraftInventoryPlayer extends CraftInventory implements org.bukkit.i
 
     @Override
     public void setLeggings(ItemStack leggings) {
-        setItem(net.minecraft.world.entity.EquipmentSlot.LEGS.getIndex(net.minecraft.world.entity.player.Inventory.INVENTORY_SIZE), leggings);
+        setItem(EquipmentSlot.LEGS.getIndex(Inventory.INVENTORY_SIZE), leggings);
     }
 
     @Override
@@ -235,7 +236,7 @@ public class CraftInventoryPlayer extends CraftInventory implements org.bukkit.i
 
     @Override
     public void setBoots(ItemStack boots) {
-        setItem(net.minecraft.world.entity.EquipmentSlot.FEET.getIndex(net.minecraft.world.entity.player.Inventory.INVENTORY_SIZE), boots);
+        setItem(EquipmentSlot.FEET.getIndex(Inventory.INVENTORY_SIZE), boots);
     }
 
     @Override
@@ -265,12 +266,12 @@ public class CraftInventoryPlayer extends CraftInventory implements org.bukkit.i
 
     @Override
     public void setStorageContents(ItemStack[] items) throws IllegalArgumentException {
-        setSlots(items, 0, net.minecraft.world.entity.player.Inventory.INVENTORY_SIZE);
+        setSlots(items, 0, Inventory.INVENTORY_SIZE);
     }
 
     @Override
     public void setArmorContents(ItemStack[] items) {
-        setSlots(items, net.minecraft.world.entity.player.Inventory.INVENTORY_SIZE, net.minecraft.world.entity.player.Inventory.SLOT_OFFHAND - net.minecraft.world.entity.player.Inventory.INVENTORY_SIZE);
+        setSlots(items, Inventory.INVENTORY_SIZE, Inventory.SLOT_OFFHAND - Inventory.INVENTORY_SIZE);
     }
 
     @Override
@@ -280,7 +281,7 @@ public class CraftInventoryPlayer extends CraftInventory implements org.bukkit.i
 
     @Override
     public void setExtraContents(ItemStack[] items) {
-        setSlots(items, net.minecraft.world.entity.player.Inventory.SLOT_OFFHAND, 1);
+        setSlots(items, Inventory.SLOT_OFFHAND, 1);
     }
 
     @Override

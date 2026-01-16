@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.craftbukkit.inventory.ItemMetaKey;
@@ -49,7 +49,7 @@ public class CraftConsumableApplyEffects extends CraftConsumableEffect<ApplyStat
 
     @Override
     public List<PotionEffect> getEffects() {
-        List<MobEffect> mobEffectList = this.getHandle().effects();
+        List<MobEffectInstance> mobEffectList = this.getHandle().effects();
         return mobEffectList.stream().map(CraftPotionUtil::toBukkit).toList();
     }
 
@@ -60,7 +60,7 @@ public class CraftConsumableApplyEffects extends CraftConsumableEffect<ApplyStat
 
     @Override
     public PotionEffect addEffect(PotionEffect potionEffect) {
-        List<MobEffect> mobEffectList = this.getHandle().effects();
+        List<MobEffectInstance> mobEffectList = this.getHandle().effects();
         mobEffectList.add(CraftPotionUtil.fromBukkit(potionEffect));
         this.handle = new ApplyStatusEffectsConsumeEffect(mobEffectList, this.handle.probability());
         return potionEffect;

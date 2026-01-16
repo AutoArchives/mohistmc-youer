@@ -2,9 +2,9 @@ package org.bukkit.craftbukkit.ban;
 
 import java.time.Instant;
 import java.util.Date;
-import net.minecraft.server.players.UserBanListEntry;
-import net.minecraft.server.players.UserBanList;
 import net.minecraft.server.players.NameAndId;
+import net.minecraft.server.players.UserBanList;
+import net.minecraft.server.players.UserBanListEntry;
 import org.bukkit.BanEntry;
 import org.bukkit.craftbukkit.profile.CraftPlayerProfile;
 import org.bukkit.profile.PlayerProfile;

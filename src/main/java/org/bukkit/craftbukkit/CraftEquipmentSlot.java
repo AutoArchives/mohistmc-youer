@@ -43,6 +43,9 @@ public class CraftEquipmentSlot {
     }
 
     public static EquipmentSlot getHand(InteractionHand enumhand) {
+        if (enumhand == null) {
+            return null;
+        }
         return (enumhand == InteractionHand.MAIN_HAND) ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
     }
 

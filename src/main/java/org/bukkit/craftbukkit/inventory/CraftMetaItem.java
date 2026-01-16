@@ -55,6 +55,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Unit;
 import net.minecraft.world.entity.EquipmentSlotGroup;
@@ -341,7 +342,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     private static final Set<DataComponentType> HANDLED_TAGS = Sets.newHashSet();
     private static final CraftPersistentDataTypeRegistry DATA_TYPE_REGISTRY = new CraftPersistentDataTypeRegistry();
 
-    private Component customTag;
+    private CompoundTag customTag;
     protected DataComponentPatch.Builder unhandledTags = DataComponentPatch.builder();
     private Set<DataComponentType<?>> removedTags = Sets.newHashSet();
     private CraftPersistentDataContainer persistentDataContainer = new CraftPersistentDataContainer(DATA_TYPE_REGISTRY);
@@ -882,7 +883,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             ByteArrayInputStream buf = new ByteArrayInputStream(Base64.getDecoder().decode(unhandled));
             try {
                 CompoundTag unhandledTag = NbtIo.readCompressed(buf, NbtAccounter.unlimitedHeap());
-                DataComponentPatch unhandledPatch = DataComponentPatch.CODEC.parse(MinecraftServer.getDefaultRegistryAccess().createSerializationContext(DynamicOpsNBT.INSTANCE), unhandledTag).result().get();
+                DataComponentPatch unhandledPatch = DataComponentPatch.CODEC.parse(MinecraftServer.getDefaultRegistryAccess().createSerializationContext(NbtOps.INSTANCE), unhandledTag).result().get();
                 this.unhandledTags.copy(unhandledPatch);
 
                 for (Entry<DataComponentType<?>, Optional<?>> entry : unhandledPatch.entrySet()) {
@@ -945,7 +946,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         for (int i = 0; i < size; i++) {
             CompoundTag entry = mods.getCompoundOrEmpty(i);
             if (entry.isEmpty()) {
-                // entry is not an actual CompoundTag. getCompound returns empty CompoundTag in that case
+                // entry is not an actual NBTTagCompound. getCompound returns empty NBTTagCompound in that case
                 continue;
             }
             net.minecraft.world.entity.ai.attributes.AttributeModifier nmsModifier = entry.read(net.minecraft.world.entity.ai.attributes.AttributeModifier.MAP_CODEC).orElse(null);
@@ -1456,7 +1457,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             this.lore = null;
         } else {
             if (this.lore == null) {
-                this.lore = new ArrayList<IChatBaseComponent>(lore.size());
+                this.lore = new ArrayList<Component>(lore.size());
             } else {
                 this.lore.clear();
             }
@@ -1835,7 +1836,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
     @Override
     public ConsumableComponent getConsumable() {
-        return (this.hasConsumable()) ? new CraftConsumableComponent(this.consumable) : new CraftConsumableComponent(new Consumable(Consumable.DEFAULT_CONSUME_SECONDS, ItemUseAnimation.EAT, SoundEffects.GENERIC_EAT, true, List.of()));
+        return (this.hasConsumable()) ? new CraftConsumableComponent(this.consumable) : new CraftConsumableComponent(new Consumable(Consumable.DEFAULT_CONSUME_SECONDS, ItemUseAnimation.EAT, SoundEvents.GENERIC_EAT, true, List.of()));
     }
 
     @Override
@@ -1866,7 +1867,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
     @Override
     public BlocksAttacksComponent getBlocksAttacks() {
         return (this.hasBlocksAttacks()) ? new CraftBlocksAttacksComponent(this.blocksAttacks) : new CraftBlocksAttacksComponent(new BlocksAttacks(0.0F, 1.0F, Collections.emptyList(),
-                new net.minecraft.world.item.component.BlocksAttacks.b(0, 0, 0),
+                new net.minecraft.world.item.component.BlocksAttacks.ItemDamageFunction(0, 0, 0),
                 Optional.empty(), Optional.empty(), Optional.empty()));
     }
 
@@ -1897,7 +1898,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
 
     @Override
     public EquippableComponent getEquippable() {
-        return (this.hasEquippable()) ? new CraftEquippableComponent(this.equippable) : new CraftEquippableComponent(Equippable.builder(EnumItemSlot.HEAD).build());
+        return (this.hasEquippable()) ? new CraftEquippableComponent(this.equippable) : new CraftEquippableComponent(Equippable.builder(net.minecraft.world.entity.EquipmentSlot.HEAD).build());
     }
 
     @Override
@@ -2056,7 +2057,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         CraftMetaItem.Applicator tag = new CraftMetaItem.Applicator();
         applyToItem(tag);
         DataComponentPatch patch = tag.build();
-        net.minecraft.nbt.Tag nbt = DataComponentPatch.CODEC.encodeStart(MinecraftServer.getDefaultRegistryAccess().createSerializationContext(DynamicOpsNBT.INSTANCE), patch).getOrThrow();
+        net.minecraft.nbt.Tag nbt = DataComponentPatch.CODEC.encodeStart(MinecraftServer.getDefaultRegistryAccess().createSerializationContext(NbtOps.INSTANCE), patch).getOrThrow();
         return nbt.toString();
     }
 
@@ -2299,7 +2300,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         try {
             CraftMetaItem clone = (CraftMetaItem) super.clone();
             if (this.lore != null) {
-                clone.lore = new ArrayList<IChatBaseComponent>(this.lore);
+                clone.lore = new ArrayList<Component>(this.lore);
             }
             if (this.hasCustomModelDataComponent()) {
                 clone.customModelData = new CraftCustomModelDataComponent(customModelData);
@@ -2549,7 +2550,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
             builder.put(MINIMUM_ATTACK_CHARGE.BUKKIT, minimumAttackCharge);
         }
 
-        final Map<String, net.minecraft.nbt.Tag> internalTags = new HashMap<String, net.minecraft.nbt.Tag>();
+        final Map<String, net.minecraft.nbt.Tag> internalTags = new HashMap<>();
         serializeInternal(internalTags);
         if (!internalTags.isEmpty()) {
             CompoundTag internal = new CompoundTag();
@@ -2566,7 +2567,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
         }
 
         if (!unhandledTags.isEmpty()) {
-            net.minecraft.nbt.Tag unhandled = DataComponentPatch.CODEC.encodeStart(MinecraftServer.getDefaultRegistryAccess().createSerializationContext(DynamicOpsNBT.INSTANCE), unhandledTags.build()).getOrThrow(IllegalStateException::new);
+            net.minecraft.nbt.Tag unhandled = DataComponentPatch.CODEC.encodeStart(MinecraftServer.getDefaultRegistryAccess().createSerializationContext(NbtOps.INSTANCE), unhandledTags.build()).getOrThrow(IllegalStateException::new);
             try {
                 ByteArrayOutputStream buf = new ByteArrayOutputStream();
                 NbtIo.writeCompressed((CompoundTag) unhandled, buf);
@@ -2748,6 +2749,7 @@ class CraftMetaItem implements ItemMeta, Damageable, Repairable, BlockDataMeta {
                         CraftMetaMap.MAP_COLOR.TYPE,
                         CraftMetaMap.MAP_ID.TYPE,
                         CraftMetaPotion.POTION_CONTENTS.TYPE,
+                        CraftMetaPotion.POTION_DURATION_SCALE.TYPE,
                         CraftMetaShield.BASE_COLOR.TYPE,
                         CraftMetaSkull.SKULL_PROFILE.TYPE,
                         CraftMetaSkull.NOTE_BLOCK_SOUND.TYPE,

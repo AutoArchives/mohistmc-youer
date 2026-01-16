@@ -34,7 +34,7 @@ public class CraftChunkSnapshot implements ChunkSnapshot {
     private final long captureFulltime;
     private final PalettedContainerRO<Holder<net.minecraft.world.level.biome.Biome>>[] biome;
 
-    CraftChunkSnapshot(int x, int z, int minHeight, int maxHeight, int seaLevel, String wname, long wtime, PalettedContainer<net.minecraft.world.level.block.state.BlockState>[] sectionBlockIDs, byte[][] sectionSkyLights, byte[][] sectionEmitLights, boolean[] sectionEmpty, Heightmap hmap, PalettedContainerRO<Holder<net.minecraft.world.level.biome.Biome>>[] biome) {
+    CraftChunkSnapshot(int x, int z, int minHeight, int maxHeight, int seaLevel, String wname, long wtime, PalettedContainer<BlockState>[] sectionBlockIDs, byte[][] sectionSkyLights, byte[][] sectionEmitLights, boolean[] sectionEmpty, Heightmap hmap, PalettedContainerRO<Holder<net.minecraft.world.level.biome.Biome>>[] biome) {
         this.x = x;
         this.z = z;
         this.minHeight = minHeight;
@@ -69,8 +69,8 @@ public class CraftChunkSnapshot implements ChunkSnapshot {
     public boolean contains(BlockData block) {
         Preconditions.checkArgument(block != null, "Block cannot be null");
 
-        Predicate<net.minecraft.world.level.block.state.BlockState> nms = Predicates.equalTo(((CraftBlockData) block).getState());
-        for (PalettedContainer<net.minecraft.world.level.block.state.BlockState> palette : blockids) {
+        Predicate<BlockState> nms = Predicates.equalTo(((CraftBlockData) block).getState());
+        for (PalettedContainer<BlockState> palette : blockids) {
             if (palette.maybeHas(nms)) {
                 return true;
             }

@@ -16,8 +16,8 @@ public abstract class CraftProjectile extends CraftEntity implements Projectile 
 
     @Override
     public void setShooter(ProjectileSource shooter) {
-        if (shooter instanceof CraftLivingEntity craftLivingEntity) {
-            getHandle().setOwner(craftLivingEntity.entity);
+        if (shooter instanceof CraftEntity) {
+            getHandle().setOwner(((CraftEntity) shooter).entity);
         } else {
             getHandle().setOwner(null);
         }

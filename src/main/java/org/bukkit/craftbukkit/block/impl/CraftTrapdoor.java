@@ -3,13 +3,13 @@
  */
 package org.bukkit.craftbukkit.block.impl;
 
-public final class CraftTrapdoor extends org.bukkit.craftbukkit.block.data.CraftBlockData implements org.bukkit.block.data.type.TrapDoor, org.bukkit.block.data.Bisected, org.bukkit.block.data.Directional, org.bukkit.block.data.Openable, org.bukkit.block.data.Powerable, org.bukkit.block.data.Waterlogged {
+public final class CraftTrapDoor extends org.bukkit.craftbukkit.block.data.CraftBlockData implements org.bukkit.block.data.type.TrapDoor, org.bukkit.block.data.Bisected, org.bukkit.block.data.Directional, org.bukkit.block.data.Openable, org.bukkit.block.data.Powerable, org.bukkit.block.data.Waterlogged {
 
-    public CraftTrapdoor() {
+    public CraftTrapDoor() {
         super();
     }
 
-    public CraftTrapdoor(net.minecraft.world.level.block.state.BlockState state) {
+    public CraftTrapDoor(net.minecraft.world.level.block.state.BlockState state) {
         super(state);
     }
 

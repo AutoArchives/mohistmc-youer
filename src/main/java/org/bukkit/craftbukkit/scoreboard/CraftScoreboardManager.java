@@ -41,6 +41,7 @@ public final class CraftScoreboardManager implements ScoreboardManager {
 
     @Override
     public CraftScoreboard getNewScoreboard() {
+        org.spigotmc.AsyncCatcher.catchOp("scoreboard creation"); // Spigot
         CraftScoreboard scoreboard = new CraftScoreboard(new ServerScoreboard(server));
         scoreboards.add(scoreboard);
         return scoreboard;
@@ -59,7 +60,7 @@ public final class CraftScoreboardManager implements ScoreboardManager {
         CraftScoreboard scoreboard = (CraftScoreboard) bukkitScoreboard;
         net.minecraft.world.scores.Scoreboard oldboard = getPlayerBoard(player).getHandle();
         net.minecraft.world.scores.Scoreboard newboard = scoreboard.getHandle();
-        ServerPlayer entityplayer = player.getHandle();
+        ServerPlayer serverplayer = player.getHandle();
 
         if (oldboard == newboard) {
             return;
@@ -74,18 +75,18 @@ public final class CraftScoreboardManager implements ScoreboardManager {
         // Old objective tracking
         HashSet<Objective> removed = new HashSet<>();
         for (int i = 0; i < 3; ++i) {
-            Objective scoreboardobjective = oldboard.getDisplayObjective(net.minecraft.world.scores.DisplaySlot.BY_ID.apply(i));
-            if (scoreboardobjective != null && !removed.contains(scoreboardobjective)) {
-                entityplayer.connection.send(new ClientboundSetObjectivePacket(scoreboardobjective, 1));
-                removed.add(scoreboardobjective);
+            Objective objective = oldboard.getDisplayObjective(net.minecraft.world.scores.DisplaySlot.BY_ID.apply(i));
+            if (objective != null && !removed.contains(objective)) {
+                serverplayer.connection.send(new ClientboundSetObjectivePacket(objective, 1));
+                removed.add(objective);
             }
         }
 
         // Old team tracking
         Iterator<?> iterator = oldboard.getPlayerTeams().iterator();
         while (iterator.hasNext()) {
-            PlayerTeam scoreboardteam = (PlayerTeam) iterator.next();
-            entityplayer.connection.send(ClientboundSetPlayerTeamPacket.createRemovePacket(scoreboardteam));
+            PlayerTeam playerteam = (PlayerTeam) iterator.next();
+            serverplayer.connection.send(ClientboundSetPlayerTeamPacket.createRemovePacket(playerteam));
         }
 
         // The above is the reverse of the below method.

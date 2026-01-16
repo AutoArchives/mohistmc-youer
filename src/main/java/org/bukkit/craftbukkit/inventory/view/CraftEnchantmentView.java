@@ -2,7 +2,7 @@ package org.bukkit.craftbukkit.inventory.view;
 
 import com.google.common.base.Preconditions;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
+import net.minecraft.core.IdMap;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.EnchantmentMenu;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -29,10 +29,10 @@ public class CraftEnchantmentView extends CraftInventoryView<EnchantmentMenu, En
     @NotNull
     @Override
     public EnchantmentOffer[] getOffers() {
-        Registry<Holder<Enchantment>> registry = CraftRegistry.getMinecraftRegistry().lookupOrThrow(Registries.ENCHANTMENT).asHolderIdMap();
+        IdMap<Holder<Enchantment>> idmap = CraftRegistry.getMinecraftRegistry().lookupOrThrow(Registries.ENCHANTMENT).asHolderIdMap();
         EnchantmentOffer[] offers = new EnchantmentOffer[3];
         for (int i = 0; i < 3; i++) {
-            org.bukkit.enchantments.Enchantment enchantment = (container.enchantClue[i] >= 0) ? CraftEnchantment.minecraftHolderToBukkit(registry.byId(container.enchantClue[i])) : null;
+            org.bukkit.enchantments.Enchantment enchantment = (container.enchantClue[i] >= 0) ? CraftEnchantment.minecraftHolderToBukkit(idmap.byId(container.enchantClue[i])) : null;
             offers[i] = (enchantment != null) ? new EnchantmentOffer(enchantment, container.levelClue[i], container.costs[i]) : null;
         }
         return offers;
@@ -41,7 +41,7 @@ public class CraftEnchantmentView extends CraftInventoryView<EnchantmentMenu, En
     @Override
     public void setOffers(@NotNull final EnchantmentOffer[] offers) {
         Preconditions.checkArgument(offers.length != 3, "There must be 3 offers given");
-        Registry<Holder<Enchantment>> registry = CraftRegistry.getMinecraftRegistry().lookupOrThrow(Registries.ENCHANTMENT).asHolderIdMap();
+        IdMap<Holder<Enchantment>> idmap = CraftRegistry.getMinecraftRegistry().lookupOrThrow(Registries.ENCHANTMENT).asHolderIdMap();
         for (int i = 0; i < offers.length; i++) {
             final EnchantmentOffer offer = offers[i];
             if (offer == null) {
@@ -51,7 +51,7 @@ public class CraftEnchantmentView extends CraftInventoryView<EnchantmentMenu, En
                 continue;
             }
 
-            container.enchantClue[i] = registry.getIdOrThrow(CraftEnchantment.bukkitToMinecraftHolder(offer.getEnchantment()));
+            container.enchantClue[i] = idmap.getIdOrThrow(CraftEnchantment.bukkitToMinecraftHolder(offer.getEnchantment()));
             container.levelClue[i] = offer.getEnchantmentLevel();
             container.costs[i] = offer.getCost();
         }

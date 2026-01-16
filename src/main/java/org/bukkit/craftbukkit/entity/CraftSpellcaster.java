@@ -34,8 +34,8 @@ public class CraftSpellcaster extends CraftIllager implements Spellcaster {
         getHandle().setIsCastingSpell(toNMSSpell(spell));
     }
 
-    public static Spell toBukkitSpell(SpellcasterIllager.IllagerSpell spell) {
-        return Spell.valueOf(spell.name());
+    public static Spell toBukkitSpell(SpellcasterIllager.IllagerSpell illagerspell) {
+        return Spell.valueOf(illagerspell.name());
     }
 
     public static SpellcasterIllager.IllagerSpell toNMSSpell(Spell spell) {

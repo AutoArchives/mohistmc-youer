@@ -70,7 +70,6 @@ public interface Skeleton extends AbstractSkeleton {
         /**
          * Parched skeleton.
          */
-        PARCHED,
-        FORGE_MODS
+        PARCHED;
     }
 }

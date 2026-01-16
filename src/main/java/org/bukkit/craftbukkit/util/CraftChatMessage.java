@@ -28,7 +28,6 @@ import net.minecraft.network.chat.TextColor;
 import net.minecraft.network.chat.contents.PlainTextContents;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Util;
 import org.bukkit.ChatColor;
 
@@ -44,6 +43,12 @@ public final class CraftChatMessage {
         }
         formatMap = builder.build();
     }
+
+    // Spigot start
+    public static net.md_5.bungee.chat.VersionedComponentSerializer getBungee() {
+        return net.md_5.bungee.chat.VersionedComponentSerializer.forVersion(net.md_5.bungee.chat.ChatVersion.V1_21_5);
+    }
+    // Spigot end
 
     public static ChatFormatting getColor(ChatColor color) {
         return formatMap.get(color.getChar());
@@ -418,12 +423,12 @@ public final class CraftChatMessage {
             return (MutableComponent) ComponentSerialization.CODEC.parse(holderlookup_a.createSerializationContext(JsonOps.INSTANCE), jsonelement).getOrThrow(JsonParseException::new);
         }
 
-        private static JsonElement serialize(Component ichatbasecomponent, HolderLookup.Provider holderlookup_a) {
-            return ComponentSerialization.CODEC.encodeStart(holderlookup_a.createSerializationContext(JsonOps.INSTANCE), ichatbasecomponent).getOrThrow(JsonParseException::new);
+        private static JsonElement serialize(Component component, HolderLookup.Provider holderlookup_a) {
+            return ComponentSerialization.CODEC.encodeStart(holderlookup_a.createSerializationContext(JsonOps.INSTANCE), component).getOrThrow(JsonParseException::new);
         }
 
-        public static String toJson(Component ichatbasecomponent, HolderLookup.Provider holderlookup_a) {
-            return GSON.toJson(serialize(ichatbasecomponent, holderlookup_a));
+        public static String toJson(Component component, HolderLookup.Provider holderlookup_a) {
+            return GSON.toJson(serialize(component, holderlookup_a));
         }
 
         @Nullable

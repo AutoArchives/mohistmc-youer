@@ -70,7 +70,7 @@ public class DummyGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public void scheduleTick(BlockPos blockposition, Block block, int i) {
+    public void scheduleTick(BlockPos blockpos, Block block, int i) {
         // Used by BlockComposter
     }
 
@@ -85,7 +85,7 @@ public class DummyGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public DifficultyInstance getCurrentDifficultyAt(BlockPos blockposition) {
+    public DifficultyInstance getCurrentDifficultyAt(BlockPos blockpos) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -105,22 +105,22 @@ public class DummyGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public void playSound(Entity entity, BlockPos blockposition, SoundEvent soundeffect, SoundSource soundcategory, float f, float f1) {
+    public void playSound(Entity entity, BlockPos blockpos, SoundEvent soundevent, SoundSource soundsource, float f, float f1) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public void addParticle(ParticleOptions particleparam, double d0, double d1, double d2, double d3, double d4, double d5) {
+    public void addParticle(ParticleOptions particleoptions, double d0, double d1, double d2, double d3, double d4, double d5) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public void levelEvent(Entity entity, int i, BlockPos blockposition, int j) {
+    public void levelEvent(Entity entity, int i, BlockPos blockpos, int j) {
         // Used by PowderSnowBlock.removeFluid
     }
 
     @Override
-    public void gameEvent(Holder<GameEvent> gameevent, Vec3 vec3d, GameEvent.Context gameevent_a) {
+    public void gameEvent(Holder<GameEvent> gameevent, Vec3 vec3, GameEvent.Context gameevent_a) {
         // Used by BlockComposter
     }
 
@@ -145,7 +145,7 @@ public class DummyGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public int getHeight(Heightmap.Types type, int i, int i1) {
+    public int getHeight(Heightmap.Types types, int i, int i1) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -200,17 +200,17 @@ public class DummyGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public BlockEntity getBlockEntity(BlockPos blockposition) {
+    public BlockEntity getBlockEntity(BlockPos blockpos) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public BlockState getBlockState(BlockPos blockposition) {
+    public BlockState getBlockState(BlockPos blockpos) {
         return Blocks.AIR.defaultBlockState(); // SPIGOT-6515
     }
 
     @Override
-    public FluidState getFluidState(BlockPos blockposition) {
+    public FluidState getFluidState(BlockPos blockpos) {
         return Fluids.EMPTY.defaultFluidState(); // SPIGOT-6634
     }
 
@@ -230,17 +230,17 @@ public class DummyGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
-    public boolean setBlock(BlockPos blockposition, BlockState iblockdata, int i, int j) {
+    public boolean setBlock(BlockPos blockpos, BlockState blockstate, int i, int j) {
         return false;
     }
 
     @Override
-    public boolean removeBlock(BlockPos blockposition, boolean flag) {
+    public boolean removeBlock(BlockPos blockpos, boolean flag) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public boolean destroyBlock(BlockPos blockposition, boolean flag, Entity entity, int i) {
+    public boolean destroyBlock(BlockPos blockpos, boolean flag, Entity entity, int i) {
         return false; // SPIGOT-6515
     }
 

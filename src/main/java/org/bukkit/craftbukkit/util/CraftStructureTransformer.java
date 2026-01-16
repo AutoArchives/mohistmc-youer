@@ -63,18 +63,18 @@ public class CraftStructureTransformer {
     private BlockTransformer[] blockTransformers;
     private EntityTransformer[] entityTransformers;
 
-    public CraftStructureTransformer(Cause cause, WorldGenLevel generatoraccessseed, StructureManager structuremanager, Structure structure, BoundingBox structureboundingbox, ChunkPos chunkcoordintpair) {
-        AsyncStructureGenerateEvent event = new AsyncStructureGenerateEvent(structuremanager.level.getMinecraftWorld().getWorld(), !Bukkit.isPrimaryThread(), cause, CraftStructure.minecraftToBukkit(structure), new org.bukkit.util.BoundingBox(structureboundingbox.minX(), structureboundingbox.minY(), structureboundingbox.minZ(), structureboundingbox.maxX(), structureboundingbox.maxY(), structureboundingbox.maxZ()), chunkcoordintpair.x, chunkcoordintpair.z);
+    public CraftStructureTransformer(Cause cause, WorldGenLevel worldgenlevel, StructureManager structuremanager, Structure structure, BoundingBox boundingbox, ChunkPos chunkpos) {
+        AsyncStructureGenerateEvent event = new AsyncStructureGenerateEvent(structuremanager.level.getMinecraftWorld().getWorld(), !Bukkit.isPrimaryThread(), cause, CraftStructure.minecraftToBukkit(structure), new org.bukkit.util.BoundingBox(boundingbox.minX(), boundingbox.minY(), boundingbox.minZ(), boundingbox.maxX(), boundingbox.maxY(), boundingbox.maxZ()), chunkpos.x, chunkpos.z);
         Bukkit.getPluginManager().callEvent(event);
         this.blockTransformers = event.getBlockTransformers().values().toArray(BlockTransformer[]::new);
         this.entityTransformers = event.getEntityTransformers().values().toArray(EntityTransformer[]::new);
-        this.limitedRegion = new CraftLimitedRegion(generatoraccessseed, chunkcoordintpair);
+        this.limitedRegion = new CraftLimitedRegion(worldgenlevel, chunkpos);
     }
 
-    public CraftStructureTransformer(WorldGenLevel generatoraccessseed, ChunkPos chunkcoordintpair, Collection<BlockTransformer> blockTransformers, Collection<EntityTransformer> entityTransformers) {
+    public CraftStructureTransformer(WorldGenLevel worldgenlevel, ChunkPos chunkpos, Collection<BlockTransformer> blockTransformers, Collection<EntityTransformer> entityTransformers) {
         this.blockTransformers = blockTransformers.toArray(BlockTransformer[]::new);
         this.entityTransformers = entityTransformers.toArray(EntityTransformer[]::new);
-        this.limitedRegion = new CraftLimitedRegion(generatoraccessseed, chunkcoordintpair);
+        this.limitedRegion = new CraftLimitedRegion(worldgenlevel, chunkpos);
     }
 
     public boolean transformEntity(Entity entity) {

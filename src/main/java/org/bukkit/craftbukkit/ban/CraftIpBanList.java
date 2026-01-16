@@ -8,8 +8,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Set;
-import net.minecraft.server.players.IpBanListEntry;
 import net.minecraft.server.players.IpBanList;
+import net.minecraft.server.players.IpBanListEntry;
 import org.bukkit.BanEntry;
 
 public class CraftIpBanList implements org.bukkit.ban.IpBanList {

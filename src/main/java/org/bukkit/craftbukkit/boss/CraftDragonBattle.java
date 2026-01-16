@@ -29,7 +29,7 @@ public class CraftDragonBattle implements DragonBattle {
 
     @Override
     public EnderDragon getEnderDragon() {
-        Entity entity = handle.level.getEntity(handle.getDragonUUID());
+        Entity entity = handle.level.getEntity(handle.dragonUUID);
         return (entity != null) ? (EnderDragon) entity.getBukkitEntity() : null;
     }
 
@@ -77,8 +77,8 @@ public class CraftDragonBattle implements DragonBattle {
         if (hasBeenPreviouslyKilled() && getRespawnPhase() == RespawnPhase.NONE) {
             // Copy from EnderDragonBattle#tryRespawn for generate exit portal if not exists
             if (this.handle.portalLocation == null) {
-                BlockPattern.BlockPatternMatch shapedetector_shapedetectorcollection = this.handle.findExitPortal();
-                if (shapedetector_shapedetectorcollection == null) {
+                BlockPattern.BlockPatternMatch blockpattern_shapedetectorcollection = this.handle.findExitPortal();
+                if (blockpattern_shapedetectorcollection == null) {
                     this.handle.spawnExitPortal(true);
                 }
             }
@@ -93,8 +93,7 @@ public class CraftDragonBattle implements DragonBattle {
                 return !((CraftWorld) world).getHandle().equals(handle.level);
             });
 
-            this.handle.respawnDragon(list.stream().map(enderCrystal -> ((CraftEnderCrystal) enderCrystal).getHandle()).collect(Collectors.toList()));
-            return this.handle.respawnDragonBoolean();
+            return this.handle.respawnDragon(list.stream().map(enderCrystal -> ((CraftEnderCrystal) enderCrystal).getHandle()).collect(Collectors.toList()));
         }
         return false;
     }

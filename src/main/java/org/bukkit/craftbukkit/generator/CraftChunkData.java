@@ -41,7 +41,7 @@ public final class CraftChunkData implements ChunkGenerator.ChunkData {
     public ChunkAccess getHandle() {
         ChunkAccess access = weakChunk.get();
 
-        Preconditions.checkState(access != null, "ChunkAccess no longer present, are you using it in a different tick?");
+        Preconditions.checkState(access != null, "IChunkAccess no longer present, are you using it in a different tick?");
 
         return access;
     }

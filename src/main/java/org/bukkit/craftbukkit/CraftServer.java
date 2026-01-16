@@ -268,6 +268,8 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.error.MarkedYAMLException;
 
+import net.md_5.bungee.api.chat.BaseComponent; // Spigot
+
 public final class CraftServer implements Server {
     private final String serverName = "CraftBukkit";
     private final String serverVersion;
@@ -493,8 +495,11 @@ public final class CraftServer implements Server {
         }
 
         if (type == PluginLoadOrder.POSTWORLD) {
+            // Spigot start - Allow vanilla commands to be forced to be the main command
+            setVanillaCommands(true);
             commandMap.setFallbackCommands();
-            setVanillaCommands();
+            setVanillaCommands(false);
+            // Spigot end
             commandMap.registerServerAliases();
             DefaultPermissions.registerCorePermissions();
             CraftDefaultPermissions.registerCorePermissions();
@@ -508,12 +513,21 @@ public final class CraftServer implements Server {
         pluginManager.disablePlugins();
     }
 
-    private void setVanillaCommands() {
+    private void setVanillaCommands(boolean first) { // Spigot
         Commands dispatcher = console.vanillaCommandDispatcher;
 
         // Build a list of all Vanilla commands and create wrappers
         for (CommandNode<CommandSourceStack> cmd : dispatcher.getDispatcher().getRoot().getChildren()) {
-            commandMap.register("minecraft", new VanillaCommandWrapper(dispatcher, cmd));
+            // Spigot start
+            VanillaCommandWrapper wrapper = new VanillaCommandWrapper(dispatcher, cmd);
+            if (org.spigotmc.SpigotConfig.replaceCommands.contains( wrapper.getName() ) ) {
+                if (first) {
+                    commandMap.register("minecraft", wrapper);
+                }
+            } else if (!first) {
+                commandMap.register("minecraft", wrapper);
+            }
+            // Spigot end
         }
     }
 
@@ -810,7 +824,13 @@ public final class CraftServer implements Server {
 
     @Override
     public long getConnectionThrottle() {
-        return this.configuration.getInt("settings.connection-throttle");
+        // Spigot Start - Automatically set connection throttle for bungee configurations
+        if (org.spigotmc.SpigotConfig.bungee) {
+            return -1;
+        } else {
+            return this.configuration.getInt("settings.connection-throttle");
+        }
+        // Spigot End
     }
 
     @Override
@@ -905,16 +925,17 @@ public final class CraftServer implements Server {
     public boolean dispatchCommand(CommandSender sender, String commandLine) {
         Preconditions.checkArgument(sender != null, "sender cannot be null");
         Preconditions.checkArgument(commandLine != null, "commandLine cannot be null");
+        org.spigotmc.AsyncCatcher.catchOp("command dispatch"); // Spigot
 
         if (commandMap.dispatch(sender, commandLine)) {
             return true;
         }
 
-        if (sender instanceof Player) {
-            sender.sendMessage("Unknown command. Type \"/help\" for help.");
-        } else {
-            sender.sendMessage("Unknown command. Type \"help\" for help.");
+        // Spigot start
+        if (!org.spigotmc.SpigotConfig.unknownCommandMessage.isEmpty()) {
+            sender.sendMessage(org.spigotmc.SpigotConfig.unknownCommandMessage);
         }
+        // Spigot end
 
         return false;
     }
@@ -949,6 +970,7 @@ public final class CraftServer implements Server {
             logger.log(Level.WARNING, "Failed to load banned-players.json, " + ex.getMessage());
         }
 
+        org.spigotmc.SpigotConfig.init((File) console.options.valueOf("spigot-settings")); // Spigot
         for (ServerLevel world : console.getAllLevels()) {
             world.serverLevelData.setDifficulty(config.difficulty.get());
 
@@ -962,11 +984,13 @@ public final class CraftServer implements Server {
                     }
                 }
             }
+            world.spigotConfig.init(); // Spigot
         }
 
         pluginManager.clearPlugins();
         commandMap.clearCommands();
         reloadData();
+        org.spigotmc.SpigotConfig.registerCommands(); // Spigot
         overrideAllCommandBlockCommands = commandsConfiguration.getStringList("command-block-overrides").contains("*");
         ignoreVanillaPermissions = commandsConfiguration.getBoolean("ignore-vanilla-permissions");
 
@@ -1132,35 +1156,35 @@ public final class CraftServer implements Server {
 
         Dynamic<?> dynamic;
         if (worldSession.hasWorldData()) {
-            net.minecraft.world.level.storage.LevelSummary worldinfo;
+            net.minecraft.world.level.storage.LevelSummary levelsummary;
 
             try {
                 dynamic = worldSession.getDataTag();
-                worldinfo = worldSession.getSummary(dynamic);
+                levelsummary = worldSession.getSummary(dynamic);
             } catch (NbtException | ReportedNbtException | IOException ioexception) {
-                LevelStorageSource.LevelDirectory convertable_b = worldSession.getLevelDirectory();
+                LevelStorageSource.LevelDirectory levelstoragesource_leveldirectory = worldSession.getLevelDirectory();
 
-                MinecraftServer.LOGGER.warn("Failed to load world data from {}", convertable_b.dataFile(), ioexception);
+                MinecraftServer.LOGGER.warn("Failed to load world data from {}", levelstoragesource_leveldirectory.dataFile(), ioexception);
                 MinecraftServer.LOGGER.info("Attempting to use fallback");
 
                 try {
                     dynamic = worldSession.getDataTagFallback();
-                    worldinfo = worldSession.getSummary(dynamic);
+                    levelsummary = worldSession.getSummary(dynamic);
                 } catch (NbtException | ReportedNbtException | IOException ioexception1) {
-                    MinecraftServer.LOGGER.error("Failed to load world data from {}", convertable_b.oldDataFile(), ioexception1);
-                    MinecraftServer.LOGGER.error("Failed to load world data from {} and {}. World files may be corrupted. Shutting down.", convertable_b.dataFile(), convertable_b.oldDataFile());
+                    MinecraftServer.LOGGER.error("Failed to load world data from {}", levelstoragesource_leveldirectory.oldDataFile(), ioexception1);
+                    MinecraftServer.LOGGER.error("Failed to load world data from {} and {}. World files may be corrupted. Shutting down.", levelstoragesource_leveldirectory.dataFile(), levelstoragesource_leveldirectory.oldDataFile());
                     return null;
                 }
 
                 worldSession.restoreLevelDataFromOld();
             }
 
-            if (worldinfo.requiresManualConversion()) {
+            if (levelsummary.requiresManualConversion()) {
                 MinecraftServer.LOGGER.info("This world must be opened in an older version (like 1.6.4) to be safely converted");
                 return null;
             }
 
-            if (!worldinfo.isCompatible()) {
+            if (!levelsummary.isCompatible()) {
                 MinecraftServer.LOGGER.info("This world was created by an incompatible version.");
                 return null;
             }
@@ -1170,45 +1194,45 @@ public final class CraftServer implements Server {
 
         boolean hardcore = creator.hardcore();
 
-        PrimaryLevelData worlddata;
-        WorldLoader.DataLoadContext worldloader_a = console.worldLoader;
-        RegistryAccess.Frozen iregistrycustom_dimension = worldloader_a.datapackDimensions();
-        net.minecraft.core.Registry<LevelStem> iregistry = iregistrycustom_dimension.lookupOrThrow(Registries.LEVEL_STEM);
+        PrimaryLevelData serverleveldata;
+        WorldLoader.DataLoadContext worldloader_dataloadcontext = console.worldLoader;
+        RegistryAccess.Frozen registryaccess_frozen = worldloader_dataloadcontext.datapackDimensions();
+        net.minecraft.core.Registry<LevelStem> registry = registryaccess_frozen.lookupOrThrow(Registries.LEVEL_STEM);
         if (dynamic != null) {
-            LevelDataAndDimensions leveldataanddimensions = LevelStorageSource.getLevelDataAndDimensions(dynamic, worldloader_a.dataConfiguration(), iregistry, worldloader_a.datapackWorldgen());
+            LevelDataAndDimensions leveldataanddimensions = LevelStorageSource.getLevelDataAndDimensions(dynamic, worldloader_dataloadcontext.dataConfiguration(), registry, worldloader_dataloadcontext.datapackWorldgen());
 
-            worlddata = (PrimaryLevelData) leveldataanddimensions.worldData();
-            iregistrycustom_dimension = leveldataanddimensions.dimensions().dimensionsRegistryAccess();
+            serverleveldata = (PrimaryLevelData) leveldataanddimensions.worldData();
+            registryaccess_frozen = leveldataanddimensions.dimensions().dimensionsRegistryAccess();
         } else {
-            LevelSettings worldsettings;
+            LevelSettings levelsettings;
             WorldOptions worldoptions = new WorldOptions(creator.seed(), creator.generateStructures(), false);
             WorldDimensions worlddimensions;
 
             DedicatedServerProperties.WorldDimensionData properties = new DedicatedServerProperties.WorldDimensionData(GsonHelper.parse((creator.generatorSettings().isEmpty()) ? "{}" : creator.generatorSettings()), creator.type().name().toLowerCase(Locale.ROOT));
 
-            worldsettings = new LevelSettings(name, GameType.byId(getDefaultGameMode().getValue()), hardcore, Difficulty.EASY, false, new GameRules(worldloader_a.dataConfiguration().enabledFeatures()), worldloader_a.dataConfiguration());
-            worlddimensions = properties.create(worldloader_a.datapackWorldgen());
+            levelsettings = new LevelSettings(name, GameType.byId(getDefaultGameMode().getValue()), hardcore, Difficulty.EASY, false, new GameRules(worldloader_dataloadcontext.dataConfiguration().enabledFeatures()), worldloader_dataloadcontext.dataConfiguration());
+            worlddimensions = properties.create(worldloader_dataloadcontext.datapackWorldgen());
 
-            WorldDimensions.Complete worlddimensions_b = worlddimensions.bake(iregistry);
-            Lifecycle lifecycle = worlddimensions_b.lifecycle().add(worldloader_a.datapackWorldgen().allRegistriesLifecycle());
+            WorldDimensions.Complete worlddimensions_complete = worlddimensions.bake(registry);
+            Lifecycle lifecycle = worlddimensions_complete.lifecycle().add(worldloader_dataloadcontext.datapackWorldgen().allRegistriesLifecycle());
 
-            worlddata = new PrimaryLevelData(worldsettings, worldoptions, worlddimensions_b.specialWorldProperty(), lifecycle);
-            iregistrycustom_dimension = worlddimensions_b.dimensionsRegistryAccess();
+            serverleveldata = new PrimaryLevelData(levelsettings, worldoptions, worlddimensions_complete.specialWorldProperty(), lifecycle);
+            registryaccess_frozen = worlddimensions_complete.dimensionsRegistryAccess();
         }
-        iregistry = iregistrycustom_dimension.lookupOrThrow(Registries.LEVEL_STEM);
-        worlddata.customDimensions = iregistry;
-        worlddata.checkName(name);
-        worlddata.setModdedInfo(console.getServerModName(), console.getModdedStatus().shouldReportAsModified());
+        registry = registryaccess_frozen.lookupOrThrow(Registries.LEVEL_STEM);
+        serverleveldata.customDimensions = registry;
+        serverleveldata.checkName(name);
+        serverleveldata.setModdedInfo(console.getServerModName(), console.getModdedStatus().shouldReportAsModified());
 
         if (console.options.has("forceUpgrade")) {
-            net.minecraft.server.Main.forceUpgrade(worldSession, worlddata, DataFixers.getDataFixer(), console.options.has("eraseCache"), () -> true, iregistrycustom_dimension, console.options.has("recreateRegionFiles"));
+            net.minecraft.server.Main.forceUpgrade(worldSession, serverleveldata, DataFixers.getDataFixer(), console.options.has("eraseCache"), () -> true, registryaccess_frozen, console.options.has("recreateRegionFiles"));
         }
 
         long j = BiomeManager.obfuscateSeed(creator.seed());
-        List<CustomSpawner> list = ImmutableList.of(new PhantomSpawner(), new PatrolSpawner(), new CatSpawner(), new VillageSiege(), new WanderingTraderSpawner(worlddata));
-        LevelStem worlddimension = iregistry.getValue(actualDimension);
+        List<CustomSpawner> list = ImmutableList.of(new PhantomSpawner(), new PatrolSpawner(), new CatSpawner(), new VillageSiege(), new WanderingTraderSpawner(serverleveldata));
+        LevelStem levelstem = registry.getValue(actualDimension);
 
-        WorldInfo worldInfo = new CraftWorldInfo(worlddata, worldSession, creator.environment(), worlddimension.type().value());
+        WorldInfo worldInfo = new CraftWorldInfo(serverleveldata, worldSession, creator.environment(), levelstem.type().value());
         if (biomeProvider == null && generator != null) {
             biomeProvider = generator.getDefaultBiomeProvider(worldInfo);
         }
@@ -1223,14 +1247,14 @@ public final class CraftServer implements Server {
             worldKey = ResourceKey.create(Registries.DIMENSION, Identifier.withDefaultNamespace(name.toLowerCase(Locale.ROOT)));
         }
 
-        ServerLevel internal = (ServerLevel) new ServerLevel(console, console.executor, worldSession, worlddata, worldKey, worlddimension,
-                worlddata.isDebugWorld(), j, creator.environment() == Environment.NORMAL ? list : ImmutableList.of(), true, console.overworld().getRandomSequences(), creator.environment(), generator, biomeProvider);
+        ServerLevel internal = (ServerLevel) new ServerLevel(console, console.executor, worldSession, serverleveldata, worldKey, levelstem,
+                serverleveldata.isDebugWorld(), j, creator.environment() == Environment.NORMAL ? list : ImmutableList.of(), true, console.overworld().getRandomSequences(), creator.environment(), generator, biomeProvider);
 
         if (!(worlds.containsKey(name.toLowerCase(Locale.ROOT)))) {
             return null;
         }
 
-        console.initWorld(internal, worlddata, worlddata, worlddata.worldGenOptions());
+        console.initWorld(internal, serverleveldata, serverleveldata, serverleveldata.worldGenOptions());
 
         internal.setSpawnSettings(true);
         console.addLevel(internal);
@@ -1416,23 +1440,24 @@ public final class CraftServer implements Server {
 
     private CraftingContainer createInventoryCrafting() {
         // Create a players Crafting Inventory
-        AbstractContainerMenu container = new AbstractContainerMenu(null, -1) {
+        AbstractContainerMenu abstractcontainermenu = new AbstractContainerMenu(null, -1) {
             @Override
             public InventoryView getBukkitView() {
                 return null;
             }
 
             @Override
-            public boolean stillValid(net.minecraft.world.entity.player.Player entityhuman) {
+            public boolean stillValid(net.minecraft.world.entity.player.Player player) {
                 return false;
             }
 
             @Override
-            public net.minecraft.world.item.ItemStack quickMoveStack(net.minecraft.world.entity.player.Player entityhuman, int i) {
+            public net.minecraft.world.item.ItemStack quickMoveStack(net.minecraft.world.entity.player.Player player, int i) {
                 return net.minecraft.world.item.ItemStack.EMPTY;
             }
         };
-        return new TransientCraftingContainer(container, 3, 3);
+        CraftingContainer inventoryCrafting = new TransientCraftingContainer(abstractcontainermenu, 3, 3);
+        return inventoryCrafting;
     }
 
     @Override
@@ -1726,11 +1751,11 @@ public final class CraftServer implements Server {
     @Override
     @Deprecated
     public CraftMapView getMap(int id) {
-        MapItemSavedData worldmap = console.getLevel(net.minecraft.world.level.Level.OVERWORLD).getMapData(new MapId(id));
-        if (worldmap == null) {
+        MapItemSavedData mapitemsaveddata = console.getLevel(net.minecraft.world.level.Level.OVERWORLD).getMapData(new MapId(id));
+        if (mapitemsaveddata == null) {
             return null;
         }
-        return worldmap.mapView;
+        return mapitemsaveddata.mapView;
     }
 
     @Override
@@ -1808,7 +1833,7 @@ public final class CraftServer implements Server {
         if (result == null) {
             NameAndId profile = null;
             // Only fetch an online UUID in online mode
-            if (getOnlineMode()) {
+            if (getOnlineMode() || org.spigotmc.SpigotConfig.bungee) { // Spigot: bungee = online mode, for now.
                 // This is potentially blocking :(
                 profile = console.services().nameToIdCache().get(name).orElse(null);
             }
@@ -2137,7 +2162,7 @@ public final class CraftServer implements Server {
 
     @Override
     public boolean isPrimaryThread() {
-        return Thread.currentThread().equals(console.serverThread) || console.hasStopped(); // All bets are off if we have shut down (e.g. due to watchdog)
+        return Thread.currentThread().equals(console.serverThread) || console.hasStopped() || org.spigotmc.RestartCommand.restarting; // All bets are off if we have shut down (e.g. due to watchdog)
     }
 
     @Override
@@ -2180,6 +2205,13 @@ public final class CraftServer implements Server {
     }
 
     public List<String> tabCompleteCommand(Player player, String message, ServerLevel world, Vec3 pos) {
+        // Spigot Start
+        if ( (org.spigotmc.SpigotConfig.tabComplete < 0 || message.length() <= org.spigotmc.SpigotConfig.tabComplete) && !message.contains( " " ) )
+        {
+            return ImmutableList.of();
+        }
+        // Spigot End
+
         List<String> completions = null;
         try {
             if (message.startsWith("/")) {
@@ -2561,4 +2593,40 @@ public final class CraftServer implements Server {
     public UnsafeValues getUnsafe() {
         return CraftMagicNumbers.INSTANCE;
     }
+
+    // Spigot start
+    private final org.bukkit.Server.Spigot spigot = new org.bukkit.Server.Spigot()
+    {
+
+        @Override
+        public YamlConfiguration getConfig()
+        {
+            return org.spigotmc.SpigotConfig.config;
+        }
+
+        @Override
+        public void restart() {
+            org.spigotmc.RestartCommand.restart();
+        }
+
+        @Override
+        public void broadcast(BaseComponent component) {
+            for (Player player : getOnlinePlayers()) {
+                player.spigot().sendMessage(component);
+            }
+        }
+
+        @Override
+        public void broadcast(BaseComponent... components) {
+            for (Player player : getOnlinePlayers()) {
+                player.spigot().sendMessage(components);
+            }
+        }
+    };
+
+    public org.bukkit.Server.Spigot spigot()
+    {
+        return spigot;
+    }
+    // Spigot end
 }

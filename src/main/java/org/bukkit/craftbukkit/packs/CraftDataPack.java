@@ -23,14 +23,14 @@ public class CraftDataPack implements DataPack {
 
     public CraftDataPack(Pack handler) {
         this.handle = handler;
-        try (PackResources iresourcepack = this.handle.resources.openPrimary(this.handle.location())) {
-            PackMetadataSection resourcepackinfo = iresourcepack.getMetadataSection(PackMetadataSection.SERVER_TYPE);
+        try (PackResources packresources = this.handle.resources.openPrimary(this.handle.location())) {
+            PackMetadataSection packmetadatasection = packresources.getMetadataSection(PackMetadataSection.SERVER_TYPE);
 
-            if (resourcepackinfo == null) {
-                resourcepackinfo = iresourcepack.getMetadataSection(PackMetadataSection.FALLBACK_TYPE);
+            if (packmetadatasection == null) {
+                packmetadatasection = packresources.getMetadataSection(PackMetadataSection.FALLBACK_TYPE);
             }
 
-            this.resourcePackInfo = resourcepackinfo;
+            this.resourcePackInfo = packmetadatasection;
         } catch (IOException e) { // This is already called in NMS then if in NMS not happen is secure this not throw here
             throw new RuntimeException(e);
         }

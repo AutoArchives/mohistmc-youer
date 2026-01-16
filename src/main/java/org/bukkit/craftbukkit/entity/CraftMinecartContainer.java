@@ -1,6 +1,7 @@
 package org.bukkit.craftbukkit.entity;
 
 import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecartContainer;
 import org.bukkit.craftbukkit.CraftLootTable;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.loot.LootTable;
@@ -13,8 +14,8 @@ public abstract class CraftMinecartContainer extends CraftMinecart implements Lo
     }
 
     @Override
-    public AbstractMinecart getHandle() {
-        return (AbstractMinecart) entity;
+    public AbstractMinecartContainer getHandle() {
+        return (AbstractMinecartContainer) entity;
     }
 
     @Override

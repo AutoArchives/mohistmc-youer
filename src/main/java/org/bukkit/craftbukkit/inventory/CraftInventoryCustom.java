@@ -125,7 +125,7 @@ public class CraftInventoryCustom extends CraftInventory {
         public void setChanged() {}
 
         @Override
-        public boolean stillValid(Player entityhuman) {
+        public boolean stillValid(Player player) {
             return true;
         }
 

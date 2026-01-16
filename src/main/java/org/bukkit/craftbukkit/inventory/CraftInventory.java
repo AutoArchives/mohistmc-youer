@@ -15,12 +15,12 @@ import net.minecraft.world.level.block.entity.BlastFurnaceBlockEntity;
 import net.minecraft.world.level.block.entity.BrewingStandBlockEntity;
 import net.minecraft.world.level.block.entity.ChiseledBookShelfBlockEntity;
 import net.minecraft.world.level.block.entity.CrafterBlockEntity;
+import net.minecraft.world.level.block.entity.DecoratedPotBlockEntity;
 import net.minecraft.world.level.block.entity.DispenserBlockEntity;
 import net.minecraft.world.level.block.entity.DropperBlockEntity;
 import net.minecraft.world.level.block.entity.Hopper;
 import net.minecraft.world.level.block.entity.JukeboxBlockEntity;
 import net.minecraft.world.level.block.entity.LecternBlockEntity;
-import net.minecraft.world.level.block.entity.ShelfBlockEntity;
 import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
 import net.minecraft.world.level.block.entity.SmokerBlockEntity;
 import org.bukkit.Location;
@@ -502,11 +502,11 @@ public class CraftInventory implements Inventory {
             return InventoryType.GRINDSTONE;
         } else if (this instanceof CraftInventoryStonecutter) {
             return InventoryType.STONECUTTER;
-        } else if (inventory instanceof ComposterBlock.ContainerEmpty || inventory instanceof ComposterBlock.ContainerInput || inventory instanceof BlockComposter.ContainerOutput) {
+        } else if (inventory instanceof ComposterBlock.EmptyContainer || inventory instanceof ComposterBlock.InputContainer || inventory instanceof ComposterBlock.OutputContainer) {
             return InventoryType.COMPOSTER;
         } else if (inventory instanceof JukeboxBlockEntity) {
             return InventoryType.JUKEBOX;
-        } else if (inventory instanceof net.minecraft.world.level.block.entity.DecoratedPotBlockEntity) {
+        } else if (inventory instanceof DecoratedPotBlockEntity) {
             return InventoryType.DECORATED_POT;
         } else {
             return InventoryType.CHEST;

@@ -22,7 +22,7 @@ public class CraftInventoryDoubleChest extends CraftInventory implements DoubleC
         this.right = new CraftInventory(block.inventorylargechest.container2);
     }
 
-    public CraftInventoryDoubleChest(InventoryLargeChest largeChest) {
+    public CraftInventoryDoubleChest(CompoundContainer largeChest) {
         super(largeChest);
         if (largeChest.container1 instanceof CompoundContainer) {
             left = new CraftInventoryDoubleChest((CompoundContainer) largeChest.container1);

@@ -4,8 +4,8 @@ import com.google.common.net.InetAddresses;
 import java.net.InetAddress;
 import java.time.Instant;
 import java.util.Date;
-import net.minecraft.server.players.IpBanListEntry;
 import net.minecraft.server.players.IpBanList;
+import net.minecraft.server.players.IpBanListEntry;
 import org.bukkit.BanEntry;
 
 public final class CraftIpBanEntry implements BanEntry<InetAddress> {

@@ -18,6 +18,7 @@ import net.minecraft.world.inventory.GrindstoneMenu;
 import net.minecraft.world.inventory.HopperMenu;
 import net.minecraft.world.inventory.LecternMenu;
 import net.minecraft.world.inventory.LoomMenu;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.MerchantMenu;
 import net.minecraft.world.inventory.ShulkerBoxMenu;
 import net.minecraft.world.inventory.SimpleContainerData;
@@ -28,8 +29,6 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
-import org.bukkit.inventory.MenuType;
-
 
 public class CraftContainer extends AbstractContainerMenu {
 
@@ -97,7 +96,7 @@ public class CraftContainer extends AbstractContainerMenu {
         return view;
     }
 
-    public static net.minecraft.world.inventory.MenuType getNotchInventoryType(Inventory inventory) {
+    public static MenuType getNotchInventoryType(Inventory inventory) {
         final InventoryType type = inventory.getType();
         switch (type) {
             case PLAYER:
@@ -106,32 +105,32 @@ public class CraftContainer extends AbstractContainerMenu {
             case BARREL:
                 switch (inventory.getSize()) {
                     case 9:
-                        return net.minecraft.world.inventory.MenuType.GENERIC_9x1;
+                        return MenuType.GENERIC_9x1;
                     case 18:
-                        return net.minecraft.world.inventory.MenuType.GENERIC_9x2;
+                        return MenuType.GENERIC_9x2;
                     case 27:
-                        return net.minecraft.world.inventory.MenuType.GENERIC_9x3;
+                        return MenuType.GENERIC_9x3;
                     case 36:
                     case 41: // PLAYER
-                        return net.minecraft.world.inventory.MenuType.GENERIC_9x4;
+                        return MenuType.GENERIC_9x4;
                     case 45:
-                        return net.minecraft.world.inventory.MenuType.GENERIC_9x5;
+                        return MenuType.GENERIC_9x5;
                     case 54:
-                        return net.minecraft.world.inventory.MenuType.GENERIC_9x6;
+                        return MenuType.GENERIC_9x6;
                     default:
                         throw new IllegalArgumentException("Unsupported custom inventory size " + inventory.getSize());
                 }
             default:
-                final MenuType menu = type.getMenuType();
+                final org.bukkit.inventory.MenuType menu = type.getMenuType();
                 if (menu == null) {
-                    return net.minecraft.world.inventory.MenuType.GENERIC_9x3;
+                    return MenuType.GENERIC_9x3;
                 } else {
                     return ((CraftMenuType<?, ?>) menu).getHandle();
                 }
         }
     }
 
-    private void setupSlots(Container top, net.minecraft.world.entity.player.Inventory bottom, Player entityhuman) {
+    private void setupSlots(Container top, net.minecraft.world.entity.player.Inventory bottom, Player player) {
         int windowId = -1;
         switch (cachedType) {
             case CREATIVE:
@@ -140,7 +139,7 @@ public class CraftContainer extends AbstractContainerMenu {
             case CHEST:
             case ENDER_CHEST:
             case BARREL:
-                delegate = new ChestMenu(net.minecraft.world.inventory.MenuType.GENERIC_9x3, windowId, bottom, top, top.getContainerSize() / 9);
+                delegate = new ChestMenu(MenuType.GENERIC_9x3, windowId, bottom, top, top.getContainerSize() / 9);
                 break;
             case DISPENSER:
             case DROPPER:
@@ -310,8 +309,8 @@ public class CraftContainer extends AbstractContainerMenu {
     }
 
     @Override
-    public ItemStack quickMoveStack(Player entityhuman, int i) {
-        return (delegate != null) ? delegate.quickMoveStack(entityhuman, i) : ItemStack.EMPTY;
+    public ItemStack quickMoveStack(Player player, int i) {
+        return (delegate != null) ? delegate.quickMoveStack(player, i) : ItemStack.EMPTY;
     }
 
     @Override
@@ -320,7 +319,7 @@ public class CraftContainer extends AbstractContainerMenu {
     }
 
     @Override
-    public net.minecraft.world.inventory.MenuType<?> getType() {
+    public MenuType<?> getType() {
         return getNotchInventoryType(view.getTopInventory());
     }
 }

@@ -16,7 +16,6 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.WorldGenLevel;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.levelgen.structure.templatesystem.BlockRotProcessor;
@@ -86,13 +85,13 @@ public class CraftStructure implements Structure {
         Preconditions.checkArgument(integrity >= 0F && integrity <= 1F, "Integrity value (%S) must be between 0 and 1 inclusive", integrity);
 
         RandomSource randomSource = new RandomSourceWrapper(random);
-        StructurePlaceSettings definedstructureinfo = new StructurePlaceSettings()
+        StructurePlaceSettings structureplacesettings = new StructurePlaceSettings()
                 .setMirror(net.minecraft.world.level.block.Mirror.valueOf(mirror.name()))
                 .setRotation(Rotation.valueOf(structureRotation.name()))
                 .setIgnoreEntities(!includeEntities)
                 .addProcessor(new BlockRotProcessor(integrity))
                 .setRandom(randomSource);
-        definedstructureinfo.palette = palette;
+        structureplacesettings.palette = palette;
 
         BlockPos blockPosition = CraftBlockVector.toBlockPosition(location);
         WorldGenLevel handle = ((CraftRegionAccessor) regionAccessor).getHandle();
@@ -101,7 +100,7 @@ public class CraftStructure implements Structure {
         access.setHandle(handle);
         access.setStructureTransformer(new CraftStructureTransformer(handle, new ChunkPos(blockPosition), blockTransformers, entityTransformers));
 
-        structure.placeInWorld(access, blockPosition, blockPosition, definedstructureinfo, randomSource, 2);
+        structure.placeInWorld(access, blockPosition, blockPosition, structureplacesettings, randomSource, 2);
         access.getStructureTransformer().discard();
     }
 

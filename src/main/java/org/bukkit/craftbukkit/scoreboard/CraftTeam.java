@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.world.scores.Team.CollisionRule;
 import net.minecraft.world.scores.Team.Visibility;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -240,7 +241,7 @@ final class CraftTeam extends CraftScoreboardComponent implements Team {
                 team.setDeathMessageVisibility(Visibility.values()[status.ordinal()]);
                 break;
             case COLLISION_RULE:
-                team.setCollisionRule(net.minecraft.world.scores.Team.CollisionRule.values()[status.ordinal()]);
+                team.setCollisionRule(CollisionRule.values()[status.ordinal()]);
                 break;
             default:
                 throw new IllegalArgumentException("Unrecognised option " + option);

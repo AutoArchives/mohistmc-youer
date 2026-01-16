@@ -33,11 +33,11 @@ import org.jetbrains.annotations.NotNull;
 /**
  * The craft persistent data type registry, at its core, is responsible for the
  * conversion process between a {@link PersistentDataType} and a respective
- * {@link Tag} instance.
+ * {@link NBTBase} instance.
  * <p>
  * It does so by creating {@link TagAdapter} instances that are capable of
  * mappings the supported "primitive types" of {@link PersistentDataType}s to
- * their respective {@link Tag} instances.
+ * their respective {@link NBTBase} instances.
  * <p>
  * To accomplish this, the class makes <b>heavy</b> use of raw arguments. Their
  * validity is enforced by the mapping of class to {@link TagAdapter}
@@ -50,27 +50,27 @@ public final class CraftPersistentDataTypeRegistry {
 
     /**
      * A tag adapter is a closely related type to a specific implementation of
-     * the {@link Tag} interface. It exists to convert from and to the
-     * respective value of a {@link Tag} to a "primitive type" for later
+     * the {@link NBTBase} interface. It exists to convert from and to the
+     * respective value of a {@link NBTBase} to a "primitive type" for later
      * usage in {@link PersistentDataType}.
      *
      * @param primitiveType the class of the primitive type, e.g.
      * {@link String}.
      * @param nbtBaseType the class of the tag implementation that is used to
-     * store this primitive type, e.g {@link StringTag}.
+     * store this primitive type, e.g {@link NBTTagString}.
      * @param nmsTypeByte the byte identifier of the tag as defined by
-     * {@link Tag#getId()}.
+     * {@link NBTBase#getId()}.
      * @param builder a bi function that is responsible for mapping a "primitive
-     * type" and its respective {@link PersistentDataType} to a {@link Tag}.
+     * type" and its respective {@link PersistentDataType} to a {@link NBTBase}.
      * @param extractor a bi function that is responsible for extracting a
-     * "primitive type" from a {@link Tag} given a
+     * "primitive type" from a {@link NBTBase} given a
      * {@link PersistentDataType}.
      * @param matcher a bi predicate that is responsible for computing if the
-     * passed {@link Tag} holds a value that the {@link PersistentDataType}
+     * passed {@link NBTBase} holds a value that the {@link PersistentDataType}
      * can extract.
      * @param <P> the generic type of the primitive the persistent data type
      * expects.
-     * @param <T> the generic type of the concrete {@link Tag}
+     * @param <T> the generic type of the concrete {@link NBTBase}
      * implementation that the primitive type is mapped into.
      */
     private record TagAdapter<P, T extends Tag>(
@@ -82,7 +82,7 @@ public final class CraftPersistentDataTypeRegistry {
             BiPredicate<PersistentDataType<P, ?>, Tag> matcher) {
 
         /**
-         * Extract the primitive value from the {@link Tag}.
+         * Extract the primitive value from the {@link NBTBase}.
          *
          * @param base the base to extract from
          * @return the value stored inside the tag
@@ -91,7 +91,7 @@ public final class CraftPersistentDataTypeRegistry {
          * extractor function.
          */
         private P extract(final PersistentDataType<P, ?> dataType, final Tag base) {
-            Preconditions.checkArgument(this.nbtBaseType.isInstance(base), "The provided Tag was of the type %s. Expected type %s", base.getClass().getSimpleName(), this.nbtBaseType.getSimpleName());
+            Preconditions.checkArgument(this.nbtBaseType.isInstance(base), "The provided NBTBase was of the type %s. Expected type %s", base.getClass().getSimpleName(), this.nbtBaseType.getSimpleName());
             return this.extractor.apply(dataType, this.nbtBaseType.cast(base));
         }
 
@@ -111,7 +111,7 @@ public final class CraftPersistentDataTypeRegistry {
 
         /**
          * Computes if the provided persistent data type's primitive type is a
-         * representation of the {@link Tag}.
+         * representation of the {@link NBTBase}.
          *
          * @param base the base tag instance to check against
          * @return if the tag was an instance of the set type
@@ -353,13 +353,13 @@ public final class CraftPersistentDataTypeRegistry {
     }
 
     /**
-     * Constructs a {@link ListTag} from a {@link List} instance by using the
+     * Constructs a {@link NBTTagList} from a {@link List} instance by using the
      * passed persistent data type.
      *
      * @param type the persistent data type of the list.
      * @param list the list or primitive values.
      * @param <P> the generic type of the primitive values in the list.
-     * @return the constructed {@link ListTag}.
+     * @return the constructed {@link NBTTagList}.
      */
     private <P, T extends List<P>> ListTag constructList(@NotNull final PersistentDataType<T, ?> type, @NotNull final List<P> list) {
         Preconditions.checkArgument(type instanceof ListPersistentDataType<?, ?>, "The passed list cannot be written to the PDC with a %s (expected a list data type)", type.getClass().getSimpleName());
@@ -374,7 +374,7 @@ public final class CraftPersistentDataTypeRegistry {
     }
 
     /**
-     * Extracts a {@link List} from a {@link ListTag} and a respective
+     * Extracts a {@link List} from a {@link NBTTagList} and a respective
      * {@link PersistentDataType}.
      *
      * @param type the persistent data type of the list.
@@ -400,7 +400,7 @@ public final class CraftPersistentDataTypeRegistry {
     }
 
     /**
-     * Computes if the passed {@link Tag} is a {@link ListTag} and it,
+     * Computes if the passed {@link NBTBase} is a {@link NBTTagList} and it,
      * including its elements, can be read/written via the passed
      * {@link PersistentDataType}.
      * <p>

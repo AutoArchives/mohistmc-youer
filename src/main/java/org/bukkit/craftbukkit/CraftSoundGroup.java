@@ -34,7 +34,7 @@ public class CraftSoundGroup implements SoundGroup {
 
     @Override
     public Sound getBreakSound() {
-        return CraftSound.minecraftToBukkit(getHandle().getBreakSound());
+        return CraftSound.minecraftToBukkit(getHandle().breakSound);
     }
 
     @Override
@@ -49,7 +49,7 @@ public class CraftSoundGroup implements SoundGroup {
 
     @Override
     public Sound getHitSound() {
-        return CraftSound.minecraftToBukkit(getHandle().getHitSound());
+        return CraftSound.minecraftToBukkit(getHandle().hitSound);
     }
 
     @Override

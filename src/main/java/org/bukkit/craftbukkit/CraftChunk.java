@@ -9,7 +9,6 @@ import java.util.Objects;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.BooleanSupplier;
 import java.util.function.Predicate;
-import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.SectionPos;
@@ -60,10 +59,10 @@ public class CraftChunk implements Chunk {
     private static final byte[] FULL_LIGHT = new byte[2048];
     private static final byte[] EMPTY_LIGHT = new byte[2048];
 
-    public CraftChunk(net.minecraft.world.level.chunk.LevelChunk chunk) {
-        worldServer = chunk.q;
-        x = chunk.getPos().x;
-        z = chunk.getPos().z;
+    public CraftChunk(net.minecraft.world.level.chunk.LevelChunk levelchunk) {
+        worldServer = levelchunk.level;
+        x = levelchunk.getPos().x;
+        z = levelchunk.getPos().z;
     }
 
     public CraftChunk(ServerLevel worldServer, int x, int z) {
@@ -218,7 +217,7 @@ public class CraftChunk implements Chunk {
     @Override
     public boolean isSlimeChunk() {
         // 987234911L is deterimined in EntitySlime when seeing if a slime can spawn in a chunk
-        return WorldgenRandom.seedSlimeChunk(getX(), getZ(), getWorld().getSeed(), 987234911L).nextInt(10) == 0;
+        return WorldgenRandom.seedSlimeChunk(getX(), getZ(), getWorld().getSeed(), worldServer.spigotConfig.slimeSeed).nextInt(10) == 0;
     }
 
     @Override
@@ -358,11 +357,11 @@ public class CraftChunk implements Chunk {
 
     @Override
     public LoadLevel getLoadLevel() {
-        net.minecraft.world.level.chunk.LevelChunk chunk = worldServer.getChunkIfLoaded(getX(), getZ());
-        if (chunk == null) {
+        net.minecraft.world.level.chunk.LevelChunk levelchunk = worldServer.getChunkIfLoaded(getX(), getZ());
+        if (levelchunk == null) {
             return LoadLevel.UNLOADED;
         }
-        return LoadLevel.values()[chunk.getFullStatus().ordinal()];
+        return LoadLevel.values()[levelchunk.getFullStatus().ordinal()];
     }
 
     @Override

@@ -223,15 +223,15 @@ public final class CraftKineticWeaponComponent implements KineticWeaponComponent
     @SerializableAs("KineticWeaponCondition")
     public static class CraftKineticWeaponCondition implements KineticWeaponComponent.Condition {
 
-        private KineticWeapon.a handle;
+        private KineticWeapon.Condition handle;
 
-        public CraftKineticWeaponCondition(KineticWeapon.a handle) {
+        public CraftKineticWeaponCondition(KineticWeapon.Condition handle) {
             this.handle = handle;
         }
 
         public CraftKineticWeaponCondition(Condition bukkit) {
-            KineticWeapon.a toCopy = ((CraftKineticWeaponCondition) bukkit).handle;
-            this.handle = new KineticWeapon.a(toCopy.maxDurationTicks(), toCopy.minSpeed(), toCopy.minRelativeSpeed());
+            KineticWeapon.Condition toCopy = ((CraftKineticWeaponCondition) bukkit).handle;
+            this.handle = new KineticWeapon.Condition(toCopy.maxDurationTicks(), toCopy.minSpeed(), toCopy.minRelativeSpeed());
         }
 
         public CraftKineticWeaponCondition(Map<String, Object> map) {
@@ -239,7 +239,7 @@ public final class CraftKineticWeaponComponent implements KineticWeaponComponent
             Integer minSpeed = SerializableMeta.getObject(Integer.class, map, "min-speed", true);
             Integer minRelativeSpeed = SerializableMeta.getObject(Integer.class, map, "min-relative-speed", true);
 
-            handle = new net.minecraft.world.item.component.KineticWeapon.a(
+            handle = new net.minecraft.world.item.component.KineticWeapon.Condition(
                     maxDurationTicks,
                     (minSpeed != null) ? minSpeed : 0.0F,
                     (minRelativeSpeed != null) ? minRelativeSpeed : 0.0F
@@ -257,7 +257,7 @@ public final class CraftKineticWeaponComponent implements KineticWeaponComponent
             return result;
         }
 
-        public KineticWeapon.a getHandle() {
+        public KineticWeapon.Condition getHandle() {
             return handle;
         }
 
@@ -268,7 +268,7 @@ public final class CraftKineticWeaponComponent implements KineticWeaponComponent
 
         @Override
         public void setMaxDurationTicks(int ticks) {
-            handle = new net.minecraft.world.item.component.KineticWeapon.a(ticks, handle.minSpeed(), handle.minRelativeSpeed());
+            handle = new net.minecraft.world.item.component.KineticWeapon.Condition(ticks, handle.minSpeed(), handle.minRelativeSpeed());
         }
 
         @Override
@@ -278,7 +278,7 @@ public final class CraftKineticWeaponComponent implements KineticWeaponComponent
 
         @Override
         public void setMinSpeed(float speed) {
-            handle = new net.minecraft.world.item.component.KineticWeapon.a(handle.maxDurationTicks(), speed, handle.minRelativeSpeed());
+            handle = new net.minecraft.world.item.component.KineticWeapon.Condition(handle.maxDurationTicks(), speed, handle.minRelativeSpeed());
         }
 
         @Override
@@ -288,7 +288,7 @@ public final class CraftKineticWeaponComponent implements KineticWeaponComponent
 
         @Override
         public void setMinRelativeSpeed(float speed) {
-            handle = new net.minecraft.world.item.component.KineticWeapon.a(handle.maxDurationTicks(), handle.minSpeed(), speed);
+            handle = new net.minecraft.world.item.component.KineticWeapon.Condition(handle.maxDurationTicks(), handle.minSpeed(), speed);
         }
 
         @Override

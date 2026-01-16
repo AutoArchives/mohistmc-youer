@@ -127,7 +127,7 @@ public class CraftVault extends CraftBlockEntityState<VaultBlockEntity> implemen
         private ItemStack keyItem;
         private Optional<ResourceKey<LootTable>> overrideLootTableToDisplay;
         private PlayerDetector playerDetector;
-        private PlayerDetector.EntitySelector entitySelector;
+        private net.minecraft.world.level.block.entity.trialspawner.PlayerDetector.EntitySelector entitySelector;
 
         private void loadFromConfig(VaultConfig minecraft) {
             this.lootTable = minecraft.lootTable();

@@ -4,6 +4,7 @@ import java.util.UUID;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.PrimaryLevelData;
+import net.minecraft.world.level.storage.ServerLevelData;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.util.WorldUUID;
 import org.bukkit.generator.WorldInfo;
@@ -17,9 +18,9 @@ public class CraftWorldInfo implements WorldInfo {
     private final int minHeight;
     private final int maxHeight;
 
-    public CraftWorldInfo(PrimaryLevelData worldDataServer, LevelStorageSource.LevelStorageAccess session, World.Environment environment, DimensionType dimensionManager) {
+    public CraftWorldInfo(ServerLevelData worldDataServer, LevelStorageSource.LevelStorageAccess session, World.Environment environment, DimensionType dimensionManager) {
         this.name = worldDataServer.getLevelName();
-        this.uuid = WorldUUID.getUUID(session.getLevelDirectory().path().toFile());
+        this.uuid = WorldUUID.getUUID(session.levelDirectory.path().toFile());
         this.environment = environment;
         this.seed = ((PrimaryLevelData) worldDataServer).worldGenOptions().seed();
         this.minHeight = dimensionManager.minY();

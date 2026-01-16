@@ -5,7 +5,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
-import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import org.bukkit.craftbukkit.block.CraftBlockEntityState;
 import org.bukkit.craftbukkit.block.CraftBlockState;
@@ -62,13 +61,13 @@ public class TransformerGeneratorAccess extends DelegatedGeneratorAccess {
         }
         // This code is based on the method 'net.minecraft.world.level.levelgen.structure.StructurePiece#placeBlock'
         // It ensures that any kind of block is updated correctly upon placing it
-        BlockState iblockdata = craftBlockState.getHandle();
-        boolean result = super.setBlock(position, iblockdata, i, j);
-        FluidState fluid = getFluidState(position);
-        if (!fluid.isEmpty()) {
-            scheduleTick(position, fluid.getType(), 0);
+        BlockState blockstate = craftBlockState.getHandle();
+        boolean result = super.setBlock(position, blockstate, i, j);
+        FluidState fluidstate = getFluidState(position);
+        if (!fluidstate.isEmpty()) {
+            scheduleTick(position, fluidstate.getType(), 0);
         }
-        if (StructurePiece.SHAPE_CHECK_BLOCKS.contains(iblockdata.getBlock())) {
+        if (StructurePiece.SHAPE_CHECK_BLOCKS.contains(blockstate.getBlock())) {
             getChunk(position).markPosForPostprocessing(position);
         }
         BlockEntity tileEntity = getBlockEntity(position);
@@ -83,15 +82,15 @@ public class TransformerGeneratorAccess extends DelegatedGeneratorAccess {
     }
 
     @Override
-    public boolean setBlock(BlockPos position, BlockState iblockdata, int i, int j) {
+    public boolean setBlock(BlockPos position, BlockState blockstate, int i, int j) {
         if (structureTransformer == null || !structureTransformer.canTransformBlocks()) {
-            return super.setBlock(position, iblockdata, i, j);
+            return super.setBlock(position, blockstate, i, j);
         }
-        return setCraftBlock(position, (CraftBlockState) CraftBlockStates.getBlockState(this, position, iblockdata, null), i, j);
+        return setCraftBlock(position, (CraftBlockState) CraftBlockStates.getBlockState(this, position, blockstate, null), i, j);
     }
 
     @Override
-    public boolean setBlock(BlockPos position, BlockState iblockdata, int i) {
-        return setBlock(position, iblockdata, i, 512);
+    public boolean setBlock(BlockPos position, BlockState blockstate, int i) {
+        return setBlock(position, blockstate, i, 512);
     }
 }

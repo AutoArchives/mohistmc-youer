@@ -125,13 +125,13 @@ public enum CraftStatistic {
         Preconditions.checkState(bukkit != null, "Bukkit statistic %s does not exist", this.name());
     }
 
-    public static org.bukkit.Statistic getBukkitStatistic(net.minecraft.stats.Stat<?> statistic) {
-        Preconditions.checkArgument(statistic != null, "NMS Statistic cannot be null");
-        Registry statRegistry = statistic.getType().getRegistry();
-        Identifier nmsKey = BuiltInRegistries.STAT_TYPE.getKey(statistic.getType());
+    public static org.bukkit.Statistic getBukkitStatistic(net.minecraft.stats.Stat<?> stat) {
+        Preconditions.checkArgument(stat != null, "NMS Statistic cannot be null");
+        Registry statRegistry = stat.getType().getRegistry();
+        Identifier nmsKey = BuiltInRegistries.STAT_TYPE.getKey(stat.getType());
 
         if (statRegistry == BuiltInRegistries.CUSTOM_STAT) {
-            nmsKey = (Identifier) statistic.getValue();
+            nmsKey = (Identifier) stat.getValue();
         }
 
         return statistics.get(nmsKey);
@@ -198,16 +198,16 @@ public enum CraftStatistic {
         return null;
     }
 
-    public static EntityType getEntityTypeFromStatistic(net.minecraft.stats.Stat<net.minecraft.world.entity.EntityType<?>> statistic) {
-        Preconditions.checkArgument(statistic != null, "NMS Statistic cannot be null");
-        return CraftEntityType.minecraftToBukkit(statistic.getValue());
+    public static EntityType getEntityTypeFromStatistic(net.minecraft.stats.Stat<net.minecraft.world.entity.EntityType<?>> stat) {
+        Preconditions.checkArgument(stat != null, "NMS Statistic cannot be null");
+        return CraftEntityType.minecraftToBukkit(stat.getValue());
     }
 
-    public static Material getMaterialFromStatistic(net.minecraft.stats.Stat<?> statistic) {
-        if (statistic.getValue() instanceof Item statisticItemValue) {
+    public static Material getMaterialFromStatistic(net.minecraft.stats.Stat<?> stat) {
+        if (stat.getValue() instanceof Item statisticItemValue) {
             return CraftItemType.minecraftToBukkit(statisticItemValue);
         }
-        if (statistic.getValue() instanceof Block statisticBlockValue) {
+        if (stat.getValue() instanceof Block statisticBlockValue) {
             return CraftBlockType.minecraftToBukkit(statisticBlockValue);
         }
         return null;

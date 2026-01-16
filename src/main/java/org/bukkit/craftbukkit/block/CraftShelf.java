@@ -63,9 +63,9 @@ public class CraftShelf extends CraftBlockEntityState<ShelfBlockEntity> implemen
         return getHitSlot(faceVector);
     }
 
-    private static int getHitSlot(Vec2 vec2f) {
-        int i = SelectableSlotContainer.getSection(1.0F - vec2f.y, 1); // rows
-        int j = SelectableSlotContainer.getSection(vec2f.x, 3); // columns
+    private static int getHitSlot(Vec2 vec2) {
+        int i = SelectableSlotContainer.getSection(1.0F - vec2.y, 1); // rows
+        int j = SelectableSlotContainer.getSection(vec2.x, 3); // columns
 
         return j + i * 3;
     }
