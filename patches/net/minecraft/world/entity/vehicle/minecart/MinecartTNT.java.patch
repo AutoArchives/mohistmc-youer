@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/entity/vehicle/minecart/MinecartTNT.java
 +++ b/net/minecraft/world/entity/vehicle/minecart/MinecartTNT.java
-@@ -35,9 +_,9 @@
+@@ -35,9 +_,10 @@
      private static final float DEFAULT_EXPLOSION_SPEED_FACTOR = 1.0F;
      private static final int NO_FUSE = -1;
      private @Nullable DamageSource ignitionSource;
@@ -10,6 +10,7 @@
 +    public int fuse = -1;
 +    public float explosionPowerBase = 4.0F;
 +    public float explosionSpeedFactor = 1.0F;
++    public boolean isIncendiary = false; // CraftBukkit - add field
  
      public MinecartTNT(EntityType<? extends MinecartTNT> p_478532_, Level p_481071_) {
          super(p_478532_, p_481071_);

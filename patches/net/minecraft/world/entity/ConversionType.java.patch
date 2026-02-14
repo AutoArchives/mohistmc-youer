@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/entity/ConversionType.java
++++ b/net/minecraft/world/entity/ConversionType.java
+@@ -91,6 +_,8 @@
+ 
+     abstract void convert(Mob p_371216_, Mob p_371188_, ConversionParams p_371310_);
+ 
++    void postConvert(Mob mob, Mob mob1, ConversionParams conversionparams) {} // CraftBukkit
++
+     void convertCommon(Mob p_371651_, Mob p_371777_, ConversionParams p_371814_) {
+         p_371777_.setAbsorptionAmount(p_371651_.getAbsorptionAmount());
+ 

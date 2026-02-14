@@ -1,0 +1,46 @@
+--- a/net/minecraft/world/inventory/MerchantMenu.java
++++ b/net/minecraft/world/inventory/MerchantMenu.java
+@@ -12,6 +_,7 @@
+ import net.minecraft.world.item.trading.Merchant;
+ import net.minecraft.world.item.trading.MerchantOffer;
+ import net.minecraft.world.item.trading.MerchantOffers;
++import org.bukkit.craftbukkit.inventory.view.CraftMerchantView;
+ 
+ public class MerchantMenu extends AbstractContainerMenu {
+     protected static final int PAYMENT1_SLOT = 0;
+@@ -31,6 +_,19 @@
+     private boolean showProgressBar;
+     private boolean canRestock;
+ 
++    // CraftBukkit start
++    private CraftMerchantView bukkitEntity = null;
++    private Inventory player;
++
++    @Override
++    public CraftMerchantView getBukkitView() {
++        if (bukkitEntity == null) {
++            bukkitEntity = new CraftMerchantView(this.player.player.getBukkitEntity(), new org.bukkit.craftbukkit.inventory.CraftInventoryMerchant(trader, tradeContainer), this, trader);
++        }
++        return bukkitEntity;
++    }
++    // CraftBukkit end
++
+     public MerchantMenu(int p_40033_, Inventory p_40034_) {
+         this(p_40033_, p_40034_, new ClientSideMerchant(p_40034_.player));
+     }
+@@ -42,6 +_,7 @@
+         this.addSlot(new Slot(this.tradeContainer, 0, 136, 37));
+         this.addSlot(new Slot(this.tradeContainer, 1, 162, 37));
+         this.addSlot(new MerchantResultSlot(p_40037_.player, p_40038_, this.tradeContainer, 2, 220, 37));
++        this.player = p_40037_; // CraftBukkit - save player
+         this.addStandardInventorySlots(p_40037_, 108, 84);
+     }
+ 
+@@ -61,6 +_,7 @@
+ 
+     @Override
+     public boolean stillValid(Player p_40042_) {
++        if (!checkReachable) return true; // CraftBukkit - checkReachable
+         return this.trader.stillValid(p_40042_);
+     }
+ 

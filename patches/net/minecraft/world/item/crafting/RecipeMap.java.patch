@@ -22,7 +22,7 @@
 -    private final Multimap<RecipeType<?>, RecipeHolder<?>> byType;
 -    private final Map<ResourceKey<Recipe<?>>, RecipeHolder<?>> byKey;
 +    public static final RecipeMap EMPTY = new RecipeMap(ImmutableMultimap.of(), Maps.newLinkedHashMap());
-+    private Multimap<RecipeType<?>, RecipeHolder<?>> byType;
++    public Multimap<RecipeType<?>, RecipeHolder<?>> byType;
 +    private final LinkedHashMap<ResourceKey<Recipe<?>>, RecipeHolder<?>> byKey;
  
 -    private RecipeMap(Multimap<RecipeType<?>, RecipeHolder<?>> p_379497_, Map<ResourceKey<Recipe<?>>, RecipeHolder<?>> p_380280_) {

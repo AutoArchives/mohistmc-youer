@@ -1,0 +1,69 @@
+--- a/net/minecraft/world/entity/ai/gossip/GossipContainer.java
++++ b/net/minecraft/world/entity/ai/gossip/GossipContainer.java
+@@ -111,11 +_,26 @@
+         return gossipcontainer$entitygossips != null ? gossipcontainer$entitygossips.weightedValue(p_26197_) : 0;
+     }
+ 
++    public int getReputation(UUID uuid, Predicate<GossipType> predicate, boolean weighted) {
++        // CraftBukkit end
++        GossipContainer.EntityGossips gossipcontainer_entitygossips = (GossipContainer.EntityGossips) this.gossips.get(uuid);
++
++        // CraftBukkit start - handle weighted parameter
++        return gossipcontainer_entitygossips != null ? (weighted ? gossipcontainer_entitygossips.weightedValue(predicate) : gossipcontainer_entitygossips.unweightedValue(predicate)) : 0;
++        // CraftBukkit end
++    }
++
+     public long getCountForType(GossipType p_148163_, DoublePredicate p_148164_) {
+         return this.gossips.values().stream().filter(p_148174_ -> p_148164_.test(p_148174_.entries.getOrDefault(p_148163_, 0) * p_148163_.weight)).count();
+     }
+ 
+     public void add(UUID p_26192_, GossipType p_26193_, int p_26194_) {
++        // CraftBukkit start - add change reason parameter
++        add(p_26192_, p_26193_, p_26194_, org.bukkit.entity.Villager.ReputationEvent.UNSPECIFIED);
++    }
++
++    public void add(UUID p_26192_, GossipType p_26193_, int p_26194_, org.bukkit.entity.Villager.ReputationEvent changeReason) {
++        // CraftBukkit end
+         GossipContainer.EntityGossips gossipcontainer$entitygossips = this.getOrCreate(p_26192_);
+         gossipcontainer$entitygossips.entries
+             .mergeInt(p_26193_, p_26194_, (p_186096_, p_186097_) -> this.mergeValuesForAddition(p_26193_, p_186096_, p_186097_));
+@@ -125,6 +_,22 @@
+         }
+     }
+ 
++    // CraftBukkit start
++    public void set(UUID uuid, GossipType reputationType, int i, org.bukkit.entity.Villager.ReputationEvent changeReason) {
++        int addAmount = i - getReputation(uuid, Predicate.isEqual(reputationType), false);
++        if (addAmount == 0) {
++            return;
++        }
++        this.add(uuid, reputationType, addAmount, changeReason);
++    }
++    // CraftBukkit end
++
++    // CraftBukkit start - add change reason parameter
++    public void remove(UUID uuid, GossipType gossiptype, int i, org.bukkit.entity.Villager.ReputationEvent changeReason) {
++        this.add(uuid, gossiptype, -i, changeReason);
++    }
++    // CraftBukkit end
++
+     public void remove(UUID p_148176_, GossipType p_148177_, int p_148178_) {
+         this.add(p_148176_, p_148177_, -p_148178_);
+     }
+@@ -185,6 +_,16 @@
+                 .mapToInt(p_26214_ -> p_26214_.getIntValue() * p_26214_.getKey().weight)
+                 .sum();
+         }
++
++        // CraftBukkit start
++        public int unweightedValue(Predicate<GossipType> predicate) {
++            return this.entries.object2IntEntrySet().stream().filter((entry) -> {
++                return predicate.test((GossipType) entry.getKey());
++            }).mapToInt((entry) -> {
++                return entry.getIntValue();
++            }).sum();
++        }
++        // CraftBukkit end
+ 
+         public Stream<GossipContainer.GossipEntry> unpack(UUID p_26216_) {
+             return this.entries

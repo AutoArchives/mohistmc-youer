@@ -8,11 +8,12 @@
  import java.util.function.Predicate;
  import net.minecraft.core.BlockPos;
  import net.minecraft.core.Direction;
-@@ -120,9 +_,11 @@
+@@ -120,9 +_,12 @@
  import net.minecraft.world.phys.Vec3;
  import net.minecraft.world.scores.PlayerTeam;
  import net.minecraft.world.scores.Team;
 +import org.bukkit.craftbukkit.entity.CraftHumanEntity;
++import org.bukkit.event.player.PlayerBedEnterEvent;
  import org.jspecify.annotations.Nullable;
  
  public abstract class Player extends Avatar implements ContainerUser, net.neoforged.neoforge.common.extensions.IPlayerExtension {
@@ -508,7 +509,17 @@
      }
  
      @Override
-@@ -2059,5 +_,41 @@
+@@ -2054,10 +_,50 @@
+             .toString();
+     }
+ 
+-    public record BedSleepingProblem(@Nullable Component message) {
++    public record BedSleepingProblem(@Nullable Component message, PlayerBedEnterEvent.BedEnterResult bukkit) {
++
++        public BedSleepingProblem(@Nullable Component message) {
++            this(message, PlayerBedEnterEvent.BedEnterResult.OTHER_PROBLEM);
++        }
+         public static final Player.BedSleepingProblem TOO_FAR_AWAY = new Player.BedSleepingProblem(Component.translatable("block.minecraft.bed.too_far_away"));
          public static final Player.BedSleepingProblem OBSTRUCTED = new Player.BedSleepingProblem(Component.translatable("block.minecraft.bed.obstructed"));
          public static final Player.BedSleepingProblem OTHER_PROBLEM = new Player.BedSleepingProblem(null);
          public static final Player.BedSleepingProblem NOT_SAFE = new Player.BedSleepingProblem(Component.translatable("block.minecraft.bed.not_safe"));

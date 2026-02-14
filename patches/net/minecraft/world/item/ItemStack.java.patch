@@ -8,6 +8,15 @@
  import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
+@@ -169,7 +_,7 @@
+     private int count;
+     private int popTime;
+     @Deprecated
+-    private final @Nullable Item item;
++    private @Nullable Item item;
+     final PatchedDataComponentMap components;
+     private @Nullable Entity entityRepresentation;
+ 
 @@ -254,6 +_,10 @@
          return !this.isEmpty() && this.components.hasNonDefault(p_389426_);
      }
@@ -228,7 +237,7 @@
      public ItemEnchantments getEnchantments() {
          return this.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
      }
-@@ -1017,16 +_,28 @@
+@@ -1017,19 +_,38 @@
      }
  
      public void forEachModifier(EquipmentSlotGroup p_348610_, TriConsumer<Holder<Attribute>, AttributeModifier, ItemAttributeModifiers.Display> p_415655_) {
@@ -257,6 +266,16 @@
          EnchantmentHelper.forEachModifier(this, p_332001_, p_330882_);
      }
  
++    // CraftBukkit start
++    @Deprecated
++    public void setItem(Item item) {
++        this.item = item;
++    }
++    // CraftBukkit end
++
+     public Component getDisplayName() {
+         MutableComponent mutablecomponent = Component.empty().append(this.getHoverName());
+         if (this.has(DataComponents.CUSTOM_NAME)) {
 @@ -1038,7 +_,7 @@
  
          MutableComponent mutablecomponent1 = ComponentUtils.wrapInSquareBrackets(mutablecomponent);

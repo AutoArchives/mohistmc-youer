@@ -11,6 +11,14 @@
  import java.util.UUID;
  import java.util.function.Consumer;
  import java.util.function.Predicate;
+@@ -28,6 +_,7 @@
+ import net.minecraft.resources.ResourceKey;
+ import net.minecraft.server.MinecraftServer;
+ import net.minecraft.server.level.FullChunkStatus;
++import net.minecraft.server.level.ServerLevel;
+ import net.minecraft.sounds.SoundEvent;
+ import net.minecraft.sounds.SoundEvents;
+ import net.minecraft.sounds.SoundSource;
 @@ -46,6 +_,7 @@
  import net.minecraft.world.entity.EntitySelector;
  import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
@@ -27,7 +35,7 @@
  import net.minecraft.world.level.entity.EntityTypeTest;
  import net.minecraft.world.level.entity.LevelEntityGetter;
  import net.minecraft.world.level.gameevent.GameEvent;
-@@ -83,9 +_,14 @@
+@@ -83,9 +_,16 @@
  import net.minecraft.world.phys.Vec3;
  import net.minecraft.world.scores.Scoreboard;
  import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -35,7 +43,9 @@
 +import org.bukkit.craftbukkit.CraftServer;
 +import org.bukkit.craftbukkit.CraftWorld;
 +import org.bukkit.craftbukkit.block.CapturedBlockState;
++import org.bukkit.craftbukkit.block.data.CraftBlockData;
 +import org.bukkit.entity.SpawnCategory;
++import org.bukkit.event.block.BlockPhysicsEvent;
  import org.jspecify.annotations.Nullable;
  
 -public abstract class Level implements LevelAccessor, AutoCloseable, net.neoforged.neoforge.common.extensions.ILevelExtension {
@@ -52,7 +62,7 @@
      protected final CollectingNeighborUpdater neighborUpdater;
      private final List<TickingBlockEntity> pendingBlockEntityTickers = Lists.newArrayList();
      private boolean tickingBlockEntities;
-@@ -117,14 +_,43 @@
+@@ -117,14 +_,45 @@
      @Deprecated
      private final RandomSource threadSafeRandom = RandomSource.createThreadSafe();
      private final Holder<DimensionType> dimensionTypeRegistration;
@@ -84,7 +94,9 @@
 +    public List<ItemEntity> captureDrops;
 +    public final it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap<SpawnCategory> ticksPerSpawnCategory = new it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap<>();
 +    public boolean populating;
++    public org.spigotmc.SpigotWorldConfig spigotConfig; // Spigot
 +    public String name;
++    public static BlockPos lastPhysicsProblem; // Spigot
 +
 +    public CraftWorld getWorld() {
 +        return this.world;
@@ -135,16 +147,73 @@
                  if (blockstate1 == p_46606_) {
                      if (blockstate != blockstate1) {
                          this.setBlocksDirty(p_46605_, blockstate, blockstate1);
-@@ -248,9 +_,8 @@
+@@ -248,12 +_,61 @@
                      }
  
                      this.updatePOIOnBlockStateChange(p_46605_, blockstate, blockstate1);
-+                    p_46606_.onBlockStateChange(this, p_46605_, blockstate);
-                 }
+-                }
 -
 -                return true;
-             }
-         }
+-            }
+-        }
+-    }
++                    p_46606_.onBlockStateChange(this, p_46605_, blockstate);
++                }
++            }
++        }
++    }
++
++    // CraftBukkit start - Split off from above in order to directly send client and physic updates
++    public void notifyAndUpdatePhysics(BlockPos blockpos, LevelChunk levelchunk, BlockState oldBlock, BlockState newBlock, BlockState actualBlock, int i, int j) {
++        BlockState blockstate = newBlock;
++        BlockState blockstate1 = oldBlock;
++        BlockState blockstate2 = actualBlock;
++        if (blockstate2 == blockstate) {
++            if (blockstate1 != blockstate2) {
++                this.setBlocksDirty(blockpos, blockstate1, blockstate2);
++            }
++
++            if ((i & 2) != 0 && (!this.isClientSide || (i & 4) == 0) && (this.isClientSide || levelchunk == null || (levelchunk.getFullStatus() != null && levelchunk.getFullStatus().isOrAfter(FullChunkStatus.BLOCK_TICKING)))) { // allow chunk to be null here as chunk.isReady() is false when we send our notification during block placement
++                this.sendBlockUpdated(blockpos, blockstate1, blockstate, i);
++            }
++
++            if ((i & 1) != 0) {
++                this.updateNeighborsAt(blockpos, blockstate1.getBlock());
++                if (!this.isClientSide && blockstate.hasAnalogOutputSignal()) {
++                    this.updateNeighbourForOutputSignal(blockpos, newBlock.getBlock());
++                }
++            }
++
++            if ((i & 16) == 0 && j > 0) {
++                int k = i & -34;
++
++                // CraftBukkit start
++                blockstate1.updateIndirectNeighbourShapes(this, blockpos, k, j - 1); // Don't call an event for the old block to limit event spam
++                CraftWorld world = ((ServerLevel) this).getWorld();
++                if (world != null) {
++                    BlockPhysicsEvent event = new BlockPhysicsEvent(world.getBlockAt(blockpos.getX(), blockpos.getY(), blockpos.getZ()), CraftBlockData.fromData(blockstate));
++                    this.getCraftServer().getPluginManager().callEvent(event);
++
++                    if (event.isCancelled()) {
++                        return;
++                    }
++                }
++                // CraftBukkit end
++                blockstate.updateNeighbourShapes(this, blockpos, k, j - 1);
++                blockstate.updateIndirectNeighbourShapes(this, blockpos, k, j - 1);
++            }
++
++            // CraftBukkit start - SPIGOT-5710
++            if (!preventPoiUpdated) {
++                this.updatePOIOnBlockStateChange(blockpos, blockstate1, blockstate2);
++            }
++            // CraftBukkit end
++        }
++    }
++    // CraftBukkit end
++
+ 
+     public void updatePOIOnBlockStateChange(BlockPos p_394475_, BlockState p_393580_, BlockState p_393789_) {
      }
 @@ -302,6 +_,7 @@
      }
@@ -307,7 +376,7 @@
                          this.neighborChanged(blockstate, blockpos, p_46719_, null, false);
                      }
                  }
-@@ -1034,6 +_,18 @@
+@@ -1034,11 +_,23 @@
          return this.biomeManager;
      }
  
@@ -326,6 +395,22 @@
      public final boolean isDebug() {
          return this.isDebug;
      }
+ 
+-    protected abstract LevelEntityGetter<Entity> getEntities();
++    public abstract LevelEntityGetter<Entity> getEntities();
+ 
+     @Override
+     public long nextSubTickCount() {
+@@ -1073,7 +_,8 @@
+         BLOCK("block"),
+         MOB("mob"),
+         TNT("tnt"),
+-        TRIGGER("trigger");
++        TRIGGER("trigger"),
++        STANDARD("standard");
+ 
+         public static final Codec<Level.ExplosionInteraction> CODEC = StringRepresentable.fromEnum(Level.ExplosionInteraction::values);
+         private final String id;
 @@ -1086,5 +_,38 @@
          public String getSerializedName() {
              return this.id;

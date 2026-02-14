@@ -1,0 +1,27 @@
+--- a/net/minecraft/world/item/crafting/TransmuteRecipe.java
++++ b/net/minecraft/world/item/crafting/TransmuteRecipe.java
+@@ -15,6 +_,10 @@
+ import net.minecraft.world.item.crafting.display.ShapelessCraftingRecipeDisplay;
+ import net.minecraft.world.item.crafting.display.SlotDisplay;
+ import net.minecraft.world.level.Level;
++import org.bukkit.NamespacedKey;
++import org.bukkit.craftbukkit.inventory.CraftRecipe;
++import org.bukkit.craftbukkit.inventory.CraftTransmuteRecipe;
++import org.bukkit.inventory.Recipe;
+ import org.jspecify.annotations.Nullable;
+ 
+ public class TransmuteRecipe implements CraftingRecipe {
+@@ -82,6 +_,13 @@
+             )
+         );
+     }
++
++    // CraftBukkit start
++    @Override
++    public Recipe toBukkitRecipe(NamespacedKey id) {
++        return new CraftTransmuteRecipe(id, CraftRecipe.toBukkit(this.result), CraftRecipe.toBukkit(this.input), CraftRecipe.toBukkit(this.material));
++    }
++    // CraftBukkit end
+ 
+     @Override
+     public RecipeSerializer<TransmuteRecipe> getSerializer() {

@@ -11,17 +11,10 @@
  
      public BeehiveBlockEntity(BlockPos p_155134_, BlockState p_155135_) {
          super(BlockEntityType.BEEHIVE, p_155134_, p_155135_);
-@@ -142,6 +_,20 @@
-         List<Entity> list = Lists.newArrayList();
-         this.stored
-             .removeIf(p_330138_ -> releaseOccupant(this.level, this.worldPosition, p_58760_, p_330138_.toOccupant(), list, p_58761_, this.savedFlowerPos));
-+        if (!list.isEmpty()) {
-+            super.setChanged();
-+        }
-+
-+        return list;
-+    }
-+
+@@ -149,6 +_,20 @@
+         return list;
+     }
+ 
 +    public List<Entity> releaseBees(BlockState blockstate, BeehiveBlockEntity.BeeReleaseStatus beehiveblockentity_beereleasestatus, boolean force) {
 +        List<Entity> list = Lists.newArrayList();
 +
@@ -29,6 +22,34 @@
 +            return releaseOccupant(this.level, this.worldPosition, blockstate, beehiveblockentity_beedata.toOccupant(), list, beehiveblockentity_beereleasestatus, this.savedFlowerPos, force);
 +            // CraftBukkit end
 +        });
-         if (!list.isEmpty()) {
-             super.setChanged();
-         }
++        if (!list.isEmpty()) {
++            super.setChanged();
++        }
++
++        return list;
++    }
++
+     @VisibleForDebug
+     public int getOccupantCount() {
+         return this.stored.size();
+@@ -207,7 +_,19 @@
+         BeehiveBlockEntity.BeeReleaseStatus p_155142_,
+         @Nullable BlockPos p_155143_
+     ) {
+-        if (p_155137_.environmentAttributes().getValue(EnvironmentAttributes.BEES_STAY_IN_HIVE, p_155138_)
++        // CraftBukkit start - This allows us to bypass the night/rain/emergency check
++        return releaseOccupant(p_155137_, p_155138_, p_155139_, p_332184_, p_155141_, p_155142_, p_155143_, false);
++    }
++
++    private static boolean releaseOccupant(  Level p_155137_,
++                                             BlockPos p_155138_,
++                                             BlockState p_155139_,
++                                             BeehiveBlockEntity.Occupant p_332184_,
++                                             @Nullable List<Entity> p_155141_,
++                                             BeehiveBlockEntity.BeeReleaseStatus p_155142_,
++                                             @Nullable BlockPos p_155143_, boolean force) {
++
++        if (!force && p_155137_.environmentAttributes().getValue(EnvironmentAttributes.BEES_STAY_IN_HIVE, p_155138_)
+             && p_155142_ != BeehiveBlockEntity.BeeReleaseStatus.EMERGENCY) {
+             return false;
+         } else {

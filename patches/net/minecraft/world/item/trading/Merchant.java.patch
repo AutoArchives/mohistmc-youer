@@ -1,0 +1,9 @@
+--- a/net/minecraft/world/item/trading/Merchant.java
++++ b/net/minecraft/world/item/trading/Merchant.java
+@@ -50,4 +_,6 @@
+     boolean isClientSide();
+ 
+     boolean stillValid(Player p_383240_);
++
++    org.bukkit.craftbukkit.inventory.CraftMerchant getCraftMerchant(); // CraftBukkit
+ }

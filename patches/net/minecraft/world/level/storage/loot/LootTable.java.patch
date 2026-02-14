@@ -8,10 +8,11 @@
  import java.util.function.BiFunction;
  import java.util.function.Consumer;
  import net.minecraft.core.Holder;
-@@ -29,6 +_,9 @@
+@@ -29,6 +_,10 @@
  import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
  import net.minecraft.world.level.storage.loot.functions.LootItemFunctions;
  import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
++import org.bukkit.craftbukkit.CraftLootTable;
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
 +import org.bukkit.craftbukkit.inventory.CraftItemStack;
 +import org.bukkit.event.world.LootGenerateEvent;
@@ -35,7 +36,12 @@
      public static final Codec<Holder<LootTable>> CODEC = RegistryFileCodec.create(Registries.LOOT_TABLE, DIRECT_CODEC);
      public static final LootTable EMPTY = new LootTable(LootContextParamSets.EMPTY, Optional.empty(), List.of(), List.of());
      private final ContextKeySet paramSet;
-@@ -58,7 +_,7 @@
+@@ -54,11 +_,12 @@
+     private final List<LootPool> pools;
+     private final List<LootItemFunction> functions;
+     private final BiFunction<ItemStack, LootContext, ItemStack> compositeFunction;
++    public CraftLootTable craftLootTable; // CraftBukkit
+ 
      LootTable(ContextKeySet p_380952_, Optional<Identifier> p_299055_, List<LootPool> p_298390_, List<LootItemFunction> p_298775_) {
          this.paramSet = p_380952_;
          this.randomSequence = p_299055_;

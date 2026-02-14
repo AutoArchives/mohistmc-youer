@@ -1,5 +1,21 @@
 --- a/net/minecraft/world/entity/monster/piglin/Piglin.java
 +++ b/net/minecraft/world/entity/monster/piglin/Piglin.java
+@@ -1,10 +_,15 @@
+ package net.minecraft.world.entity.monster.piglin;
+ 
+ import com.google.common.collect.ImmutableList;
++import com.mojang.serialization.Codec;
+ import com.mojang.serialization.Dynamic;
++import java.util.HashSet;
+ import java.util.List;
++import java.util.Set;
++import java.util.stream.Collectors;
+ import net.minecraft.core.BlockPos;
+ import net.minecraft.core.component.DataComponents;
++import net.minecraft.core.registries.BuiltInRegistries;
+ import net.minecraft.network.syncher.EntityDataAccessor;
+ import net.minecraft.network.syncher.EntityDataSerializers;
+ import net.minecraft.network.syncher.SynchedEntityData;
 @@ -78,8 +_,8 @@
      private static final double PROBABILITY_OF_SPAWNING_WITH_CROSSBOW_INSTEAD_OF_SWORD = 0.5;
      private static final boolean DEFAULT_IS_BABY = false;
@@ -11,6 +27,45 @@
      protected static final ImmutableList<SensorType<? extends Sensor<? super Piglin>>> SENSOR_TYPES = ImmutableList.of(
          SensorType.NEAREST_LIVING_ENTITIES, SensorType.NEAREST_PLAYERS, SensorType.NEAREST_ITEMS, SensorType.HURT_BY, SensorType.PIGLIN_SPECIFIC_SENSOR
      );
+@@ -129,6 +_,10 @@
+         MemoryModuleType.SPEAR_ENGAGE_TIME,
+         MemoryModuleType.SPEAR_STATUS
+     );
++    // CraftBukkit start - Custom bartering and interest list
++    public Set<Item> allowedBarterItems = new HashSet<>();
++    public Set<Item> interestItems = new HashSet<>();
++    // CraftBukkit end
+ 
+     public Piglin(EntityType<? extends AbstractPiglin> p_34683_, Level p_34684_) {
+         super(p_34683_, p_34684_);
+@@ -141,6 +_,12 @@
+         p_422421_.putBoolean("IsBaby", this.isBaby());
+         p_422421_.putBoolean("CannotHunt", this.cannotHunt);
+         this.writeInventoryToTag(p_422421_);
++        // CraftBukkit start
++        ValueOutput.TypedOutputList<String> barterList = p_422421_.list("Bukkit.BarterList", Codec.STRING);
++        allowedBarterItems.stream().map(BuiltInRegistries.ITEM::getKey).map(Identifier::toString).forEach(barterList::add);
++        ValueOutput.TypedOutputList<String> interestList = p_422421_.list("Bukkit.InterestList", Codec.STRING);
++        interestItems.stream().map(BuiltInRegistries.ITEM::getKey).map(Identifier::toString).forEach(interestList::add);
++        // CraftBukkit end
+     }
+ 
+     @Override
+@@ -149,6 +_,14 @@
+         this.setBaby(p_422118_.getBooleanOr("IsBaby", false));
+         this.setCannotHunt(p_422118_.getBooleanOr("CannotHunt", false));
+         this.readInventoryFromTag(p_422118_);
++        // CraftBukkit start
++        p_422118_.list("Bukkit.BarterList", Codec.STRING).ifPresent((list -> {
++            this.allowedBarterItems = list.stream().map(Identifier::tryParse).map(BuiltInRegistries.ITEM::getValue).collect(Collectors.toCollection(HashSet::new));
++        }));
++        p_422118_.list("Bukkit.InterestList", Codec.STRING).ifPresent((list -> {
++            this.interestItems = list.stream().map(Identifier::tryParse).map(BuiltInRegistries.ITEM::getValue).collect(Collectors.toCollection(HashSet::new));
++        }));
++        // CraftBukkit end
+     }
+ 
+     @VisibleForDebug
 @@ -354,7 +_,7 @@
          } else if (this.isChargingCrossbow()) {
              return PiglinArmPose.CROSSBOW_CHARGE;

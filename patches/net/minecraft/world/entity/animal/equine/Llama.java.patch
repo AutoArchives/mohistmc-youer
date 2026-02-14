@@ -1,5 +1,18 @@
 --- a/net/minecraft/world/entity/animal/equine/Llama.java
 +++ b/net/minecraft/world/entity/animal/equine/Llama.java
+@@ -86,6 +_,12 @@
+         return false;
+     }
+ 
++    // CraftBukkit start
++    public void setStrengthPublic(int i) {
++        this.setStrength(i);
++    }
++    // CraftBukkit end
++
+     private void setStrength(int p_480583_) {
+         this.entityData.set(DATA_STRENGTH_ID, Math.max(1, Math.min(5, p_480583_)));
+     }
 @@ -145,7 +_,7 @@
          return Llama.Variant.byId(this.entityData.get(DATA_VARIANT_ID));
      }

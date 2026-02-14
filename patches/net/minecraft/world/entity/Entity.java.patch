@@ -54,7 +54,8 @@
 +    public final RandomSource random = RandomSource.create();
      public int tickCount;
      private int remainingFireTicks;
-     protected boolean wasTouchingWater;
+-    protected boolean wasTouchingWater;
++    public boolean wasTouchingWater;
 +    @Deprecated // Neo: Use forgeFluidTypeHeight instead
      protected Object2DoubleMap<TagKey<Fluid>> fluidHeight = new Object2DoubleArrayMap<>(2);
      protected boolean wasEyeInWater;
@@ -80,7 +81,7 @@
      private Vec3 lastKnownSpeed = Vec3.ZERO;
      private @Nullable Vec3 lastKnownPosition;
      private @Nullable BlockState inBlockState = null;
-@@ -287,6 +_,52 @@
+@@ -287,6 +_,59 @@
      private final InsideBlockEffectApplier.StepBasedCollector insideEffectCollector = new InsideBlockEffectApplier.StepBasedCollector();
      private CustomData customData = CustomData.EMPTY;
  
@@ -99,6 +100,13 @@
 +    // Marks an entity, that it was removed by a plugin via Entity#remove
 +    // Main use case currently is for SPIGOT-7487, preventing dropping of leash when leash is removed
 +    public boolean pluginRemoved = false;
++
++    // Spigot start
++    public final org.spigotmc.ActivationRange.ActivationType activationType = org.spigotmc.ActivationRange.initializeEntityActivationType(this);
++    public final boolean defaultActivationState;
++    public long activatedTick = Integer.MIN_VALUE;
++    public void inactiveTick() { }
++    // Spigot end
 +
 +    private CraftEntity bukkitEntity;
 +
@@ -133,6 +141,20 @@
      public Entity(EntityType<?> p_19870_, Level p_19871_) {
          this.type = p_19870_;
          this.level = p_19871_;
+@@ -294,6 +_,13 @@
+         this.position = Vec3.ZERO;
+         this.blockPosition = BlockPos.ZERO;
+         this.chunkPosition = ChunkPos.ZERO;
++        // Spigot start
++        if (level != null) {
++            this.defaultActivationState = org.spigotmc.ActivationRange.initializeEntityActivationState(this, level.spigotConfig);
++        } else {
++            this.defaultActivationState = false;
++        }
++        // Spigot end
+         SynchedEntityData.Builder synchedentitydata$builder = new SynchedEntityData.Builder(this);
+         synchedentitydata$builder.define(DATA_SHARED_FLAGS_ID, (byte)0);
+         synchedentitydata$builder.define(DATA_AIR_SUPPLY_ID, this.getMaxAirSupply());
 @@ -306,7 +_,10 @@
          this.defineSynchedData(synchedentitydata$builder);
          this.entityData = synchedentitydata$builder.build();
@@ -175,6 +197,27 @@
                      ? blockpos.atY(Mth.floor(this.position.y - p_216987_))
                      : blockpos;
              }
+@@ -1158,6 +_,20 @@
+         return SoundEvents.GENERIC_SPLASH;
+     }
+ 
++    // CraftBukkit start - Add delegate methods
++    public SoundEvent getSwimSound0() {
++        return getSwimSound();
++    }
++
++    public SoundEvent getSwimSplashSound0() {
++        return getSwimSplashSound();
++    }
++
++    public SoundEvent getSwimHighSpeedSplashSound0() {
++        return getSwimHighSpeedSplashSound();
++    }
++    // CraftBukkit end
++
+     private void checkInsideBlocks(List<Entity.Movement> p_381632_, InsideBlockEffectApplier.StepBasedCollector p_405233_) {
+         if (this.isAffectedByBlocks()) {
+             LongSet longset = this.visitedBlocks;
 @@ -1317,20 +_,20 @@
          return !blockstate.is(BlockTags.INSIDE_STEP_SOUND_BLOCKS) && !blockstate.is(BlockTags.COMBINATION_STEP_SOUND_BLOCKS) ? p_278049_ : blockpos;
      }

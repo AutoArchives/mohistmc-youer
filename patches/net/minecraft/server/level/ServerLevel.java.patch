@@ -29,11 +29,13 @@
  import net.minecraft.world.level.storage.ServerLevelData;
  import net.minecraft.world.phys.AABB;
  import net.minecraft.world.phys.Vec3;
-@@ -178,6 +_,7 @@
+@@ -178,6 +_,9 @@
  import net.minecraft.world.phys.shapes.VoxelShape;
  import net.minecraft.world.ticks.LevelTicks;
  import net.minecraft.world.waypoints.WaypointTransmitter;
++import org.bukkit.craftbukkit.event.CraftEventFactory;
 +import org.bukkit.craftbukkit.util.WorldUUID;
++import org.bukkit.event.weather.LightningStrikeEvent;
  import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
@@ -253,6 +255,29 @@
          }
      }
  
+@@ -1017,6 +_,22 @@
+         p_143262_.remove(p_143263_);
+     }
+ 
++    // CraftBukkit start
++    public boolean strikeLightning(Entity entitylightning) {
++        return this.strikeLightning(entitylightning, LightningStrikeEvent.Cause.UNKNOWN);
++    }
++
++    public boolean strikeLightning(Entity entitylightning, LightningStrikeEvent.Cause cause) {
++        LightningStrikeEvent lightning = CraftEventFactory.callLightningStrikeEvent((org.bukkit.entity.LightningStrike) entitylightning.getBukkitEntity(), cause);
++
++        if (lightning.isCancelled()) {
++            return false;
++        }
++
++        return this.addFreshEntity(entitylightning);
++    }
++    // CraftBukkit end
++
+     @Override
+     public void destroyBlockProgress(int p_8612_, BlockPos p_8613_, int p_8614_) {
+         for (ServerPlayer serverplayer : this.server.getPlayerList().getPlayers()) {
 @@ -1043,6 +_,12 @@
          float p_263390_,
          long p_263403_

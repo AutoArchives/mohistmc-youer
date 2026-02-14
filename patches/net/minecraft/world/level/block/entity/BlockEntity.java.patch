@@ -1,9 +1,11 @@
 --- a/net/minecraft/world/level/block/entity/BlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/BlockEntity.java
-@@ -33,18 +_,22 @@
+@@ -33,24 +_,36 @@
  import net.minecraft.world.level.storage.TagValueOutput;
  import net.minecraft.world.level.storage.ValueInput;
  import net.minecraft.world.level.storage.ValueOutput;
++import org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer;
++import org.bukkit.craftbukkit.persistence.CraftPersistentDataTypeRegistry;
 +import org.bukkit.inventory.InventoryHolder;
  import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
@@ -21,9 +23,21 @@
      private DataComponentMap components = DataComponentMap.EMPTY;
 +    @Nullable
 +    private CompoundTag customPersistentData;
++
++    // CraftBukkit start - data containers
++    private static final CraftPersistentDataTypeRegistry DATA_TYPE_REGISTRY = new CraftPersistentDataTypeRegistry();
++    public CraftPersistentDataContainer persistentDataContainer;
++    // CraftBukkit end
  
      public BlockEntity(BlockEntityType<?> p_155228_, BlockPos p_155229_, BlockState p_155230_) {
          this.type = p_155228_;
+         this.worldPosition = p_155229_.immutable();
+         this.validateBlockState(p_155230_);
+         this.blockState = p_155230_;
++        this.persistentDataContainer = new CraftPersistentDataContainer(DATA_TYPE_REGISTRY); // Paper - always init
+     }
+ 
+     private void validateBlockState(BlockState p_353132_) {
 @@ -60,7 +_,7 @@
      }
  
@@ -102,6 +116,31 @@
      @Deprecated
      public void setBlockState(BlockState p_155251_) {
          this.validateBlockState(p_155251_);
+@@ -285,6 +_,12 @@
+     }
+ 
+     public final void applyComponents(DataComponentMap p_330364_, DataComponentPatch p_338381_) {
++        // CraftBukkit start
++        this.applyComponentsSet(p_330364_, p_338381_);
++    }
++
++    public final Set<DataComponentType<?>> applyComponentsSet(DataComponentMap p_330364_, DataComponentPatch p_338381_) {
++        // CraftBukkit end
+         final Set<DataComponentType<?>> set = new HashSet<>();
+         set.add(DataComponents.BLOCK_ENTITY_DATA);
+         set.add(DataComponents.BLOCK_STATE);
+@@ -304,6 +_,11 @@
+         });
+         DataComponentPatch datacomponentpatch = p_338381_.forget(set::contains);
+         this.components = datacomponentpatch.split().added();
++        // CraftBukkit start
++        set.remove(DataComponents.BLOCK_ENTITY_DATA); // Remove as never actually added by applyImplicitComponents
++        set.remove(DataComponents.BLOCK_STATE); // Remove as never actually added by applyImplicitComponents
++        return set;
++        // CraftBukkit end
+     }
+ 
+     protected void collectImplicitComponents(DataComponentMap.Builder p_338210_) {
 @@ -339,6 +_,15 @@
      @Override
      public void registerDebugValues(ServerLevel p_449833_, DebugValueSource.Registration p_449301_) {

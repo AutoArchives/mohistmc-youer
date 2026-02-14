@@ -27,7 +27,7 @@ public class BukkitDamageHooks {
         };
         float hardHatModifier = hardHat.apply((double) f).floatValue();
         f += hardHatModifier;
-        Function<Double, Double> blocking = f6 -> -((livingEntity.isDamageSourceBlocked(damagesource)) ? f6 : 0.0);
+        Function<Double, Double> blocking = f2 -> -((double) livingEntity.calculateItemBlocking(damagesource, f2.floatValue()));
         float blockingModifier = blocking.apply((double) f).floatValue();
         f += blockingModifier;
         Function<Double, Double> armor = f7 -> {
@@ -37,8 +37,8 @@ public class BukkitDamageHooks {
         float armorModifier = armor.apply((double) f).floatValue();
         f += armorModifier;
         Function<Double, Double> resistance = f8 -> {
-            if (!damagesource.is(net.minecraft.tags.DamageTypeTags.BYPASSES_EFFECTS) && livingEntity.hasEffect(net.minecraft.world.effect.MobEffects.DAMAGE_RESISTANCE) && !damagesource.is(net.minecraft.tags.DamageTypeTags.BYPASSES_RESISTANCE)) {
-                int i = (livingEntity.getEffect(net.minecraft.world.effect.MobEffects.DAMAGE_RESISTANCE).getAmplifier() + 1) * 5;
+            if (!damagesource.is(net.minecraft.tags.DamageTypeTags.BYPASSES_EFFECTS) && livingEntity.hasEffect(net.minecraft.world.effect.MobEffects.RESISTANCE) && !damagesource.is(net.minecraft.tags.DamageTypeTags.BYPASSES_RESISTANCE)) {
+                int i = (livingEntity.getEffect(net.minecraft.world.effect.MobEffects.RESISTANCE).getAmplifier() + 1) * 5;
                 int j = 25 - i;
                 float f1 = f8.floatValue() * (float) j;
                 return -(f8 - (f1 / 25.0F));

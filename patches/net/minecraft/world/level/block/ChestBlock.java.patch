@@ -1,5 +1,14 @@
 --- a/net/minecraft/world/level/block/ChestBlock.java
 +++ b/net/minecraft/world/level/block/ChestBlock.java
+@@ -90,7 +_,7 @@
+             return Optional.empty();
+         }
+     };
+-    private static final DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<MenuProvider>> MENU_PROVIDER_COMBINER = new DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<MenuProvider>>() {
++    public static final DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<MenuProvider>> MENU_PROVIDER_COMBINER = new DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<MenuProvider>>() {
+         public Optional<MenuProvider> acceptDouble(final ChestBlockEntity p_51604_, final ChestBlockEntity p_51605_) {
+             final Container container = new CompoundContainer(p_51604_, p_51605_);
+             return Optional.of(new MenuProvider() {
 @@ -129,6 +_,42 @@
          }
      };
@@ -43,7 +52,7 @@
      @Override
      public MapCodec<? extends ChestBlock> codec() {
          return CODEC;
-@@ -292,7 +_,8 @@
+@@ -292,10 +_,16 @@
      }
  
      @Override
@@ -53,6 +62,14 @@
          return this.combine(p_51574_, p_51575_, p_51576_, false).apply(MENU_PROVIDER_COMBINER).orElse(null);
      }
  
++    public @Nullable MenuProvider getMenuProvider(BlockState blockstate, Level level, BlockPos blockpos, boolean ignoreObstructions) {
++        return (MenuProvider) ((Optional) this.combine(blockstate, level, blockpos, ignoreObstructions).apply(ChestBlock.MENU_PROVIDER_COMBINER)).orElse((Object) null);
++        // CraftBukkit end
++    }
++
+     public static DoubleBlockCombiner.Combiner<ChestBlockEntity, Float2FloatFunction> opennessCombiner(final LidBlockEntity p_51518_) {
+         return new DoubleBlockCombiner.Combiner<ChestBlockEntity, Float2FloatFunction>() {
+             public Float2FloatFunction acceptDouble(ChestBlockEntity p_51633_, ChestBlockEntity p_51634_) {
 @@ -363,7 +_,8 @@
  
      @Override

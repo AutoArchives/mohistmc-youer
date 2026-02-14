@@ -8,11 +8,14 @@
  import java.util.function.Predicate;
  import net.minecraft.core.BlockPos;
  import net.minecraft.core.Holder;
-@@ -90,6 +_,7 @@
+@@ -90,6 +_,10 @@
  import net.minecraft.world.phys.AABB;
  import net.minecraft.world.phys.Vec3;
  import net.minecraft.world.ticks.ContainerSingleItem;
++import org.bukkit.craftbukkit.event.CraftEventFactory;
++import org.bukkit.event.entity.CreatureSpawnEvent;
 +import org.bukkit.event.entity.EntityTargetEvent;
++import org.bukkit.event.entity.EntityTransformEvent;
  import org.jspecify.annotations.Nullable;
  
  public abstract class Mob extends LivingEntity implements EquipmentUser, Leashable, Targeting {
@@ -180,14 +183,65 @@
      @Override
      public void setDropChance(EquipmentSlot p_21410_, float p_21411_) {
          this.dropChances = this.dropChances.withEquipmentChance(p_21410_, p_21411_);
-@@ -1199,6 +_,7 @@
+@@ -1190,20 +_,39 @@
+     public <T extends Mob> @Nullable T convertTo(
+         EntityType<T> p_21407_, ConversionParams p_371709_, EntitySpawnReason p_371281_, ConversionParams.AfterConversion<T> p_371266_
+     ) {
++        // CraftBukkit start
++        return this.convertTo(p_21407_, p_371709_, p_371281_, p_371266_, EntityTransformEvent.TransformReason.UNKNOWN, CreatureSpawnEvent.SpawnReason.DEFAULT);
++    }
++
++    public <T extends Mob> @Nullable T convertTo(EntityType<T> entitytype, ConversionParams conversionparams, EntitySpawnReason entityspawnreason, ConversionParams.AfterConversion<T> conversionparams_afterconversion, EntityTransformEvent.TransformReason transformReason, CreatureSpawnEvent.SpawnReason spawnReason) {
++        // CraftBukkit end
+         if (this.isRemoved()) {
+             return null;
+         } else {
+-            T t = (T)p_21407_.create(this.level(), p_371281_);
++            T t = (T)entitytype.create(this.level(), entityspawnreason);
+             if (t == null) {
+                 return null;
              } else {
-                 p_371709_.type().convert(this, t, p_371709_);
-                 p_371266_.finalizeConversion(t);
+-                p_371709_.type().convert(this, t, p_371709_);
+-                p_371266_.finalizeConversion(t);
++                conversionparams.type().convert(this, t, conversionparams);
++                conversionparams_afterconversion.finalizeConversion(t);
++                // CraftBukkit start
++                if (transformReason == null) {
++                    // Special handling for slime split and pig lightning
++                    return t;
++                }
++
++                if (CraftEventFactory.callEntityTransformEvent(this, t, transformReason).isCancelled()) {
++                    return null;
++                }
++
++                conversionparams.type().postConvert(this, t, conversionparams);
++                // CraftBukkit end
 +                if (!preventConversionSpawns)
                  if (this.level() instanceof ServerLevel serverlevel) {
                      serverlevel.addFreshEntity(t);
                  }
+ 
+-                if (p_371709_.type().shouldDiscardAfterConversion()) {
++                if (conversionparams.type().shouldDiscardAfterConversion()) {
+                     this.discard();
+                 }
+ 
+@@ -1213,7 +_,13 @@
+     }
+ 
+     public <T extends Mob> @Nullable T convertTo(EntityType<T> p_371496_, ConversionParams p_371476_, ConversionParams.AfterConversion<T> p_371861_) {
+-        return this.convertTo(p_371496_, p_371476_, EntitySpawnReason.CONVERSION, p_371861_);
++        // CraftBukkit start
++        return (T) this.convertTo(p_371496_, p_371476_, p_371861_, EntityTransformEvent.TransformReason.UNKNOWN, CreatureSpawnEvent.SpawnReason.DEFAULT);
++    }
++
++    public <T extends Mob> @Nullable T convertTo(EntityType<T> entitytype, ConversionParams conversionparams, ConversionParams.AfterConversion<T> conversionparams_afterconversion, EntityTransformEvent.TransformReason transformReason, CreatureSpawnEvent.SpawnReason spawnReason) {
++        return (T) this.convertTo(entitytype, conversionparams, EntitySpawnReason.CONVERSION, conversionparams_afterconversion, transformReason, spawnReason);
++        // CraftBukkit end
+     }
+ 
+     @Override
 @@ -1362,14 +_,24 @@
      }
  

@@ -1,5 +1,24 @@
 --- a/net/minecraft/world/level/ServerExplosion.java
 +++ b/net/minecraft/world/level/ServerExplosion.java
+@@ -49,6 +_,10 @@
+     private final DamageSource damageSource;
+     private final ExplosionDamageCalculator damageCalculator;
+     private final Map<Player, Vec3> hitPlayers = new HashMap<>();
++    // CraftBukkit - add field
++    public boolean wasCanceled = false;
++    public float yield;
++    // CraftBukkit end
+ 
+     public ServerExplosion(
+         ServerLevel p_361323_,
+@@ -68,6 +_,7 @@
+         this.blockInteraction = p_363174_;
+         this.damageSource = p_360713_ == null ? p_361323_.damageSources().explosion(this) : p_360713_;
+         this.damageCalculator = p_360818_ == null ? this.makeDamageCalculator(p_365060_) : p_360818_;
++        this.yield = this.blockInteraction == Explosion.BlockInteraction.DESTROY_WITH_DECAY ? 1.0F / this.radius : 1.0F; // CraftBukkit
+     }
+ 
+     private ExplosionDamageCalculator makeDamageCalculator(@Nullable Entity p_364459_) {
 @@ -167,7 +_,12 @@
          return new ObjectArrayList<>(set);
      }

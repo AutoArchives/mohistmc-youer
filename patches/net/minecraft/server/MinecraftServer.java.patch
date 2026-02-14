@@ -65,7 +65,7 @@
      private final StructureTemplateManager structureTemplateManager;
      private final ServerTickRateManager tickRateManager;
      private final ServerDebugSubscribers debugSubscribers = new ServerDebugSubscribers(this);
-@@ -282,9 +_,27 @@
+@@ -282,9 +_,33 @@
      private final DiscontinuousFrame tickFrame;
      private final PacketProcessor packetProcessor;
  
@@ -81,6 +81,12 @@
 +    public Commands vanillaCommandDispatcher;
 +    private boolean forceTicks;
 +    // CraftBukkit end
++    // Spigot start
++    public static final int TPS = 20;
++    public static final int TICK_TIME = 1000000000 / TPS;
++    private static final int SAMPLE_INTERVAL = 100;
++    public final double[] recentTps = new double[ 3 ];
++    // Spigot end
 +
 +    public void worldLoader(WorldLoader.DataLoadContext worldLoader, OptionSet options) {
 +        this.worldLoader = worldLoader;

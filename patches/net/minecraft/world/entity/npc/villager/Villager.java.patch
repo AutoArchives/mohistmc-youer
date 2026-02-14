@@ -1,5 +1,16 @@
 --- a/net/minecraft/world/entity/npc/villager/Villager.java
 +++ b/net/minecraft/world/entity/npc/villager/Villager.java
+@@ -180,6 +_,10 @@
+         (p_482165_, p_481107_) -> p_481107_.is(PoiTypes.MEETING)
+     );
+ 
++    // CraftBukkit start
++    public long gossipDecayInterval = GOSSIP_DECAY_INTERVAL;
++    // CraftBukkit end
++
+     public Villager(EntityType<? extends Villager> p_478620_, Level p_480064_) {
+         this(p_478620_, p_480064_, VillagerType.PLAINS);
+     }
 @@ -324,7 +_,7 @@
      @Override
      public InteractionResult mobInteract(Player p_480051_, InteractionHand p_478071_) {
@@ -9,6 +20,15 @@
              return super.mobInteract(p_480051_, p_478071_);
          } else if (this.isBaby()) {
              this.setUnhappy();
+@@ -351,7 +_,7 @@
+         }
+     }
+ 
+-    private void setUnhappy() {
++    public void setUnhappy() {
+         this.setUnhappyCounter(40);
+         if (!this.level().isClientSide()) {
+             this.makeSound(SoundEvents.VILLAGER_NO);
 @@ -617,7 +_,7 @@
          super.die(p_481224_);
      }

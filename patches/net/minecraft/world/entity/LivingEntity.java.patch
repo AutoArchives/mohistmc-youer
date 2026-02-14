@@ -21,6 +21,14 @@
  import java.util.function.BiConsumer;
  import java.util.function.Consumer;
  import java.util.function.Function;
+@@ -78,6 +_,7 @@
+ import net.minecraft.world.damagesource.CombatRules;
+ import net.minecraft.world.damagesource.CombatTracker;
+ import net.minecraft.world.damagesource.DamageSource;
++import net.minecraft.world.damagesource.DamageType;
+ import net.minecraft.world.damagesource.DamageTypes;
+ import net.minecraft.world.effect.MobEffect;
+ import net.minecraft.world.effect.MobEffectInstance;
 @@ -139,6 +_,10 @@
  import net.minecraft.world.scores.Scoreboard;
  import net.minecraft.world.waypoints.Waypoint;
@@ -476,7 +484,7 @@
              this.resolveMobResponsibleForDamage(p_376460_);
              this.resolvePlayerResponsibleForDamage(p_376460_);
              if (flag1) {
-@@ -1273,6 +_,7 @@
+@@ -1273,10 +_,63 @@
                  CriteriaTriggers.PLAYER_HURT_ENTITY.trigger(serverplayer1, this, p_376460_, p_376610_, p_376610_, flag);
              }
  
@@ -484,6 +492,62 @@
              return flag2;
          }
      }
+ 
++    public float calculateItemBlocking(DamageSource damagesource, float f) {
++        // CraftBukkit end
++        if (f <= 0.0F) {
++            return 0.0F;
++        } else {
++            ItemStack itemstack = this.getItemBlockingWith();
++
++            if (itemstack == null) {
++                return 0.0F;
++            } else {
++                BlocksAttacks blocksattacks = (BlocksAttacks) itemstack.get(DataComponents.BLOCKS_ATTACKS);
++
++                if (blocksattacks != null) {
++                    Optional<TagKey<DamageType>> optional = blocksattacks.bypassedBy(); // CraftBukkit - decompile error
++
++                    java.util.Objects.requireNonNull(damagesource);
++                    if (!(Boolean) optional.map(damagesource::is).orElse(false)) {
++                        Entity entity = damagesource.getDirectEntity();
++
++                        if (entity instanceof AbstractArrow) {
++                            AbstractArrow abstractarrow = (AbstractArrow) entity;
++
++                            if (abstractarrow.getPierceLevel() > 0) {
++                                return 0.0F;
++                            }
++                        }
++
++                        Vec3 vec3 = damagesource.getSourcePosition();
++                        double d0;
++
++                        if (vec3 != null) {
++                            Vec3 vec31 = this.calculateViewVector(0.0F, this.getYHeadRot());
++                            Vec3 vec32 = vec3.subtract(this.position());
++
++                            vec32 = (new Vec3(vec32.x, 0.0D, vec32.z)).normalize();
++                            d0 = Math.acos(vec32.dot(vec31));
++                        } else {
++                            d0 = (double) (float) Math.PI;
++                        }
++
++                        float f1 = blocksattacks.resolveBlockedDamage(damagesource, f, d0);
++
++                        // CraftBukkit start
++                        return f1;
++                    }
++                }
++
++                return 0.0F;
++            }
++        }
++    }
++
+     public float applyItemBlocking(ServerLevel p_401171_, DamageSource p_401067_, float p_401377_) {
+         if (p_401377_ <= 0.0F) {
+             return 0.0F;
 @@ -1286,7 +_,7 @@
                  return 0.0F;
              } else {
@@ -556,7 +620,7 @@
          boolean flag = this.lastHurtByPlayerMemoryTime > 0;
          if (this.shouldDropLoot(p_348524_)) {
              this.dropFromLootTable(p_348524_, p_21192_, flag);
-@@ -1490,6 +_,10 @@
+@@ -1490,18 +_,31 @@
  
          this.dropEquipment(p_348524_);
          this.dropExperience(p_348524_, p_21192_.getEntity());
@@ -567,7 +631,19 @@
      }
  
      protected void dropEquipment(ServerLevel p_376330_) {
-@@ -1501,7 +_,8 @@
+     }
+ 
++    public int getExpReward(ServerLevel serverlevel, @Nullable Entity entity) { // CraftBukkit
++        if (!this.wasExperienceConsumed() && (this.isAlwaysExperienceDropper() || this.lastHurtByPlayerMemoryTime > 0 && this.shouldDropExperience() && (Boolean) serverlevel.getGameRules().get(GameRules.MOB_DROPS))) {
++            return this.getExperienceReward(serverlevel, entity); // CraftBukkit
++        }
++
++        return 0; // CraftBukkit
++    }
++
+     protected void dropExperience(ServerLevel p_376909_, @Nullable Entity p_345346_) {
+         if (!this.wasExperienceConsumed()
+             && (
                  this.isAlwaysExperienceDropper()
                      || this.lastHurtByPlayerMemoryTime > 0 && this.shouldDropExperience() && p_376909_.getGameRules().get(GameRules.MOB_DROPS)
              )) {
@@ -668,6 +744,28 @@
              for (EquipmentSlot equipmentslot : p_331314_) {
                  ItemStack itemstack = this.getItemBySlot(equipmentslot);
                  Equippable equippable = itemstack.get(DataComponents.EQUIPPABLE);
+@@ -1807,9 +_,10 @@
+         }
+     }
+ 
+-    protected float getDamageAfterArmorAbsorb(DamageSource p_21162_, float p_21163_) {
++    public AtomicBoolean calDamageEvent = new AtomicBoolean(false);
++    public float getDamageAfterArmorAbsorb(DamageSource p_21162_, float p_21163_) {
+         if (!p_21162_.is(DamageTypeTags.BYPASSES_ARMOR)) {
+-            this.hurtArmor(p_21162_, p_21163_);
++            if (!calDamageEvent.getAndSet(false)) this.hurtArmor(p_21162_, p_21163_);
+             p_21163_ = CombatRules.getDamageAfterAbsorb(
+                 this, p_21163_, p_21162_, this.getArmorValue(), (float)this.getAttributeValue(Attributes.ARMOR_TOUGHNESS)
+             );
+@@ -1818,7 +_,7 @@
+         return p_21163_;
+     }
+ 
+-    protected float getDamageAfterMagicAbsorb(DamageSource p_21193_, float p_21194_) {
++    public float getDamageAfterMagicAbsorb(DamageSource p_21193_, float p_21194_) {
+         if (p_21193_.is(DamageTypeTags.BYPASSES_EFFECTS)) {
+             return p_21194_;
+         } else {
 @@ -1830,6 +_,7 @@
                  p_21194_ = Math.max(f / 25.0F, 0.0F);
                  float f2 = f1 - p_21194_;

@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/entity/item/PrimedTnt.java
 +++ b/net/minecraft/world/entity/item/PrimedTnt.java
-@@ -52,9 +_,10 @@
+@@ -52,9 +_,11 @@
                  : super.getBlockExplosionResistance(p_353090_, p_353088_, p_353091_, p_353093_, p_353095_);
          }
      };
@@ -10,6 +10,7 @@
      private boolean usedPortal;
 -    private float explosionPower = 4.0F;
 +    public float explosionPower = 4.0F;
++    public boolean isIncendiary = false; // CraftBukkit - add field
  
      public PrimedTnt(EntityType<? extends PrimedTnt> p_32076_, Level p_32077_) {
          super(p_32076_, p_32077_);

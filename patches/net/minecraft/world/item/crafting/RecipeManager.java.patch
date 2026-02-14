@@ -8,7 +8,13 @@
  import net.minecraft.server.level.ServerLevel;
  import net.minecraft.server.packs.resources.ResourceManager;
  import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
-@@ -63,6 +_,7 @@
+@@ -58,11 +_,12 @@
+     );
+     private static final FileToIdConverter RECIPE_LISTER = FileToIdConverter.registry(Registries.RECIPE);
+     private final HolderLookup.Provider registries;
+-    private RecipeMap recipes = RecipeMap.EMPTY;
++    public RecipeMap recipes = RecipeMap.EMPTY;
+     private Map<ResourceKey<RecipePropertySet>, RecipePropertySet> propertySets = Map.of();
      private SelectableRecipe.SingleInputSet<StonecutterRecipe> stonecutterRecipes = SelectableRecipe.SingleInputSet.empty();
      private List<RecipeManager.ServerDisplayInfo> allDisplays = List.of();
      private Map<ResourceKey<Recipe<?>>, List<RecipeManager.ServerDisplayInfo>> recipeToDisplay = Map.of();

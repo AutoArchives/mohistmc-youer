@@ -1,0 +1,31 @@
+--- a/net/minecraft/world/item/crafting/SmithingTransformRecipe.java
++++ b/net/minecraft/world/item/crafting/SmithingTransformRecipe.java
+@@ -13,6 +_,10 @@
+ import net.minecraft.world.item.crafting.display.RecipeDisplay;
+ import net.minecraft.world.item.crafting.display.SlotDisplay;
+ import net.minecraft.world.item.crafting.display.SmithingRecipeDisplay;
++import org.bukkit.NamespacedKey;
++import org.bukkit.craftbukkit.inventory.CraftRecipe;
++import org.bukkit.craftbukkit.inventory.CraftSmithingTransformRecipe;
++import org.bukkit.inventory.Recipe;
+ import org.jspecify.annotations.Nullable;
+ 
+ public class SmithingTransformRecipe implements SmithingRecipe {
+@@ -74,6 +_,17 @@
+             )
+         );
+     }
++
++    // CraftBukkit start
++    @Override
++    public Recipe toBukkitRecipe(NamespacedKey id) {
++        org.bukkit.inventory.ItemStack result = CraftRecipe.toBukkit(this.result);
++
++        CraftSmithingTransformRecipe recipe = new CraftSmithingTransformRecipe(id, result, CraftRecipe.toBukkit(this.template), CraftRecipe.toBukkit(this.base), CraftRecipe.toBukkit(this.addition));
++
++        return recipe;
++    }
++    // CraftBukkit end
+ 
+     public static class Serializer implements RecipeSerializer<SmithingTransformRecipe> {
+         private static final MapCodec<SmithingTransformRecipe> CODEC = RecordCodecBuilder.mapCodec(

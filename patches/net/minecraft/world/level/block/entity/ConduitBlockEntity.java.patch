@@ -25,7 +25,7 @@
                          }
                      }
                  }
-@@ -178,7 +_,15 @@
+@@ -178,10 +_,24 @@
          }
      }
  
@@ -39,9 +39,19 @@
 +    }
 +
 +    public static void updateAndAttackTarget(ServerLevel p_423464_, BlockPos p_423617_, BlockState p_423636_, ConduitBlockEntity p_423533_, boolean p_423687_) {
++        // CraftBukkit start - add "damageTarget" boolean
++        updateAndAttackTarget(p_423464_, p_423617_, p_423636_, p_423533_, p_423687_, true);
++    }
++
++    public static void updateAndAttackTarget(ServerLevel p_423464_, BlockPos p_423617_, BlockState p_423636_, ConduitBlockEntity p_423533_, boolean p_423687_, boolean damageTarget) {
++        // CraftBukkit end
          EntityReference<LivingEntity> entityreference = updateDestroyTarget(p_423533_.destroyTarget, p_423464_, p_423617_, p_423687_);
          LivingEntity livingentity = EntityReference.getLivingEntity(entityreference, p_423464_);
-         if (livingentity != null) {
+-        if (livingentity != null) {
++        if (damageTarget && livingentity != null) {
+             p_423464_.playSound(
+                 null, livingentity.getX(), livingentity.getY(), livingentity.getZ(), SoundEvents.CONDUIT_ATTACK_TARGET, SoundSource.BLOCKS, 1.0F, 1.0F
+             );
 @@ -214,7 +_,7 @@
          return list.isEmpty() ? null : EntityReference.of(Util.getRandom(list, p_423488_.random));
      }

@@ -1408,7 +1408,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
     @Override
     public boolean canGenerateStructures() {
-        return world.serverLevelData.worldGenOptions().generateStructures();
+        return world.I.worldGenOptions().generateStructures();
     }
 
     @Override
@@ -1418,7 +1418,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
 
     @Override
     public void setHardcore(boolean hardcore) {
-        world.serverLevelData.settings.hardcore = hardcore;
+        world.I.settings.hardcore = hardcore;
     }
 
     @Override
@@ -1762,7 +1762,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
         Preconditions.checkArgument(newValue != null, "GameRule value cannot be null");
 
         net.minecraft.world.level.gamerules.GameRule handle = CraftGameRule.bukkitToMinecraft(rule);
-        getHandle().getGameRules().set(handle, newValue, getHandle());
+        //getHandle().getGameRules().set(handle, newValue, getHandle()); TODO
         return true;
     }
 

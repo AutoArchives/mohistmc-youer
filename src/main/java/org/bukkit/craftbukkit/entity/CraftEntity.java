@@ -209,7 +209,8 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
         if (location.getWorld() != null && !location.getWorld().equals(getWorld())) {
             // Prevent teleportation to an other world during world generation
             Preconditions.checkState(!entity.generation, "Cannot teleport entity to an other world during world generation");
-            entity.teleport(new TeleportTransition(((CraftWorld) location.getWorld()).getHandle(), CraftLocation.toVec3D(location), Vec3.ZERO, location.getPitch(), location.getYaw(), Set.of(), TeleportTransition.DO_NOTHING, TeleportCause.PLUGIN));
+            // entity.teleport(new TeleportTransition(((CraftWorld) location.getWorld()).getHandle(), CraftLocation.toVec3D(location), Vec3.ZERO, location.getPitch(), location.getYaw(), Set.of(), TeleportTransition.DO_NOTHING, TeleportCause.PLUGIN)); // Youer TODO
+            entity.teleport(new TeleportTransition(((CraftWorld) location.getWorld()).getHandle(), CraftLocation.toVec3D(location), Vec3.ZERO, location.getPitch(), location.getYaw(), Set.of(), TeleportTransition.DO_NOTHING));
             return true;
         }
 
@@ -791,7 +792,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
     @Override
     public String getAsString() {
         TagValueOutput tag = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, getHandle().registryAccess());
-        if (!getHandle().saveAsPassenger(tag, false)) {
+        if (!getHandle().saveAsPassengerCB(tag, false)) {
             return null;
         }
 
@@ -824,7 +825,7 @@ public abstract class CraftEntity implements org.bukkit.entity.Entity {
 
     private Entity copy(net.minecraft.world.level.Level level) {
         TagValueOutput compoundTag = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, getHandle().registryAccess());
-        getHandle().saveAsPassenger(compoundTag, false);
+        getHandle().saveAsPassengerCB(compoundTag, false);
 
         return net.minecraft.world.entity.EntityType.loadEntityRecursive(compoundTag.buildResult(), level, EntitySpawnReason.LOAD, EntityProcessor.NOP);
     }
