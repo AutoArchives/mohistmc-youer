@@ -1,5 +1,6 @@
 package com.mohistmc.youer.feature.world.commands;
 
+import com.mohistmc.youer.api.ServerAPI;
 import com.mohistmc.youer.api.gui.DemoGUI;
 import com.mohistmc.youer.api.gui.GUIItem;
 import com.mohistmc.youer.api.gui.ItemStackFactory;
@@ -118,11 +119,11 @@ public class WorldsCommands extends Command {
             }
             if (args.length == 2 && args[0].equalsIgnoreCase("delete")) {
                 String worldName = args[1];
-                if (!args[1].equalsIgnoreCase(Bukkit.getUnsafe().getMainLevelName())) {
+                if (!args[1].equalsIgnoreCase(ServerAPI.getMainLevelName())) {
                     World w = Bukkit.getWorld(worldName);
                     if (w != null) {
                         for (Player all : w.getPlayers()) {
-                            all.teleport(MinecraftServer.getServer().overworld().world.getSpawnLocation()); // use overworld
+                            all.teleport(MinecraftServer.getServer().overworld().getWorld().getSpawnLocation()); // use overworld
                         }
                         try {
                             ConfigByWorlds.removeWorld(worldName);
@@ -174,7 +175,7 @@ public class WorldsCommands extends Command {
                     return false;
                 }
                 for (Player all2 : world.getPlayers()) {
-                    all2.teleport(Bukkit.getWorld(Bukkit.getUnsafe().getMainLevelName()).getSpawnLocation());
+                    all2.teleport(Bukkit.getWorld(ServerAPI.getMainLevelName()).getSpawnLocation());
                 }
                 Bukkit.unloadWorld(world, true);
                 ConfigByWorlds.removeWorld(worldName);

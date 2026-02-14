@@ -117,7 +117,7 @@ public class NeoForgeInjectBukkit {
                 if (material != null) {
                     CraftMagicNumbers.ITEM_MATERIAL.put(item, material);
                     CraftMagicNumbers.MATERIAL_ITEM.put(material, item);
-                    Youer.LOGGER.debug("Save-ITEM: {} - {}", material.name(), material.key);
+                    Youer.LOGGER.debug("Save-ITEM: {} - {}", material.name(), material.getKeyOrNull());
                 }
             }
         }
@@ -144,7 +144,7 @@ public class NeoForgeInjectBukkit {
                 if (material != null) {
                     CraftMagicNumbers.BLOCK_MATERIAL.put(block, material);
                     CraftMagicNumbers.MATERIAL_BLOCK.put(material, block);
-                    Youer.LOGGER.debug("Save-BLOCK:{} - {}", material.name(), material.key);
+                    Youer.LOGGER.debug("Save-BLOCK:{} - {}", material.name(), material.getKeyOrNull());
                 }
             }
         }
@@ -199,14 +199,14 @@ public class NeoForgeInjectBukkit {
 
     public static void addEnumBiome() {
         List<String> map = new ArrayList<>();
-        var registry = ServerAPI.getNMSServer().registryAccess().registryOrThrow(Registries.BIOME);
+        var registry = ServerAPI.getNMSServer().registryAccess().lookupOrThrow(Registries.BIOME);
         for (net.minecraft.world.level.biome.Biome biome : registry) {
             Identifier resourceLocation = registry.getKey(biome);
             String biomeName = MohistDynamEnum.normalizeName(resourceLocation.toString());
             if (isMods(resourceLocation) && !map.contains(biomeName)) {
                 map.add(biomeName);
                 org.bukkit.block.Biome biomeCB = MohistDynamEnum.addEnum(org.bukkit.block.Biome.class, biomeName);
-                biomeCB.key = CraftNamespacedKey.fromMinecraft(resourceLocation);
+                //biomeCB.key = CraftNamespacedKey.fromMinecraft(resourceLocation);
                 biomeBiomeMap.put(biome, biomeCB);
                 Youer.LOGGER.debug("Save-BIOME:{} - {}", biomeCB.name(), biomeName);
             }
@@ -221,7 +221,7 @@ public class NeoForgeInjectBukkit {
             ResourceKey<LevelStem> key = entry.getKey();
             World.Environment environment1 = environment.get(key);
             if (environment1 == null) {
-                String name = MohistDynamEnum.normalizeName(key.location().toString());
+                String name = MohistDynamEnum.normalizeName(key.identifier().toString());
                 int id = i - 1;
                 environment1 = MohistDynamEnum.addEnum(World.Environment.class, name, List.of(Integer.TYPE), List.of(id));
                 environment.put(key, environment1);
@@ -347,9 +347,6 @@ public class NeoForgeInjectBukkit {
                 String lookupName = resourceLocation.getPath().toLowerCase(Locale.ROOT);
                 int id = i - 1;
                 Art art = MohistDynamEnum.addEnum(Art.class, name, List.of(Integer.TYPE, Integer.TYPE, Integer.TYPE), List.of(id, width, height));
-                Art.BY_NAME.put(lookupName, art);
-                Art.BY_ID.put(id, art);
-                art.key = CraftNamespacedKey.fromMinecraft(resourceLocation);
                 Youer.LOGGER.debug("Registered forge PaintingType as Art {}", art);
                 i++;
             }
@@ -363,7 +360,7 @@ public class NeoForgeInjectBukkit {
             if (isMods(resourceLocation)) {
                 String name = resourceLocation.getPath().replace(".", "_").toUpperCase(Locale.ROOT);
                 Sound sound = MohistDynamEnum.addEnum(Sound.class, name, List.of(String.class), List.of(resourceLocation.toString()));
-                Sound.MODD_SOUNDS.put(statType, sound);
+                //Sound.MODD_SOUNDS.put(statType, sound);
                 Youer.LOGGER.debug("Registered mods SoundEvent as Sound(Bukkit) {}", sound.name());
             }
         }

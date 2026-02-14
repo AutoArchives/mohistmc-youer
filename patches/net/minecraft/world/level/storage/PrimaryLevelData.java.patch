@@ -1,13 +1,16 @@
 --- a/net/minecraft/world/level/storage/PrimaryLevelData.java
 +++ b/net/minecraft/world/level/storage/PrimaryLevelData.java
-@@ -13,6 +_,7 @@
+@@ -13,8 +_,10 @@
  import java.util.stream.Collectors;
  import net.minecraft.CrashReportCategory;
  import net.minecraft.SharedConstants;
 +import net.minecraft.core.Registry;
  import net.minecraft.core.RegistryAccess;
  import net.minecraft.core.UUIDUtil;
++import net.minecraft.core.registries.Registries;
  import net.minecraft.nbt.CompoundTag;
+ import net.minecraft.nbt.ListTag;
+ import net.minecraft.nbt.NbtOps;
 @@ -22,6 +_,7 @@
  import net.minecraft.nbt.StringTag;
  import net.minecraft.nbt.Tag;
@@ -16,14 +19,17 @@
  import net.minecraft.util.Util;
  import net.minecraft.world.Difficulty;
  import net.minecraft.world.level.GameType;
-@@ -29,6 +_,7 @@
+@@ -29,8 +_,10 @@
  import net.minecraft.world.level.LevelSettings;
  import net.minecraft.world.level.WorldDataConfiguration;
  import net.minecraft.world.level.border.WorldBorder;
 +import net.minecraft.world.level.dimension.LevelStem;
  import net.minecraft.world.level.dimension.end.EndDragonFight;
  import net.minecraft.world.level.gamerules.GameRules;
++import net.minecraft.world.level.levelgen.WorldDimensions;
  import net.minecraft.world.level.levelgen.WorldGenSettings;
+ import net.minecraft.world.level.levelgen.WorldOptions;
+ import net.minecraft.world.level.timers.TimerCallbacks;
 @@ -70,6 +_,21 @@
      private boolean wasModded;
      private final Set<String> removedFeatureFlags;
@@ -78,6 +84,15 @@
      }
  
      @Override
+@@ -221,7 +_,7 @@
+         p_78547_.put("Version", compoundtag);
+         NbtUtils.addCurrentDataVersion(p_78547_);
+         DynamicOps<Tag> dynamicops = p_78546_.createSerializationContext(NbtOps.INSTANCE);
+-        WorldGenSettings.encode(dynamicops, this.worldOptions, p_78546_)
++        WorldGenSettings.encode(dynamicops, this.worldOptions, new WorldDimensions(this.customDimensions != null ? this.customDimensions : p_78546_.lookupOrThrow(Registries.LEVEL_STEM)))
+             .resultOrPartial(Util.prefix("WorldGenSettings: ", LOGGER::error))
+             .ifPresent(p_78574_ -> p_78547_.put("WorldGenSettings", p_78574_));
+         p_78547_.putInt("GameType", this.settings.gameType().getId());
 @@ -257,6 +_,12 @@
          p_78547_.putInt("WanderingTraderSpawnDelay", this.wanderingTraderSpawnDelay);
          p_78547_.putInt("WanderingTraderSpawnChance", this.wanderingTraderSpawnChance);
@@ -91,10 +106,18 @@
      }
  
      private static ListTag stringCollectionToTag(Set<String> p_277880_) {
-@@ -547,10 +_,58 @@
+@@ -547,10 +_,66 @@
          return this.settings.copy();
      }
  
++    // CraftBukkit start - Check if the name stored in NBT is the correct one
++    public void checkName(String name) {
++        if (!this.settings.levelName.equals(name)) {
++            this.settings.levelName = name;
++        }
++    }
++    // CraftBukkit end
++
 +    public boolean hasConfirmedExperimentalWarning() {
 +        return this.confirmedExperimentalWarning;
 +    }

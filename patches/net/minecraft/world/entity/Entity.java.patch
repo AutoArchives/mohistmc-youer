@@ -1,5 +1,21 @@
 --- a/net/minecraft/world/entity/Entity.java
 +++ b/net/minecraft/world/entity/Entity.java
+@@ -24,6 +_,7 @@
+ import java.util.Optional;
+ import java.util.Set;
+ import java.util.UUID;
++import java.util.concurrent.atomic.AtomicBoolean;
+ import java.util.concurrent.atomic.AtomicInteger;
+ import java.util.function.BiConsumer;
+ import java.util.function.Predicate;
+@@ -46,6 +_,7 @@
+ import net.minecraft.core.component.DataComponents;
+ import net.minecraft.core.particles.BlockParticleOption;
+ import net.minecraft.core.particles.ParticleTypes;
++import net.minecraft.nbt.CompoundTag;
+ import net.minecraft.network.chat.Component;
+ import net.minecraft.network.chat.ComponentSerialization;
+ import net.minecraft.network.chat.HoverEvent;
 @@ -149,11 +_,14 @@
  import net.minecraft.world.scores.ScoreHolder;
  import net.minecraft.world.scores.Team;
@@ -293,6 +309,53 @@
      }
  
      public void moveRelative(float p_19921_, Vec3 p_19922_) {
+@@ -1924,7 +_,12 @@
+         d0 *= 64.0 * viewScale;
+         return p_19883_ < d0 * d0;
+     }
++    public AtomicBoolean saveAsPassenger$includeAll = new AtomicBoolean(true);
+ 
++    public boolean saveAsPassengerCB(ValueOutput valueoutput, boolean includeAll) {
++        saveAsPassenger$includeAll.set(includeAll);
++        return saveAsPassenger(valueoutput);
++    }
+     public boolean saveAsPassenger(ValueOutput p_421773_) {
+         if (this.removalReason != null && !this.removalReason.shouldSave()) {
+             return false;
+@@ -1934,6 +_,7 @@
+                 return false;
+             } else {
+                 p_421773_.putString("id", s);
++                saveWithoutId$includeAll.set(saveAsPassenger$includeAll.getAndSet(true));
+                 this.saveWithoutId(p_421773_);
+                 return true;
+             }
+@@ -1944,12 +_,21 @@
+         return this.isPassenger() ? false : this.saveAsPassenger(p_422525_);
+     }
+ 
++    public AtomicBoolean saveWithoutId$includeAll = new AtomicBoolean(true);
++
++    public void saveWithoutIdCB(ValueOutput valueoutput, boolean includeAll) {
++        saveWithoutId$includeAll.set(includeAll);
++        saveWithoutId(valueoutput);
++    }
+     public void saveWithoutId(ValueOutput p_422475_) {
+         try {
+-            if (this.vehicle != null) {
+-                p_422475_.store("Pos", Vec3.CODEC, new Vec3(this.vehicle.getX(), this.getY(), this.vehicle.getZ()));
+-            } else {
+-                p_422475_.store("Pos", Vec3.CODEC, this.position());
++            // CraftBukkit start - selectively save position
++            if (saveWithoutId$includeAll.get()) {
++                if (this.vehicle != null) {
++                    p_422475_.store("Pos", Vec3.CODEC, new Vec3(this.vehicle.getX(), this.getY(), this.vehicle.getZ()));
++                } else {
++                    p_422475_.store("Pos", Vec3.CODEC, this.position());
++                }
+             }
+ 
+             p_422475_.store("Motion", Vec3.CODEC, this.getDeltaMovement());
 @@ -1995,6 +_,11 @@
                  p_422475_.store("data", CustomData.CODEC, this.customData);
              }

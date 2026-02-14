@@ -60,17 +60,7 @@ public class ItemAPI {
     }
 
     public static String getNbtAsString(CompoundTag compoundTag) {
-        return compoundTag == null ? "null" : compoundTag.getAsString();
-    }
-
-    public static String getNbtAsString(ItemStack itemStack) {
-        var item = CraftItemStack.asNMSCopy(itemStack);
-        try {
-            net.minecraft.nbt.CompoundTag nbt = (net.minecraft.nbt.CompoundTag) item.save(net.minecraft.core.RegistryAccess.EMPTY);
-            return getNbtAsString(nbt);
-        } catch (Exception e) {
-           return "null";
-        }
+        return compoundTag == null ? "null" : compoundTag.asString().get();
     }
 
     /**
@@ -189,23 +179,9 @@ public class ItemAPI {
         itemStack.setItemMeta(im);
     }
 
-    @Deprecated
-    public static TextComponent show(ItemStack itemStack) {
-        net.minecraft.world.item.ItemStack nmsItemStack = CraftItemStack.asNMSCopy(itemStack);
-        CompoundTag compound = new CompoundTag();
-        nmsItemStack.save(MinecraftServer.getServer().registryAccess(), compound);
-        String json = compound.toString();
-        BaseComponent[] hoverEventComponents = new BaseComponent[]{
-                new TextComponent(json)
-        };
-        TextComponent component = new TextComponent(itemStack.hasItemMeta() && itemStack.getItemMeta().hasDisplayName() ? itemStack.getItemMeta().getDisplayName() : itemStack.getTranslationKey());
-        component.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, hoverEventComponents));
-        return component;
-    }
-
     public static boolean isBan(ItemStack itemStack) {
         if (itemStack == null || BanConfig.ITEM.getItem().isEmpty()) return false;
-        return BanConfig.ITEM.getItem().contains(itemStack.getType().getKey().asString());
+        return BanConfig.ITEM.getItem().contains(itemStack.getType().getKey().toString());
     }
 
     public static Material getEggMaterial(net.minecraft.world.entity.EntityType<?> entitytype) {
@@ -246,7 +222,7 @@ public class ItemAPI {
     }
 
     public static Material get(Identifier key) {
-        return BuiltInRegistries.ITEM.get(key).getDefaultInstance().asBukkitCopy().getType();
+        return BuiltInRegistries.ITEM.get(key).get().value().getDefaultInstance().asBukkitCopy().getType();
     }
 
     /**

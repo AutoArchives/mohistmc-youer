@@ -140,6 +140,39 @@
          if (mapitemsaveddata != null) {
              Packet<?> packet = mapitemsaveddata.getUpdatePacket(mapid, this);
              if (packet != null) {
+@@ -814,6 +_,32 @@
+         }
+     }
+ 
++    public Entity getEntityOnShoulder(CompoundTag compoundtag) { // CraftBukkit - split
++        ServerLevel serverlevel = this.level();
++
++        if (serverlevel instanceof ServerLevel) {
++            ServerLevel serverlevel1 = serverlevel;
++
++            if (!compoundtag.isEmpty()) {
++                try (ProblemReporter.ScopedCollector problemreporter_scopedcollector = new ProblemReporter.ScopedCollector(this.problemPath(), ServerPlayer.LOGGER)) {
++                    return EntityType.create(TagValueInput.create(problemreporter_scopedcollector.forChild(() -> { // CraftBukkit
++                        return ".shoulder";
++                    }), serverlevel1.registryAccess(), compoundtag), serverlevel1, EntitySpawnReason.LOAD).map((entity) -> { // CraftBukkit
++                        if (entity instanceof TamableAnimal tamableanimal) {
++                            tamableanimal.setOwner(this);
++                        }
++
++                        entity.setPos(this.getX(), this.getY() + (double) 0.7F, this.getZ());
++                        return entity; // CraftBukkit
++                    }).orElse(null); // CraftBukkit
++                }
++            }
++        }
++
++        // CraftBukkit start
++        return null;
++    }
++
+     private void respawnEntityOnShoulder(CompoundTag p_446462_) {
+         ServerLevel $$2 = this.level();
+         if ($$2 instanceof ServerLevel) {
 @@ -878,6 +_,7 @@
      @Override
      public void die(DamageSource p_9035_) {
@@ -263,8 +296,15 @@
          return this.isReachableBedBlock(p_9117_) || this.isReachableBedBlock(p_9117_.relative(p_9118_.getOpposite()));
      }
  
-@@ -1325,11 +_,19 @@
+@@ -1323,13 +_,26 @@
+         this.containerCounter = this.containerCounter % 100 + 1;
+     }
  
++    public int nextContainerCounterInt() {
++        this.nextContainerCounter();
++        return containerCounter; // CraftBukkit
++    }
++
      @Override
      public OptionalInt openMenu(@Nullable MenuProvider p_9033_) {
 +        return openMenu(p_9033_, (java.util.function.Consumer<net.minecraft.network.RegistryFriendlyByteBuf>) null);
@@ -489,12 +529,15 @@
          GameType gametype = this.server.getForcedGameType();
          if (gametype != null) {
              return gametype;
-@@ -2066,6 +_,8 @@
+@@ -2064,8 +_,10 @@
+         super.updateUsingItem(p_143402_);
+     }
  
-     public void drop(boolean p_182295_) {
+-    public void drop(boolean p_182295_) {
++    public boolean drop(boolean p_182295_) {
          Inventory inventory = this.getInventory();
 +        ItemStack selected = inventory.getSelectedItem();
-+        if (selected.isEmpty() || !selected.onDroppedByPlayer(this)) return;
++        if (selected.isEmpty() || !selected.onDroppedByPlayer(this)) return false;
          ItemStack itemstack = inventory.removeFromSelected(p_182295_);
          this.containerMenu
              .findSlot(inventory, inventory.getSelectedSlot())
@@ -503,7 +546,7 @@
          }
  
 -        this.drop(itemstack, false, true);
-+        net.neoforged.neoforge.common.CommonHooks.onPlayerTossEvent(this, itemstack, false, true);
++        return net.neoforged.neoforge.common.CommonHooks.onPlayerTossEvent(this, itemstack, false, true) != null;
      }
  
      @Override

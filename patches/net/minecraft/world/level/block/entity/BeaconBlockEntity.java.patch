@@ -1,5 +1,14 @@
 --- a/net/minecraft/world/level/block/entity/BeaconBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/BeaconBlockEntity.java
+@@ -47,6 +_,8 @@
+ import net.minecraft.world.level.storage.ValueInput;
+ import net.minecraft.world.level.storage.ValueOutput;
+ import net.minecraft.world.phys.AABB;
++import org.bukkit.craftbukkit.potion.CraftPotionUtil;
++import org.bukkit.potion.PotionEffect;
+ import org.jspecify.annotations.Nullable;
+ 
+ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Nameable, BeaconBeamOwner {
 @@ -68,12 +_,15 @@
      private static final String TAG_SECONDARY = "secondary_effect";
      List<BeaconBeamOwner.Section> beamSections = new ArrayList<>();
@@ -21,6 +30,23 @@
      private final ContainerData dataAccess = new ContainerData() {
          @Override
          public int get(int p_58711_) {
+@@ -109,6 +_,16 @@
+         }
+     };
+ 
++    // CraftBukkit start - add fields and methods
++    public PotionEffect getPrimaryEffect() {
++        return (this.primaryPower != null) ? CraftPotionUtil.toBukkit(new MobEffectInstance(this.primaryPower, getLevel(this.levels), getAmplification(levels, primaryPower, secondaryPower), true, true)) : null;
++    }
++
++    public PotionEffect getSecondaryEffect() {
++        return (hasSecondaryEffect(levels, primaryPower, secondaryPower)) ? CraftPotionUtil.toBukkit(new MobEffectInstance(this.secondaryPower, getLevel(this.levels), getAmplification(levels, primaryPower, secondaryPower), true, true)) : null;
++    }
++    // CraftBukkit end
++
+     static @Nullable Holder<MobEffect> filterEffect(@Nullable Holder<MobEffect> p_316372_) {
+         return VALID_EFFECTS.contains(p_316372_) ? p_316372_ : null;
+     }
 @@ -137,8 +_,8 @@
  
          for (int i1 = 0; i1 < 10 && blockpos.getY() <= l; i1++) {
@@ -32,3 +58,97 @@
                  if (p_155111_.checkingBeamSections.size() <= 1) {
                      beaconbeamowner$section = new BeaconBeamOwner.Section(j1);
                      p_155111_.checkingBeamSections.add(beaconbeamowner$section);
+@@ -229,31 +_,71 @@
+         super.setRemoved();
+     }
+ 
+-    private static void applyEffects(
+-        Level p_155098_, BlockPos p_155099_, int p_155100_, @Nullable Holder<MobEffect> p_316599_, @Nullable Holder<MobEffect> p_316343_
+-    ) {
+-        if (!p_155098_.isClientSide() && p_316599_ != null) {
+-            double d0 = p_155100_ * 10 + 10;
+-            int i = 0;
+-            if (p_155100_ >= 4 && Objects.equals(p_316599_, p_316343_)) {
+-                i = 1;
++    // CraftBukkit start - split into components
++    private static int getAmplification(int i, @Nullable Holder<MobEffect> holder, @Nullable Holder<MobEffect> holder1) {
++        {
++            int j = 0;
++
++            if (i >= 4 && Objects.equals(holder, holder1)) {
++                j = 1;
+             }
+ 
+-            int j = (9 + p_155100_ * 2) * 20;
+-            AABB aabb = new AABB(p_155099_).inflate(d0).expandTowards(0.0, p_155098_.getHeight(), 0.0);
+-            List<Player> list = p_155098_.getEntitiesOfClass(Player.class, aabb);
+-
++            return j;
++        }
++    }
++
++    private static int getLevel(int i) {
++        {
++            int k = (9 + i * 2) * 20;
++            return k;
++        }
++    }
++
++    public static List getHumansInRange(Level level, BlockPos blockpos, int i) {
++        {
++            double d0 = (double) (i * 10 + 10);
++
++            AABB aabb = (new AABB(blockpos)).inflate(d0).expandTowards(0.0D, (double) level.getHeight(), 0.0D);
++            List<Player> list = level.<Player>getEntitiesOfClass(Player.class, aabb);
++
++            return list;
++        }
++    }
++
++    private static void applyEffect(List<Player> list, @Nullable Holder<MobEffect> holder, int k, int j) {
++        {
+             for (Player player : list) {
+-                player.addEffect(new MobEffectInstance(p_316599_, j, i, true, true));
+-            }
+-
+-            if (p_155100_ >= 4 && !Objects.equals(p_316599_, p_316343_) && p_316343_ != null) {
+-                for (Player player1 : list) {
+-                    player1.addEffect(new MobEffectInstance(p_316343_, j, 0, true, true));
+-                }
+-            }
+-        }
+-    }
++                player.addEffect(new MobEffectInstance(holder, k, j, true, true), org.bukkit.event.entity.EntityPotionEffectEvent.Cause.BEACON);
++            }
++        }
++    }
++
++    private static boolean hasSecondaryEffect(int i, @Nullable Holder<MobEffect> holder, @Nullable Holder<MobEffect> holder1) {
++        {
++            if (i >= 4 && !Objects.equals(holder, holder1) && holder1 != null) {
++                return true;
++            }
++
++            return false;
++        }
++    }
++
++    private static void applyEffects(Level level, BlockPos blockpos, int i, @Nullable Holder<MobEffect> holder, @Nullable Holder<MobEffect> holder1) {
++        if (!level.isClientSide() && holder != null) {
++            int j = getAmplification(i, holder, holder1);
++
++            int k = getLevel(i);
++            List list = getHumansInRange(level, blockpos, i);
++
++            applyEffect(list, holder, k, j);
++
++            if (hasSecondaryEffect(i, holder, holder1)) {
++                applyEffect(list, holder1, k, 0);
++            }
++        }
++
++    }
++    // CraftBukkit end
+ 
+     public static void playSound(Level p_155104_, BlockPos p_155105_, SoundEvent p_155106_) {
+         p_155104_.playSound(null, p_155105_, p_155106_, SoundSource.BLOCKS, 1.0F, 1.0F);

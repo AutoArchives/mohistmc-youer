@@ -71,4 +71,8 @@ public class ServerAPI {
     public static MinecraftServer getNMSServer() {
         return MinecraftServer.getServer();
     }
+
+    public static String getMainLevelName() {
+        return ((net.minecraft.server.dedicated.DedicatedServer) getNMSServer()).getProperties().levelName;
+    }
 }

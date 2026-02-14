@@ -11,13 +11,14 @@ import org.bukkit.inventory.ItemStack;
 public class BanNbt {
 
     public static boolean check(ItemStack itemStack) {
-        var key = itemStack.getType().key().asString();
+        var key = itemStack.getType().getKey().toString();
         var yml = BanConfig.NBT.getNbtList(key);
         if (yml.isEmpty()) {
             return false;
         }
-        var nbt = ItemAPI.getNbtAsString(itemStack);
+        //var nbt = ItemAPI.getNbtAsString(itemStack.);
 
-        return yml.stream().anyMatch(nbt::contains);
+        //return yml.stream().anyMatch(nbt::contains);
+        return false;
     }
 }

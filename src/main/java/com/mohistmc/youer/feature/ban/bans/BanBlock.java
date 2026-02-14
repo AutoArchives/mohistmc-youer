@@ -17,6 +17,6 @@ public class BanBlock {
         if (p_46606_.isAir()) return false;
         Block block = p_46606_.getBlock();
         ItemStack bukkitBlock = block.asItem().getDefaultInstance().getBukkitStack();
-        return BanConfig.BLOCK.getBlock().contains(bukkitBlock.getType().key().asString());
+        return BanConfig.BLOCK.getBlock().contains(bukkitBlock.getType().getKey().toString());
     }
 }

@@ -73,7 +73,7 @@ public class BlockEventDispatcher {
             if (level instanceof ServerLevel) {
                 BlockBreakEvent bukkitEvent = new BlockBreakEvent(bblock, serverPlayer.getBukkitEntity());
                 bukkitEvent.setCancelled(event.isCanceled());
-                event.setDropItems(bukkitEvent.isDropItems());
+                // event.setDropItems(bukkitEvent.isDropItems()); // TODO
                 Bukkit.getPluginManager().callEvent(bukkitEvent);
                 event.setCanceled(bukkitEvent.isCancelled());
             }
@@ -98,6 +98,7 @@ public class BlockEventDispatcher {
                 Bukkit.getPluginManager().callEvent(bukkitEvent);
                 bukkitEvent.setCancelled(event.isCanceled());
                 event.setCanceled(bukkitEvent.isCancelled());
+                /* TODO
                 if (event.getPapersource() != null) {
                     org.bukkit.block.Block sourceblock = CraftBlock.at(event.getLevel(), event.getPapersource());
                     io.papermc.paper.event.block.BlockBreakBlockEvent eventPaper = new io.papermc.paper.event.block.BlockBreakBlockEvent(block, sourceblock, Lists.transform(event.getDrops(), (item) -> CraftItemStack.asBukkitCopy(item.getItem())));
@@ -105,6 +106,7 @@ public class BlockEventDispatcher {
                     eventPaper.callEvent();
                     event.setDroppedExperience(eventPaper.getExpToDrop());
                 }
+                 */
             }
         }
     }
@@ -164,7 +166,7 @@ public class BlockEventDispatcher {
                     bukkitStack = player.getInventory().getItemInOffHand();
                     equipmentSlot = EquipmentSlot.OFF_HAND;
                 }
-                BlockPlaceEvent placeEvent = new BlockMultiPlaceEvent(placedBlocks, againstBlock, bukkitStack, player, !event.isCanceled(), equipmentSlot
+                BlockPlaceEvent placeEvent = new BlockMultiPlaceEvent(placedBlocks, againstBlock, bukkitStack, player, !event.isCanceled()
                 );
                 // Paper end
                 placeEvent.setCancelled(event.isCanceled());

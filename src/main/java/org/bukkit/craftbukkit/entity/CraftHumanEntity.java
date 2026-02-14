@@ -151,7 +151,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
             return false;
         }
 
-        if (getHandle().startSleepInBed(blockpos, force).left().isPresent()) {
+        if (getHandle().forceSleepInBed(force).startSleepInBed(blockpos).left().isPresent()) {
             return false;
         }
 
@@ -334,7 +334,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
     private static void openCustomInventory(Inventory inventory, ServerPlayer player, MenuType<?> windowType) {
         if (player.connection == null) return;
         Preconditions.checkArgument(windowType != null, "Unknown windowType");
-        AbstractContainerMenu abstractcontainermenu = new CraftContainer(inventory, player, player.nextContainerCounter());
+        AbstractContainerMenu abstractcontainermenu = new CraftContainer(inventory, player, player.nextContainerCounterInt());
 
         abstractcontainermenu = CraftEventFactory.callInventoryOpenEvent(player, abstractcontainermenu);
         if (abstractcontainermenu == null) return;
@@ -400,7 +400,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
         if (inventory instanceof CraftInventoryView) {
             abstractcontainermenu = ((CraftInventoryView) inventory).getHandle();
         } else {
-            abstractcontainermenu = new CraftContainer(inventory, this.getHandle(), player.nextContainerCounter());
+            abstractcontainermenu = new CraftContainer(inventory, this.getHandle(), player.nextContainerCounterInt());
         }
 
         // Trigger an INVENTORY_OPEN event
@@ -650,7 +650,7 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
     @Override
     public boolean dropItem(boolean dropAll) {
         if (!(getHandle() instanceof ServerPlayer)) return false;
-        return ((ServerPlayer) getHandle()).dropItem(dropAll) != null;
+        return ((ServerPlayer) getHandle()).drop(dropAll);
     }
 
     @Override

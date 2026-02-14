@@ -27,3 +27,41 @@
          if (blockstate.getBlock() instanceof BonemealableBlock bonemealableblock && bonemealableblock.isValidBonemealTarget(p_40629_, p_40630_, blockstate)) {
              if (p_40629_ instanceof ServerLevel) {
                  if (bonemealableblock.isBonemealSuccess(p_40629_, p_40629_.random, p_40630_, blockstate)) {
+@@ -75,6 +_,37 @@
+             return true;
+         } else {
+             return false;
++        }
++    }
++
++    public static InteractionResult applyBonemealCB(UseOnContext useoncontext) {
++        // CraftBukkit end
++        Level level = useoncontext.getLevel();
++        BlockPos blockpos = useoncontext.getClickedPos();
++        BlockPos blockpos1 = blockpos.relative(useoncontext.getClickedFace());
++        ItemStack itemstack = useoncontext.getItemInHand();
++
++        if (growCrop(itemstack, level, blockpos)) {
++            if (!level.isClientSide()) {
++                if (useoncontext.getPlayer() != null) itemstack.causeUseVibration(useoncontext.getPlayer(), GameEvent.ITEM_INTERACT_FINISH); // CraftBukkit - SPIGOT-7518
++                level.levelEvent(1505, blockpos, 15);
++            }
++
++            return InteractionResult.SUCCESS;
++        } else {
++            BlockState blockstate = level.getBlockState(blockpos);
++            boolean flag = blockstate.isFaceSturdy(level, blockpos, useoncontext.getClickedFace());
++
++            if (flag && growWaterPlant(itemstack, level, blockpos1, useoncontext.getClickedFace())) {
++                if (!level.isClientSide()) {
++                    if (useoncontext.getPlayer() != null) itemstack.causeUseVibration(useoncontext.getPlayer(), GameEvent.ITEM_INTERACT_FINISH); // CraftBukkit - SPIGOT-7518
++                    level.levelEvent(1505, blockpos1, 15);
++                }
++
++                return InteractionResult.SUCCESS;
++            } else {
++                return InteractionResult.PASS;
++            }
+         }
+     }
+ 

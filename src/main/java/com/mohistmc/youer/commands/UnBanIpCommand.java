@@ -16,7 +16,7 @@ public class UnBanIpCommand {
     public static void register(CommandDispatcher<CommandSourceStack> p_138109_) {
         p_138109_.register(
                 Commands.literal("unban-ip")
-                        .requires(p_138116_ -> p_138116_.hasPermission(3))
+                        .requires(Commands.hasPermission(Commands.LEVEL_ADMINS))
                         .then(
                                 Commands.argument("target", StringArgumentType.word())
                                         .suggests(

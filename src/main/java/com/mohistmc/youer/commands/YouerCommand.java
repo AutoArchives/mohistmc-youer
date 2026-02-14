@@ -120,7 +120,7 @@ public class YouerCommand extends Command {
                 ((CraftServer) Bukkit.getServer()).loadCustomPermissions();
                 SpigotConfig.init((File) console.options.valueOf("spigot-settings"));
                 for (ServerLevel world : console.getAllLevels()) {
-                    world.spigotConfig.init();
+                    //world.spigotConfig.init(); // TODO
                 }
 
                 console.server.reloadCount++;
@@ -385,7 +385,7 @@ public class YouerCommand extends Command {
                 if (args.length == 2) {
                     if (Bukkit.getPlayer(args[1]) != null) {
                         Player p2 = Bukkit.getPlayer(args[1]);
-                        AttributeInstance MaxHealth = p2.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+                        AttributeInstance MaxHealth = p2.getAttribute(Attribute.MAX_HEALTH);
                         double getMaxHealth = MaxHealth.getBaseValue();
 
                         sender.sendMessage(ChatColor.GOLD + I18n.as("youercmd.showp.title", p2.getName()));

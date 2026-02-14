@@ -1,5 +1,13 @@
 --- a/net/minecraft/world/item/crafting/RecipeManager.java
 +++ b/net/minecraft/world/item/crafting/RecipeManager.java
+@@ -25,6 +_,7 @@
+ import net.minecraft.resources.FileToIdConverter;
+ import net.minecraft.resources.Identifier;
+ import net.minecraft.resources.ResourceKey;
++import net.minecraft.server.MinecraftServer;
+ import net.minecraft.server.level.ServerLevel;
+ import net.minecraft.server.packs.resources.ResourceManager;
+ import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 @@ -63,6 +_,7 @@
      private SelectableRecipe.SingleInputSet<StonecutterRecipe> stonecutterRecipes = SelectableRecipe.SingleInputSet.empty();
      private List<RecipeManager.ServerDisplayInfo> allDisplays = List.of();
@@ -17,10 +25,30 @@
          );
          List<RecipeHolder<?>> list = new ArrayList<>(sortedmap.size());
          sortedmap.forEach((p_466665_, p_466666_) -> {
-@@ -88,6 +_,7 @@
+@@ -87,7 +_,27 @@
+         LOGGER.info("Loaded {} recipes", p_380231_.values().size());
      }
  
++    // CraftBukkit start
++    public void addRecipe(RecipeHolder<?> irecipe) {
++        org.spigotmc.AsyncCatcher.catchOp("Recipe Add"); // Spigot
++        this.recipes.addRecipe(irecipe);
++        finalizeRecipeLoading();
++    }
++
++    private FeatureFlagSet featureflagset;
++
++    public void finalizeRecipeLoading() {
++        if (featureflagset != null) {
++            finalizeRecipeLoading(featureflagset);
++
++            MinecraftServer.getServer().getPlayerList().reloadRecipes();
++        }
++    }
++
      public void finalizeRecipeLoading(FeatureFlagSet p_379660_) {
++        this.featureflagset = featureflagset;
++        // CraftBukkit end
 +        this.recipes.order(this.recipePriorities); // Neo: order recipes by priority.
          List<SelectableRecipe.SingleInputEntry<StonecutterRecipe>> list = new ArrayList<>();
          List<RecipeManager.IngredientCollector> list1 = RECIPE_PROPERTY_SETS.entrySet()

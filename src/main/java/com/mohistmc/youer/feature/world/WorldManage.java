@@ -1,10 +1,12 @@
 package com.mohistmc.youer.feature.world;
 
 import com.mohistmc.youer.api.PlayerAPI;
+import com.mohistmc.youer.api.ServerAPI;
 import com.mohistmc.youer.feature.world.utils.ConfigByWorlds;
 import java.io.File;
 import java.util.Objects;
 import net.minecraft.server.level.ServerPlayer;
+import net.neoforged.neoforge.common.NeoForge;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.World;
@@ -15,7 +17,7 @@ public class WorldManage {
     public static void onEnable() {
         ConfigByWorlds.init();
         ConfigByWorlds.loadWorlds();
-        ConfigByWorlds.addWorld(Bukkit.getUnsafe().getMainLevelName(), false);
+        ConfigByWorlds.addWorld(ServerAPI.getMainLevelName(), false);
     }
 
     public static void deleteDir(File path) {

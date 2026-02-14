@@ -76,7 +76,7 @@ public class CraftEntitySnapshot implements EntitySnapshot {
 
     public static CraftEntitySnapshot create(CraftEntity entity) {
         TagValueOutput tag = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, entity.getHandle().registryAccess());
-        if (!entity.getHandle().saveAsPassenger(tag, false)) {
+        if (!entity.getHandle().saveAsPassengerCB(tag, false)) {
             return null;
         }
 

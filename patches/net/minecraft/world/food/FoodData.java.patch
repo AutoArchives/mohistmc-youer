@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/food/FoodData.java
 +++ b/net/minecraft/world/food/FoodData.java
-@@ -11,9 +_,9 @@
+@@ -11,10 +_,15 @@
  public class FoodData {
      private static final int DEFAULT_TICK_TIMER = 0;
      private static final float DEFAULT_EXHAUSTION_LEVEL = 0.0F;
@@ -11,5 +11,11 @@
 +    public float saturationLevel = 5.0F;
 +    public float exhaustionLevel;
      private int tickTimer;
++    // CraftBukkit start
++    public int saturatedRegenRate = 10;
++    public int unsaturatedRegenRate = 80;
++    public int starvationRate = 80;
++    // CraftBukkit end
  
      private void add(int p_340988_, float p_340961_) {
+         this.foodLevel = Mth.clamp(p_340988_ + this.foodLevel, 0, 20);

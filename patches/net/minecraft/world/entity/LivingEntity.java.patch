@@ -21,12 +21,13 @@
  import java.util.function.BiConsumer;
  import java.util.function.Consumer;
  import java.util.function.Function;
-@@ -139,6 +_,9 @@
+@@ -139,6 +_,10 @@
  import net.minecraft.world.scores.Scoreboard;
  import net.minecraft.world.waypoints.Waypoint;
  import net.minecraft.world.waypoints.WaypointTransmitter;
 +import org.bukkit.craftbukkit.attribute.CraftAttributeMap;
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
++import org.bukkit.event.entity.ArrowBodyCountChangeEvent;
 +import org.bukkit.event.entity.EntityPotionEffectEvent;
  import org.jetbrains.annotations.Contract;
  import org.jspecify.annotations.Nullable;
@@ -269,7 +270,17 @@
          return d0;
      }
  
-@@ -958,8 +_,13 @@
+@@ -952,19 +_,33 @@
+         this.entityData.set(DATA_EFFECT_PARTICLES, List.of());
+     }
+ 
++    private final AtomicReference<EntityPotionEffectEvent.Cause> removeAllEffects$cause = new AtomicReference<>(EntityPotionEffectEvent.Cause.UNKNOWN);
++    public void removeAllEffects$cause(EntityPotionEffectEvent.Cause cause) {
++        removeAllEffects$cause.set(cause);
++    }
+     public boolean removeAllEffects() {
+         if (this.level().isClientSide()) {
+             return false;
          } else if (this.activeEffects.isEmpty()) {
              return false;
          } else {
@@ -285,6 +296,16 @@
              this.onEffectsRemoved(map.values());
              return true;
          }
+     }
+ 
++    public boolean removeAllEffects(EntityPotionEffectEvent.Cause cause) {
++        removeAllEffects$cause(cause);
++        return removeAllEffects();
++    }
++
+     public Collection<MobEffectInstance> getActiveEffects() {
+         return this.activeEffects.values();
+     }
 @@ -987,15 +_,32 @@
      }
  
@@ -695,6 +716,31 @@
          }
      }
  
+@@ -1903,10 +_,24 @@
+         return this.entityData.get(DATA_ARROW_COUNT_ID);
+     }
+ 
++    private final AtomicBoolean setArrowCount$flag = new AtomicBoolean(false);
++    public void setArrowCount$flag(boolean flag) {
++        this.setArrowCount$flag.set(flag);
++    }
+     public final void setArrowCount(int p_21318_) {
++        ArrowBodyCountChangeEvent event = CraftEventFactory.callArrowBodyCountChangeEvent(this, getArrowCount(), p_21318_, setArrowCount$flag.getAndSet(false));
++        if (event.isCancelled()) {
++            return;
++        }
+         this.entityData.set(DATA_ARROW_COUNT_ID, p_21318_);
+     }
+ 
++    public final void setArrowCount(int i, boolean flag) {
++        this.setArrowCount$flag(flag);
++        this.setArrowCount(i);
++    }
++    // CraftBukkit end
++
+     public final int getStingerCount() {
+         return this.entityData.get(DATA_STINGER_COUNT_ID);
+     }
 @@ -1930,6 +_,8 @@
      }
  

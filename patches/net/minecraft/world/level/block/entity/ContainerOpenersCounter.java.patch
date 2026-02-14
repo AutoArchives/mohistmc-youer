@@ -1,0 +1,30 @@
+--- a/net/minecraft/world/level/block/entity/ContainerOpenersCounter.java
++++ b/net/minecraft/world/level/block/entity/ContainerOpenersCounter.java
+@@ -16,12 +_,27 @@
+     private static final int CHECK_TICK_DELAY = 5;
+     private int openCount;
+     private double maxInteractionRange;
++    public boolean opened; // CraftBukkit
+ 
+     protected abstract void onOpen(Level p_155460_, BlockPos p_155461_, BlockState p_155462_);
+ 
+     protected abstract void onClose(Level p_155473_, BlockPos p_155474_, BlockState p_155475_);
+ 
+     protected abstract void openerCountChanged(Level p_155463_, BlockPos p_155464_, BlockState p_155465_, int p_155466_, int p_155467_);
++
++    // CraftBukkit start
++    public void onAPIOpen(Level level, BlockPos blockpos, BlockState blockstate) {
++        onOpen(level, blockpos, blockstate);
++    }
++
++    public void onAPIClose(Level level, BlockPos blockpos, BlockState blockstate) {
++        onClose(level, blockpos, blockstate);
++    }
++
++    public void openerAPICountChanged(Level level, BlockPos blockpos, BlockState blockstate, int i, int j) {
++        openerCountChanged(level, blockpos, blockstate, i, j);
++    }
++    // CraftBukkit end
+ 
+     public abstract boolean isOwnContainer(Player p_155451_);
+ 

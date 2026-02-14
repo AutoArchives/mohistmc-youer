@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/entity/projectile/hurtingprojectile/windcharge/BreezeWindCharge.java
++++ b/net/minecraft/world/entity/projectile/hurtingprojectile/windcharge/BreezeWindCharge.java
+@@ -20,7 +_,7 @@
+     }
+ 
+     @Override
+-    protected void explode(Vec3 p_481010_) {
++    public void explode(Vec3 p_481010_) {
+         this.level()
+             .explode(
+                 this,

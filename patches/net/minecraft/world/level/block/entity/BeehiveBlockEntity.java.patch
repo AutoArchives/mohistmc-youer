@@ -1,12 +1,34 @@
 --- a/net/minecraft/world/level/block/entity/BeehiveBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/BeehiveBlockEntity.java
-@@ -86,7 +_,8 @@
+@@ -86,7 +_,9 @@
      private static final int MIN_OCCUPATION_TICKS_NECTAR = 2400;
      public static final int MIN_OCCUPATION_TICKS_NECTARLESS = 600;
      private final List<BeehiveBlockEntity.BeeData> stored = Lists.newArrayList();
 -    private @Nullable BlockPos savedFlowerPos;
 +    @Nullable
 +    public BlockPos savedFlowerPos;
++    public int maxBees = 3; // CraftBukkit - allow setting max amount of bees a hive can hold
  
      public BeehiveBlockEntity(BlockPos p_155134_, BlockState p_155135_) {
          super(BlockEntityType.BEEHIVE, p_155134_, p_155135_);
+@@ -142,6 +_,20 @@
+         List<Entity> list = Lists.newArrayList();
+         this.stored
+             .removeIf(p_330138_ -> releaseOccupant(this.level, this.worldPosition, p_58760_, p_330138_.toOccupant(), list, p_58761_, this.savedFlowerPos));
++        if (!list.isEmpty()) {
++            super.setChanged();
++        }
++
++        return list;
++    }
++
++    public List<Entity> releaseBees(BlockState blockstate, BeehiveBlockEntity.BeeReleaseStatus beehiveblockentity_beereleasestatus, boolean force) {
++        List<Entity> list = Lists.newArrayList();
++
++        this.stored.removeIf((beehiveblockentity_beedata) -> {
++            return releaseOccupant(this.level, this.worldPosition, blockstate, beehiveblockentity_beedata.toOccupant(), list, beehiveblockentity_beereleasestatus, this.savedFlowerPos, force);
++            // CraftBukkit end
++        });
+         if (!list.isEmpty()) {
+             super.setChanged();
+         }

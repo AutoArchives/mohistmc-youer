@@ -86,7 +86,7 @@ public class InfoCommand extends Command {
                     return false;
                 } else {
                     PlayerAPI.sendMessageByCopy(player, ChatColor.GREEN + I18n.as("info.block.type") + ChatColor.YELLOW, block.getType().name());
-                    PlayerAPI.sendMessageByCopy(player, ChatColor.GREEN + I18n.as("info.block.key") + ChatColor.YELLOW, block.getType().getKey().asString());
+                    PlayerAPI.sendMessageByCopy(player, ChatColor.GREEN + I18n.as("info.block.key") + ChatColor.YELLOW, block.getType().getKey().toString());
                     sender.sendMessage(ChatColor.GREEN + I18n.as("info.block.data") + ChatColor.YELLOW + block.getBlockData().getAsString());
                     sender.sendMessage(ChatColor.GREEN + I18n.as("info.block.pos") + ChatColor.YELLOW + block.getX() + ", " + block.getY() + ", " + block.getZ());
                     sender.sendMessage(ChatColor.GREEN + I18n.as("info.block.world") + ChatColor.YELLOW + block.getWorld().getName());
@@ -95,7 +95,7 @@ public class InfoCommand extends Command {
                     sender.sendMessage(ChatColor.GREEN + I18n.as("info.block.hardness") + ChatColor.YELLOW + block.getType().getHardness());
                     sender.sendMessage(ChatColor.GREEN + I18n.as("info.block.resistance") + ChatColor.YELLOW + block.getType().getBlastResistance());
                     sender.sendMessage(ChatColor.GREEN + I18n.as("info.block.slipperiness") + ChatColor.YELLOW + block.getType().getSlipperiness());
-                    sender.sendMessage(ChatColor.GREEN + I18n.as("info.block.replaceable") + ChatColor.YELLOW + block.isReplaceable());
+                    //sender.sendMessage(ChatColor.GREEN + I18n.as("info.block.replaceable") + ChatColor.YELLOW + block.isReplaceable());
                     sender.sendMessage(ChatColor.GREEN + I18n.as("info.block.requires_tool") + ChatColor.YELLOW + block.getBlockData().requiresCorrectToolForDrops());
 
                     if (block.getType().isSolid()) {
@@ -135,7 +135,7 @@ public class InfoCommand extends Command {
                     return false;
                 } else {
                     PlayerAPI.sendMessageByCopy(player, ChatColor.GOLD + I18n.as("info.entity.type") + ChatColor.YELLOW, entity.getType().name());
-                    PlayerAPI.sendMessageByCopy(player, ChatColor.GOLD + I18n.as("info.entity.key") + ChatColor.YELLOW, entity.getType().getKey().asString());
+                    PlayerAPI.sendMessageByCopy(player, ChatColor.GOLD + I18n.as("info.entity.key") + ChatColor.YELLOW, entity.getType().getKey().toString());
                     PlayerAPI.sendMessageByCopy(player, ChatColor.GOLD + I18n.as("info.entity.uuid") + ChatColor.YELLOW, entity.getUniqueId().toString());
                     sender.sendMessage(ChatColor.GOLD + I18n.as("info.entity.pos") + ChatColor.YELLOW +
                             String.format("%.2f, %.2f, %.2f", entity.getLocation().getX(), entity.getLocation().getY(), entity.getLocation().getZ()));

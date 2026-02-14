@@ -1,6 +1,22 @@
 --- a/net/minecraft/world/entity/Mob.java
 +++ b/net/minecraft/world/entity/Mob.java
-@@ -134,11 +_,16 @@
+@@ -10,6 +_,7 @@
+ import java.util.Objects;
+ import java.util.Optional;
+ import java.util.Set;
++import java.util.concurrent.atomic.AtomicBoolean;
+ import java.util.function.Predicate;
+ import net.minecraft.core.BlockPos;
+ import net.minecraft.core.Holder;
+@@ -90,6 +_,7 @@
+ import net.minecraft.world.phys.AABB;
+ import net.minecraft.world.phys.Vec3;
+ import net.minecraft.world.ticks.ContainerSingleItem;
++import org.bukkit.event.entity.EntityTargetEvent;
+ import org.jspecify.annotations.Nullable;
+ 
+ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashable, Targeting {
+@@ -134,11 +_,18 @@
      private boolean canPickUpLoot = false;
      private boolean persistenceRequired = false;
      private final Map<PathType, Float> pathfindingMalus = Maps.newEnumMap(PathType.class);
@@ -16,18 +32,41 @@
 +    private boolean spawnCancelled = false;
 +    /** Neo: Prevent immediate spawning from conversions to capture conversion results for events */
 +    protected boolean preventConversionSpawns = false;
++
++    public boolean aware = true; // CraftBukkit
  
      protected Mob(EntityType<? extends Mob> p_21368_, Level p_21369_) {
          super(p_21368_, p_21369_);
-@@ -232,7 +_,10 @@
+@@ -231,8 +_,31 @@
+         return this.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null);
      }
  
++    private EntityTargetEvent.TargetReason reason = EntityTargetEvent.TargetReason.UNKNOWN;
++    private boolean fireCBEvent = true;
++    public AtomicBoolean canSetTarget = new AtomicBoolean(true);
++    public void setTargetReason(EntityTargetEvent.TargetReason reason, boolean fireCBEvent) {
++        this.reason = reason;
++        this.fireCBEvent = fireCBEvent;
++    }
++
      public void setTarget(@Nullable LivingEntity p_21544_) {
 -        this.target = p_21544_;
 +        net.neoforged.neoforge.event.entity.living.LivingChangeTargetEvent changeTargetEvent = net.neoforged.neoforge.common.CommonHooks.onLivingChangeTarget(this, p_21544_, net.neoforged.neoforge.event.entity.living.LivingChangeTargetEvent.LivingTargetType.MOB_TARGET);
++        changeTargetEvent.setReason(reason);
++        changeTargetEvent.setfireCBEvent(fireCBEvent);
 +        if(!changeTargetEvent.isCanceled()) {
 +             this.target = changeTargetEvent.getNewAboutToBeSetTarget();
++        } else {
++            canSetTarget.set(false);
 +        }
++    }
++
++    public boolean setTargetCB(LivingEntity livingentity, EntityTargetEvent.TargetReason reason, boolean fireEvent) {
++        if (getTarget() == livingentity) return false;
++        setTargetReason(reason, fireEvent);
++        setTarget(livingentity);
++        return canSetTarget.getAndSet(true);
++        // CraftBukkit end
      }
  
      @Override
@@ -44,6 +83,19 @@
      }
  
      protected void updateControlFlags() {
+@@ -347,6 +_,12 @@
+         return null;
+     }
+ 
++    // CraftBukkit start - Add delegate method
++    public SoundEvent getAmbientSound0() {
++        return getAmbientSound();
++    }
++    // CraftBukkit end
++
+     @Override
+     protected void addAdditionalSaveData(ValueOutput p_421640_) {
+         super.addAdditionalSaveData(p_421640_);
 @@ -371,6 +_,9 @@
          if (this.isNoAi()) {
              p_421640_.putBoolean("NoAI", this.isNoAi());

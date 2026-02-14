@@ -1,5 +1,12 @@
 --- a/net/minecraft/world/level/block/entity/BannerBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/BannerBlockEntity.java
+@@ -1,5 +_,6 @@
+ package net.minecraft.world.level.block.entity;
+ 
++import java.util.List;
+ import net.minecraft.core.BlockPos;
+ import net.minecraft.core.HolderLookup;
+ import net.minecraft.core.component.DataComponentGetter;
 @@ -24,7 +_,7 @@
      private static final String TAG_PATTERNS = "patterns";
      private static final Component DEFAULT_NAME = Component.translatable("block.minecraft.banner");
@@ -9,3 +16,17 @@
      private BannerPatternLayers patterns = BannerPatternLayers.EMPTY;
  
      public BannerBlockEntity(BlockPos p_155035_, BlockState p_155036_) {
+@@ -105,4 +_,13 @@
+         p_422302_.discard("patterns");
+         p_422302_.discard("CustomName");
+     }
++
++    // CraftBukkit start
++    public void setPatterns(BannerPatternLayers bannerpatternlayers) {
++        if (bannerpatternlayers.layers().size() > 20) {
++            bannerpatternlayers = new BannerPatternLayers(List.copyOf(bannerpatternlayers.layers().subList(0, 20)));
++        }
++        this.patterns = bannerpatternlayers;
++    }
++    // CraftBukkit end
+ }

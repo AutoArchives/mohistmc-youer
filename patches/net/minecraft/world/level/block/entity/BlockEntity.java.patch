@@ -1,6 +1,10 @@
 --- a/net/minecraft/world/level/block/entity/BlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/BlockEntity.java
-@@ -36,15 +_,18 @@
+@@ -33,18 +_,22 @@
+ import net.minecraft.world.level.storage.TagValueOutput;
+ import net.minecraft.world.level.storage.ValueInput;
+ import net.minecraft.world.level.storage.ValueOutput;
++import org.bukkit.inventory.InventoryHolder;
  import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
@@ -65,12 +69,10 @@
      }
  
      public void preRemoveSideEffects(BlockPos p_394577_, BlockState p_394161_) {
-@@ -269,6 +_,32 @@
- 
-     public BlockEntityType<?> getType() {
+@@ -271,6 +_,32 @@
          return this.type;
-+    }
-+
+     }
+ 
 +    @Override
 +    public CompoundTag getPersistentData() {
 +        if (this.customPersistentData == null)
@@ -95,6 +97,24 @@
 +    @Override
 +    public final void syncData(net.neoforged.neoforge.attachment.AttachmentType<?> type) {
 +        net.neoforged.neoforge.attachment.AttachmentSync.syncBlockEntityUpdate(this, type);
-     }
- 
++    }
++
      @Deprecated
+     public void setBlockState(BlockState p_155251_) {
+         this.validateBlockState(p_155251_);
+@@ -339,6 +_,15 @@
+     @Override
+     public void registerDebugValues(ServerLevel p_449833_, DebugValueSource.Registration p_449301_) {
+     }
++
++    // CraftBukkit start - add method
++    public InventoryHolder getOwner() {
++        if (level == null) return null;
++        org.bukkit.block.BlockState state = level.getWorld().getBlockAt(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()).getState();
++        if (state instanceof InventoryHolder) return (InventoryHolder) state;
++        return null;
++    }
++    // CraftBukkit end
+ 
+     record BlockEntityPathElement(BlockEntity blockEntity) implements ProblemReporter.PathElement {
+         @Override

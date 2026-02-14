@@ -1,5 +1,14 @@
 --- a/net/minecraft/world/entity/projectile/hurtingprojectile/AbstractHurtingProjectile.java
 +++ b/net/minecraft/world/entity/projectile/hurtingprojectile/AbstractHurtingProjectile.java
+@@ -22,6 +_,8 @@
+     public static final double INITAL_ACCELERATION_POWER = 0.1;
+     public static final double DEFLECTION_SCALE = 0.5;
+     public double accelerationPower = 0.1;
++    public float bukkitYield = 1; // CraftBukkit
++    public boolean isIncendiary = true; // CraftBukkit
+ 
+     protected AbstractHurtingProjectile(EntityType<? extends AbstractHurtingProjectile> p_478771_, Level p_479581_) {
+         super(p_478771_, p_479581_);
 @@ -75,7 +_,8 @@
          if (this.level().isClientSide() || (entity == null || !entity.isRemoved()) && this.level().hasChunkAt(this.blockPosition())) {
              HitResult hitresult = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity, this.getClipType());

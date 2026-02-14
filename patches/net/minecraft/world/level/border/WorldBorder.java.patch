@@ -1,0 +1,33 @@
+--- a/net/minecraft/world/level/border/WorldBorder.java
++++ b/net/minecraft/world/level/border/WorldBorder.java
+@@ -5,6 +_,7 @@
+ import com.mojang.serialization.codecs.RecordCodecBuilder;
+ import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
+ import java.util.List;
++import java.util.concurrent.atomic.AtomicBoolean;
+ import net.minecraft.core.BlockPos;
+ import net.minecraft.util.Mth;
+ import net.minecraft.util.datafix.DataFixTypes;
+@@ -287,8 +_,9 @@
+         this.extent = this.extent.update();
+     }
+ 
++    public AtomicBoolean applyInitialSettings$force = new AtomicBoolean(false);
+     public void applyInitialSettings(long p_458980_) {
+-        if (!this.initialized) {
++        if (!this.initialized || applyInitialSettings$force.getAndSet(false)) {
+             this.setCenter(this.settings.centerX(), this.settings.centerZ());
+             this.setDamagePerBlock(this.settings.damagePerBlock());
+             this.setSafeZone(this.settings.safeZone());
+@@ -302,6 +_,11 @@
+ 
+             this.initialized = true;
+         }
++    }
++
++    public void applyInitialSettings(long i, boolean force) {
++        applyInitialSettings$force.set( force);
++        applyInitialSettings(i);
+     }
+ 
+     interface BorderExtent {

@@ -1,11 +1,78 @@
 --- a/net/minecraft/world/level/block/entity/LecternBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/LecternBlockEntity.java
-@@ -34,7 +_,7 @@
+@@ -1,5 +_,8 @@
+ package net.minecraft.world.level.block.entity;
+ 
++import java.util.ArrayList;
++import java.util.Arrays;
++import java.util.List;
+ import net.minecraft.commands.CommandSource;
+ import net.minecraft.commands.CommandSourceStack;
+ import net.minecraft.core.BlockPos;
+@@ -27,6 +_,12 @@
+ import net.minecraft.world.level.storage.ValueOutput;
+ import net.minecraft.world.phys.Vec2;
+ import net.minecraft.world.phys.Vec3;
++import org.bukkit.Location;
++import org.bukkit.block.Lectern;
++import org.bukkit.craftbukkit.entity.CraftHumanEntity;
++import org.bukkit.craftbukkit.util.CraftLocation;
++import org.bukkit.entity.HumanEntity;
++import org.bukkit.inventory.InventoryHolder;
+ import org.jspecify.annotations.Nullable;
+ 
+ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuProvider {
+@@ -34,7 +_,52 @@
      public static final int NUM_DATA = 1;
      public static final int SLOT_BOOK = 0;
      public static final int NUM_SLOTS = 1;
 -    private final Container bookAccess = new Container() {
-+    public final Container bookAccess = new Container() {
++    public final Container bookAccess = new LecternInventory();
++    public class LecternInventory implements Container {
++
++        public List<HumanEntity> transaction = new ArrayList<>();
++        private int maxStack = 1;
++
++        @Override
++        public List<ItemStack> getContents() {
++            return Arrays.asList(book);
++        }
++
++        @Override
++        public void onOpen(CraftHumanEntity who) {
++            transaction.add(who);
++        }
++
++        @Override
++        public void onClose(CraftHumanEntity who) {
++            transaction.remove(who);
++        }
++
++        @Override
++        public List<HumanEntity> getViewers() {
++            return transaction;
++        }
++
++        @Override
++        public void setMaxStackSize(int i) {
++            maxStack = i;
++        }
++
++        @Override
++        public Location getLocation() {
++            if (level == null) return null;
++            return CraftLocation.toBukkit(worldPosition, level.getWorld());
++        }
++
++        @Override
++        public InventoryHolder getOwner() {
++            return (Lectern) LecternBlockEntity.this.getOwner();
++        }
++
++        public LecternBlockEntity getLectern() {
++            return LecternBlockEntity.this;
++        }
++        // CraftBukkit end
          @Override
          public int getContainerSize() {
              return 1;
@@ -18,3 +85,53 @@
          int i = Mth.clamp(p_59533_, 0, this.pageCount - 1);
          if (i != this.page) {
              this.page = i;
+@@ -181,6 +_,35 @@
+         return p_59555_;
+     }
+ 
++    // CraftBukkit start
++    private final CommandSource commandSource = new CommandSource() {
++
++        @Override
++        public void sendSystemMessage(Component component) {
++        }
++
++        @Override
++        public org.bukkit.command.CommandSender getBukkitSender(CommandSourceStack wrapper) {
++            return wrapper.getEntity() != null ? wrapper.getEntity().getBukkitEntity() : new org.bukkit.craftbukkit.command.CraftBlockCommandSender(wrapper, LecternBlockEntity.this);
++        }
++
++        @Override
++        public boolean acceptsSuccess() {
++            return false;
++        }
++
++        @Override
++        public boolean acceptsFailure() {
++            return false;
++        }
++
++        @Override
++        public boolean shouldInformAdmins() {
++            return false;
++        }
++    };
++    // CraftBukkit end
++
+     private CommandSourceStack createCommandSourceStack(@Nullable Player p_59535_, ServerLevel p_373006_) {
+         String s;
+         Component component;
+@@ -252,4 +_,13 @@
+             return writablebookcontent != null ? writablebookcontent.pages().size() : 0;
+         }
+     }
++
++    // CraftBukkit start - add method
++    public InventoryHolder getOwner() {
++        if (level == null) return null;
++        org.bukkit.block.BlockState state = level.getWorld().getBlockAt(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()).getState();
++        if (state instanceof InventoryHolder) return (InventoryHolder) state;
++        return null;
++    }
++    // CraftBukkit end
+ }

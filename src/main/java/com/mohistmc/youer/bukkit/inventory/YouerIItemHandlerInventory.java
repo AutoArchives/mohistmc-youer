@@ -122,7 +122,7 @@ public class YouerIItemHandlerInventory implements Container {
             if (nmsOwner instanceof BlockEntity be) {
                 return Container.stillValidBlockEntity(be, p_18946_);
             } else if (nmsOwner instanceof Entity entity) {
-                return p_18946_.canInteractWithEntity(entity, 4.0F);
+                return p_18946_.isWithinEntityInteractionRange(entity, 4.0F);
             }
         }
         return true;

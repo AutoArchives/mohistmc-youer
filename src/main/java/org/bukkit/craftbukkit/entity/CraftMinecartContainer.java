@@ -25,7 +25,7 @@ public abstract class CraftMinecartContainer extends CraftMinecart implements Lo
 
     @Override
     public LootTable getLootTable() {
-        return CraftLootTable.minecraftToBukkit(getHandle().lootTable);
+        return CraftLootTable.minecraftToBukkit(getHandle().getContainerLootTable());
     }
 
     @Override
@@ -35,7 +35,7 @@ public abstract class CraftMinecartContainer extends CraftMinecart implements Lo
 
     @Override
     public long getSeed() {
-        return getHandle().lootTableSeed;
+        return getHandle().getContainerLootTableSeed();
     }
 
     private void setLootTable(LootTable table, long seed) {

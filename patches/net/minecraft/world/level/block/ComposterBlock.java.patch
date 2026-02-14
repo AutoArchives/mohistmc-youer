@@ -52,6 +52,24 @@
          if ((i != 0 || !(f > 0.0F)) && !(p_270151_.getRandom().nextDouble() < f)) {
              return p_270603_;
          } else {
+@@ -361,7 +_,7 @@
+         }
+     }
+ 
+-    static class EmptyContainer extends SimpleContainer implements WorldlyContainer {
++    public static class EmptyContainer extends SimpleContainer implements WorldlyContainer {
+         public EmptyContainer() {
+             super(0);
+         }
+@@ -382,7 +_,7 @@
+         }
+     }
+ 
+-    static class InputContainer extends SimpleContainer implements WorldlyContainer {
++    public static class InputContainer extends SimpleContainer implements WorldlyContainer {
+         private final BlockState state;
+         private final LevelAccessor level;
+         private final BlockPos pos;
 @@ -407,7 +_,7 @@
  
          @Override
@@ -61,6 +79,15 @@
          }
  
          @Override
+@@ -427,7 +_,7 @@
+         }
+     }
+ 
+-    static class OutputContainer extends SimpleContainer implements WorldlyContainer {
++    public static class OutputContainer extends SimpleContainer implements WorldlyContainer {
+         private final BlockState state;
+         private final LevelAccessor level;
+         private final BlockPos pos;
 @@ -465,5 +_,11 @@
              ComposterBlock.empty(null, this.state, this.level, this.pos);
              this.changed = true;

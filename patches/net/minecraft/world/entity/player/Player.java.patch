@@ -1,5 +1,13 @@
 --- a/net/minecraft/world/entity/player/Player.java
 +++ b/net/minecraft/world/entity/player/Player.java
+@@ -10,6 +_,7 @@
+ import java.util.List;
+ import java.util.Optional;
+ import java.util.OptionalInt;
++import java.util.concurrent.atomic.AtomicBoolean;
+ import java.util.function.Predicate;
+ import net.minecraft.core.BlockPos;
+ import net.minecraft.core.Direction;
 @@ -120,9 +_,11 @@
  import net.minecraft.world.phys.Vec3;
  import net.minecraft.world.scores.PlayerTeam;
@@ -364,6 +372,19 @@
                      float f1 = this.getEnchantedDamage(livingentity, f, p_455188_) * p_455105_;
                      if (livingentity.hurtServer(serverlevel, p_455188_, f1)) {
                          livingentity.knockback(0.4F, Mth.sin(this.getYRot() * (float) (Math.PI / 180.0)), -Mth.cos(this.getYRot() * (float) (Math.PI / 180.0)));
+@@ -1299,6 +_,12 @@
+         return true;
+     }
+ 
++    protected AtomicBoolean startSleepInBed_force = new AtomicBoolean(false);
++    public Player forceSleepInBed(boolean force) {
++        startSleepInBed_force.set(force);
++        return this;
++    }
++
+     public Either<Player.BedSleepingProblem, Unit> startSleepInBed(BlockPos p_36203_) {
+         this.startSleeping(p_36203_);
+         this.sleepCounter = 0;
 @@ -1306,6 +_,7 @@
      }
  

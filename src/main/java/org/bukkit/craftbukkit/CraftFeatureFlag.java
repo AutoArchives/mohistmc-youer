@@ -37,7 +37,7 @@ public class CraftFeatureFlag implements FeatureFlag {
 
     public static Set<CraftFeatureFlag> getFromNMS(FeatureFlagSet featureFlagSet) {
         Set<CraftFeatureFlag> set = new HashSet<>();
-        FeatureFlags.REGISTRY.names.forEach((identifier, featureflag) -> {
+        FeatureFlags.REGISTRY.getAllFlags().forEach((identifier, featureflag) -> {
             if (featureFlagSet.contains(featureflag)) {
                 set.add(new CraftFeatureFlag(identifier, featureflag));
             }
@@ -46,6 +46,6 @@ public class CraftFeatureFlag implements FeatureFlag {
     }
 
     public static CraftFeatureFlag getFromNMS(NamespacedKey namespacedKey) {
-        return FeatureFlags.REGISTRY.names.entrySet().stream().filter(entry -> CraftNamespacedKey.fromMinecraft(entry.getKey()).equals(namespacedKey)).findFirst().map(entry -> new CraftFeatureFlag(entry.getKey(), entry.getValue())).orElse(null);
+        return FeatureFlags.REGISTRY.getAllFlags().entrySet().stream().filter(entry -> CraftNamespacedKey.fromMinecraft(entry.getKey()).equals(namespacedKey)).findFirst().map(entry -> new CraftFeatureFlag(entry.getKey(), entry.getValue())).orElse(null);
     }
 }

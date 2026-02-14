@@ -1,5 +1,24 @@
 --- a/net/minecraft/world/entity/decoration/ItemFrame.java
 +++ b/net/minecraft/world/entity/decoration/ItemFrame.java
+@@ -1,6 +_,7 @@
+ package net.minecraft.world.entity.decoration;
+ 
+ import java.util.Objects;
++import java.util.concurrent.atomic.AtomicBoolean;
+ import net.minecraft.core.BlockPos;
+ import net.minecraft.core.Direction;
+ import net.minecraft.core.component.DataComponents;
+@@ -42,8 +_,8 @@
+ import org.jspecify.annotations.Nullable;
+ 
+ public class ItemFrame extends HangingEntity {
+-    private static final EntityDataAccessor<ItemStack> DATA_ITEM = SynchedEntityData.defineId(ItemFrame.class, EntityDataSerializers.ITEM_STACK);
+-    private static final EntityDataAccessor<Integer> DATA_ROTATION = SynchedEntityData.defineId(ItemFrame.class, EntityDataSerializers.INT);
++    public static final EntityDataAccessor<ItemStack> DATA_ITEM = SynchedEntityData.defineId(ItemFrame.class, EntityDataSerializers.ITEM_STACK);
++    public static final EntityDataAccessor<Integer> DATA_ROTATION = SynchedEntityData.defineId(ItemFrame.class, EntityDataSerializers.INT);
+     public static final int NUM_ROTATIONS = 8;
+     private static final float DEPTH = 0.0625F;
+     private static final float WIDTH = 0.75F;
 @@ -52,8 +_,8 @@
      private static final float DEFAULT_DROP_CHANCE = 1.0F;
      private static final boolean DEFAULT_INVISIBLE = false;
@@ -20,6 +39,15 @@
          Objects.requireNonNull(p_31793_);
          super.setDirectionRaw(p_31793_);
          if (p_31793_.getAxis().isHorizontal()) {
+@@ -110,7 +_,7 @@
+         return this.createBoundingBox(this.pos, this.getDirection(), false);
+     }
+ 
+-    private AABB createBoundingBox(BlockPos p_451768_, Direction p_451754_, boolean p_451777_) {
++    public static AABB createBoundingBox(BlockPos p_451768_, Direction p_451754_, boolean p_451777_) {
+         float f = 0.46875F;
+         Vec3 vec3 = Vec3.atCenterOf(p_451768_).relative(p_451754_, -0.46875);
+         float f1 = p_451777_ ? 1.0F : 0.75F;
 @@ -245,7 +_,7 @@
      private void removeFramedMap(ItemStack p_31811_) {
          MapId mapid = this.getFramedMapId(p_31811_);
@@ -29,3 +57,24 @@
              if (mapitemsaveddata != null) {
                  mapitemsaveddata.removedFromFrame(this.pos, this.getId());
              }
+@@ -277,13 +_,19 @@
+ 
+         this.onItemChanged(p_31790_);
+         this.getEntityData().set(DATA_ITEM, p_31790_);
+-        if (!p_31790_.isEmpty()) {
++        if (!p_31790_.isEmpty() && setItem$playSound.getAndSet(true)) {
+             this.playSound(this.getAddItemSound(), 1.0F, 1.0F);
+         }
+ 
+         if (p_31791_ && this.pos != null) {
+             this.level().updateNeighbourForOutputSignal(this.pos, Blocks.AIR);
+         }
++    }
++
++    AtomicBoolean setItem$playSound = new AtomicBoolean(true);
++    public void setItem(ItemStack p_31790_, boolean p_31791_, boolean playSound) {
++        setItem$playSound.set(playSound);
++        setItem(p_31790_, p_31791_);
+     }
+ 
+     public SoundEvent getAddItemSound() {

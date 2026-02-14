@@ -9,6 +9,21 @@
      private AbstractBoat.Status oldStatus;
      private double lastYd;
      private boolean isAboveBubbleColumn;
+@@ -79,6 +_,14 @@
+     private Leashable.@Nullable LeashData leashData;
+     private final Supplier<Item> dropItem;
+ 
++    // CraftBukkit start
++    // PAIL: Some of these haven't worked since a few updates, and since 1.9 they are less and less applicable.
++    public double maxSpeed = 0.4D;
++    public double occupiedDeceleration = 0.2D;
++    public double unoccupiedDeceleration = -1;
++    public boolean landBoats = false;
++    // CraftBukkit end
++
+     public AbstractBoat(EntityType<? extends AbstractBoat> p_479645_, Level p_481559_, Supplier<Item> p_480938_) {
+         super(p_479645_, p_481559_);
+         this.dropItem = p_480938_;
 @@ -418,7 +_,7 @@
                  for (int i2 = i1; i2 < j1; i2++) {
                      blockpos$mutableblockpos.set(l1, k1, i2);

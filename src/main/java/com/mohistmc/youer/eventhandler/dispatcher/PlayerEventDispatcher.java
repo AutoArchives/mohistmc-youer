@@ -42,7 +42,7 @@ public class PlayerEventDispatcher {
             abstractcontainermenu.bukkitView = new CraftInventoryView<>(event.getEntity().getBukkitEntity(), inventory, abstractcontainermenu);
         }
         // Youer end
-        CraftEventFactory.handleInventoryCloseEvent(event.getEntity(), event.getClose$Reason()); // CraftBukkit
+        CraftEventFactory.handleInventoryCloseEvent(event.getEntity()); // CraftBukkit
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)

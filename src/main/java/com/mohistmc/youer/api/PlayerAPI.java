@@ -62,11 +62,11 @@ public class PlayerAPI {
     }
 
     public static boolean isOp(ServerPlayer ep) {
-        return MinecraftServer.getServer().getPlayerList().isOp(ep.getGameProfile());
+        return MinecraftServer.getServer().getPlayerList().isOp(ep.nameAndId());
     }
 
     public static SocketAddress getRemoteAddress(Player player) {
-        return getNMSPlayer(player).connection.connection.getRemoteAddress();
+        return getNMSPlayer(player).connection.getConnection().getRemoteAddress();
     }
 
     public static void sendMessageByCopy(Player player, String des, String info) {

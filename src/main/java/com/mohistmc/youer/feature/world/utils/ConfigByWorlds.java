@@ -234,7 +234,7 @@ public class ConfigByWorlds {
                 player.teleport(new Location(world, x, y, z, (float) yaw, (float) pitch));
             } else {
                 Location defaultSpawn = new Location(world, 0, world.getHighestBlockYAt(0, 0), 0);
-                player.teleport(defaultSpawn, PlayerTeleportEvent.TeleportCause.YOUER);
+                player.teleport(defaultSpawn, PlayerTeleportEvent.TeleportCause.COMMAND);
             }
         }
     }

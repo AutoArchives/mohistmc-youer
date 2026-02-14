@@ -1,6 +1,14 @@
 --- a/net/minecraft/world/item/crafting/Ingredient.java
 +++ b/net/minecraft/world/item/crafting/Ingredient.java
-@@ -23,16 +_,18 @@
+@@ -7,6 +_,7 @@
+ import java.util.Optional;
+ import java.util.function.Predicate;
+ import java.util.stream.Stream;
++import javax.annotation.Nullable;
+ import net.minecraft.core.Holder;
+ import net.minecraft.core.HolderSet;
+ import net.minecraft.core.registries.Registries;
+@@ -23,16 +_,37 @@
  import net.minecraft.world.level.ItemLike;
  
  public final class Ingredient implements StackedContents.IngredientInfo<Holder<Item>>, Predicate<ItemStack> {
@@ -22,6 +30,25 @@
      private final HolderSet<Item> values;
 +    private net.neoforged.neoforge.common.crafting.@org.jspecify.annotations.Nullable ICustomIngredient customIngredient = null;
 +    private @org.jspecify.annotations.Nullable List<Holder<Item>> customIngredientValues;
++
++    // CraftBukkit start
++    @Nullable
++    private List<ItemStack> itemStacks;
++
++    public boolean isExact() {
++        return this.itemStacks != null;
++    }
++
++    public List<ItemStack> itemStacks() {
++        return this.itemStacks;
++    }
++
++    public static Ingredient ofStacks(List<ItemStack> stacks) {
++        Ingredient recipe = Ingredient.of(stacks.stream().map(ItemStack::getItem));
++        recipe.itemStacks = stacks;
++        return recipe;
++    }
++    // CraftBukkit end
  
      private Ingredient(HolderSet<Item> p_365027_) {
          p_365027_.unwrap().ifRight(p_360057_ -> {

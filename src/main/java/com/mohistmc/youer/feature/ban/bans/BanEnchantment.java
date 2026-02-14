@@ -16,14 +16,14 @@ public class BanEnchantment {
 
     public static boolean check(Enchantment enchantment) {
         if (!YouerConfig.ban_enchantment_enable) return false;
-        return BanConfig.ENCHANTMENT.getEnchantment().contains(enchantment.getKey().asString());
+        return BanConfig.ENCHANTMENT.getEnchantment().contains(enchantment.getKey().toString());
     }
 
     public static boolean check(ItemStack itemStack) {
         if (!YouerConfig.ban_enchantment_enable) return false;
         if (EnchantmentAPI.has(itemStack)) {
             for (Enchantment enchantment : EnchantmentAPI.get(itemStack)) {
-                return BanConfig.ENCHANTMENT.getEnchantment().contains(enchantment.getKey().asString());
+                return BanConfig.ENCHANTMENT.getEnchantment().contains(enchantment.getKey().toString());
             }
         }
         return false;
@@ -33,7 +33,7 @@ public class BanEnchantment {
         if (!YouerConfig.ban_enchantment_enable) return false;
         if (EnchantmentAPI.has(itemStack)) {
             for (Enchantment enchantment : EnchantmentAPI.get(CraftItemStack.asBukkitCopy(itemStack))) {
-                return BanConfig.ENCHANTMENT.getEnchantment().contains(enchantment.getKey().asString());
+                return BanConfig.ENCHANTMENT.getEnchantment().contains(enchantment.getKey().toString());
             }
         }
         return false;

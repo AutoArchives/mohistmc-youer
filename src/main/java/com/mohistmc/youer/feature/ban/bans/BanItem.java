@@ -91,9 +91,9 @@ public class BanItem {
     }
 
     public static boolean checkMoShou(org.bukkit.inventory.ItemStack itemStack) {
-        if (itemStack.isEmpty()) return false;
+        if (itemStack.getType().isAirSafe()) return false;
         if (!YouerConfig.ban_item_enable) return false;
-        return BanConfig.MOSHOU.getMoShouList().contains(itemStack.getType().key().asString());
+        return BanConfig.MOSHOU.getMoShouList().contains(itemStack.getType().getKey().toString());
     }
 
     public static boolean checkMoShou(ItemStack itemStack) {

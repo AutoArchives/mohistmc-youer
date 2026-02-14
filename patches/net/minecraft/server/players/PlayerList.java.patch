@@ -224,12 +224,25 @@
          this.broadcastAll(new ClientboundUpdateTagsPacket(TagNetworkSerialization.serializeTagsToNetwork(this.registries)));
          RecipeManager recipemanager = this.server.getRecipeManager();
          ClientboundUpdateRecipesPacket clientboundupdaterecipespacket = new ClientboundUpdateRecipesPacket(
-@@ -855,10 +_,15 @@
+@@ -855,10 +_,27 @@
          for (ServerPlayer serverplayer : this.players) {
              serverplayer.connection.send(clientboundupdaterecipespacket);
              serverplayer.getRecipeBook().sendInitialRecipeBook(serverplayer);
+-        }
 +            net.neoforged.neoforge.common.CommonHooks.sendRecipes(serverplayer, dataSyncEvent.getRecipeTypesToSend(), recipemanager.recipeMap());
-         }
++        }
++    }
++
++    public void reloadRecipes() {
++        // CraftBukkit end
++        RecipeManager recipemanager = this.server.getRecipeManager();
++        ClientboundUpdateRecipesPacket clientboundupdaterecipespacket = new ClientboundUpdateRecipesPacket(recipemanager.getSynchronizedItemProperties(), recipemanager.getSynchronizedStonecutterRecipes());
++
++        for (ServerPlayer serverplayer : this.players) {
++            serverplayer.connection.send(clientboundupdaterecipespacket);
++            serverplayer.getRecipeBook().sendInitialRecipeBook(serverplayer);
++        }
++
      }
  
      public boolean isAllowCommandsForAllPlayers() {

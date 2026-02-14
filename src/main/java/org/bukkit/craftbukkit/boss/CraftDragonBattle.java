@@ -29,7 +29,7 @@ public class CraftDragonBattle implements DragonBattle {
 
     @Override
     public EnderDragon getEnderDragon() {
-        Entity entity = handle.level.getEntity(handle.dragonUUID);
+        Entity entity = handle.level.getEntity(handle.getDragonUUID());
         return (entity != null) ? (EnderDragon) entity.getBukkitEntity() : null;
     }
 

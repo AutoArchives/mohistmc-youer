@@ -25,11 +25,19 @@
                          }
                      }
                  }
-@@ -178,7 +_,7 @@
+@@ -178,7 +_,15 @@
          }
      }
  
 -    private static void updateAndAttackTarget(ServerLevel p_423464_, BlockPos p_423617_, BlockState p_423636_, ConduitBlockEntity p_423533_, boolean p_423687_) {
++    public static int getRange(List<BlockPos> list) {
++        // CraftBukkit end
++        int i = list.size();
++        int j = i / 7 * 16;
++        // CraftBukkit start
++        return j;
++    }
++
 +    public static void updateAndAttackTarget(ServerLevel p_423464_, BlockPos p_423617_, BlockState p_423636_, ConduitBlockEntity p_423533_, boolean p_423687_) {
          EntityReference<LivingEntity> entityreference = updateDestroyTarget(p_423533_.destroyTarget, p_423464_, p_423617_, p_423687_);
          LivingEntity livingentity = EntityReference.getLivingEntity(entityreference, p_423464_);

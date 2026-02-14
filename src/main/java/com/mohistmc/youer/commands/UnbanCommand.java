@@ -16,7 +16,7 @@ public class UnbanCommand {
     public static void register(CommandDispatcher<CommandSourceStack> p_138094_) {
         p_138094_.register(
                 Commands.literal("unban")
-                        .requires(p_138101_ -> p_138101_.hasPermission(3))
+                        .requires(Commands.hasPermission(Commands.LEVEL_ADMINS))
                         .then(
                                 Commands.argument("targets", GameProfileArgument.gameProfile())
                                         .suggests(

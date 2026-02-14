@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/entity/NeutralMob.java
++++ b/net/minecraft/world/entity/NeutralMob.java
+@@ -134,6 +_,8 @@
+ 
+     void setTarget(@Nullable LivingEntity p_21681_);
+ 
++    boolean setTargetCB(@javax.annotation.Nullable LivingEntity entityliving, org.bukkit.event.entity.EntityTargetEvent.TargetReason reason, boolean fireEvent); // CraftBukkit
++
+     boolean canAttack(LivingEntity p_181126_);
+ 
+     @Nullable LivingEntity getTarget();

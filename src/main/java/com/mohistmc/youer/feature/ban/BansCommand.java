@@ -141,7 +141,7 @@ public class BansCommand extends Command {
                         }
 
                         ItemStack itemStack = player.getInventory().getItemInMainHand();
-                        if (itemStack.isEmpty()) {
+                        if (itemStack.getType().isAirSafe()) {
                             sender.sendMessage(ChatColor.RED + "Please hold the item in hand.");
                             return false;
                         }
@@ -152,7 +152,7 @@ public class BansCommand extends Command {
                         }
 
                         String nbt = args[2];
-                        BanConfig.NBT.addNbt(itemStack.getType().key().asString(), nbt);
+                        BanConfig.NBT.addNbt(itemStack.getType().getKey().toString(), nbt);
                         sender.sendMessage(ChatColor.GREEN + "Successfully banned items with NBT: " + nbt);
                         return true;
                     }
@@ -352,7 +352,7 @@ public class BansCommand extends Command {
                             return false;
                         }
                         ItemStack itemStack = player.getInventory().getItemInMainHand();
-                        if (itemStack.isEmpty()) {
+                        if (itemStack.getType().isAirSafe()) {
                             sender.sendMessage(ChatColor.RED + "Please hold an item in your hand.");
                             return false;
                         }

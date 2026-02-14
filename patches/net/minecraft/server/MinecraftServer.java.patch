@@ -35,6 +35,15 @@
      private final List<Runnable> tickables = Lists.newArrayList();
      private MetricsRecorder metricsRecorder = InactiveMetricsRecorder.INSTANCE;
      private Consumer<ProfileResults> onMetricsRecordingStopped = p_177903_ -> this.stopRecordingMetrics();
+@@ -226,7 +_,7 @@
+     private String localIp;
+     private int port = -1;
+     private final LayeredRegistryAccess<RegistryLayer> registries;
+-    private final Map<ResourceKey<Level>, ServerLevel> levels = Maps.newLinkedHashMap();
++    private Map<ResourceKey<Level>, ServerLevel> levels = Maps.newLinkedHashMap();
+     private PlayerList playerList;
+     private volatile boolean running = true;
+     private boolean stopped;
 @@ -248,7 +_,7 @@
      private final NotificationManager notificationManager;
      private final ServerActivityMonitor serverActivityMonitor;
@@ -113,6 +122,82 @@
              } else {
                  serverlevel1 = serverlevel;
              }
+@@ -502,6 +_,75 @@
+         }
+     }
+ 
++    public void initWorld(ServerLevel serverlevel, ServerLevelData serverleveldata, WorldData saveData, WorldOptions worldoptions) {
++        boolean flag = saveData.isDebugWorld();
++        // CraftBukkit start
++        if (serverlevel.generator != null) {
++            serverlevel.getWorld().getPopulators().addAll(serverlevel.generator.getDefaultPopulators(serverlevel.getWorld()));
++        }
++        initWorldBorder(serverlevel, serverleveldata); // CraftBukkit - move up so that WorldBorder is set during WorldInitEvent
++        this.server.getPluginManager().callEvent(new org.bukkit.event.world.WorldInitEvent(serverlevel.getWorld())); // CraftBukkit - SPIGOT-5569: Call WorldInitEvent before any chunks are generated
++
++        if (!serverleveldata.isInitialized()) {
++            try {
++                setInitialSpawn(serverlevel, serverleveldata, worldoptions.generateBonusChest(), flag, this.levelLoadListener);
++                serverleveldata.setInitialized(true);
++                if (flag) {
++                    this.setupDebugLevel(this.worldData);
++                }
++            } catch (Throwable throwable) {
++                CrashReport crashreport = CrashReport.forThrowable(throwable, "Exception initializing level");
++
++                try {
++                    serverlevel.fillReportDetails(crashreport);
++                } catch (Throwable throwable1) {
++                    ;
++                }
++
++                throw new ReportedException(crashreport);
++            }
++
++            serverleveldata.setInitialized(true);
++        }
++
++        GlobalPos globalpos = new GlobalPos(serverlevel.dimension(), serverlevel.getRespawnData().pos());
++
++        this.levelLoadListener.updateFocus(globalpos.dimension(), new ChunkPos(globalpos.pos()));
++    }
++
++    private void initWorldBorder(ServerLevel serverlevel1, ServerLevelData serverleveldata) {
++        boolean flag1 = false;
++
++        {
++            // CraftBukkit end
++            Optional<WorldBorder.Settings> optional = serverleveldata.getLegacyWorldBorderSettings();
++
++            if (optional.isPresent()) {
++                WorldBorder.Settings worldborder_settings = (WorldBorder.Settings) optional.get();
++                DimensionDataStorage dimensiondatastorage1 = serverlevel1.getDataStorage();
++
++                if (dimensiondatastorage1.get(WorldBorder.TYPE) == null) {
++                    double d0 = serverlevel1.dimensionType().coordinateScale();
++                    WorldBorder.Settings worldborder_settings1 = new WorldBorder.Settings(worldborder_settings.centerX() / d0, worldborder_settings.centerZ() / d0, worldborder_settings.damagePerBlock(), worldborder_settings.safeZone(), worldborder_settings.warningBlocks(), worldborder_settings.warningTime(), worldborder_settings.size(), worldborder_settings.lerpTime(), worldborder_settings.lerpTarget());
++                    WorldBorder worldborder = new WorldBorder(worldborder_settings1);
++
++                    worldborder.applyInitialSettings(serverlevel1.getGameTime());
++                    dimensiondatastorage1.set(WorldBorder.TYPE, worldborder);
++                }
++
++                flag1 = true;
++            }
++
++            serverlevel1.getWorldBorder().setAbsoluteMaxSize(this.getAbsoluteMaxWorldSize());
++            this.getPlayerList().addWorldborderListener(serverlevel1);
++        }
++
++        if (flag1) {
++            serverleveldata.setLegacyWorldBorderSettings(Optional.empty());
++        }
++
++    }
++
+     private static void setInitialSpawn(ServerLevel p_177897_, ServerLevelData p_177898_, boolean p_177899_, boolean p_177900_, LevelLoadListener p_435683_) {
+         if (SharedConstants.DEBUG_ONLY_GENERATE_HALF_THE_WORLD && SharedConstants.DEBUG_WORLD_RECREATE) {
+             p_177898_.setSpawn(LevelData.RespawnData.of(p_177897_.dimension(), new BlockPos(0, 64, -100), 0.0F, 0.0F));
 @@ -509,6 +_,7 @@
              p_177898_.setSpawn(LevelData.RespawnData.of(p_177897_.dimension(), BlockPos.ZERO.above(80), 0.0F, 0.0F));
          } else {
@@ -121,11 +206,46 @@
              ChunkPos chunkpos = new ChunkPos(serverchunkcache.randomState().sampler().findSpawnPosition());
              p_435683_.start(LevelLoadListener.Stage.PREPARE_GLOBAL_SPAWN, 0);
              p_435683_.updateFocus(p_177897_.dimension(), chunkpos);
-@@ -567,7 +_,7 @@
+@@ -567,7 +_,42 @@
          serverleveldata.setGameType(GameType.SPECTATOR);
      }
  
 -    private void prepareLevels() {
++    public void prepareLevels(ServerLevel serverlevel) {
++        this.forceTicks = true;
++        // CraftBukkit end
++        ChunkLoadCounter chunkloadcounter = new ChunkLoadCounter();
++
++        { // CraftBukkit
++            chunkloadcounter.track(serverlevel, () -> {
++                TicketStorage ticketstorage = (TicketStorage) serverlevel.getDataStorage().get(TicketStorage.TYPE);
++
++                if (ticketstorage != null) {
++                    ticketstorage.activateAllDeactivatedTickets();
++                }
++
++            });
++        }
++
++        this.levelLoadListener.start(LevelLoadListener.Stage.LOAD_INITIAL_CHUNKS, chunkloadcounter.totalChunks());
++
++        do {
++            this.levelLoadListener.update(LevelLoadListener.Stage.LOAD_INITIAL_CHUNKS, chunkloadcounter.readyChunks(), chunkloadcounter.totalChunks());
++            // CraftBukkit start
++            // this.nextTickTimeNanos = Util.getNanos() + MinecraftServer.PREPARE_LEVELS_DEFAULT_DELAY_NANOS;
++            this.executeModerately();
++            // CraftBukkit end
++        } while (chunkloadcounter.pendingChunks() > 0);
++
++        this.levelLoadListener.finish(LevelLoadListener.Stage.LOAD_INITIAL_CHUNKS);
++        // CraftBukkit start
++        // this.updateMobSpawningFlags();
++
++        this.forceTicks = false;
++        // CraftBukkit end
++        this.updateEffectiveRespawnData();
++    }
++
 +    public void prepareLevels() {
          ChunkLoadCounter chunkloadcounter = new ChunkLoadCounter();
  
@@ -138,6 +258,30 @@
                  }
              });
          }
+@@ -654,7 +_,23 @@
+         this.stopServer();
+     }
+ 
++    // CraftBukkit start
++    private boolean hasStopped = false;
++    private final Object stopLock = new Object();
++    public final boolean hasStopped() {
++        synchronized (stopLock) {
++            return hasStopped;
++        }
++    }
++    // CraftBukkit end
++
+     public void stopServer() {
++        // CraftBukkit start - prevent double stopping on multiple threads
++        synchronized(stopLock) {
++            if (hasStopped) return;
++            hasStopped = true;
++        }
++        // CraftBukkit end
+         this.packetProcessor.close();
+         if (this.metricsRecorder.isRecording()) {
+             this.cancelRecordingMetrics();
 @@ -693,6 +_,7 @@
          for (ServerLevel serverlevel2 : this.getAllLevels()) {
              if (serverlevel2 != null) {
@@ -183,6 +327,19 @@
                  this.onServerExit();
              }
          }
+@@ -865,6 +_,12 @@
+         return this.runningTask() || Util.getNanos() < (this.mayHaveDelayedTasks ? this.delayedTasksMaxNextTickTimeNanos : this.nextTickTimeNanos);
+     }
+ 
++    private void executeModerately() {
++        this.runAllTasks();
++        java.util.concurrent.locks.LockSupport.parkNanos("executing tasks", 1000L);
++        // CraftBukkit end
++    }
++
+     public static boolean throwIfFatalException() {
+         RuntimeException runtimeexception = fatalException.get();
+         if (runtimeexception != null) {
 @@ -1009,11 +_,13 @@
          }
  
@@ -295,6 +452,29 @@
      }
  
      public void forceTimeSynchronization() {
+@@ -1227,6 +_,22 @@
+         return this.levels.get(p_129881_);
+     }
+ 
++    // CraftBukkit start
++    public void addLevel(ServerLevel level) {
++        Map<ResourceKey<Level>, ServerLevel> oldLevels = this.levels;
++        Map<ResourceKey<Level>, ServerLevel> newLevels = Maps.newLinkedHashMap(oldLevels);
++        newLevels.put(level.dimension(), level);
++        this.levels = Collections.unmodifiableMap(newLevels);
++    }
++
++    public void removeLevel(ServerLevel level) {
++        Map<ResourceKey<Level>, ServerLevel> oldLevels = this.levels;
++        Map<ResourceKey<Level>, ServerLevel> newLevels = Maps.newLinkedHashMap(oldLevels);
++        newLevels.remove(level.dimension());
++        this.levels = Collections.unmodifiableMap(newLevels);
++    }
++    // CraftBukkit end
++
+     public Set<ResourceKey<Level>> levelKeys() {
+         return this.levels.keySet();
+     }
 @@ -1251,7 +_,7 @@
  
      @DontObfuscate
