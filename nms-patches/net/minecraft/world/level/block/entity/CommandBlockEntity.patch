@@ -12,5 +12,5 @@
 +        // CraftBukkit end
 +
          @Override
-         public void setCommand(String s) {
-             super.setCommand(s);
+         public void setCommand(String command) {
+             super.setCommand(command);

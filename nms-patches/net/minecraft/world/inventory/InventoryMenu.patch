@@ -21,15 +21,15 @@
 +    private CraftInventoryView bukkitEntity = null;
 +    // CraftBukkit end
  
-     public InventoryMenu(Inventory inventory, boolean flag, final Player player) {
+     public InventoryMenu(Inventory inventory, boolean active, final Player owner) {
 -        super((MenuType) null, 0, 2, 2);
 +        // CraftBukkit start
 +        super((MenuType) null, 0, 2, 2, inventory); // CraftBukkit - save player
 +        setTitle(Component.translatable("container.crafting")); // SPIGOT-4722: Allocate title for player inventory
 +        // CraftBukkit end
-         this.active = flag;
-         this.owner = player;
-         this.addResultSlot(player, 154, 28);
+         this.active = active;
+         this.owner = owner;
+         this.addResultSlot(owner, 154, 28);
 @@ -190,4 +202,17 @@
      protected Player owner() {
          return this.owner;

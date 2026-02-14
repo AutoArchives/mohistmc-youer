@@ -19,8 +19,8 @@
  
      private static final EntityDimensions ZERO_SIZED_DIMENSIONS = EntityDimensions.fixed(0.0F, 0.0F);
 @@ -56,36 +67,68 @@
-     protected void onHit(HitResult hitresult) {
-         super.onHit(hitresult);
+     protected void onHit(HitResult hitResult) {
+         super.onHit(hitResult);
          if (!this.level().isClientSide()) {
 -            if (this.random.nextInt(8) == 0) {
 +            // CraftBukkit start

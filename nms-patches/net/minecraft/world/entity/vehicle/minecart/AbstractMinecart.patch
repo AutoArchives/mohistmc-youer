@@ -31,8 +31,8 @@
 +    public double powRailAccelMult = 1.0;
 +    // CraftBukkit end
 +
-     protected AbstractMinecart(EntityType<?> entitytype, Level level) {
-         super(entitytype, level);
+     protected AbstractMinecart(EntityType<?> type, Level level) {
+         super(type, level);
          this.flipped = false;
 @@ -252,6 +272,14 @@
  

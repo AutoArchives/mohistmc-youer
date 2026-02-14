@@ -12,11 +12,11 @@
  
      protected static final EntityDataAccessor<Boolean> IS_CELEBRATING = SynchedEntityData.<Boolean>defineId(Raider.class, EntityDataSerializers.BOOLEAN);
 @@ -252,7 +256,7 @@
-             this.onItemPickup(itementity);
+             this.onItemPickup(entity);
              this.setItemSlot(equipmentslot, itemstack);
-             this.take(itementity, itemstack.getCount());
--            itementity.discard();
-+            itementity.discard(EntityRemoveEvent.Cause.PICKUP); // CraftBukkit - add Bukkit remove cause
+             this.take(entity, itemstack.getCount());
+-            entity.discard();
++            entity.discard(EntityRemoveEvent.Cause.PICKUP); // CraftBukkit - add Bukkit remove cause
              this.getCurrentRaid().setLeader(this.getWave(), this);
              this.setPatrolLeader(true);
          } else {

@@ -12,9 +12,9 @@
 @@ -85,7 +85,7 @@
          }
  
-         Util.fetchChoiceType(References.BLOCK_ENTITY, s);
--        return (BlockEntityType) Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, s, new BlockEntityType(blockentitytype_blockentitysupplier, Set.of(ablock)));
-+        return (BlockEntityType) Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, s, new BlockEntityType<>(blockentitytype_blockentitysupplier, Set.of(ablock))); // CraftBukkit - decompile error
+         Util.fetchChoiceType(References.BLOCK_ENTITY, name);
+-        return (BlockEntityType) Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, name, new BlockEntityType(factory, Set.of(validBlocks)));
++        return (BlockEntityType) Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, name, new BlockEntityType<>(factory, Set.of(validBlocks))); // CraftBukkit - decompile error
      }
  
-     private BlockEntityType(BlockEntityType.BlockEntitySupplier<? extends T> blockentitytype_blockentitysupplier, Set<Block> set) {
+     private BlockEntityType(BlockEntityType.BlockEntitySupplier<? extends T> factory, Set<Block> validBlocks) {

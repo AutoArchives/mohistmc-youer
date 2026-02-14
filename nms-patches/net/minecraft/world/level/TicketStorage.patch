@@ -17,7 +17,7 @@
  
 -            for (Ticket ticket : (List) long2objectmap_entry.getValue()) {
 +            for (Ticket ticket : long2objectmap_entry.getValue()) { // CraftBukkit - decompile error
-                 biconsumer.accept(chunkpos, ticket);
+                 output.accept(chunkpos, ticket);
              }
          }
 @@ -108,7 +112,7 @@
@@ -32,19 +32,19 @@
 @@ -200,7 +204,7 @@
      }
  
-     private static boolean isTicketSameTypeAndLevel(Ticket ticket, Ticket ticket1) {
--        return ticket1.getType() == ticket.getType() && ticket1.getTicketLevel() == ticket.getTicketLevel();
-+        return ticket1.getType() == ticket.getType() && ticket1.getTicketLevel() == ticket.getTicketLevel() && Objects.equals(ticket.key, ticket1.key); // CraftBukkit
+     private static boolean isTicketSameTypeAndLevel(Ticket ticket, Ticket t) {
+-        return t.getType() == ticket.getType() && t.getTicketLevel() == ticket.getTicketLevel();
++        return t.getType() == ticket.getType() && t.getTicketLevel() == ticket.getTicketLevel() && Objects.equals(ticket.key, t.key); // CraftBukkit
      }
  
-     public int getTicketLevelAt(long i, boolean flag) {
+     public int getTicketLevelAt(long key, boolean simulation) {
 @@ -401,7 +405,7 @@
          while (objectiterator.hasNext()) {
              Long2ObjectMap.Entry<List<Ticket>> long2objectmap_entry = (Entry) objectiterator.next();
  
 -            for (Ticket ticket : (List) long2objectmap_entry.getValue()) {
 +            for (Ticket ticket : long2objectmap_entry.getValue()) { // CraftBukkit - decompile error
-                 if (ticket.getType() == tickettype) {
+                 if (ticket.getType() == ticketType) {
                      list.add(Pair.of(ticket, long2objectmap_entry.getLongKey()));
                  }
 @@ -437,7 +441,7 @@
@@ -53,6 +53,6 @@
  
 -            for (Ticket ticket : (List) long2objectmap_entry.getValue()) {
 +            for (Ticket ticket : long2objectmap_entry.getValue()) { // CraftBukkit - decompile error
-                 if (predicate.test(ticket)) {
+                 if (ticketCheck.test(ticket)) {
                      longopenhashset.add(long2objectmap_entry.getLongKey());
                      break;

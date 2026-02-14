@@ -6,36 +6,36 @@
      };
 -    private static final DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<MenuProvider>> MENU_PROVIDER_COMBINER = new DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<MenuProvider>>() {
 +    public static final DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<MenuProvider>> MENU_PROVIDER_COMBINER = new DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<MenuProvider>>() { // PAIL private -> public
-         public Optional<MenuProvider> acceptDouble(final ChestBlockEntity chestblockentity, final ChestBlockEntity chestblockentity1) {
--            final Container container = new CompoundContainer(chestblockentity, chestblockentity1);
+         public Optional<MenuProvider> acceptDouble(final ChestBlockEntity first, final ChestBlockEntity second) {
+-            final Container container = new CompoundContainer(first, second);
 -
 -            return Optional.of(new MenuProvider() {
 -                @Override
--                public @Nullable AbstractContainerMenu createMenu(int i, Inventory inventory, Player player) {
--                    if (chestblockentity.canOpen(player) && chestblockentity1.canOpen(player)) {
--                        chestblockentity.unpackLootTable(inventory.player);
--                        chestblockentity1.unpackLootTable(inventory.player);
--                        return ChestMenu.sixRows(i, inventory, container);
+-                public @Nullable AbstractContainerMenu createMenu(int containerId, Inventory inventory, Player player) {
+-                    if (first.canOpen(player) && second.canOpen(player)) {
+-                        first.unpackLootTable(inventory.player);
+-                        second.unpackLootTable(inventory.player);
+-                        return ChestMenu.sixRows(containerId, inventory, container);
 -                    } else {
--                        Direction direction = ChestBlock.getConnectedDirection(chestblockentity.getBlockState());
--                        Vec3 vec3 = chestblockentity.getBlockPos().getCenter();
+-                        Direction direction = ChestBlock.getConnectedDirection(first.getBlockState());
+-                        Vec3 vec3 = first.getBlockPos().getCenter();
 -                        Vec3 vec31 = vec3.add((double) direction.getStepX() / 2.0D, 0.0D, (double) direction.getStepZ() / 2.0D);
 -
 -                        BaseContainerBlockEntity.sendChestLockedNotifications(vec31, player, this.getDisplayName());
 -                        return null;
 -                    }
 -                }
-+            final CompoundContainer iinventory = new CompoundContainer(chestblockentity, chestblockentity1); // CraftBukkit
++            final CompoundContainer iinventory = new CompoundContainer(first, second); // CraftBukkit
  
 -                @Override
 -                public Component getDisplayName() {
--                    return (Component) (chestblockentity.hasCustomName() ? chestblockentity.getDisplayName() : (chestblockentity1.hasCustomName() ? chestblockentity1.getDisplayName() : Component.translatable("container.chestDouble")));
+-                    return (Component) (first.hasCustomName() ? first.getDisplayName() : (second.hasCustomName() ? second.getDisplayName() : Component.translatable("container.chestDouble")));
 -                }
 -            });
-+            return Optional.of(new DoubleInventory(chestblockentity, chestblockentity1, iinventory)); // CraftBukkit
++            return Optional.of(new DoubleInventory(first, second, iinventory)); // CraftBukkit
          }
  
-         public Optional<MenuProvider> acceptSingle(ChestBlockEntity chestblockentity) {
+         public Optional<MenuProvider> acceptSingle(ChestBlockEntity single) {
 @@ -130,6 +109,42 @@
          }
      };
@@ -82,10 +82,10 @@
 @@ -290,7 +305,13 @@
  
      @Override
-     protected @Nullable MenuProvider getMenuProvider(BlockState blockstate, Level level, BlockPos blockpos) {
--        return (MenuProvider) ((Optional) this.combine(blockstate, level, blockpos, false).apply(ChestBlock.MENU_PROVIDER_COMBINER)).orElse((Object) null);
+     protected @Nullable MenuProvider getMenuProvider(BlockState state, Level level, BlockPos pos) {
+-        return (MenuProvider) ((Optional) this.combine(state, level, pos, false).apply(ChestBlock.MENU_PROVIDER_COMBINER)).orElse((Object) null);
 +        // CraftBukkit start
-+        return getMenuProvider(blockstate, level, blockpos, false);
++        return getMenuProvider(state, level, pos, false);
 +    }
 +
 +    public @Nullable MenuProvider getMenuProvider(BlockState blockstate, Level level, BlockPos blockpos, boolean ignoreObstructions) {
@@ -93,4 +93,4 @@
 +        // CraftBukkit end
      }
  
-     public static DoubleBlockCombiner.Combiner<ChestBlockEntity, Float2FloatFunction> opennessCombiner(final LidBlockEntity lidblockentity) {
+     public static DoubleBlockCombiner.Combiner<ChestBlockEntity, Float2FloatFunction> opennessCombiner(final LidBlockEntity entity) {

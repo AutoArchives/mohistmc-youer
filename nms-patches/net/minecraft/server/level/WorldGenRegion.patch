@@ -4,11 +4,11 @@
          if (blockstate.isAir()) {
              return false;
          } else {
--            if (flag) {
+-            if (dropResources) {
 +            if (false) { // CraftBukkit - SPIGOT-6833: Do not drop during world generation
-                 BlockEntity blockentity = blockstate.hasBlockEntity() ? this.getBlockEntity(blockpos) : null;
+                 BlockEntity blockentity = blockstate.hasBlockEntity() ? this.getBlockEntity(pos) : null;
  
-                 Block.dropResources(blockstate, this.level, blockpos, blockentity, entity, ItemStack.EMPTY);
+                 Block.dropResources(blockstate, this.level, pos, blockentity, breaker, ItemStack.EMPTY);
 @@ -333,6 +333,13 @@
  
      @Override

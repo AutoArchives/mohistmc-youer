@@ -16,26 +16,26 @@
 @@ -536,14 +542,14 @@
  
      @Override
-     protected void pickUpItem(ServerLevel serverlevel, ItemEntity itementity) {
--        if (this.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty() && canPickUpAndEat(itementity)) {
-+        if (!CraftEventFactory.callEntityPickupItemEvent(this, itementity, 0, !(this.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty() && canPickUpAndEat(itementity))).isCancelled()) { // CraftBukkit
-             this.onItemPickup(itementity);
-             ItemStack itemstack = itementity.getItem();
+     protected void pickUpItem(ServerLevel level, ItemEntity entity) {
+-        if (this.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty() && canPickUpAndEat(entity)) {
++        if (!CraftEventFactory.callEntityPickupItemEvent(this, entity, 0, !(this.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty() && canPickUpAndEat(entity))).isCancelled()) { // CraftBukkit
+             this.onItemPickup(entity);
+             ItemStack itemstack = entity.getItem();
  
              this.setItemSlot(EquipmentSlot.MAINHAND, itemstack);
              this.setGuaranteedDrop(EquipmentSlot.MAINHAND);
-             this.take(itementity, itemstack.getCount());
--            itementity.discard();
-+            itementity.discard(EntityRemoveEvent.Cause.PICKUP); // CraftBukkit - add Bukkit remove cause
+             this.take(entity, itemstack.getCount());
+-            entity.discard();
++            entity.discard(EntityRemoveEvent.Cause.PICKUP); // CraftBukkit - add Bukkit remove cause
          }
  
      }
 @@ -1081,7 +1087,7 @@
          @Override
-         protected void alertOther(Mob mob, LivingEntity livingentity) {
-             if (mob instanceof Panda && mob.isAggressive()) {
--                mob.setTarget(livingentity);
-+                mob.setTarget(livingentity, EntityTargetEvent.TargetReason.TARGET_ATTACKED_ENTITY, true); // CraftBukkit
+         protected void alertOther(Mob other, LivingEntity hurtByMob) {
+             if (other instanceof Panda && other.isAggressive()) {
+-                other.setTarget(hurtByMob);
++                other.setTarget(hurtByMob, EntityTargetEvent.TargetReason.TARGET_ATTACKED_ENTITY, true); // CraftBukkit
              }
  
          }

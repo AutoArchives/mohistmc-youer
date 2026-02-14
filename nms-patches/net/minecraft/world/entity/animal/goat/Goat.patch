@@ -23,11 +23,11 @@
  
      @Override
 @@ -231,8 +237,15 @@
-         ItemStack itemstack = player.getItemInHand(interactionhand);
+         ItemStack itemstack = player.getItemInHand(hand);
  
          if (itemstack.is(Items.BUCKET) && !this.isBaby()) {
 +            // CraftBukkit start - Got milk?
-+            PlayerBucketFillEvent event = CraftEventFactory.callPlayerBucketFillEvent((ServerLevel) player.level(), player, this.blockPosition(), this.blockPosition(), null, itemstack, Items.MILK_BUCKET, interactionhand);
++            PlayerBucketFillEvent event = CraftEventFactory.callPlayerBucketFillEvent((ServerLevel) player.level(), player, this.blockPosition(), this.blockPosition(), null, itemstack, Items.MILK_BUCKET, hand);
 +
 +            if (event.isCancelled()) {
 +                return InteractionResult.PASS;
@@ -37,5 +37,5 @@
 -            ItemStack itemstack1 = ItemUtils.createFilledResult(itemstack, player, Items.MILK_BUCKET.getDefaultInstance());
 +            ItemStack itemstack1 = ItemUtils.createFilledResult(itemstack, player, CraftItemStack.asNMSCopy(event.getItemStack())); // CraftBukkit
  
-             player.setItemInHand(interactionhand, itemstack1);
+             player.setItemInHand(hand, itemstack1);
              return InteractionResult.SUCCESS;

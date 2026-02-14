@@ -27,14 +27,14 @@
 +    }
 +    // CraftBukkit end
  
-     public CustomBossEvent(Identifier identifier, Component component) {
-         super(component, BossEvent.BossBarColor.WHITE, BossEvent.BossBarOverlay.PROGRESS);
+     public CustomBossEvent(Identifier id, Component name) {
+         super(name, BossEvent.BossBarColor.WHITE, BossEvent.BossBarOverlay.PROGRESS);
 @@ -145,7 +160,7 @@
-         custombossevent.setDarkenScreen(custombossevent_packed.darkenScreen);
-         custombossevent.setPlayBossMusic(custombossevent_packed.playBossMusic);
-         custombossevent.setCreateWorldFog(custombossevent_packed.createWorldFog);
--        Set set = custombossevent_packed.players;
-+        Set<UUID> set = custombossevent_packed.players; // CraftBukkit - decompile error
+         custombossevent.setDarkenScreen(packed.darkenScreen);
+         custombossevent.setPlayBossMusic(packed.playBossMusic);
+         custombossevent.setCreateWorldFog(packed.createWorldFog);
+-        Set set = packed.players;
++        Set<UUID> set = packed.players; // CraftBukkit - decompile error
  
          Objects.requireNonNull(custombossevent);
          set.forEach(custombossevent::addOfflinePlayer);

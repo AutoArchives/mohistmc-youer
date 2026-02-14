@@ -14,7 +14,7 @@
 +
  public class SmokingRecipe extends AbstractCookingRecipe {
  
-     public SmokingRecipe(String s, CookingBookCategory cookingbookcategory, Ingredient ingredient, ItemStack itemstack, float f, int i) {
+     public SmokingRecipe(String group, CookingBookCategory category, Ingredient ingredient, ItemStack result, float experience, int cookingTime) {
 @@ -29,4 +37,17 @@
      public RecipeBookCategory recipeBookCategory() {
          return RecipeBookCategories.SMOKER_FOOD;

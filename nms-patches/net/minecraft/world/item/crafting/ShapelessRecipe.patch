@@ -15,7 +15,7 @@
  
      private final String group;
 @@ -32,6 +39,22 @@
-         this.ingredients = list;
+         this.ingredients = ingredients;
      }
  
 +    // CraftBukkit start

@@ -23,11 +23,11 @@
      }
  
      @Override
--    public void onEquipItem(EquipmentSlot equipmentslot, ItemStack itemstack, ItemStack itemstack1) {
--        super.onEquipItem(equipmentslot, itemstack, itemstack1);
+-    public void onEquipItem(EquipmentSlot slot, ItemStack oldStack, ItemStack stack) {
+-        super.onEquipItem(slot, oldStack, stack);
 +    // CraftBukkit start
-+    public void onEquipItem(EquipmentSlot equipmentslot, ItemStack itemstack, ItemStack itemstack1, boolean silent) {
-+        super.onEquipItem(equipmentslot, itemstack, itemstack1, silent);
++    public void onEquipItem(EquipmentSlot slot, ItemStack oldStack, ItemStack stack, boolean silent) {
++        super.onEquipItem(slot, oldStack, stack, silent);
 +        // CraftBukkit end
          if (!this.level().isClientSide()) {
              this.reassessWeaponGoal();

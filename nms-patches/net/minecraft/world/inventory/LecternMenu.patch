@@ -37,23 +37,23 @@
      private final Container lectern;
      private final ContainerData lecternData;
  
--    public LecternMenu(int i) {
--        this(i, new SimpleContainer(1), new SimpleContainerData(1));
+-    public LecternMenu(int containerId) {
+-        this(containerId, new SimpleContainer(1), new SimpleContainerData(1));
 +    // CraftBukkit start - add player
-+    public LecternMenu(int i, Inventory inventory) {
-+        this(i, new SimpleContainer(1), new SimpleContainerData(1), inventory);
++    public LecternMenu(int containerId, Inventory inventory) {
++        this(containerId, new SimpleContainer(1), new SimpleContainerData(1), inventory);
      }
  
--    public LecternMenu(int i, Container container, ContainerData containerdata) {
-+    public LecternMenu(int i, Container container, ContainerData containerdata, Inventory inventory) {
+-    public LecternMenu(int containerId, Container lectern, ContainerData lecternData) {
++    public LecternMenu(int containerId, Container lectern, ContainerData lecternData, Inventory inventory) {
 +        // CraftBukkit end
-         super(MenuType.LECTERN, i);
-         checkContainerSize(container, 1);
-         checkContainerDataCount(containerdata, 1);
+         super(MenuType.LECTERN, containerId);
+         checkContainerSize(lectern, 1);
+         checkContainerDataCount(lecternData, 1);
 @@ -34,6 +60,7 @@
              }
          });
-         this.addDataSlots(containerdata);
+         this.addDataSlots(lecternData);
 +        player = (org.bukkit.entity.Player) inventory.player.getBukkitEntity(); // CraftBukkit
      }
  

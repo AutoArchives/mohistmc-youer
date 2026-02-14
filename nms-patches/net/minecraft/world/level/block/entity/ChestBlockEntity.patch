@@ -47,6 +47,6 @@
 +    }
 +    // CraftBukkit end
 +
-     protected ChestBlockEntity(BlockEntityType<?> blockentitytype, BlockPos blockpos, BlockState blockstate) {
-         super(blockentitytype, blockpos, blockstate);
+     protected ChestBlockEntity(BlockEntityType<?> type, BlockPos worldPosition, BlockState blockState) {
+         super(type, worldPosition, blockState);
          this.items = NonNullList.<ItemStack>withSize(27, ItemStack.EMPTY);

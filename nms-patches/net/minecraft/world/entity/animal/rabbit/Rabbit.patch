@@ -12,7 +12,7 @@
  
      public static final double STROLL_SPEED_MOD = 0.6D;
 @@ -101,7 +105,6 @@
-         super(entitytype, level);
+         super(type, level);
          this.jumpControl = new Rabbit.RabbitJumpControl(this);
          this.moveControl = new Rabbit.RabbitMoveControl(this);
 -        this.setSpeedModifier(0.0D);

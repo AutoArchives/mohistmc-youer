@@ -4,8 +4,8 @@
                      connection.configurePacketHandler(channelpipeline);
                      connection.setListenerForServerboundHandshake(new ServerHandshakePacketListenerImpl(ServerConnectionListener.this.server, connection));
                  }
--            }).group(eventloopgroupholder.eventLoopGroup()).localAddress(inetaddress, i)).bind().syncUninterruptibly());
-+            }).group(eventloopgroupholder.eventLoopGroup()).localAddress(inetaddress, i)).option(ChannelOption.AUTO_READ, false).bind().syncUninterruptibly()); // CraftBukkit
+-            }).group(eventloopgroupholder.eventLoopGroup()).localAddress(address, port)).bind().syncUninterruptibly());
++            }).group(eventloopgroupholder.eventLoopGroup()).localAddress(address, port)).option(ChannelOption.AUTO_READ, false).bind().syncUninterruptibly()); // CraftBukkit
 +        }
 +    }
 +

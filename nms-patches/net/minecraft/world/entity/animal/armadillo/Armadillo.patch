@@ -15,15 +15,15 @@
          ProfilerFiller profilerfiller = Profiler.get();
  
          profilerfiller.push("armadilloBrain");
--        this.brain.tick(serverlevel, this);
-+        ((Brain<Armadillo>) this.brain).tick(serverlevel, this); // CraftBukkit - decompile error
+-        this.brain.tick(level, this);
++        ((Brain<Armadillo>) this.brain).tick(level, this); // CraftBukkit - decompile error
          profilerfiller.pop();
          profilerfiller.push("armadilloActivityUpdate");
          ArmadilloAi.updateActivity(this);
          profilerfiller.pop();
-         if (this.isAlive() && --this.scuteTime <= 0 && this.shouldDropLoot(serverlevel)) {
+         if (this.isAlive() && --this.scuteTime <= 0 && this.shouldDropLoot(level)) {
 +            this.forceDrops = true; // CraftBukkit
-             if (this.dropFromGiftLootTable(serverlevel, BuiltInLootTables.ARMADILLO_SHED, this::spawnAtLocation)) {
+             if (this.dropFromGiftLootTable(level, BuiltInLootTables.ARMADILLO_SHED, this::spawnAtLocation)) {
                  this.playSound(SoundEvents.ARMADILLO_SCUTE_DROP, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
                  this.gameEvent(GameEvent.ENTITY_PLACE);
              }
@@ -35,17 +35,17 @@
      }
  
      @Override
--    protected void actuallyHurt(ServerLevel serverlevel, DamageSource damagesource, float f) {
--        super.actuallyHurt(serverlevel, damagesource, f);
+-    protected void actuallyHurt(ServerLevel level, DamageSource source, float dmg) {
+-        super.actuallyHurt(level, source, dmg);
 +    // CraftBukkit start - void -> boolean
-+    public boolean actuallyHurt(ServerLevel serverlevel, DamageSource damagesource, float f, EntityDamageEvent event) {
-+        boolean damageResult = super.actuallyHurt(serverlevel, damagesource, f, event);
++    public boolean actuallyHurt(ServerLevel level, DamageSource source, float dmg, EntityDamageEvent event) {
++        boolean damageResult = super.actuallyHurt(level, source, dmg, event);
 +        if (!damageResult) {
 +            return false;
 +        }
 +        // CraftBukkit end
          if (!this.isNoAi() && !this.isDeadOrDying()) {
-             if (damagesource.getEntity() instanceof LivingEntity) {
+             if (source.getEntity() instanceof LivingEntity) {
                  this.getBrain().setMemoryWithExpiry(MemoryModuleType.DANGER_DETECTED_RECENTLY, true, 80L);
 @@ -298,6 +309,7 @@
              }
@@ -60,7 +60,7 @@
                  ServerLevel serverlevel = (ServerLevel) level;
  
 +                this.forceDrops = true; // CraftBukkit
-                 this.dropFromEntityInteractLootTable(serverlevel, BuiltInLootTables.ARMADILLO_BRUSH, entity, itemstack, this::spawnAtLocation);
+                 this.dropFromEntityInteractLootTable(serverlevel, BuiltInLootTables.ARMADILLO_BRUSH, interactingEntity, tool, this::spawnAtLocation);
 +                this.forceDrops = false; // CraftBukkit
                  this.playSound(SoundEvents.ARMADILLO_BRUSH);
                  this.gameEvent(GameEvent.ENTITY_INTERACT);

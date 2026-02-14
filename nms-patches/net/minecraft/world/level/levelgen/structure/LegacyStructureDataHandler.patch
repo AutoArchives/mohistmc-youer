@@ -24,22 +24,22 @@
          }
      }
  
--    public static Supplier<LegacyTagFixer> getLegacyTagFixer(ResourceKey<Level> resourcekey, Supplier<@Nullable DimensionDataStorage> supplier, DataFixer datafixer) {
--        if (resourcekey == Level.OVERWORLD) {
-+    public static Supplier<LegacyTagFixer> getLegacyTagFixer(ResourceKey<LevelStem> resourcekey, Supplier<@Nullable DimensionDataStorage> supplier, DataFixer datafixer) { // CraftBukkit
-+        if (resourcekey == LevelStem.OVERWORLD) { // CraftBukkit
+-    public static Supplier<LegacyTagFixer> getLegacyTagFixer(ResourceKey<Level> dimension, Supplier<@Nullable DimensionDataStorage> dimensionDataStorage, DataFixer dataFixer) {
+-        if (dimension == Level.OVERWORLD) {
++    public static Supplier<LegacyTagFixer> getLegacyTagFixer(ResourceKey<LevelStem> dimension, Supplier<@Nullable DimensionDataStorage> dimensionDataStorage, DataFixer dataFixer) { // CraftBukkit
++        if (dimension == LevelStem.OVERWORLD) { // CraftBukkit
              return () -> {
-                 return new LegacyStructureDataHandler((DimensionDataStorage) supplier.get(), ImmutableList.of("Monument", "Stronghold", "Village", "Mineshaft", "Temple", "Mansion"), ImmutableList.of("Village", "Mineshaft", "Mansion", "Igloo", "Desert_Pyramid", "Jungle_Pyramid", "Swamp_Hut", "Stronghold", "Monument"), datafixer);
+                 return new LegacyStructureDataHandler((DimensionDataStorage) dimensionDataStorage.get(), ImmutableList.of("Monument", "Stronghold", "Village", "Mineshaft", "Temple", "Mansion"), ImmutableList.of("Village", "Mineshaft", "Mansion", "Igloo", "Desert_Pyramid", "Jungle_Pyramid", "Swamp_Hut", "Stronghold", "Monument"), dataFixer);
              };
--        } else if (resourcekey == Level.NETHER) {
-+        } else if (resourcekey == LevelStem.NETHER) { // CraftBukkit
+-        } else if (dimension == Level.NETHER) {
++        } else if (dimension == LevelStem.NETHER) { // CraftBukkit
              List<String> list = ImmutableList.of("Fortress");
  
              return () -> {
-                 return new LegacyStructureDataHandler((DimensionDataStorage) supplier.get(), list, list, datafixer);
+                 return new LegacyStructureDataHandler((DimensionDataStorage) dimensionDataStorage.get(), list, list, dataFixer);
              };
--        } else if (resourcekey == Level.END) {
-+        } else if (resourcekey == LevelStem.END) { // CraftBukkit
+-        } else if (dimension == Level.END) {
++        } else if (dimension == LevelStem.END) { // CraftBukkit
              List<String> list1 = ImmutableList.of("EndCity");
  
              return () -> {

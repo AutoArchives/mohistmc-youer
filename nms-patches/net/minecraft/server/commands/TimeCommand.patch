@@ -15,13 +15,13 @@
 @@ -47,8 +52,15 @@
      }
  
-     public static int setTime(CommandSourceStack commandsourcestack, int i) {
--        for (ServerLevel serverlevel : commandsourcestack.getServer().getAllLevels()) {
--            serverlevel.setDayTime((long) i);
+     public static int setTime(CommandSourceStack source, int time) {
+-        for (ServerLevel serverlevel : source.getServer().getAllLevels()) {
+-            serverlevel.setDayTime((long) time);
 +        // CraftBukkit start - SPIGOT-6496: Only set the time for the world the command originates in
 +        {
-+            ServerLevel serverlevel = commandsourcestack.getLevel();
-+            TimeSkipEvent event = new TimeSkipEvent(serverlevel.getWorld(), TimeSkipEvent.SkipReason.COMMAND, i - serverlevel.getDayTime());
++            ServerLevel serverlevel = source.getLevel();
++            TimeSkipEvent event = new TimeSkipEvent(serverlevel.getWorld(), TimeSkipEvent.SkipReason.COMMAND, time - serverlevel.getDayTime());
 +            Bukkit.getPluginManager().callEvent(event);
 +            if (!event.isCancelled()) {
 +                serverlevel.setDayTime((long) serverlevel.getDayTime() + event.getSkipAmount());
@@ -29,17 +29,17 @@
 +            // CraftBukkit end
          }
  
-         commandsourcestack.getServer().forceTimeSynchronization();
+         source.getServer().forceTimeSynchronization();
 @@ -59,8 +71,15 @@
      }
  
-     public static int addTime(CommandSourceStack commandsourcestack, int i) {
--        for (ServerLevel serverlevel : commandsourcestack.getServer().getAllLevels()) {
--            serverlevel.setDayTime(serverlevel.getDayTime() + (long) i);
+     public static int addTime(CommandSourceStack source, int time) {
+-        for (ServerLevel serverlevel : source.getServer().getAllLevels()) {
+-            serverlevel.setDayTime(serverlevel.getDayTime() + (long) time);
 +        // CraftBukkit start - SPIGOT-6496: Only set the time for the world the command originates in
 +        {
-+            ServerLevel serverlevel = commandsourcestack.getLevel();
-+            TimeSkipEvent event = new TimeSkipEvent(serverlevel.getWorld(), TimeSkipEvent.SkipReason.COMMAND, i);
++            ServerLevel serverlevel = source.getLevel();
++            TimeSkipEvent event = new TimeSkipEvent(serverlevel.getWorld(), TimeSkipEvent.SkipReason.COMMAND, time);
 +            Bukkit.getPluginManager().callEvent(event);
 +            if (!event.isCancelled()) {
 +                serverlevel.setDayTime(serverlevel.getDayTime() + event.getSkipAmount());
@@ -47,4 +47,4 @@
 +            // CraftBukkit end
          }
  
-         commandsourcestack.getServer().forceTimeSynchronization();
+         source.getServer().forceTimeSynchronization();

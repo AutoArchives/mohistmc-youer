@@ -37,19 +37,19 @@
 +    };
 +    // CraftBukkit end
 +
-     public ChunkMap(ServerLevel serverlevel, LevelStorageSource.LevelStorageAccess levelstoragesource_levelstorageaccess, DataFixer datafixer, StructureTemplateManager structuretemplatemanager, Executor executor, BlockableEventLoop<Runnable> blockableeventloop, LightChunkGetter lightchunkgetter, ChunkGenerator chunkgenerator, ChunkStatusUpdateListener chunkstatusupdatelistener, Supplier<DimensionDataStorage> supplier, TicketStorage ticketstorage, int i, boolean flag) {
--        super(new RegionStorageInfo(levelstoragesource_levelstorageaccess.getLevelId(), serverlevel.dimension(), "chunk"), levelstoragesource_levelstorageaccess.getDimensionPath(serverlevel.dimension()).resolve("region"), datafixer, flag, DataFixTypes.CHUNK, LegacyStructureDataHandler.getLegacyTagFixer(serverlevel.dimension(), supplier, datafixer));
-+        super(new RegionStorageInfo(levelstoragesource_levelstorageaccess.getLevelId(), serverlevel.dimension(), "chunk"), levelstoragesource_levelstorageaccess.getDimensionPath(serverlevel.dimension()).resolve("region"), datafixer, flag, DataFixTypes.CHUNK, LegacyStructureDataHandler.getLegacyTagFixer(serverlevel.getTypeKey(), supplier, datafixer)); // CraftBukkit
+     public ChunkMap(ServerLevel level, LevelStorageSource.LevelStorageAccess levelStorage, DataFixer dataFixer, StructureTemplateManager structureManager, Executor executor, BlockableEventLoop<Runnable> mainThreadExecutor, LightChunkGetter chunkGetter, ChunkGenerator generator, ChunkStatusUpdateListener chunkStatusListener, Supplier<DimensionDataStorage> overworldDataStorage, TicketStorage ticketStorage, int serverViewDistance, boolean syncWrites) {
+-        super(new RegionStorageInfo(levelStorage.getLevelId(), level.dimension(), "chunk"), levelStorage.getDimensionPath(level.dimension()).resolve("region"), dataFixer, syncWrites, DataFixTypes.CHUNK, LegacyStructureDataHandler.getLegacyTagFixer(level.dimension(), overworldDataStorage, dataFixer));
++        super(new RegionStorageInfo(levelStorage.getLevelId(), level.dimension(), "chunk"), levelStorage.getDimensionPath(level.dimension()).resolve("region"), dataFixer, syncWrites, DataFixTypes.CHUNK, LegacyStructureDataHandler.getLegacyTagFixer(level.getTypeKey(), overworldDataStorage, dataFixer)); // CraftBukkit
          this.visibleChunkMap = this.updatingChunkMap.clone();
          this.pendingUnloads = new Long2ObjectLinkedOpenHashMap();
          this.pendingGenerationTasks = new ArrayList();
 @@ -174,7 +200,13 @@
-         RegistryAccess registryaccess = serverlevel.registryAccess();
-         long j = serverlevel.getSeed();
+         RegistryAccess registryaccess = level.registryAccess();
+         long j = level.getSeed();
  
--        if (chunkgenerator instanceof NoiseBasedChunkGenerator noisebasedchunkgenerator) {
+-        if (generator instanceof NoiseBasedChunkGenerator noisebasedchunkgenerator) {
 +        // CraftBukkit start - SPIGOT-7051: It's a rigged game! Use delegate for random state creation, otherwise it is not so random.
-+        ChunkGenerator randomGenerator = chunkgenerator;
++        ChunkGenerator randomGenerator = generator;
 +        if (randomGenerator instanceof CustomChunkGenerator customChunkGenerator) {
 +            randomGenerator = customChunkGenerator.getDelegate();
 +        }
@@ -79,43 +79,43 @@
                  return levelchunk.getBlockTicks().count();
 @@ -968,7 +1001,7 @@
  
-     private static String printFuture(CompletableFuture<ChunkResult<LevelChunk>> completablefuture) {
+     private static String printFuture(CompletableFuture<ChunkResult<LevelChunk>> future) {
          try {
--            ChunkResult<LevelChunk> chunkresult = (ChunkResult) completablefuture.getNow((Object) null);
-+            ChunkResult<LevelChunk> chunkresult = (ChunkResult) completablefuture.getNow(null); // CraftBukkit - decompile error
+-            ChunkResult<LevelChunk> chunkresult = (ChunkResult) future.getNow((Object) null);
++            ChunkResult<LevelChunk> chunkresult = (ChunkResult) future.getNow(null); // CraftBukkit - decompile error
  
              return chunkresult != null ? (chunkresult.isSuccess() ? "done" : "unloaded") : "not completed";
          } catch (CompletionException completionexception) {
 @@ -980,15 +1013,17 @@
  
-     private CompletableFuture<Optional<CompoundTag>> readChunk(ChunkPos chunkpos) {
-         return this.read(chunkpos).thenApplyAsync((optional) -> {
+     private CompletableFuture<Optional<CompoundTag>> readChunk(ChunkPos pos) {
+         return this.read(pos).thenApplyAsync((optional) -> {
 -            return optional.map(this::upgradeChunkTag);
-+            return optional.map((compoundtag) -> upgradeChunkTag(compoundtag, chunkpos)); // CraftBukkit
++            return optional.map((compoundtag) -> upgradeChunkTag(compoundtag, pos)); // CraftBukkit
          }, Util.backgroundExecutor().forName("upgradeChunk"));
      }
  
--    private CompoundTag upgradeChunkTag(CompoundTag compoundtag) {
--        return this.upgradeChunkTag(compoundtag, -1, getChunkDataFixContextTag(this.level.dimension(), this.generator().getTypeNameForDataFixer()));
+-    private CompoundTag upgradeChunkTag(CompoundTag tag) {
+-        return this.upgradeChunkTag(tag, -1, getChunkDataFixContextTag(this.level.dimension(), this.generator().getTypeNameForDataFixer()));
 +    // CraftBukkit start
 +    private CompoundTag upgradeChunkTag(CompoundTag compoundtag, ChunkPos chunkpos) {
 +        return this.upgradeChunkTag(compoundtag, -1, getChunkDataFixContextTag(this.level.getTypeKey(), this.generator().getTypeNameForDataFixer()), chunkpos, level); // CraftBukkit
 +        // CraftBukkit end
      }
  
--    public static CompoundTag getChunkDataFixContextTag(ResourceKey<Level> resourcekey, Optional<ResourceKey<MapCodec<? extends ChunkGenerator>>> optional) {
-+    public static CompoundTag getChunkDataFixContextTag(ResourceKey<LevelStem> resourcekey, Optional<ResourceKey<MapCodec<? extends ChunkGenerator>>> optional) { // CraftBukkit
+-    public static CompoundTag getChunkDataFixContextTag(ResourceKey<Level> dimension, Optional<ResourceKey<MapCodec<? extends ChunkGenerator>>> generator) {
++    public static CompoundTag getChunkDataFixContextTag(ResourceKey<LevelStem> dimension, Optional<ResourceKey<MapCodec<? extends ChunkGenerator>>> generator) { // CraftBukkit
          CompoundTag compoundtag = new CompoundTag();
  
-         compoundtag.putString("dimension", resourcekey.identifier().toString());
+         compoundtag.putString("dimension", dimension.identifier().toString());
 @@ -1479,7 +1514,7 @@
          public final Set<ServerPlayerConnection> seenBy = Sets.newIdentityHashSet();
  
-         public TrackedEntity(Entity entity, int i, int j, boolean flag) {
--            this.serverEntity = new ServerEntity(ChunkMap.this.level, entity, j, flag, this);
-+            this.serverEntity = new ServerEntity(ChunkMap.this.level, entity, j, flag, this, seenBy); // CraftBukkit
+         public TrackedEntity(Entity entity, int range, int updateInterval, boolean trackDelta) {
+-            this.serverEntity = new ServerEntity(ChunkMap.this.level, entity, updateInterval, trackDelta, this);
++            this.serverEntity = new ServerEntity(ChunkMap.this.level, entity, updateInterval, trackDelta, this, seenBy); // CraftBukkit
              this.entity = entity;
-             this.range = i;
+             this.range = range;
              this.lastSectionPos = SectionPos.of((EntityAccess) entity);
 @@ -1522,6 +1557,17 @@
  
@@ -137,13 +137,13 @@
                  this.serverEntity.removePairing(serverplayerconnection.getPlayer());
 @@ -1548,6 +1594,11 @@
                  double d2 = d0 * d0;
-                 boolean flag = d1 <= d2 && this.entity.broadcastToPlayer(serverplayer) && ChunkMap.this.isChunkTracked(serverplayer, this.entity.chunkPosition().x, this.entity.chunkPosition().z);
+                 boolean flag = d1 <= d2 && this.entity.broadcastToPlayer(player) && ChunkMap.this.isChunkTracked(player, this.entity.chunkPosition().x, this.entity.chunkPosition().z);
  
 +                // CraftBukkit start - respect vanish API
-+                if (!serverplayer.getBukkitEntity().canSee(this.entity.getBukkitEntity())) {
++                if (!player.getBukkitEntity().canSee(this.entity.getBukkitEntity())) {
 +                    flag = false;
 +                }
 +                // CraftBukkit end
                  if (flag) {
-                     if (this.seenBy.add(serverplayer.connection)) {
-                         this.serverEntity.addPairing(serverplayer);
+                     if (this.seenBy.add(player.connection)) {
+                         this.serverEntity.addPairing(player);

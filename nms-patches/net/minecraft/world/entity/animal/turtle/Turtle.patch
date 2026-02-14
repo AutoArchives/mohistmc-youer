@@ -13,9 +13,9 @@
 @@ -286,7 +288,7 @@
  
      @Override
-     public void thunderHit(ServerLevel serverlevel, LightningBolt lightningbolt) {
--        this.hurtServer(serverlevel, this.damageSources().lightningBolt(), Float.MAX_VALUE);
-+        this.hurtServer(serverlevel, this.damageSources().lightningBolt().customEntityDamager(lightningbolt), Float.MAX_VALUE); // CraftBukkit
+     public void thunderHit(ServerLevel level, LightningBolt lightningBolt) {
+-        this.hurtServer(level, this.damageSources().lightningBolt(), Float.MAX_VALUE);
++        this.hurtServer(level, this.damageSources().lightningBolt().customEntityDamager(lightningBolt), Float.MAX_VALUE); // CraftBukkit
      }
  
      @Override

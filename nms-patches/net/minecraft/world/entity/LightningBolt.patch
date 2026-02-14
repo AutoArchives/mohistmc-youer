@@ -44,7 +44,7 @@
 +                    // CraftBukkit end
                  }
  
-                 for (int j = 0; j < i; ++j) {
+                 for (int j = 0; j < additionalSources; ++j) {
 @@ -170,8 +179,12 @@
  
                      blockstate = BaseFireBlock.getState(serverlevel, blockpos1);

@@ -18,9 +18,9 @@
                      BlockState blockstate = this.getBlockState();
                      BlockState blockstate1 = (BlockState) blockstate.setValue(BlockStateProperties.DUSTED, k);
  
--                    serverlevel.setBlock(this.getBlockPos(), blockstate1, 3);
+-                    level.setBlock(this.getBlockPos(), blockstate1, 3);
 +                    // CraftBukkit start
-+                    BlockBrushEvent event = CraftEventFactory.callBlockBrushEvent(serverlevel, this.getBlockPos(), blockstate1, 3, (ServerPlayer) livingentity);
++                    BlockBrushEvent event = CraftEventFactory.callBlockBrushEvent(level, this.getBlockPos(), blockstate1, 3, (ServerPlayer) user);
 +                    if (!event.isCancelled()) {
 +                        event.getNewState().update(true);
 +                    }
@@ -31,12 +31,12 @@
 @@ -122,10 +134,10 @@
      }
  
-     private void brushingCompleted(ServerLevel serverlevel, LivingEntity livingentity, ItemStack itemstack) {
--        this.dropContent(serverlevel, livingentity, itemstack);
+     private void brushingCompleted(ServerLevel level, LivingEntity user, ItemStack brush) {
+-        this.dropContent(level, user, brush);
 +        // this.dropContent(serverlevel, livingentity, itemstack); // CraftBukkit - moved down
          BlockState blockstate = this.getBlockState();
  
--        serverlevel.levelEvent(3008, this.getBlockPos(), Block.getId(blockstate));
+-        level.levelEvent(3008, this.getBlockPos(), Block.getId(blockstate));
 +        // worldserver.levelEvent(3008, this.getBlockPos(), Block.getId(iblockdata)); // CraftBukkit - moved down
          Block block = this.getBlockState().getBlock();
          Block block1;
@@ -45,26 +45,26 @@
              block1 = Blocks.AIR;
          }
  
--        serverlevel.setBlock(this.worldPosition, block1.defaultBlockState(), 3);
+-        level.setBlock(this.worldPosition, block1.defaultBlockState(), 3);
 +        // CraftBukkit start
-+        BlockBrushEvent event = CraftEventFactory.callBlockBrushEvent(serverlevel, this.worldPosition, block1.defaultBlockState(), 3, (ServerPlayer) livingentity);
++        BlockBrushEvent event = CraftEventFactory.callBlockBrushEvent(level, this.worldPosition, block1.defaultBlockState(), 3, (ServerPlayer) user);
 +        if (!event.isCancelled()) {
-+            this.dropContent(serverlevel, livingentity, itemstack); // CraftBukkit - from above
-+            serverlevel.levelEvent(3008, this.getBlockPos(), Block.getId(blockstate)); // CraftBukkit - from above
++            this.dropContent(level, user, brush); // CraftBukkit - from above
++            level.levelEvent(3008, this.getBlockPos(), Block.getId(blockstate)); // CraftBukkit - from above
 +
 +            event.getNewState().update(true);
 +        }
 +        // CraftBukkit end
      }
  
-     private void dropContent(ServerLevel serverlevel, LivingEntity livingentity, ItemStack itemstack) {
+     private void dropContent(ServerLevel level, LivingEntity user, ItemStack brush) {
 @@ -152,7 +172,12 @@
-             ItemEntity itementity = new ItemEntity(serverlevel, d3, d4, d5, this.item.split(serverlevel.random.nextInt(21) + 10));
+             ItemEntity itementity = new ItemEntity(level, d3, d4, d5, this.item.split(level.random.nextInt(21) + 10));
  
              itementity.setDeltaMovement(Vec3.ZERO);
--            serverlevel.addFreshEntity(itementity);
+-            level.addFreshEntity(itementity);
 +            // CraftBukkit start
-+            if (livingentity instanceof ServerPlayer serverplayer) {
++            if (user instanceof ServerPlayer serverplayer) {
 +                org.bukkit.block.Block bblock = CraftBlock.at(this.level, this.worldPosition);
 +                CraftEventFactory.handleBlockDropItemEvent(bblock, bblock.getState(), serverplayer, Arrays.asList(itementity));
 +            }
@@ -75,18 +75,18 @@
 @@ -185,7 +210,7 @@
      }
  
-     private boolean tryLoadLootTable(ValueInput valueinput) {
--        this.lootTable = (ResourceKey) valueinput.read("LootTable", LootTable.KEY_CODEC).orElse((Object) null);
-+        this.lootTable = (ResourceKey) valueinput.read("LootTable", LootTable.KEY_CODEC).orElse(null); // CraftBukkit - decompile error
-         this.lootTableSeed = valueinput.getLongOr("LootTableSeed", 0L);
+     private boolean tryLoadLootTable(ValueInput input) {
+-        this.lootTable = (ResourceKey) input.read("LootTable", LootTable.KEY_CODEC).orElse((Object) null);
++        this.lootTable = (ResourceKey) input.read("LootTable", LootTable.KEY_CODEC).orElse(null); // CraftBukkit - decompile error
+         this.lootTableSeed = input.getLongOr("LootTableSeed", 0L);
          return this.lootTable != null;
      }
 @@ -231,7 +256,7 @@
              this.item = ItemStack.EMPTY;
          }
  
--        this.hitDirection = (Direction) valueinput.read("hit_direction", Direction.LEGACY_ID_CODEC).orElse((Object) null);
-+        this.hitDirection = (Direction) valueinput.read("hit_direction", Direction.LEGACY_ID_CODEC).orElse(null); // CraftBukkit - decompile error
+-        this.hitDirection = (Direction) input.read("hit_direction", Direction.LEGACY_ID_CODEC).orElse((Object) null);
++        this.hitDirection = (Direction) input.read("hit_direction", Direction.LEGACY_ID_CODEC).orElse(null); // CraftBukkit - decompile error
      }
  
      @Override

@@ -28,7 +28,7 @@
      private final BinaryHeap openSet;
 +    private final Explosion explosionSource; // CraftBukkit - reusable source for CraftTNTPrimed.getSource()
  
-     public EnderDragon(EntityType<? extends EnderDragon> entitytype, Level level) {
+     public EnderDragon(EntityType<? extends EnderDragon> type, Level level) {
          super(EntityType.ENDER_DRAGON, level);
 @@ -106,6 +122,7 @@
          this.setHealth(this.getMaxHealth());
@@ -37,7 +37,7 @@
 +        this.explosionSource = new ServerExplosion(level.getMinecraftWorld(), this, null, null, new Vec3(Double.NaN, Double.NaN, Double.NaN), Float.NaN, true, Explosion.BlockInteraction.DESTROY); // CraftBukkit
      }
  
-     public void setDragonFight(EndDragonFight enddragonfight) {
+     public void setDragonFight(EndDragonFight fight) {
 @@ -210,7 +227,7 @@
  
                      Vec3 vec31 = dragonphaseinstance.getFlyTargetLocation();
@@ -64,7 +64,7 @@
          }
  
 @@ -437,6 +461,9 @@
-         int j1 = Mth.floor(aabb.maxZ);
+         int j1 = Mth.floor(bb.maxZ);
          boolean flag = false;
          boolean flag1 = false;
 +        // CraftBukkit start - Create a list to hold all the destroyed blocks
@@ -76,12 +76,12 @@
 @@ -446,7 +473,11 @@
  
                      if (!blockstate.isAir() && !blockstate.is(BlockTags.DRAGON_TRANSPARENT)) {
-                         if ((Boolean) serverlevel.getGameRules().get(GameRules.MOB_GRIEFING) && !blockstate.is(BlockTags.DRAGON_IMMUNE)) {
--                            flag1 = serverlevel.removeBlock(blockpos, false) || flag1;
+                         if ((Boolean) level.getGameRules().get(GameRules.MOB_GRIEFING) && !blockstate.is(BlockTags.DRAGON_IMMUNE)) {
+-                            flag1 = level.removeBlock(blockpos, false) || flag1;
 +                            // CraftBukkit start - Add blocks to list rather than destroying them
 +                            // flag1 = worldserver.removeBlock(blockposition, false) || flag1;
 +                            flag1 = true;
-+                            destroyedBlocks.add(CraftBlock.at(serverlevel, blockpos));
++                            destroyedBlocks.add(CraftBlock.at(level, blockpos));
 +                            // CraftBukkit end
                          } else {
                              flag = true;
@@ -139,7 +139,7 @@
 @@ -510,7 +584,7 @@
  
      @Override
-     public void kill(ServerLevel serverlevel) {
+     public void kill(ServerLevel level) {
 -        this.remove(Entity.RemovalReason.KILLED);
 +        this.remove(Entity.RemovalReason.KILLED, EntityRemoveEvent.Cause.DEATH); // CraftBukkit - add Bukkit remove cause
          this.gameEvent(GameEvent.ENTITY_DIE);
@@ -209,18 +209,18 @@
              }
          }
 @@ -771,6 +865,7 @@
-         super.addAdditionalSaveData(valueoutput);
-         valueoutput.putInt("DragonPhase", this.phaseManager.getCurrentPhase().getPhase().getId());
-         valueoutput.putInt("DragonDeathTime", this.dragonDeathTime);
-+        valueoutput.putInt("Bukkit.expToDrop", expToDrop); // CraftBukkit - SPIGOT-2420: The ender dragon drops xp over time which can also happen between server starts
+         super.addAdditionalSaveData(output);
+         output.putInt("DragonPhase", this.phaseManager.getCurrentPhase().getPhase().getId());
+         output.putInt("DragonDeathTime", this.dragonDeathTime);
++        output.putInt("Bukkit.expToDrop", expToDrop); // CraftBukkit - SPIGOT-2420: The ender dragon drops xp over time which can also happen between server starts
      }
  
      @Override
 @@ -780,6 +875,7 @@
              this.phaseManager.setPhase(EnderDragonPhase.getById(integer));
          });
-         this.dragonDeathTime = valueinput.getIntOr("DragonDeathTime", 0);
-+        this.expToDrop = valueinput.getIntOr("Bukkit.expToDrop", this.expToDrop); // CraftBukkit - SPIGOT-2420: The ender dragon drops xp over time which can also happen between server starts
+         this.dragonDeathTime = input.getIntOr("DragonDeathTime", 0);
++        this.expToDrop = input.getIntOr("Bukkit.expToDrop", this.expToDrop); // CraftBukkit - SPIGOT-2420: The ender dragon drops xp over time which can also happen between server starts
      }
  
      @Override

@@ -34,11 +34,11 @@
 +    public long gossipDecayInterval = GOSSIP_DECAY_INTERVAL;
 +    // CraftBukkit end
  
-     public Villager(EntityType<? extends Villager> entitytype, Level level) {
-         this(entitytype, level, VillagerType.PLAINS);
+     public Villager(EntityType<? extends Villager> type, Level level) {
+         this(type, level, VillagerType.PLAINS);
 @@ -150,7 +159,9 @@
-     public Villager(EntityType<? extends Villager> entitytype, Level level, Holder<VillagerType> holder) {
-         super(entitytype, level);
+     public Villager(EntityType<? extends Villager> entityType, Level level, Holder<VillagerType> type) {
+         super(entityType, level);
          this.foodLevel = 0;
 -        this.gossips = new GossipContainer();
 +        // CraftBukkit start - add constructor parameter in Reputation
@@ -96,26 +96,26 @@
          }
  
 @@ -494,7 +517,7 @@
-         this.entityData.set(Villager.DATA_VILLAGER_DATA, (VillagerData) valueinput.read("VillagerData", VillagerData.CODEC).orElseGet(Villager::createDefaultVillagerData));
-         this.foodLevel = valueinput.getByteOr("FoodLevel", (byte) 0);
+         this.entityData.set(Villager.DATA_VILLAGER_DATA, (VillagerData) input.read("VillagerData", VillagerData.CODEC).orElseGet(Villager::createDefaultVillagerData));
+         this.foodLevel = input.getByteOr("FoodLevel", (byte) 0);
          this.gossips.clear();
--        Optional optional = valueinput.read("Gossips", GossipContainer.CODEC);
-+        Optional<GossipContainer> optional = valueinput.read("Gossips", GossipContainer.CODEC); // CraftBukkit - decompile error
+-        Optional optional = input.read("Gossips", GossipContainer.CODEC);
++        Optional<GossipContainer> optional = input.read("Gossips", GossipContainer.CODEC); // CraftBukkit - decompile error
          GossipContainer gossipcontainer = this.gossips;
  
          Objects.requireNonNull(this.gossips);
 @@ -768,7 +791,7 @@
-                 witch1.finalizeSpawn(serverlevel, serverlevel.getCurrentDifficultyAt(witch1.blockPosition()), EntitySpawnReason.CONVERSION, (SpawnGroupData) null);
+                 witch1.finalizeSpawn(level, level.getCurrentDifficultyAt(witch1.blockPosition()), EntitySpawnReason.CONVERSION, (SpawnGroupData) null);
                  witch1.setPersistenceRequired();
                  this.releaseAllPois();
 -            });
 +            }, EntityTransformEvent.TransformReason.LIGHTNING, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.LIGHTNING); // CraftBukkit
  
              if (witch == null) {
-                 super.thunderHit(serverlevel, lightningbolt);
+                 super.thunderHit(level, lightningBolt);
 @@ -816,7 +839,7 @@
      @Override
-     protected void updateTrades(ServerLevel serverlevel) {
+     protected void updateTrades(ServerLevel level) {
          VillagerData villagerdata = this.getVillagerData();
 -        ResourceKey<VillagerProfession> resourcekey = (ResourceKey) villagerdata.profession().unwrapKey().orElse((Object) null);
 +        ResourceKey<VillagerProfession> resourcekey = (ResourceKey) villagerdata.profession().unwrapKey().orElse(null); // CraftBukkit - decompile error
@@ -134,33 +134,33 @@
 @@ -874,7 +897,7 @@
              }).limit(5L).toList();
  
-             if (list1.size() >= j) {
--                if (!SpawnUtil.trySpawnMob(EntityType.IRON_GOLEM, EntitySpawnReason.MOB_SUMMONED, serverlevel, this.blockPosition(), 10, 8, 6, SpawnUtil.Strategy.LEGACY_IRON_GOLEM, false).isEmpty()) {
-+                if (!SpawnUtil.trySpawnMob(EntityType.IRON_GOLEM, EntitySpawnReason.MOB_SUMMONED, serverlevel, this.blockPosition(), 10, 8, 6, SpawnUtil.Strategy.LEGACY_IRON_GOLEM, false, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.VILLAGE_DEFENSE).isEmpty()) { // CraftBukkit
+             if (list1.size() >= villagersNeededToAgree) {
+-                if (!SpawnUtil.trySpawnMob(EntityType.IRON_GOLEM, EntitySpawnReason.MOB_SUMMONED, level, this.blockPosition(), 10, 8, 6, SpawnUtil.Strategy.LEGACY_IRON_GOLEM, false).isEmpty()) {
++                if (!SpawnUtil.trySpawnMob(EntityType.IRON_GOLEM, EntitySpawnReason.MOB_SUMMONED, level, this.blockPosition(), 10, 8, 6, SpawnUtil.Strategy.LEGACY_IRON_GOLEM, false, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.VILLAGE_DEFENSE).isEmpty()) { // CraftBukkit
                      list.forEach(GolemSensor::golemDetected);
                  }
              }
 @@ -887,15 +910,18 @@
  
      @Override
-     public void onReputationEventFrom(ReputationEventType reputationeventtype, Entity entity) {
-+        org.bukkit.entity.Villager.ReputationEvent bukkitReputationEvent = org.bukkit.craftbukkit.entity.CraftVillager.CraftReputationEvent.minecraftToBukkit(reputationeventtype); // CraftBukkit - convert event to bukkit
-         if (reputationeventtype == ReputationEventType.ZOMBIE_VILLAGER_CURED) {
--            this.gossips.add(entity.getUUID(), GossipType.MAJOR_POSITIVE, 20);
--            this.gossips.add(entity.getUUID(), GossipType.MINOR_POSITIVE, 25);
+     public void onReputationEventFrom(ReputationEventType type, Entity source) {
++        org.bukkit.entity.Villager.ReputationEvent bukkitReputationEvent = org.bukkit.craftbukkit.entity.CraftVillager.CraftReputationEvent.minecraftToBukkit(type); // CraftBukkit - convert event to bukkit
+         if (type == ReputationEventType.ZOMBIE_VILLAGER_CURED) {
+-            this.gossips.add(source.getUUID(), GossipType.MAJOR_POSITIVE, 20);
+-            this.gossips.add(source.getUUID(), GossipType.MINOR_POSITIVE, 25);
 +            // CraftBukkit start - add change reason parameter
-+            this.gossips.add(entity.getUUID(), GossipType.MAJOR_POSITIVE, 20, bukkitReputationEvent);
-+            this.gossips.add(entity.getUUID(), GossipType.MINOR_POSITIVE, 25, bukkitReputationEvent);
++            this.gossips.add(source.getUUID(), GossipType.MAJOR_POSITIVE, 20, bukkitReputationEvent);
++            this.gossips.add(source.getUUID(), GossipType.MINOR_POSITIVE, 25, bukkitReputationEvent);
 +            // CraftBukkit end
-         } else if (reputationeventtype == ReputationEventType.TRADE) {
--            this.gossips.add(entity.getUUID(), GossipType.TRADING, 2);
-+            this.gossips.add(entity.getUUID(), GossipType.TRADING, 2, bukkitReputationEvent); // CraftBukkit - add change reason parameter
-         } else if (reputationeventtype == ReputationEventType.VILLAGER_HURT) {
--            this.gossips.add(entity.getUUID(), GossipType.MINOR_NEGATIVE, 25);
-+            this.gossips.add(entity.getUUID(), GossipType.MINOR_NEGATIVE, 25, bukkitReputationEvent); // CraftBukkit - add change reason parameter
-         } else if (reputationeventtype == ReputationEventType.VILLAGER_KILLED) {
--            this.gossips.add(entity.getUUID(), GossipType.MAJOR_NEGATIVE, 25);
-+            this.gossips.add(entity.getUUID(), GossipType.MAJOR_NEGATIVE, 25, bukkitReputationEvent); // CraftBukkit - add change reason parameter
+         } else if (type == ReputationEventType.TRADE) {
+-            this.gossips.add(source.getUUID(), GossipType.TRADING, 2);
++            this.gossips.add(source.getUUID(), GossipType.TRADING, 2, bukkitReputationEvent); // CraftBukkit - add change reason parameter
+         } else if (type == ReputationEventType.VILLAGER_HURT) {
+-            this.gossips.add(source.getUUID(), GossipType.MINOR_NEGATIVE, 25);
++            this.gossips.add(source.getUUID(), GossipType.MINOR_NEGATIVE, 25, bukkitReputationEvent); // CraftBukkit - add change reason parameter
+         } else if (type == ReputationEventType.VILLAGER_KILLED) {
+-            this.gossips.add(source.getUUID(), GossipType.MAJOR_NEGATIVE, 25);
++            this.gossips.add(source.getUUID(), GossipType.MAJOR_NEGATIVE, 25, bukkitReputationEvent); // CraftBukkit - add change reason parameter
          }
  
      }

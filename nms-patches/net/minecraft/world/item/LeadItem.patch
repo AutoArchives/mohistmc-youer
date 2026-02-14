@@ -13,23 +13,23 @@
 +
  public class LeadItem extends Item {
  
-     public LeadItem(Item.Properties item_properties) {
+     public LeadItem(Item.Properties properties) {
 @@ -30,27 +37,47 @@
-             Player player = useoncontext.getPlayer();
+             Player player = context.getPlayer();
  
              if (!level.isClientSide() && player != null) {
 -                return bindPlayerMobs(player, level, blockpos);
-+                return bindPlayerMobs(player, level, blockpos, useoncontext.getHand()); // CraftBukkit - Pass hand
++                return bindPlayerMobs(player, level, blockpos, context.getHand()); // CraftBukkit - Pass hand
              }
          }
  
          return InteractionResult.PASS;
      }
  
--    public static InteractionResult bindPlayerMobs(Player player, Level level, BlockPos blockpos) {
-+    public static InteractionResult bindPlayerMobs(Player player, Level level, BlockPos blockpos, net.minecraft.world.InteractionHand interactionhand) { // CraftBukkit - Add EnumHand
+-    public static InteractionResult bindPlayerMobs(Player player, Level level, BlockPos pos) {
++    public static InteractionResult bindPlayerMobs(Player player, Level level, BlockPos pos, net.minecraft.world.InteractionHand interactionhand) { // CraftBukkit - Add EnumHand
          LeashFenceKnotEntity leashfenceknotentity = null;
-         List<Leashable> list = Leashable.leashableInArea(level, Vec3.atCenterOf(blockpos), (leashable) -> {
+         List<Leashable> list = Leashable.leashableInArea(level, Vec3.atCenterOf(pos), (leashable) -> {
              return leashable.getLeashHolder() == player;
          });
          boolean flag = false;
@@ -38,11 +38,11 @@
 +        for (Iterator iterator = list.iterator(); iterator.hasNext();) { // CraftBukkit - handle setLeashedTo at end of loop
 +            Leashable leashable = (Leashable) iterator.next();
              if (leashfenceknotentity == null) {
-                 leashfenceknotentity = LeashFenceKnotEntity.getOrCreateKnot(level, blockpos);
+                 leashfenceknotentity = LeashFenceKnotEntity.getOrCreateKnot(level, pos);
 +
 +                // CraftBukkit start - fire HangingPlaceEvent
 +                org.bukkit.inventory.EquipmentSlot hand = CraftEquipmentSlot.getHand(interactionhand);
-+                HangingPlaceEvent event = new HangingPlaceEvent((org.bukkit.entity.Hanging) leashfenceknotentity.getBukkitEntity(), player != null ? (org.bukkit.entity.Player) player.getBukkitEntity() : null, CraftBlock.at(level, blockpos), org.bukkit.block.BlockFace.SELF, hand);
++                HangingPlaceEvent event = new HangingPlaceEvent((org.bukkit.entity.Hanging) leashfenceknotentity.getBukkitEntity(), player != null ? (org.bukkit.entity.Player) player.getBukkitEntity() : null, CraftBlock.at(level, pos), org.bukkit.block.BlockFace.SELF, hand);
 +                level.getCraftServer().getPluginManager().callEvent(event);
 +
 +                if (event.isCancelled()) {
@@ -66,7 +66,7 @@
                  flag = true;
              }
 @@ -60,7 +87,18 @@
-             level.gameEvent(GameEvent.BLOCK_ATTACH, blockpos, GameEvent.Context.of((Entity) player));
+             level.gameEvent(GameEvent.BLOCK_ATTACH, pos, GameEvent.Context.of((Entity) player));
              return InteractionResult.SUCCESS_SERVER;
          } else {
 +            // CraftBukkit start- remove leash if we do not leash any entity because of the cancelled event
@@ -79,8 +79,8 @@
      }
 +
 +    // CraftBukkit start
-+    public static InteractionResult bindPlayerMobs(Player player, Level level, BlockPos blockpos) {
-+        return bindPlayerMobs(player, level, blockpos, net.minecraft.world.InteractionHand.MAIN_HAND);
++    public static InteractionResult bindPlayerMobs(Player player, Level level, BlockPos pos) {
++        return bindPlayerMobs(player, level, pos, net.minecraft.world.InteractionHand.MAIN_HAND);
 +    }
 +    // CraftBukkit end
  }

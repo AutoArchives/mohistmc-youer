@@ -6,21 +6,21 @@
      protected int forcedAgeTimer;
 +    public boolean ageLocked; // CraftBukkit
  
-     protected AgeableMob(EntityType<? extends AgeableMob> entitytype, Level level) {
-         super(entitytype, level);
+     protected AgeableMob(EntityType<? extends AgeableMob> type, Level level) {
+         super(type, level);
 @@ -106,6 +107,7 @@
-         super.addAdditionalSaveData(valueoutput);
-         valueoutput.putInt("Age", this.getAge());
-         valueoutput.putInt("ForcedAge", this.forcedAge);
-+        valueoutput.putBoolean("AgeLocked", this.ageLocked); // CraftBukkit
+         super.addAdditionalSaveData(output);
+         output.putInt("Age", this.getAge());
+         output.putInt("ForcedAge", this.forcedAge);
++        output.putBoolean("AgeLocked", this.ageLocked); // CraftBukkit
      }
  
      @Override
 @@ -113,6 +115,7 @@
-         super.readAdditionalSaveData(valueinput);
-         this.setAge(valueinput.getIntOr("Age", 0));
-         this.forcedAge = valueinput.getIntOr("ForcedAge", 0);
-+        this.ageLocked = valueinput.getBooleanOr("AgeLocked", this.ageLocked); // CraftBukkit
+         super.readAdditionalSaveData(input);
+         this.setAge(input.getIntOr("Age", 0));
+         this.forcedAge = input.getIntOr("ForcedAge", 0);
++        this.ageLocked = input.getBooleanOr("AgeLocked", this.ageLocked); // CraftBukkit
      }
  
      @Override

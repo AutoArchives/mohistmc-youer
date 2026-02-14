@@ -85,9 +85,9 @@
 @@ -230,7 +244,7 @@
  
      @Override
-     public boolean canTeleport(Level level, Level level1) {
--        if (level.dimension() == Level.END && level1.dimension() == Level.OVERWORLD) {
-+        if (level.getTypeKey() == LevelStem.END && level1.getTypeKey() == LevelStem.OVERWORLD) { // CraftBukkit
+     public boolean canTeleport(Level from, Level to) {
+-        if (from.dimension() == Level.END && to.dimension() == Level.OVERWORLD) {
++        if (from.getTypeKey() == LevelStem.END && to.getTypeKey() == LevelStem.OVERWORLD) { // CraftBukkit
              Entity entity = this.getOwner();
  
              if (entity instanceof ServerPlayer) {

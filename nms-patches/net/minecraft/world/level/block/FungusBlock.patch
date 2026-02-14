@@ -2,8 +2,8 @@
 +++ b/net/minecraft/world/level/block/FungusBlock.java
 @@ -74,6 +74,13 @@
      @Override
-     public void performBonemeal(ServerLevel serverlevel, RandomSource randomsource, BlockPos blockpos, BlockState blockstate) {
-         this.getFeature(serverlevel).ifPresent((holder) -> {
+     public void performBonemeal(ServerLevel level, RandomSource random, BlockPos pos, BlockState state) {
+         this.getFeature(level).ifPresent((holder) -> {
 +            // CraftBukkit start
 +            if (this == Blocks.WARPED_FUNGUS) {
 +                SaplingBlock.treeType = org.bukkit.TreeType.WARPED_FUNGUS;
@@ -11,6 +11,6 @@
 +                SaplingBlock.treeType = org.bukkit.TreeType.CRIMSON_FUNGUS;
 +            }
 +            // CraftBukkit end
-             ((ConfiguredFeature) holder.value()).place(serverlevel, serverlevel.getChunkSource().getGenerator(), randomsource, blockpos);
+             ((ConfiguredFeature) holder.value()).place(level, level.getChunkSource().getGenerator(), random, pos);
          });
      }

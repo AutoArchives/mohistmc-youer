@@ -191,6 +191,7 @@ import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.EntitySpellCastEvent;
 import org.bukkit.event.entity.EntityTameEvent;
+import org.bukkit.event.entity.EntityTargetBlockEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.event.entity.EntityTeleportEvent;
@@ -1230,6 +1231,12 @@ public class CraftEventFactory {
 
     public static EntityTargetLivingEntityEvent callEntityTargetLivingEvent(Entity entity, LivingEntity target, EntityTargetEvent.TargetReason reason) {
         EntityTargetLivingEntityEvent event = new EntityTargetLivingEntityEvent(entity.getBukkitEntity(), (target == null) ? null : (org.bukkit.entity.LivingEntity) target.getBukkitEntity(), reason);
+        entity.getBukkitEntity().getServer().getPluginManager().callEvent(event);
+        return event;
+    }
+
+    public static EntityTargetBlockEvent callEntityTargetBlockEvent(Entity entity, ServerLevel level, BlockPos target) {
+        EntityTargetBlockEvent event = new EntityTargetBlockEvent(entity.getBukkitEntity(), (target == null) ? null : CraftBlock.at(level, target));
         entity.getBukkitEntity().getServer().getPluginManager().callEvent(event);
         return event;
     }

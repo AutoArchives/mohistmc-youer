@@ -16,7 +16,7 @@
  
      private final ShapedRecipePattern pattern;
 @@ -38,6 +46,68 @@
-         this(s, craftingbookcategory, shapedrecipepattern, itemstack, true);
+         this(group, category, pattern, result, true);
      }
  
 +    // CraftBukkit start

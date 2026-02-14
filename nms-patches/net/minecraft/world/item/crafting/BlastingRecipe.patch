@@ -14,7 +14,7 @@
 +
  public class BlastingRecipe extends AbstractCookingRecipe {
  
-     public BlastingRecipe(String s, CookingBookCategory cookingbookcategory, Ingredient ingredient, ItemStack itemstack, float f, int i) {
+     public BlastingRecipe(String group, CookingBookCategory category, Ingredient ingredient, ItemStack result, float experience, int cookingTime) {
 @@ -43,4 +51,17 @@
  
          return recipebookcategory;

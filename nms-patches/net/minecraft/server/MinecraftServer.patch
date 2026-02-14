@@ -61,22 +61,22 @@
 +    private boolean forceTicks;
 +    // CraftBukkit end
 +
-     public static <S extends MinecraftServer> S spin(Function<Thread, S> function) {
+     public static <S extends MinecraftServer> S spin(Function<Thread, S> factory) {
          AtomicReference<S> atomicreference = new AtomicReference();
          Thread thread = new Thread(() -> {
 @@ -303,7 +345,7 @@
          return s0;
      }
  
--    public MinecraftServer(Thread thread, LevelStorageSource.LevelStorageAccess levelstoragesource_levelstorageaccess, PackRepository packrepository, WorldStem worldstem, Proxy proxy, DataFixer datafixer, Services services, LevelLoadListener levelloadlistener) {
-+    public MinecraftServer(OptionSet options, WorldLoader.DataLoadContext worldLoader, Thread thread, LevelStorageSource.LevelStorageAccess levelstoragesource_levelstorageaccess, PackRepository packrepository, WorldStem worldstem, Proxy proxy, DataFixer datafixer, Services services, LevelLoadListener levelloadlistener) {
+-    public MinecraftServer(Thread serverThread, LevelStorageSource.LevelStorageAccess storageSource, PackRepository packRepository, WorldStem worldStem, Proxy proxy, DataFixer fixerUpper, Services services, LevelLoadListener levelLoadListener) {
++    public MinecraftServer(OptionSet options, WorldLoader.DataLoadContext worldLoader, Thread serverThread, LevelStorageSource.LevelStorageAccess storageSource, PackRepository packRepository, WorldStem worldStem, Proxy proxy, DataFixer fixerUpper, Services services, LevelLoadListener levelLoadListener) {
          super("Server");
          this.metricsRecorder = InactiveMetricsRecorder.INSTANCE;
          this.onMetricsRecordingStopped = (profileresults) -> {
 @@ -329,7 +371,7 @@
          this.suppressedExceptions = new SuppressedExceptionCollector();
-         this.registries = worldstem.registries();
-         this.worldData = worldstem.worldData();
+         this.registries = worldStem.registries();
+         this.worldData = worldStem.worldData();
 -        if (!this.registries.compositeAccess().lookupOrThrow(Registries.LEVEL_STEM).containsKey(LevelStem.OVERWORLD)) {
 +        if (false && !this.registries.compositeAccess().lookupOrThrow(Registries.LEVEL_STEM).containsKey(LevelStem.OVERWORLD)) { // CraftBukkit - initialised later
              throw new IllegalStateException("Missing Overworld dimension data");
@@ -84,12 +84,12 @@
              this.proxy = proxy;
 @@ -356,6 +398,30 @@
              this.serverActivityMonitor = new ServerActivityMonitor(this.notificationManager, 30);
-             this.packetProcessor = new PacketProcessor(thread);
+             this.packetProcessor = new PacketProcessor(serverThread);
          }
 +        // CraftBukkit start
 +        this.options = options;
 +        this.worldLoader = worldLoader;
-+        this.vanillaCommandDispatcher = worldstem.dataPackResources().commands; // CraftBukkit
++        this.vanillaCommandDispatcher = worldStem.dataPackResources().commands; // CraftBukkit
 +        // Try to see if we're actually running in a terminal, disable jline if not
 +        if (System.console() == null && System.getProperty(TerminalBuilder.PROP_PROVIDER) == null) {
 +            System.setProperty(TerminalBuilder.PROP_PROVIDER, Terminal.TYPE_DUMB);
@@ -399,26 +399,26 @@
              if (optional.isPresent()) {
 @@ -510,6 +751,21 @@
          } else {
-             ServerChunkCache serverchunkcache = serverlevel.getChunkSource();
+             ServerChunkCache serverchunkcache = level.getChunkSource();
              ChunkPos chunkpos = new ChunkPos(serverchunkcache.randomState().sampler().findSpawnPosition());
 +            // CraftBukkit start
-+            if (serverlevel.generator != null) {
-+                Random rand = new Random(serverlevel.getSeed());
-+                org.bukkit.Location spawn = serverlevel.generator.getFixedSpawnLocation(serverlevel.getWorld(), rand);
++            if (level.generator != null) {
++                Random rand = new Random(level.getSeed());
++                org.bukkit.Location spawn = level.generator.getFixedSpawnLocation(level.getWorld(), rand);
 +
 +                if (spawn != null) {
-+                    if (spawn.getWorld() != serverlevel.getWorld()) {
-+                        throw new IllegalStateException("Cannot set spawn point for " + serverleveldata.getLevelName() + " to be in another world (" + spawn.getWorld().getName() + ")");
++                    if (spawn.getWorld() != level.getWorld()) {
++                        throw new IllegalStateException("Cannot set spawn point for " + levelData.getLevelName() + " to be in another world (" + spawn.getWorld().getName() + ")");
 +                    } else {
-+                        serverleveldata.setSpawn(LevelData.RespawnData.of(serverlevel.dimension(), new BlockPos(spawn.getBlockX(), spawn.getBlockY(), spawn.getBlockZ()), spawn.getYaw(), spawn.getPitch()));
++                        levelData.setSpawn(LevelData.RespawnData.of(level.dimension(), new BlockPos(spawn.getBlockX(), spawn.getBlockY(), spawn.getBlockZ()), spawn.getYaw(), spawn.getPitch()));
 +                        return;
 +                    }
 +                }
 +            }
 +            // CraftBukkit end
  
-             levelloadlistener.start(LevelLoadListener.Stage.PREPARE_GLOBAL_SPAWN, 0);
-             levelloadlistener.updateFocus(serverlevel.dimension(), chunkpos);
+             levelLoadListener.start(LevelLoadListener.Stage.PREPARE_GLOBAL_SPAWN, 0);
+             levelLoadListener.updateFocus(level.dimension(), chunkpos);
 @@ -572,10 +828,13 @@
          serverleveldata.setGameType(GameType.SPECTATOR);
      }
@@ -467,7 +467,7 @@
          this.storageSource.saveDataTag(this.registryAccess(), this.worldData, this.getPlayerList().getSingleplayerData());
 +        */
 +        // CraftBukkit end
-         if (flag1) {
+         if (flush) {
              for (ServerLevel serverlevel1 : this.getAllLevels()) {
                  MinecraftServer.LOGGER.info("ThreadedAnvilChunkStorage ({}): All chunks are saved", serverlevel1.getChunkSource().chunkMap.getStorageName());
 @@ -662,19 +931,41 @@
@@ -569,21 +569,12 @@
 @@ -921,7 +1227,7 @@
      }
  
-     public static void setFatalException(RuntimeException runtimeexception) {
--        MinecraftServer.fatalException.compareAndSet((Object) null, runtimeexception);
-+        MinecraftServer.fatalException.compareAndSet(null, runtimeexception); // CraftBukkit - decompile error
+     public static void setFatalException(RuntimeException exception) {
+-        MinecraftServer.fatalException.compareAndSet((Object) null, exception);
++        MinecraftServer.fatalException.compareAndSet(null, exception); // CraftBukkit - decompile error
      }
  
      @Override
-@@ -995,7 +1301,7 @@
-         }
-     }
- 
--    protected void doRunTask(TickTask ticktask) {
-+    public void doRunTask(TickTask ticktask) { // CraftBukkit - decompile error
-         Profiler.get().incrementCounter("runTask");
-         super.doRunTask(ticktask);
-     }
 @@ -1065,6 +1371,7 @@
                      this.autoSave();
                  }
@@ -651,7 +642,7 @@
              profilerfiller.push("tick");
  
 @@ -1304,6 +1628,22 @@
-         return (ServerLevel) this.levels.get(resourcekey);
+         return (ServerLevel) this.levels.get(dimension);
      }
  
 +    // CraftBukkit start
@@ -681,13 +672,13 @@
 +        return server.getName(); // CraftBukkit - cb > vanilla!
      }
  
-     public SystemReport fillSystemReport(SystemReport systemreport) {
+     public SystemReport fillSystemReport(SystemReport systemReport) {
 @@ -1635,11 +1975,11 @@
  
-     public CompletableFuture<Void> reloadResources(Collection<String> collection) {
+     public CompletableFuture<Void> reloadResources(Collection<String> packsToEnable) {
          CompletableFuture<Void> completablefuture = CompletableFuture.supplyAsync(() -> {
--            Stream stream = collection.stream();
-+            Stream<String> stream = collection.stream(); // CraftBukkit - decompile error
+-            Stream stream = packsToEnable.stream();
++            Stream<String> stream = packsToEnable.stream(); // CraftBukkit - decompile error
              PackRepository packrepository = this.packRepository;
  
              Objects.requireNonNull(this.packRepository);
@@ -701,7 +692,7 @@
              this.resources.close();
              this.resources = minecraftserver_reloadableresources;
 +            this.server.syncCommands(); // SPIGOT-5884: Lost on reload
-             this.packRepository.setSelected(collection);
+             this.packRepository.setSelected(packsToEnable);
              WorldDataConfiguration worlddataconfiguration = new WorldDataConfiguration(getSelectedPacks(this.packRepository, true), this.worldData.enabledFeatures());
  
 @@ -1806,7 +2147,16 @@
@@ -725,24 +716,24 @@
 @@ -1814,11 +2164,21 @@
      }
  
-     public void setRespawnData(LevelData.RespawnData leveldata_respawndata) {
+     public void setRespawnData(LevelData.RespawnData respawnData) {
 -        ServerLevelData serverleveldata = this.worldData.overworldData();
 +        // CraftBukkit start
-+        setRespawnData(leveldata_respawndata, this.overworld());
++        setRespawnData(respawnData, this.overworld());
 +    }
 +
-+    public void setRespawnData(LevelData.RespawnData leveldata_respawndata, ServerLevel world) {
++    public void setRespawnData(LevelData.RespawnData respawnData, ServerLevel world) {
 +        ServerLevelData serverleveldata = world.serverLevelData;
 +        // CraftBukkit end
          LevelData.RespawnData leveldata_respawndata1 = serverleveldata.getRespawnData();
  
-         if (!leveldata_respawndata1.equals(leveldata_respawndata)) {
-             serverleveldata.setSpawn(leveldata_respawndata);
+         if (!leveldata_respawndata1.equals(respawnData)) {
+             serverleveldata.setSpawn(respawnData);
 +            // CraftBukkit start - Notify anyone who's listening.
 +            SpawnChangeEvent event = new SpawnChangeEvent(world.getWorld(), CraftLocation.toBukkit(leveldata_respawndata1.pos(), world.getWorld(), leveldata_respawndata1.yaw(), leveldata_respawndata1.pitch()));
 +            this.server.getPluginManager().callEvent(event);
 +            // CraftBukkit end
-             this.getPlayerList().broadcastAll(new ClientboundSetDefaultSpawnPositionPacket(leveldata_respawndata));
+             this.getPlayerList().broadcastAll(new ClientboundSetDefaultSpawnPositionPacket(respawnData));
              this.updateEffectiveRespawnData();
          }
 @@ -2020,6 +2380,22 @@
@@ -784,8 +775,8 @@
          return true;
      }
  
--    public void handleCustomClickAction(Identifier identifier, Optional<Tag> optional) {
--        MinecraftServer.LOGGER.debug("Received custom click action {} with payload {}", identifier, optional.orElse((Object) null));
+-    public void handleCustomClickAction(Identifier id, Optional<Tag> payload) {
+-        MinecraftServer.LOGGER.debug("Received custom click action {} with payload {}", id, payload.orElse((Object) null));
 +    // CraftBukkit start - add player
 +    public void handleCustomClickAction(Identifier identifier, Optional<Tag> optional, ServerPlayer player) {
 +        MinecraftServer.LOGGER.debug("Received custom click action {} with payload {}", identifier, optional.orElse(null)); // CraftBukkit - decompile error
@@ -798,25 +789,25 @@
          return false;
      }
  
--    public <T> void onGameRuleChanged(GameRule<T> gamerule, T t0) {
--        this.notificationManager().onGameRuleChanged(gamerule, t0);
-+    public static <T> void onGameRuleChanged(GameRule<T> gamerule, T t0, ServerLevel serverlevel) { // CraftBukkit - per-world
-+        serverlevel.getServer().notificationManager().onGameRuleChanged(gamerule, t0); // CraftBukkit - per-world
-         if (gamerule == GameRules.REDUCED_DEBUG_INFO) {
-             byte b0 = (byte) ((Boolean) t0 ? 22 : 23);
+-    public <T> void onGameRuleChanged(GameRule<T> rule, T value) {
+-        this.notificationManager().onGameRuleChanged(rule, value);
++    public static <T> void onGameRuleChanged(GameRule<T> rule, T value, ServerLevel serverlevel) { // CraftBukkit - per-world
++        serverlevel.getServer().notificationManager().onGameRuleChanged(rule, value); // CraftBukkit - per-world
+         if (rule == GameRules.REDUCED_DEBUG_INFO) {
+             byte b0 = (byte) ((Boolean) value ? 22 : 23);
  
 -            for (ServerPlayer serverplayer : this.getPlayerList().getPlayers()) {
 +            for (ServerPlayer serverplayer : serverlevel.players()) { // CraftBukkit - per-world
                  serverplayer.connection.send(new ClientboundEntityEventPacket(serverplayer, b0));
              }
-         } else if (gamerule != GameRules.LIMITED_CRAFTING && gamerule != GameRules.IMMEDIATE_RESPAWN) {
-             if (gamerule == GameRules.LOCATOR_BAR) {
+         } else if (rule != GameRules.LIMITED_CRAFTING && rule != GameRules.IMMEDIATE_RESPAWN) {
+             if (rule == GameRules.LOCATOR_BAR) {
 -                this.getAllLevels().forEach((serverlevel) -> {
 +                // CraftBukkit start - per-world
 +                // this.getAllLevels().forEach((serverlevel) -> {
                      ServerWaypointManager serverwaypointmanager = serverlevel.getWaypointManager();
  
-                     if ((Boolean) t0) {
+                     if ((Boolean) value) {
 -                        List list = serverlevel.players();
 +                        List<ServerPlayer> list = serverlevel.players(); // CraftBukkit - decompile error
  
@@ -829,13 +820,13 @@
 -                });
 +                // });
 +                // CraftBukkit end
-             } else if (gamerule == GameRules.SPAWN_MONSTERS) {
+             } else if (rule == GameRules.SPAWN_MONSTERS) {
 -                this.updateMobSpawningFlags();
 +                serverlevel.setSpawnSettings(serverlevel.isSpawningMonsters()); // CraftBukkit - per-world
              }
          } else {
-             ClientboundGameEventPacket.Type clientboundgameeventpacket_type = gamerule == GameRules.LIMITED_CRAFTING ? ClientboundGameEventPacket.LIMITED_CRAFTING : ClientboundGameEventPacket.IMMEDIATE_RESPAWN;
-             ClientboundGameEventPacket clientboundgameeventpacket = new ClientboundGameEventPacket(clientboundgameeventpacket_type, (Boolean) t0 ? 1.0F : 0.0F);
+             ClientboundGameEventPacket.Type clientboundgameeventpacket_type = rule == GameRules.LIMITED_CRAFTING ? ClientboundGameEventPacket.LIMITED_CRAFTING : ClientboundGameEventPacket.IMMEDIATE_RESPAWN;
+             ClientboundGameEventPacket clientboundgameeventpacket = new ClientboundGameEventPacket(clientboundgameeventpacket_type, (Boolean) value ? 1.0F : 0.0F);
  
 -            this.getPlayerList().getPlayers().forEach((serverplayer1) -> {
 +            serverlevel.players().forEach((serverplayer1) -> { // CraftBukkit - per-world

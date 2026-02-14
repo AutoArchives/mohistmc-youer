@@ -22,22 +22,22 @@
  
              this.bossEvent.setProgress(1.0F - (float) i / 220.0F);
              if (i <= 0) {
--                serverlevel.explode(this, this.getX(), this.getEyeY(), this.getZ(), 7.0F, false, Level.ExplosionInteraction.MOB);
+-                level.explode(this, this.getX(), this.getEyeY(), this.getZ(), 7.0F, false, Level.ExplosionInteraction.MOB);
 +                // CraftBukkit start
 +                // worldserver.explode(this, this.getX(), this.getEyeY(), this.getZ(), 7.0F, false, World.a.MOB);
 +                ExplosionPrimeEvent event = new ExplosionPrimeEvent(this.getBukkitEntity(), 7.0F, false);
-+                serverlevel.getCraftServer().getPluginManager().callEvent(event);
++                level.getCraftServer().getPluginManager().callEvent(event);
 +
 +                if (!event.isCancelled()) {
-+                    serverlevel.explode(this, this.getX(), this.getEyeY(), this.getZ(), event.getRadius(), event.getFire(), Level.ExplosionInteraction.MOB);
++                    level.explode(this, this.getX(), this.getEyeY(), this.getZ(), event.getRadius(), event.getFire(), Level.ExplosionInteraction.MOB);
 +                }
 +                // CraftBukkit end
 +
                  if (!this.isSilent()) {
--                    serverlevel.globalLevelEvent(1023, this.blockPosition(), 0);
+-                    level.globalLevelEvent(1023, this.blockPosition(), 0);
 +                    // CraftBukkit start - Use relative location for far away sounds
 +                    // worldserver.globalLevelEvent(1023, new BlockPosition(this), 0);
-+                    int viewDistance = serverlevel.getCraftServer().getViewDistance() * 16;
++                    int viewDistance = level.getCraftServer().getViewDistance() * 16;
 +                    for (ServerPlayer player : (List<ServerPlayer>) MinecraftServer.getServer().getPlayerList().players) {
 +                        double deltaX = this.getX() - player.getX();
 +                        double deltaZ = this.getZ() - player.getZ();
@@ -71,7 +71,7 @@
                          }
                      }
 @@ -323,6 +360,11 @@
-                         BlockState blockstate = serverlevel.getBlockState(blockpos);
+                         BlockState blockstate = level.getBlockState(blockpos);
  
                          if (canDestroy(blockstate)) {
 +                            // CraftBukkit start
@@ -79,7 +79,7 @@
 +                                continue;
 +                            }
 +                            // CraftBukkit end
-                             flag = serverlevel.destroyBlock(blockpos, true, this) || flag;
+                             flag = level.destroyBlock(blockpos, true, this) || flag;
                          }
                      }
 @@ -334,7 +376,7 @@

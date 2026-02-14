@@ -57,16 +57,16 @@
                      itemstack.consume(1, player);
                      return InteractionResult.SUCCESS;
 @@ -139,7 +165,15 @@
-     protected boolean canPlace(BlockPlaceContext blockplacecontext, BlockState blockstate) {
-         Player player = blockplacecontext.getPlayer();
+     protected boolean canPlace(BlockPlaceContext context, BlockState stateForPlacement) {
+         Player player = context.getPlayer();
  
--        return (!this.mustSurvive() || blockstate.canSurvive(blockplacecontext.getLevel(), blockplacecontext.getClickedPos())) && blockplacecontext.getLevel().isUnobstructed(blockstate, blockplacecontext.getClickedPos(), CollisionContext.placementContext(player));
+-        return (!this.mustSurvive() || stateForPlacement.canSurvive(context.getLevel(), context.getClickedPos())) && context.getLevel().isUnobstructed(stateForPlacement, context.getClickedPos(), CollisionContext.placementContext(player));
 +        // CraftBukkit start - store default return
-+        boolean defaultReturn = (!this.mustSurvive() || blockstate.canSurvive(blockplacecontext.getLevel(), blockplacecontext.getClickedPos())) && blockplacecontext.getLevel().isUnobstructed(blockstate, blockplacecontext.getClickedPos(), CollisionContext.placementContext(player));
-+        org.bukkit.entity.Player bukkitPlayer = (blockplacecontext.getPlayer() instanceof ServerPlayer) ? (org.bukkit.entity.Player) blockplacecontext.getPlayer().getBukkitEntity() : null;
++        boolean defaultReturn = (!this.mustSurvive() || stateForPlacement.canSurvive(context.getLevel(), context.getClickedPos())) && context.getLevel().isUnobstructed(stateForPlacement, context.getClickedPos(), CollisionContext.placementContext(player));
++        org.bukkit.entity.Player bukkitPlayer = (context.getPlayer() instanceof ServerPlayer) ? (org.bukkit.entity.Player) context.getPlayer().getBukkitEntity() : null;
 +
-+        BlockCanBuildEvent event = new BlockCanBuildEvent(CraftBlock.at(blockplacecontext.getLevel(), blockplacecontext.getClickedPos()), bukkitPlayer, CraftBlockData.fromData(blockstate), defaultReturn);
-+        blockplacecontext.getLevel().getCraftServer().getPluginManager().callEvent(event);
++        BlockCanBuildEvent event = new BlockCanBuildEvent(CraftBlock.at(context.getLevel(), context.getClickedPos()), bukkitPlayer, CraftBlockData.fromData(stateForPlacement), defaultReturn);
++        context.getLevel().getCraftServer().getPluginManager().callEvent(event);
 +
 +        return event.isBuildable();
 +        // CraftBukkit end

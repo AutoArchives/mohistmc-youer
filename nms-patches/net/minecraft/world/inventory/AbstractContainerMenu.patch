@@ -50,7 +50,7 @@
 +    }
 +    // CraftBukkit end
 +
-     protected AbstractContainerMenu(@Nullable MenuType<?> menutype, int i) {
+     protected AbstractContainerMenu(@Nullable MenuType<?> menuType, int containerId) {
          this.carried = ItemStack.EMPTY;
          this.remoteSlots = NonNullList.<RemoteSlot>create();
 @@ -199,6 +238,16 @@
@@ -67,8 +67,8 @@
 +    }
 +    // CraftBukkit end
 +
-     public void removeSlotListener(ContainerListener containerlistener) {
-         this.containerListeners.remove(containerlistener);
+     public void removeSlotListener(ContainerListener listener) {
+         this.containerListeners.remove(listener);
      }
 @@ -406,7 +455,7 @@
                  }
@@ -140,7 +140,7 @@
  
                  this.resetQuickCraft();
 @@ -452,8 +538,11 @@
-             if (i == -999) {
+             if (slotIndex == -999) {
                  if (!this.getCarried().isEmpty()) {
                      if (clickaction == ClickAction.PRIMARY) {
 -                        player.drop(this.getCarried(), true);
@@ -166,8 +166,8 @@
 +                }
 +                // CraftBukkit end
              }
-         } else if (clicktype == ClickType.SWAP && (j >= 0 && j < 9 || j == 40)) {
-             ItemStack itemstack6 = inventory.getItem(j);
+         } else if (clickType == ClickType.SWAP && (buttonNum >= 0 && buttonNum < 9 || buttonNum == 40)) {
+             ItemStack itemstack6 = inventory.getItem(buttonNum);
 @@ -587,7 +685,11 @@
                      }
  

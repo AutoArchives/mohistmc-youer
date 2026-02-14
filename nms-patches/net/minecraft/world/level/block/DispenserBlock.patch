@@ -11,14 +11,14 @@
 @@ -87,7 +88,7 @@
      }
  
-     public void dispenseFrom(ServerLevel serverlevel, BlockState blockstate, BlockPos blockpos) {
--        DispenserBlockEntity dispenserblockentity = (DispenserBlockEntity) serverlevel.getBlockEntity(blockpos, BlockEntityType.DISPENSER).orElse((Object) null);
-+        DispenserBlockEntity dispenserblockentity = (DispenserBlockEntity) serverlevel.getBlockEntity(blockpos, BlockEntityType.DISPENSER).orElse(null); // CraftBukkit - decompile error
+     public void dispenseFrom(ServerLevel level, BlockState state, BlockPos pos) {
+-        DispenserBlockEntity dispenserblockentity = (DispenserBlockEntity) level.getBlockEntity(pos, BlockEntityType.DISPENSER).orElse((Object) null);
++        DispenserBlockEntity dispenserblockentity = (DispenserBlockEntity) level.getBlockEntity(pos, BlockEntityType.DISPENSER).orElse(null); // CraftBukkit - decompile error
  
          if (dispenserblockentity == null) {
-             DispenserBlock.LOGGER.warn("Ignoring dispensing attempt for Dispenser without matching block entity at {}", blockpos);
+             DispenserBlock.LOGGER.warn("Ignoring dispensing attempt for Dispenser without matching block entity at {}", pos);
 @@ -103,6 +104,7 @@
-                 DispenseItemBehavior dispenseitembehavior = this.getDispenseMethod(serverlevel, itemstack);
+                 DispenseItemBehavior dispenseitembehavior = this.getDispenseMethod(level, itemstack);
  
                  if (dispenseitembehavior != DispenseItemBehavior.NOOP) {
 +                    eventFired = false; // CraftBukkit - reset event status

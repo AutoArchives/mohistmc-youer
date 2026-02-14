@@ -28,19 +28,19 @@
      private final BiFunction<ItemStack, LootContext, ItemStack> compositeFunction;
 +    public CraftLootTable craftLootTable; // CraftBukkit
  
-     private LootTable(ContextKeySet contextkeyset, Optional<Identifier> optional, List<LootPool> list, List<LootItemFunction> list1) {
-         this.paramSet = contextkeyset;
+     private LootTable(ContextKeySet paramSet, Optional<Identifier> randomSequence, List<LootPool> pools, List<LootItemFunction> functions) {
+         this.paramSet = paramSet;
 @@ -156,9 +164,22 @@
      }
  
-     public void fill(Container container, LootParams lootparams, long i) {
+     public void fill(Container container, LootParams params, long optionalRandomSeed) {
 +        // CraftBukkit start
-+        this.fillInventory(container, lootparams, i, false);
++        this.fillInventory(container, params, optionalRandomSeed, false);
 +    }
 +
-+    public void fillInventory(Container container, LootParams lootparams, long i, boolean plugin) {
++    public void fillInventory(Container container, LootParams params, long optionalRandomSeed, boolean plugin) {
 +        // CraftBukkit end
-         LootContext lootcontext = (new LootContext.Builder(lootparams)).withOptionalRandomSeed(i).create(this.randomSequence);
+         LootContext lootcontext = (new LootContext.Builder(params)).withOptionalRandomSeed(optionalRandomSeed).create(this.randomSequence);
          ObjectArrayList<ItemStack> objectarraylist = this.getRandomItems(lootcontext);
          RandomSource randomsource = lootcontext.getRandom();
 +        // CraftBukkit start

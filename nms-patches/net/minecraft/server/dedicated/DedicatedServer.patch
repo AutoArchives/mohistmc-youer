@@ -36,18 +36,18 @@
      private @Nullable ManagementServer jsonRpcServer;
      private long lastHeartbeat;
  
--    public DedicatedServer(Thread thread, LevelStorageSource.LevelStorageAccess levelstoragesource_levelstorageaccess, PackRepository packrepository, WorldStem worldstem, DedicatedServerSettings dedicatedserversettings, DataFixer datafixer, Services services) {
--        super(thread, levelstoragesource_levelstorageaccess, packrepository, worldstem, Proxy.NO_PROXY, datafixer, services, LoggingLevelLoadListener.forDedicatedServer());
+-    public DedicatedServer(Thread serverThread, LevelStorageSource.LevelStorageAccess levelStorageSource, PackRepository packRepository, WorldStem worldStem, DedicatedServerSettings settings, DataFixer fixerUpper, Services services) {
+-        super(serverThread, levelStorageSource, packRepository, worldStem, Proxy.NO_PROXY, fixerUpper, services, LoggingLevelLoadListener.forDedicatedServer());
 +    // CraftBukkit start - Signature changed
-+    public DedicatedServer(joptsimple.OptionSet options, WorldLoader.DataLoadContext worldLoader, Thread thread, LevelStorageSource.LevelStorageAccess levelstoragesource_levelstorageaccess, PackRepository packrepository, WorldStem worldstem, DedicatedServerSettings dedicatedserversettings, DataFixer datafixer, Services services) {
-+        super(options, worldLoader, thread, levelstoragesource_levelstorageaccess, packrepository, worldstem, Proxy.NO_PROXY, datafixer, services, LoggingLevelLoadListener.forDedicatedServer());
++    public DedicatedServer(joptsimple.OptionSet options, WorldLoader.DataLoadContext worldLoader, Thread serverThread, LevelStorageSource.LevelStorageAccess levelStorageSource, PackRepository packRepository, WorldStem worldStem, DedicatedServerSettings settings, DataFixer fixerUpper, Services services) {
++        super(options, worldLoader, serverThread, levelStorageSource, packRepository, worldStem, Proxy.NO_PROXY, fixerUpper, services, LoggingLevelLoadListener.forDedicatedServer());
 +        // CraftBukkit end
-         this.settings = dedicatedserversettings;
+         this.settings = settings;
 -        this.rconConsoleSource = new RconConsoleSource(this);
 +        // this.rconConsoleSource = new RconConsoleSource(this); // CraftBukkit - remove field
-         this.serverTextFilter = ServerTextFilter.createFromConfig(dedicatedserversettings.getProperties());
-         this.serverLinks = createServerLinks(dedicatedserversettings);
-         if (dedicatedserversettings.getProperties().codeOfConduct) {
+         this.serverTextFilter = ServerTextFilter.createFromConfig(settings.getProperties());
+         this.serverLinks = createServerLinks(settings);
+         if (settings.getProperties().codeOfConduct) {
 @@ -139,7 +157,7 @@
                      }
                  }
@@ -246,7 +246,7 @@
      }
  
      @Override
-     public String runCommand(String s) {
+     public String runCommand(String command) {
 -        this.rconConsoleSource.prepareForCommand();
 +        // CraftBukkit start - fire RemoteServerCommandEvent
 +        throw new UnsupportedOperationException("Not supported - remote source required.");
@@ -255,7 +255,7 @@
 +    public String runCommand(RconConsoleSource rconConsoleSource, String s) {
 +        rconConsoleSource.prepareForCommand();
          this.executeBlocking(() -> {
--            this.getCommands().performPrefixedCommand(this.rconConsoleSource.createCommandSourceStack(), s);
+-            this.getCommands().performPrefixedCommand(this.rconConsoleSource.createCommandSourceStack(), command);
 +            CommandSourceStack wrapper = rconConsoleSource.createCommandSourceStack();
 +            RemoteServerCommandEvent event = new RemoteServerCommandEvent(rconConsoleSource.getBukkitSender(wrapper), s);
 +            server.getPluginManager().callEvent(event);

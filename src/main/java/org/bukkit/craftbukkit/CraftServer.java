@@ -1757,17 +1757,12 @@ public final class CraftServer implements Server {
         Preconditions.checkArgument(structureType != null, "StructureType cannot be null");
         Preconditions.checkArgument(structureType.getMapIcon() != null, "Cannot create explorer maps for StructureType %s", structureType.getName());
 
-        ServerLevel worldServer = ((CraftWorld) world).getHandle();
         Location structureLocation = world.locateNearestStructure(location, structureType, radius, findUnexplored);
-        BlockPos structurePosition = CraftLocation.toBlockPosition(structureLocation);
+        if (structureLocation == null) {
+            throw new IllegalStateException("Could not locate a " + structureType + " within " + radius + " blocks of " + location);
+        }
 
-        // Create map with trackPlayer = true, unlimitedTracking = true
-        net.minecraft.world.item.ItemStack stack = MapItem.create(worldServer, structurePosition.getX(), structurePosition.getZ(), MapView.Scale.NORMAL.getValue(), true, true);
-        MapItem.renderBiomePreviewMap(worldServer, stack);
-        // "+" map ID taken from EntityVillager
-        MapItem.getSavedData(stack, worldServer).addTargetDecoration(stack, structurePosition, "+", CraftMapCursor.CraftType.bukkitToMinecraftHolder(structureType.getMapIcon()));
-
-        return CraftItemStack.asBukkitCopy(stack);
+        return getItemFactory().createExplorerMap(world, structureLocation, structureType.getMapIcon());
     }
 
     @Override

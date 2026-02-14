@@ -10,11 +10,11 @@
  
      @Override
 @@ -399,7 +399,7 @@
-     public static void applyDarknessAround(ServerLevel serverlevel, Vec3 vec3, @Nullable Entity entity, int i) {
+     public static void applyDarknessAround(ServerLevel level, Vec3 position, @Nullable Entity source, int darknessRadius) {
          MobEffectInstance mobeffectinstance = new MobEffectInstance(MobEffects.DARKNESS, 260, 0, false, false);
  
--        MobEffectUtil.addEffectToPlayersAround(serverlevel, entity, vec3, (double) i, mobeffectinstance, 200);
-+        MobEffectUtil.addEffectToPlayersAround(serverlevel, entity, vec3, i, mobeffectinstance, 200, org.bukkit.event.entity.EntityPotionEffectEvent.Cause.WARDEN); // CraftBukkit - Add EntityPotionEffectEvent.Cause
+-        MobEffectUtil.addEffectToPlayersAround(level, source, position, (double) darknessRadius, mobeffectinstance, 200);
++        MobEffectUtil.addEffectToPlayersAround(level, source, position, (double) darknessRadius, mobeffectinstance, 200, org.bukkit.event.entity.EntityPotionEffectEvent.Cause.WARDEN); // CraftBukkit - Add EntityPotionEffectEvent.Cause
      }
  
      @Override

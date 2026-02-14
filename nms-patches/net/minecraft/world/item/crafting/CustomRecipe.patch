@@ -38,17 +38,17 @@
          private final MapCodec<T> codec;
 @@ -41,13 +63,13 @@
  
-         public Serializer(CustomRecipe.Serializer.Factory<T> customrecipe_serializer_factory) {
+         public Serializer(CustomRecipe.Serializer.Factory<T> constructor) {
              this.codec = RecordCodecBuilder.mapCodec((instance) -> {
 -                P1 p1 = instance.group(CraftingBookCategory.CODEC.fieldOf("category").orElse(CraftingBookCategory.MISC).forGetter(CraftingRecipe::category));
 +                P1<RecordCodecBuilder.Mu<T>, CraftingBookCategory> p1 = instance.group(CraftingBookCategory.CODEC.fieldOf("category").orElse(CraftingBookCategory.MISC).forGetter(CraftingRecipe::category)); // CraftBukkit - decompile error
  
-                 Objects.requireNonNull(customrecipe_serializer_factory);
-                 return p1.apply(instance, customrecipe_serializer_factory::create);
+                 Objects.requireNonNull(constructor);
+                 return p1.apply(instance, constructor::create);
              });
              StreamCodec streamcodec = CraftingBookCategory.STREAM_CODEC;
 -            Function function = CraftingRecipe::category;
 +            Function<CraftingRecipe, CraftingBookCategory> function = CraftingRecipe::category; // CraftBukkit - decompile error
  
-             Objects.requireNonNull(customrecipe_serializer_factory);
-             this.streamCodec = StreamCodec.composite(streamcodec, function, customrecipe_serializer_factory::create);
+             Objects.requireNonNull(constructor);
+             this.streamCodec = StreamCodec.composite(streamcodec, function, constructor::create);

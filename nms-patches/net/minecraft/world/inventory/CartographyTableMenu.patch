@@ -38,7 +38,7 @@
 +            // CraftBukkit start
 +            @Override
 +            public Location getLocation() {
-+                return containerlevelaccess.getLocation();
++                return access.getLocation();
 +            }
 +            // CraftBukkit end
          };
@@ -52,11 +52,11 @@
 +            // CraftBukkit start
 +            @Override
 +            public Location getLocation() {
-+                return containerlevelaccess.getLocation();
++                return access.getLocation();
 +            }
 +            // CraftBukkit end
          };
-         this.access = containerlevelaccess;
+         this.access = access;
          this.addSlot(new Slot(this.container, 0, 15, 15) {
 @@ -86,10 +121,12 @@
              }

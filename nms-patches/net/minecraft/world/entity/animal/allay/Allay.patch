@@ -6,8 +6,8 @@
      private float spinningAnimationTicks0;
 +    public boolean forceDancing = false; // CraftBukkit
  
-     public Allay(EntityType<? extends Allay> entitytype, Level level) {
-         super(entitytype, level);
+     public Allay(EntityType<? extends Allay> type, Level level) {
+         super(type, level);
 @@ -106,6 +107,12 @@
          this.dynamicJukeboxListener = new DynamicGameEventListener<Allay.JukeboxListener>(new Allay.JukeboxListener(this.vibrationUser.getPositionSource(), ((GameEvent) GameEvent.JUKEBOX_PLAY.value()).notificationRadius()));
      }
@@ -62,7 +62,7 @@
      }
  
 @@ -458,7 +471,7 @@
-         this.entityData.set(Allay.DATA_CAN_DUPLICATE, i == 0L);
+         this.entityData.set(Allay.DATA_CAN_DUPLICATE, duplicationCooldown == 0L);
      }
  
 -    public void duplicateAllay() {

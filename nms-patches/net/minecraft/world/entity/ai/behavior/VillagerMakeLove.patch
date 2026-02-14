@@ -16,20 +16,20 @@
          if (villager2 == null) {
              return Optional.empty();
          } else {
--            villager.setAge(6000);
--            villager1.setAge(6000);
+-            source.setAge(6000);
+-            target.setAge(6000);
              villager2.setAge(-24000);
-             villager2.snapTo(villager.getX(), villager.getY(), villager.getZ(), 0.0F, 0.0F);
--            serverlevel.addFreshEntityWithPassengers(villager2);
+             villager2.snapTo(source.getX(), source.getY(), source.getZ(), 0.0F, 0.0F);
+-            level.addFreshEntityWithPassengers(villager2);
 +            // CraftBukkit start - call EntityBreedEvent
-+            if (CraftEventFactory.callEntityBreedEvent(villager2, villager, villager1, null, null, 0).isCancelled()) {
++            if (CraftEventFactory.callEntityBreedEvent(villager2, source, target, null, null, 0).isCancelled()) {
 +                return Optional.empty();
 +            }
 +            // Move age setting down
-+            villager.setAge(6000);
-+            villager1.setAge(6000);
-+            serverlevel.addFreshEntityWithPassengers(villager2, CreatureSpawnEvent.SpawnReason.BREEDING);
++            source.setAge(6000);
++            target.setAge(6000);
++            level.addFreshEntityWithPassengers(villager2, CreatureSpawnEvent.SpawnReason.BREEDING);
 +            // CraftBukkit end
-             serverlevel.broadcastEntityEvent(villager2, (byte) 12);
+             level.broadcastEntityEvent(villager2, (byte) 12);
              return Optional.of(villager2);
          }

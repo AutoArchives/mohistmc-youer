@@ -15,27 +15,27 @@
  
      private static final EntityDataAccessor<Boolean> DATA_INTERESTED_ID = SynchedEntityData.<Boolean>defineId(Wolf.class, EntityDataSerializers.BOOLEAN);
 @@ -382,16 +389,27 @@
-         if (this.isInvulnerableTo(serverlevel, damagesource)) {
+         if (this.isInvulnerableTo(level, source)) {
              return false;
          } else {
 +            // CraftBukkit start
-+            boolean result = super.hurtServer(serverlevel, damagesource, f);
++            boolean result = super.hurtServer(level, source, damage);
 +            if (!result) {
 +                return result;
 +            }
 +            // CraftBukkit end
              this.setOrderedToSit(false);
--            return super.hurtServer(serverlevel, damagesource, f);
+-            return super.hurtServer(level, source, damage);
 +            return result; // CraftBukkit
          }
      }
  
      @Override
--    protected void actuallyHurt(ServerLevel serverlevel, DamageSource damagesource, float f) {
-+    public boolean actuallyHurt(ServerLevel serverlevel, DamageSource damagesource, float f, EntityDamageEvent event) { // CraftBukkit - void -> boolean
-         if (!this.canArmorAbsorb(damagesource)) {
--            super.actuallyHurt(serverlevel, damagesource, f);
-+            return super.actuallyHurt(serverlevel, damagesource, f, event); // CraftBukkit
+-    protected void actuallyHurt(ServerLevel level, DamageSource source, float damage) {
++    public boolean actuallyHurt(ServerLevel level, DamageSource source, float damage, EntityDamageEvent event) { // CraftBukkit - void -> boolean
+         if (!this.canArmorAbsorb(source)) {
+-            super.actuallyHurt(level, source, damage);
++            return super.actuallyHurt(level, source, damage, event); // CraftBukkit
          } else {
 +            // CraftBukkit start - SPIGOT-7815: if the damage was cancelled, no need to run the wolf armor behaviour
 +            if (event.isCancelled()) {
@@ -52,7 +52,7 @@
 +        return false; // CraftBukkit
      }
  
-     private boolean canArmorAbsorb(DamageSource damagesource) {
+     private boolean canArmorAbsorb(DamageSource source) {
 @@ -413,7 +432,7 @@
      protected void applyTamingSideEffects() {
          if (this.isTame()) {

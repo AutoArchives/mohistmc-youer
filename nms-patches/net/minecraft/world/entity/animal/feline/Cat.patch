@@ -17,7 +17,7 @@
 +        private @Nullable LivingEntity selectedPlayer; // CraftBukkit
          private final Cat cat;
  
-         public CatTemptGoal(Cat cat, double d0, Predicate<ItemStack> predicate, boolean flag) {
+         public CatTemptGoal(Cat mob, double speedModifier, Predicate<ItemStack> items, boolean canScare) {
 @@ -618,7 +618,15 @@
              this.cat.randomTeleport((double) (blockpos_mutableblockpos.getX() + randomsource.nextInt(11) - 5), (double) (blockpos_mutableblockpos.getY() + randomsource.nextInt(5) - 2), (double) (blockpos_mutableblockpos.getZ() + randomsource.nextInt(11) - 5), false);
              blockpos_mutableblockpos.set(this.cat.blockPosition());

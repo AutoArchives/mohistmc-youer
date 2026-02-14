@@ -62,13 +62,13 @@
 +        }
 +    }
 +
-     public SimpleContainer(int i) {
-+        this(i, null);
+     public SimpleContainer(int size) {
++        this(size, null);
 +    }
 +
-+    public SimpleContainer(int i, org.bukkit.inventory.InventoryHolder owner) {
++    public SimpleContainer(int size, org.bukkit.inventory.InventoryHolder owner) {
 +        this.bukkitOwner = owner;
 +        // CraftBukkit end
-         this.size = i;
-         this.items = NonNullList.<ItemStack>withSize(i, ItemStack.EMPTY);
+         this.size = size;
+         this.items = NonNullList.<ItemStack>withSize(size, ItemStack.EMPTY);
      }

@@ -12,7 +12,7 @@
  
      public static final ExplosionDamageCalculator EXPLOSION_DAMAGE_CALCULATOR = new SimpleExplosionDamageCalculator(true, false, Optional.empty(), BuiltInRegistries.BLOCK.get(BlockTags.BLOCKS_WIND_CHARGE_EXPLOSIONS).map(Function.identity()));
 @@ -111,7 +115,7 @@
-             Vec3 vec31 = blockhitresult.getLocation().add(vec3);
+             Vec3 vec31 = hitResult.getLocation().add(vec3);
  
              this.explode(vec31);
 -            this.discard();
@@ -21,8 +21,8 @@
  
      }
 @@ -120,7 +124,7 @@
-     protected void onHit(HitResult hitresult) {
-         super.onHit(hitresult);
+     protected void onHit(HitResult hitResult) {
+         super.onHit(hitResult);
          if (!this.level().isClientSide()) {
 -            this.discard();
 +            this.discard(EntityRemoveEvent.Cause.HIT); // CraftBukkit - add Bukkit remove cause

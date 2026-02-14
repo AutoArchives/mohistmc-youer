@@ -5,18 +5,23 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.Optional;
 import net.minecraft.commands.arguments.item.ItemParser;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.MapItem;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import org.bukkit.Color;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
@@ -43,12 +48,16 @@ import org.bukkit.craftbukkit.inventory.components.consumable.effects.CraftConsu
 import org.bukkit.craftbukkit.inventory.components.consumable.effects.CraftConsumablePlaySound;
 import org.bukkit.craftbukkit.inventory.components.consumable.effects.CraftConsumableRemoveEffect;
 import org.bukkit.craftbukkit.inventory.components.consumable.effects.CraftConsumableTeleportRandomly;
+import org.bukkit.craftbukkit.map.CraftMapCursor;
 import org.bukkit.craftbukkit.util.CraftLegacy;
+import org.bukkit.craftbukkit.util.CraftLocation;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.map.MapCursor;
+import org.bukkit.map.MapView;
 
 public final class CraftItemFactory implements ItemFactory {
     static final Color DEFAULT_LEATHER_COLOR = Color.fromRGB(0xA06540);
@@ -238,5 +247,23 @@ public final class CraftItemFactory implements ItemFactory {
         RegistryAccess registry = CraftRegistry.getMinecraftRegistry();
         Optional<HolderSet.Named<Enchantment>> optional = (allowTreasures) ? Optional.empty() : registry.lookupOrThrow(Registries.ENCHANTMENT).get(EnchantmentTags.IN_ENCHANTING_TABLE);
         return CraftItemStack.asCraftMirror(EnchantmentHelper.enchantItem(source, craft.handle, level, registry, optional));
+    }
+
+    @Override
+    public ItemStack createExplorerMap(World world, Location structureLocation, MapCursor.Type mapIcon) {
+        Preconditions.checkArgument(world != null, "World cannot be null");
+        Preconditions.checkArgument(structureLocation != null, "structureLocation cannot be null");
+        Preconditions.checkArgument(mapIcon != null, "mapIcon cannot be null");
+
+        ServerLevel worldServer = ((CraftWorld) world).getHandle();
+        BlockPos structurePosition = CraftLocation.toBlockPosition(structureLocation);
+
+        // Create map with trackPlayer = true, unlimitedTracking = true
+        net.minecraft.world.item.ItemStack stack = MapItem.create(worldServer, structurePosition.getX(), structurePosition.getZ(), MapView.Scale.NORMAL.getValue(), true, true);
+        MapItem.renderBiomePreviewMap(worldServer, stack);
+        // "+" map ID taken from EntityVillager
+        MapItemSavedData.addTargetDecoration(stack, structurePosition, "+", CraftMapCursor.CraftType.bukkitToMinecraftHolder(mapIcon));
+
+        return CraftItemStack.asBukkitCopy(stack);
     }
 }

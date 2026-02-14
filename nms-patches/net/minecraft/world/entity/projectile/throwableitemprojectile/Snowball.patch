@@ -10,9 +10,9 @@
 +
  public class Snowball extends ThrowableItemProjectile {
  
-     public Snowball(EntityType<? extends Snowball> entitytype, Level level) {
+     public Snowball(EntityType<? extends Snowball> type, Level level) {
 @@ -65,7 +69,7 @@
-         super.onHit(hitresult);
+         super.onHit(hitResult);
          if (!this.level().isClientSide()) {
              this.level().broadcastEntityEvent(this, (byte) 3);
 -            this.discard();

@@ -17,7 +17,7 @@ public class CraftInventoryChiseledBookshelf extends CraftInventory implements C
         net.minecraft.world.item.ItemStack nms = CraftItemStack.asNMSCopy(item);
 
         if (nms.isEmpty()) {
-            this.getInventory().removeItemNoUpdate(index);
+            this.getInventory().removeItem(index, getMaxStackSize());
         } else {
             this.getInventory().setItem(index, nms);
         }

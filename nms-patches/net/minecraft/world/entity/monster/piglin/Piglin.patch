@@ -25,30 +25,30 @@
 +    public Set<Item> interestItems = new HashSet<>();
 +    // CraftBukkit end
  
-     public Piglin(EntityType<? extends AbstractPiglin> entitytype, Level level) {
-         super(entitytype, level);
+     public Piglin(EntityType<? extends AbstractPiglin> type, Level level) {
+         super(type, level);
 @@ -93,6 +106,12 @@
-         valueoutput.putBoolean("IsBaby", this.isBaby());
-         valueoutput.putBoolean("CannotHunt", this.cannotHunt);
-         this.writeInventoryToTag(valueoutput);
+         output.putBoolean("IsBaby", this.isBaby());
+         output.putBoolean("CannotHunt", this.cannotHunt);
+         this.writeInventoryToTag(output);
 +        // CraftBukkit start
-+        ValueOutput.TypedOutputList<String> barterList = valueoutput.list("Bukkit.BarterList", Codec.STRING);
++        ValueOutput.TypedOutputList<String> barterList = output.list("Bukkit.BarterList", Codec.STRING);
 +        allowedBarterItems.stream().map(BuiltInRegistries.ITEM::getKey).map(Identifier::toString).forEach(barterList::add);
-+        ValueOutput.TypedOutputList<String> interestList = valueoutput.list("Bukkit.InterestList", Codec.STRING);
++        ValueOutput.TypedOutputList<String> interestList = output.list("Bukkit.InterestList", Codec.STRING);
 +        interestItems.stream().map(BuiltInRegistries.ITEM::getKey).map(Identifier::toString).forEach(interestList::add);
 +        // CraftBukkit end
      }
  
      @Override
 @@ -101,6 +120,14 @@
-         this.setBaby(valueinput.getBooleanOr("IsBaby", false));
-         this.setCannotHunt(valueinput.getBooleanOr("CannotHunt", false));
-         this.readInventoryFromTag(valueinput);
+         this.setBaby(input.getBooleanOr("IsBaby", false));
+         this.setCannotHunt(input.getBooleanOr("CannotHunt", false));
+         this.readInventoryFromTag(input);
 +        // CraftBukkit start
-+        valueinput.list("Bukkit.BarterList", Codec.STRING).ifPresent((list -> {
++        input.list("Bukkit.BarterList", Codec.STRING).ifPresent((list -> {
 +            this.allowedBarterItems = list.stream().map(Identifier::tryParse).map(BuiltInRegistries.ITEM::getValue).collect(Collectors.toCollection(HashSet::new));
 +        }));
-+        valueinput.list("Bukkit.InterestList", Codec.STRING).ifPresent((list -> {
++        input.list("Bukkit.InterestList", Codec.STRING).ifPresent((list -> {
 +            this.interestItems = list.stream().map(Identifier::tryParse).map(BuiltInRegistries.ITEM::getValue).collect(Collectors.toCollection(HashSet::new));
 +        }));
 +        // CraftBukkit end
@@ -67,22 +67,22 @@
 @@ -353,7 +380,7 @@
      }
  
-     protected void holdInOffHand(ItemStack itemstack) {
--        if (itemstack.is(PiglinAi.BARTERING_ITEM)) {
-+        if (itemstack.is(PiglinAi.BARTERING_ITEM) || allowedBarterItems.contains(itemstack.getItem())) { // CraftBukkit - Changes to accept custom payment items
-             this.setItemSlot(EquipmentSlot.OFFHAND, itemstack);
+     protected void holdInOffHand(ItemStack itemStack) {
+-        if (itemStack.is(PiglinAi.BARTERING_ITEM)) {
++        if (itemStack.is(PiglinAi.BARTERING_ITEM) || allowedBarterItems.contains(itemStack.getItem())) { // CraftBukkit - Changes to accept custom payment items
+             this.setItemSlot(EquipmentSlot.OFFHAND, itemStack);
              this.setGuaranteedDrop(EquipmentSlot.OFFHAND);
          } else {
 @@ -380,8 +407,8 @@
              return false;
          } else {
              TagKey<Item> tagkey = this.getPreferredWeaponType();
--            boolean flag = PiglinAi.isLovedItem(itemstack) || tagkey != null && itemstack.is(tagkey);
--            boolean flag1 = PiglinAi.isLovedItem(itemstack1) || tagkey != null && itemstack1.is(tagkey);
-+            boolean flag = PiglinAi.isLovedItem(itemstack, this) || tagkey != null && itemstack.is(tagkey); // CraftBukkit
-+            boolean flag1 = PiglinAi.isLovedItem(itemstack1, this) || tagkey != null && itemstack1.is(tagkey); // CraftBukkit
+-            boolean flag = PiglinAi.isLovedItem(newItemStack) || tagkey != null && newItemStack.is(tagkey);
+-            boolean flag1 = PiglinAi.isLovedItem(currentItemStack) || tagkey != null && currentItemStack.is(tagkey);
++            boolean flag = PiglinAi.isLovedItem(newItemStack, this) || tagkey != null && newItemStack.is(tagkey); // CraftBukkit
++            boolean flag1 = PiglinAi.isLovedItem(currentItemStack, this) || tagkey != null && currentItemStack.is(tagkey); // CraftBukkit
  
-             return flag && !flag1 ? true : (!flag && flag1 ? false : super.canReplaceCurrentItem(itemstack, itemstack1, equipmentslot));
+             return flag && !flag1 ? true : (!flag && flag1 ? false : super.canReplaceCurrentItem(newItemStack, currentItemStack, slot));
          }
 @@ -410,7 +437,7 @@
  

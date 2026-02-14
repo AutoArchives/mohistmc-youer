@@ -14,7 +14,7 @@
 +
  public class SmeltingRecipe extends AbstractCookingRecipe {
  
-     public SmeltingRecipe(String s, CookingBookCategory cookingbookcategory, Ingredient ingredient, ItemStack itemstack, float f, int i) {
+     public SmeltingRecipe(String group, CookingBookCategory category, Ingredient ingredient, ItemStack result, float experience, int cookingTime) {
 @@ -45,4 +53,17 @@
  
          return recipebookcategory;

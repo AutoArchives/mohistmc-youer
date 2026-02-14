@@ -18,8 +18,8 @@
      public @Nullable EntityReference<LivingEntity> owner;
 +    public int maxDomestication = 100; // CraftBukkit - store max domestication value
  
-     protected AbstractHorse(EntityType<? extends AbstractHorse> entitytype, Level level) {
-         super(entitytype, level);
+     protected AbstractHorse(EntityType<? extends AbstractHorse> type, Level level) {
+         super(type, level);
 @@ -321,7 +327,7 @@
      public void createInventory() {
          SimpleContainer simplecontainer = this.inventory;
@@ -57,19 +57,19 @@
  
                  if (this.canEatGrass()) {
 @@ -831,6 +837,7 @@
-         valueoutput.putInt("Temper", this.getTemper());
-         valueoutput.putBoolean("Tame", this.isTamed());
-         EntityReference.store(this.owner, valueoutput, "Owner");
-+        valueoutput.putInt("Bukkit.MaxDomestication", this.maxDomestication); // CraftBukkit
+         output.putInt("Temper", this.getTemper());
+         output.putBoolean("Tame", this.isTamed());
+         EntityReference.store(this.owner, output, "Owner");
++        output.putInt("Bukkit.MaxDomestication", this.maxDomestication); // CraftBukkit
      }
  
      @Override
 @@ -841,6 +848,9 @@
-         this.setTemper(valueinput.getIntOr("Temper", 0));
-         this.setTamed(valueinput.getBooleanOr("Tame", false));
-         this.owner = EntityReference.<LivingEntity>readWithOldOwnerConversion(valueinput, "Owner", this.level());
+         this.setTemper(input.getIntOr("Temper", 0));
+         this.setTamed(input.getBooleanOr("Tame", false));
+         this.owner = EntityReference.<LivingEntity>readWithOldOwnerConversion(input, "Owner", this.level());
 +        // CraftBukkit start
-+        this.maxDomestication = valueinput.getIntOr("Bukkit.MaxDomestication", this.maxDomestication);
++        this.maxDomestication = input.getIntOr("Bukkit.MaxDomestication", this.maxDomestication);
 +        // CraftBukkit end
      }
  
@@ -77,13 +77,13 @@
 @@ -932,6 +942,17 @@
  
      @Override
-     public void handleStartJump(int i) {
+     public void handleStartJump(int jumpScale) {
 +        // CraftBukkit start
 +        float power;
-+        if (i >= 90) {
++        if (jumpScale >= 90) {
 +            power = 1.0F;
 +        } else {
-+            power = 0.4F + 0.4F * (float) i / 90.0F;
++            power = 0.4F + 0.4F * (float) jumpScale / 90.0F;
 +        }
 +        if (!CraftEventFactory.callHorseJumpEvent(this, power)) {
 +            return;

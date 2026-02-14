@@ -16,12 +16,12 @@
  
      public static final MapCodec<SweetBerryBushBlock> CODEC = simpleCodec(SweetBerryBushBlock::new);
 @@ -85,7 +93,7 @@
-         if (i < 3 && randomsource.nextInt(5) == 0 && serverlevel.getRawBrightness(blockpos.above(), 0) >= 9) {
-             BlockState blockstate1 = (BlockState) blockstate.setValue(SweetBerryBushBlock.AGE, i + 1);
+         if (i < 3 && random.nextInt(5) == 0 && level.getRawBrightness(pos.above(), 0) >= 9) {
+             BlockState blockstate1 = (BlockState) state.setValue(SweetBerryBushBlock.AGE, i + 1);
  
--            serverlevel.setBlock(blockpos, blockstate1, 2);
-+            if (!CraftEventFactory.handleBlockGrowEvent(serverlevel, blockpos, blockstate1, 2)) return; // CraftBukkit
-             serverlevel.gameEvent(GameEvent.BLOCK_CHANGE, blockpos, GameEvent.Context.of(blockstate1));
+-            level.setBlock(pos, blockstate1, 2);
++            if (!CraftEventFactory.handleBlockGrowEvent(level, pos, blockstate1, 2)) return; // CraftBukkit
+             level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(blockstate1));
          }
  
 @@ -106,7 +114,7 @@
@@ -29,7 +29,7 @@
  
                          if (d0 >= (double) 0.003F || d1 >= (double) 0.003F) {
 -                            entity.hurtServer(serverlevel, level.damageSources().sweetBerryBush(), 1.0F);
-+                            entity.hurtServer(serverlevel, level.damageSources().sweetBerryBush().directBlock(level, blockpos), 1.0F); // CraftBukkit
++                            entity.hurtServer(serverlevel, level.damageSources().sweetBerryBush().directBlock(level, pos), 1.0F); // CraftBukkit
                          }
                      }
  
@@ -39,18 +39,18 @@
  
 +                // CraftBukkit start - useWithoutItem is always MAIN_HAND
 +                List<ItemStack> dropped = new LinkedList<>();
-                 Block.dropFromBlockInteractLootTable(serverlevel, BuiltInLootTables.HARVEST_SWEET_BERRY_BUSH, blockstate, level.getBlockEntity(blockpos), (ItemStack) null, player, (serverlevel1, itemstack) -> {
--                    Block.popResource(serverlevel1, blockpos, itemstack);
+                 Block.dropFromBlockInteractLootTable(serverlevel, BuiltInLootTables.HARVEST_SWEET_BERRY_BUSH, state, level.getBlockEntity(pos), (ItemStack) null, player, (serverlevel1, itemstack) -> {
+-                    Block.popResource(serverlevel1, pos, itemstack);
 +                    dropped.add(itemstack);
                  });
-+                PlayerHarvestBlockEvent event = CraftEventFactory.callPlayerHarvestBlockEvent(level, blockpos, player, InteractionHand.MAIN_HAND, dropped);
++                PlayerHarvestBlockEvent event = CraftEventFactory.callPlayerHarvestBlockEvent(level, pos, player, InteractionHand.MAIN_HAND, dropped);
 +                if (event.isCancelled()) {
 +                    return InteractionResult.SUCCESS; // We need to return a success either way, because making it PASS or FAIL will result in a bug where cancelling while harvesting w/ block in hand places block
 +                }
 +                for (org.bukkit.inventory.ItemStack itemStack : event.getItemsHarvested()) {
-+                    popResource(level, blockpos, CraftItemStack.asNMSCopy(itemStack));
++                    popResource(level, pos, CraftItemStack.asNMSCopy(itemStack));
 +                }
 +                // CraftBukkit end
-                 serverlevel.playSound((Entity) null, blockpos, SoundEvents.SWEET_BERRY_BUSH_PICK_BERRIES, SoundSource.BLOCKS, 1.0F, 0.8F + serverlevel.random.nextFloat() * 0.4F);
-                 BlockState blockstate1 = (BlockState) blockstate.setValue(SweetBerryBushBlock.AGE, 1);
+                 serverlevel.playSound((Entity) null, pos, SoundEvents.SWEET_BERRY_BUSH_PICK_BERRIES, SoundSource.BLOCKS, 1.0F, 0.8F + serverlevel.random.nextFloat() * 0.4F);
+                 BlockState blockstate1 = (BlockState) state.setValue(SweetBerryBushBlock.AGE, 1);
  

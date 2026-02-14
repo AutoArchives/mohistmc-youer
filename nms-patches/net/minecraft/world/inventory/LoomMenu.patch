@@ -38,7 +38,7 @@
 +            // CraftBukkit start
 +            @Override
 +            public Location getLocation() {
-+                return containerlevelaccess.getLocation();
++                return access.getLocation();
 +            }
 +            // CraftBukkit end
          };
@@ -52,11 +52,11 @@
 +            // CraftBukkit start
 +            @Override
 +            public Location getLocation() {
-+                return containerlevelaccess.getLocation();
++                return access.getLocation();
 +            }
 +            // CraftBukkit end
          };
-         this.access = containerlevelaccess;
+         this.access = access;
          this.bannerSlot = this.addSlot(new Slot(this.inputContainer, 0, 13, 26) {
 @@ -116,10 +151,12 @@
          this.addStandardInventorySlots(inventory, 8, 84);
@@ -80,6 +80,6 @@
 +                    bannerpatternlayers = new BannerPatternLayers(List.copyOf(bannerpatternlayers.layers().subList(0, 20)));
 +                }
 +                // CraftBukkit end
-                 return (new BannerPatternLayers.Builder()).addAll(bannerpatternlayers).add(holder, dyecolor).build();
+                 return (new BannerPatternLayers.Builder()).addAll(bannerpatternlayers).add(pattern, dyecolor).build();
              });
          }

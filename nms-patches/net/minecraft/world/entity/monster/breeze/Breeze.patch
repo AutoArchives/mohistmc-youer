@@ -12,8 +12,8 @@
 @@ -246,6 +246,7 @@
  
      @Override
-     public boolean canAttackType(EntityType<?> entitytype) {
-+        if (this.getTarget() != null) return this.getTarget().getType() == entitytype; // SPIGOT-7957: Allow attack if target from brain was set
-         return entitytype == EntityType.PLAYER || entitytype == EntityType.IRON_GOLEM;
+     public boolean canAttackType(EntityType<?> targetType) {
++        if (this.getTarget() != null) return this.getTarget().getType() == targetType; // SPIGOT-7957: Allow attack if target from brain was set
+         return targetType == EntityType.PLAYER || targetType == EntityType.IRON_GOLEM;
      }
  

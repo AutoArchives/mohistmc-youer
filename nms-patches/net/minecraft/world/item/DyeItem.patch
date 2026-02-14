@@ -25,6 +25,6 @@
 +
 +                    sheep.setColor(DyeColor.byId((byte) event.getColor().getWoolData()));
 +                    // CraftBukkit end
-                     itemstack.shrink(1);
+                     itemStack.shrink(1);
                  }
  

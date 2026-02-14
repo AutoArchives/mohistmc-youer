@@ -13,8 +13,8 @@
      private static final int DEFAULT_DESPAWN_DELAY = 0;
 @@ -56,15 +60,16 @@
  
-     public WanderingTrader(EntityType<? extends WanderingTrader> entitytype, Level level) {
-         super(entitytype, level);
+     public WanderingTrader(EntityType<? extends WanderingTrader> type, Level level) {
+         super(type, level);
 +        this.setDespawnDelay(48000); // CraftBukkit - set default from MobSpawnerTrader
      }
  
@@ -31,11 +31,11 @@
          }));
          this.goalSelector.addGoal(1, new TradeWithPlayerGoal(this));
 @@ -141,7 +146,7 @@
-     protected void readAdditionalSaveData(ValueInput valueinput) {
-         super.readAdditionalSaveData(valueinput);
-         this.despawnDelay = valueinput.getIntOr("DespawnDelay", 0);
--        this.wanderTarget = (BlockPos) valueinput.read("wander_target", BlockPos.CODEC).orElse((Object) null);
-+        this.wanderTarget = (BlockPos) valueinput.read("wander_target", BlockPos.CODEC).orElse(null); // CraftBukkit - decompile error
+     protected void readAdditionalSaveData(ValueInput input) {
+         super.readAdditionalSaveData(input);
+         this.despawnDelay = input.getIntOr("DespawnDelay", 0);
+-        this.wanderTarget = (BlockPos) input.read("wander_target", BlockPos.CODEC).orElse((Object) null);
++        this.wanderTarget = (BlockPos) input.read("wander_target", BlockPos.CODEC).orElse(null); // CraftBukkit - decompile error
          this.setAge(Math.max(0, this.getAge()));
      }
  

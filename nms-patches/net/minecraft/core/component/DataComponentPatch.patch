@@ -12,9 +12,9 @@
 @@ -159,7 +159,7 @@
              }
  
-             private <T> void encodeComponent(RegistryFriendlyByteBuf registryfriendlybytebuf, DataComponentType<T> datacomponenttype, Object object) {
--                datacomponentpatch_codecgetter.apply(datacomponenttype).encode(registryfriendlybytebuf, object);
-+                datacomponentpatch_codecgetter.apply(datacomponenttype).encode(registryfriendlybytebuf, (T) object); // CraftBukkit - decompile error
+             private <T> void encodeComponent(RegistryFriendlyByteBuf output, DataComponentType<T> type, Object value) {
+-                codecGetter.apply(type).encode(output, value);
++                codecGetter.apply(type).encode(output, (T) value); // CraftBukkit - decompile error
              }
          };
      }
@@ -58,6 +58,6 @@
 +        }
 +        // CraftBukkit end
 +
-         public <T> DataComponentPatch.Builder set(DataComponentType<T> datacomponenttype, T t0) {
-             this.map.put(datacomponenttype, Optional.of(t0));
+         public <T> DataComponentPatch.Builder set(DataComponentType<T> type, T value) {
+             this.map.put(type, Optional.of(value));
              return this;

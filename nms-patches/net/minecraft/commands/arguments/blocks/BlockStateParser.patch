@@ -10,20 +10,20 @@
      private Identifier id = Identifier.withDefaultNamespace("");
      private @Nullable StateDefinition<Block, BlockState> definition;
 @@ -512,7 +512,7 @@
-         Optional<T> optional = property.getValue(s);
+         Optional<T> optional = property.getValue(raw);
  
          if (optional.isPresent()) {
 -            this.state = (BlockState) this.state.setValue(property, (Comparable) optional.get());
 +            this.state = (BlockState) this.state.setValue(property, (T) optional.get()); // CraftBukkit - decompile error
              this.properties.put(property, (Comparable) optional.get());
          } else {
-             this.reader.setCursor(i);
+             this.reader.setCursor(start);
 @@ -547,7 +547,7 @@
-     private static <T extends Comparable<T>> void appendProperty(StringBuilder stringbuilder, Property<T> property, Comparable<?> comparable) {
-         stringbuilder.append(property.getName());
-         stringbuilder.append('=');
--        stringbuilder.append(property.getName(comparable));
-+        stringbuilder.append(property.getName((T) comparable)); // CraftBukkit - decompile error
+     private static <T extends Comparable<T>> void appendProperty(StringBuilder builder, Property<T> property, Comparable<?> value) {
+         builder.append(property.getName());
+         builder.append('=');
+-        builder.append(property.getName(value));
++        builder.append(property.getName((T) value)); // CraftBukkit - decompile error
      }
  
      public static record BlockResult(BlockState blockState, Map<Property<?>, Comparable<?>> properties, @Nullable CompoundTag nbt) {

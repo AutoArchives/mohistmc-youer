@@ -33,8 +33,8 @@
 +    }
 +    // CraftBukkit end
 +
-     protected AbstractFurnaceMenu(MenuType<?> menutype, RecipeType<? extends AbstractCookingRecipe> recipetype, ResourceKey<RecipePropertySet> resourcekey, RecipeBookType recipebooktype, int i, Inventory inventory) {
-         this(menutype, recipetype, resourcekey, recipebooktype, i, inventory, new SimpleContainer(3), new SimpleContainerData(4));
+     protected AbstractFurnaceMenu(MenuType<?> menuType, RecipeType<? extends AbstractCookingRecipe> recipeType, ResourceKey<RecipePropertySet> allowedInputs, RecipeBookType recipeBookType, int containerId, Inventory inventory) {
+         this(menuType, recipeType, allowedInputs, recipeBookType, containerId, inventory, new SimpleContainer(3), new SimpleContainerData(4));
      }
 @@ -53,6 +75,7 @@
          this.addSlot(new Slot(container, 0, 56, 17));
@@ -42,7 +42,7 @@
          this.addSlot(new FurnaceResultSlot(inventory.player, container, 2, 116, 35));
 +        this.player = inventory; // CraftBukkit - save player
          this.addStandardInventorySlots(inventory, 8, 84);
-         this.addDataSlots(containerdata);
+         this.addDataSlots(data);
      }
 @@ -71,6 +94,7 @@
  
@@ -53,10 +53,10 @@
      }
  
 @@ -180,6 +204,6 @@
-             public boolean recipeMatches(RecipeHolder<AbstractCookingRecipe> recipeholder1) {
-                 return ((AbstractCookingRecipe) recipeholder1.value()).matches(new SingleRecipeInput(AbstractFurnaceMenu.this.container.getItem(0)), serverlevel);
+             public boolean recipeMatches(RecipeHolder<AbstractCookingRecipe> recipe) {
+                 return ((AbstractCookingRecipe) recipe.value()).matches(new SingleRecipeInput(AbstractFurnaceMenu.this.container.getItem(0)), level);
              }
--        }, 1, 1, List.of(this.getSlot(0)), list, inventory, recipeholder, flag, flag1);
-+        }, 1, 1, List.of(this.getSlot(0)), list, inventory, (RecipeHolder<AbstractCookingRecipe>) recipeholder, flag, flag1); // CraftBukkit - decompile error
+-        }, 1, 1, List.of(this.getSlot(0)), list, inventory, recipe, useMaxItems, allowDroppingItemsToClear);
++        }, 1, 1, List.of(this.getSlot(0)), list, inventory, (RecipeHolder<AbstractCookingRecipe>) recipe, useMaxItems, allowDroppingItemsToClear); // CraftBukkit - decompile error
      }
  }

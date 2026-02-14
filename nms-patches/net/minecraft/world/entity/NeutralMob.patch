@@ -14,7 +14,7 @@
 @@ -54,7 +58,7 @@
  
          if (level instanceof ServerLevel) {
-             this.setPersistentAngerTarget(EntityReference.read(valueinput, "angry_at"));
+             this.setPersistentAngerTarget(EntityReference.read(input, "angry_at"));
 -            this.setTarget(EntityReference.getLivingEntity(this.getPersistentAngerTarget(), level));
 +            this.setTarget(EntityReference.getLivingEntity(this.getPersistentAngerTarget(), level), EntityTargetEvent.TargetReason.UNKNOWN, false); // CraftBukkit
          }
@@ -31,10 +31,10 @@
  
 @@ -151,6 +155,8 @@
  
-     void setTarget(@Nullable LivingEntity livingentity);
+     void setTarget(@Nullable LivingEntity target);
  
-+    boolean setTarget(@Nullable LivingEntity livingentity, org.bukkit.event.entity.EntityTargetEvent.TargetReason reason, boolean fireEvent); // CraftBukkit
++    boolean setTarget(@Nullable LivingEntity target, org.bukkit.event.entity.EntityTargetEvent.TargetReason reason, boolean fireEvent); // CraftBukkit
 +
-     boolean canAttack(LivingEntity livingentity);
+     boolean canAttack(LivingEntity target);
  
      @Nullable

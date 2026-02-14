@@ -27,22 +27,22 @@
 -    private final SimpleContainer inventory = new SimpleContainer(8);
 +    private final SimpleContainer inventory = new SimpleContainer(8, (org.bukkit.craftbukkit.entity.CraftAbstractVillager) this.getBukkitEntity()); // CraftBukkit add argument
  
-     public AbstractVillager(EntityType<? extends AbstractVillager> entitytype, Level level) {
-         super(entitytype, level);
+     public AbstractVillager(EntityType<? extends AbstractVillager> type, Level level) {
+         super(type, level);
 @@ -173,7 +186,7 @@
      @Override
-     protected void readAdditionalSaveData(ValueInput valueinput) {
-         super.readAdditionalSaveData(valueinput);
--        this.offers = (MerchantOffers) valueinput.read("Offers", MerchantOffers.CODEC).orElse((Object) null);
-+        this.offers = (MerchantOffers) valueinput.read("Offers", MerchantOffers.CODEC).orElse(null); // CraftBukkit - decompile error
-         this.readInventoryFromTag(valueinput);
+     protected void readAdditionalSaveData(ValueInput input) {
+         super.readAdditionalSaveData(input);
+-        this.offers = (MerchantOffers) input.read("Offers", MerchantOffers.CODEC).orElse((Object) null);
++        this.offers = (MerchantOffers) input.read("Offers", MerchantOffers.CODEC).orElse(null); // CraftBukkit - decompile error
+         this.readInventoryFromTag(input);
      }
  
 @@ -231,7 +244,16 @@
-             MerchantOffer merchantoffer = ((VillagerTrades.ItemListing) arraylist.remove(this.random.nextInt(arraylist.size()))).getOffer(serverlevel, this, this.random);
+             MerchantOffer merchantoffer = ((VillagerTrades.ItemListing) arraylist.remove(this.random.nextInt(arraylist.size()))).getOffer(level, this, this.random);
  
              if (merchantoffer != null) {
--                merchantoffers.add(merchantoffer);
+-                merchantOffers.add(merchantoffer);
 +                // CraftBukkit start
 +                VillagerAcquireTradeEvent event = new VillagerAcquireTradeEvent((org.bukkit.entity.AbstractVillager) getBukkitEntity(), merchantoffer.asBukkit());
 +                // Suppress during worldgen
@@ -50,7 +50,7 @@
 +                    Bukkit.getPluginManager().callEvent(event);
 +                }
 +                if (!event.isCancelled()) {
-+                    merchantoffers.add(CraftMerchantRecipe.fromBukkit(event.getRecipe()).toMinecraft());
++                    merchantOffers.add(CraftMerchantRecipe.fromBukkit(event.getRecipe()).toMinecraft());
 +                }
 +                // CraftBukkit end
                  ++j;

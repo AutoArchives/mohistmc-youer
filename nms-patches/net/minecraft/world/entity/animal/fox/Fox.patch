@@ -30,30 +30,30 @@
          }));
          this.goalSelector.addGoal(4, new AvoidEntityGoal(this, Wolf.class, 8.0F, 1.6D, 1.4D, (livingentity) -> {
 @@ -434,7 +438,7 @@
-     protected void readAdditionalSaveData(ValueInput valueinput) {
-         super.readAdditionalSaveData(valueinput);
+     protected void readAdditionalSaveData(ValueInput input) {
+         super.readAdditionalSaveData(input);
          this.clearTrusted();
--        ((List) valueinput.read("Trusted", Fox.TRUSTED_LIST_CODEC).orElse(List.of())).forEach(this::addTrustedEntity);
-+        (valueinput.read("Trusted", Fox.TRUSTED_LIST_CODEC).orElse(List.of())).forEach(this::addTrustedEntity); // CraftBukkit - decompile error
-         this.setSleeping(valueinput.getBooleanOr("Sleeping", false));
-         this.setVariant((Fox.Variant) valueinput.read("Type", Fox.Variant.CODEC).orElse(Fox.Variant.DEFAULT));
-         this.setSitting(valueinput.getBooleanOr("Sitting", false));
+-        ((List) input.read("Trusted", Fox.TRUSTED_LIST_CODEC).orElse(List.of())).forEach(this::addTrustedEntity);
++        (input.read("Trusted", Fox.TRUSTED_LIST_CODEC).orElse(List.of())).forEach(this::addTrustedEntity); // CraftBukkit - decompile error
+         this.setSleeping(input.getBooleanOr("Sleeping", false));
+         this.setVariant((Fox.Variant) input.read("Type", Fox.Variant.CODEC).orElse(Fox.Variant.DEFAULT));
+         this.setSitting(input.getBooleanOr("Sitting", false));
 @@ -529,7 +533,8 @@
-     protected void pickUpItem(ServerLevel serverlevel, ItemEntity itementity) {
-         ItemStack itemstack = itementity.getItem();
+     protected void pickUpItem(ServerLevel level, ItemEntity entity) {
+         ItemStack itemstack = entity.getItem();
  
 -        if (this.canHoldItem(itemstack)) {
-+        if (!org.bukkit.craftbukkit.event.CraftEventFactory.callEntityPickupItemEvent(this, itementity, itemstack.getCount() - 1, !this.canHoldItem(itemstack)).isCancelled()) { // CraftBukkit - call EntityPickupItemEvent
-+            itemstack = itementity.getItem(); // CraftBukkit - update ItemStack from event
++        if (!org.bukkit.craftbukkit.event.CraftEventFactory.callEntityPickupItemEvent(this, entity, itemstack.getCount() - 1, !this.canHoldItem(itemstack)).isCancelled()) { // CraftBukkit - call EntityPickupItemEvent
++            itemstack = entity.getItem(); // CraftBukkit - update ItemStack from event
              int i = itemstack.getCount();
  
              if (i > 1) {
 @@ -541,7 +546,7 @@
              this.setItemSlot(EquipmentSlot.MAINHAND, itemstack.split(1));
              this.setGuaranteedDrop(EquipmentSlot.MAINHAND);
-             this.take(itementity, itemstack.getCount());
--            itementity.discard();
-+            itementity.discard(EntityRemoveEvent.Cause.PICKUP); // CraftBukkit - add Bukkit remove cause
+             this.take(entity, itemstack.getCount());
+-            entity.discard();
++            entity.discard(EntityRemoveEvent.Cause.PICKUP); // CraftBukkit - add Bukkit remove cause
              this.ticksSinceEaten = 0;
          }
  
@@ -94,11 +94,11 @@
  
              }
 @@ -1271,6 +1288,11 @@
-             int i = (Integer) blockstate.getValue(SweetBerryBushBlock.AGE);
+             int i = (Integer) state.getValue(SweetBerryBushBlock.AGE);
  
-             blockstate.setValue(SweetBerryBushBlock.AGE, 1);
+             state.setValue(SweetBerryBushBlock.AGE, 1);
 +            // CraftBukkit start - call EntityChangeBlockEvent
-+            if (!org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(Fox.this, this.blockPos, blockstate.setValue(SweetBerryBushBlock.AGE, 1))) {
++            if (!org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(Fox.this, this.blockPos, state.setValue(SweetBerryBushBlock.AGE, 1))) {
 +                return;
 +            }
 +            // CraftBukkit end

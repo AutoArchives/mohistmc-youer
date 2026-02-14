@@ -31,21 +31,21 @@
  
      @Override
 @@ -218,11 +230,17 @@
-             ItemStack itemstack = itementity.getItem();
+             ItemStack itemstack = entity.getItem();
  
              if (this.canHoldItem(itemstack)) {
 +                // CraftBukkit start - call EntityPickupItemEvent
-+                if (CraftEventFactory.callEntityPickupItemEvent(this, itementity, 0, false).isCancelled()) {
++                if (CraftEventFactory.callEntityPickupItemEvent(this, entity, 0, false).isCancelled()) {
 +                    return;
 +                }
-+                itemstack = itementity.getItem(); // CraftBukkit- update ItemStack from event
++                itemstack = entity.getItem(); // CraftBukkit- update ItemStack from event
 +                // CraftBukkit start
-                 this.onItemPickup(itementity);
+                 this.onItemPickup(entity);
                  this.setItemSlot(EquipmentSlot.MAINHAND, itemstack);
                  this.setGuaranteedDrop(EquipmentSlot.MAINHAND);
-                 this.take(itementity, itemstack.getCount());
--                itementity.discard();
-+                itementity.discard(EntityRemoveEvent.Cause.PICKUP); // CraftBukkit - add Bukkit remove cause
+                 this.take(entity, itemstack.getCount());
+-                entity.discard();
++                entity.discard(EntityRemoveEvent.Cause.PICKUP); // CraftBukkit - add Bukkit remove cause
              }
          }
  

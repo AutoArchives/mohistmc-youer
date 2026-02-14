@@ -2,11 +2,11 @@
 +++ b/net/minecraft/world/entity/monster/Phantom.java
 @@ -154,7 +154,7 @@
      @Override
-     protected void readAdditionalSaveData(ValueInput valueinput) {
-         super.readAdditionalSaveData(valueinput);
--        this.anchorPoint = (BlockPos) valueinput.read("anchor_pos", BlockPos.CODEC).orElse((Object) null);
-+        this.anchorPoint = (BlockPos) valueinput.read("anchor_pos", BlockPos.CODEC).orElse(null); // CraftBukkit - decompile error
-         this.setPhantomSize(valueinput.getIntOr("size", 0));
+     protected void readAdditionalSaveData(ValueInput input) {
+         super.readAdditionalSaveData(input);
+-        this.anchorPoint = (BlockPos) input.read("anchor_pos", BlockPos.CODEC).orElse((Object) null);
++        this.anchorPoint = (BlockPos) input.read("anchor_pos", BlockPos.CODEC).orElse(null); // CraftBukkit - decompile error
+         this.setPhantomSize(input.getIntOr("size", 0));
      }
  
 @@ -524,11 +524,11 @@

@@ -10,11 +10,11 @@
  
      public static final MapCodec<DragonEggBlock> CODEC = simpleCodec(DragonEggBlock::new);
 @@ -53,6 +55,18 @@
-             BlockPos blockpos1 = blockpos.offset(level.random.nextInt(16) - level.random.nextInt(16), level.random.nextInt(8) - level.random.nextInt(8), level.random.nextInt(16) - level.random.nextInt(16));
+             BlockPos blockpos1 = pos.offset(level.random.nextInt(16) - level.random.nextInt(16), level.random.nextInt(8) - level.random.nextInt(8), level.random.nextInt(16) - level.random.nextInt(16));
  
              if (level.getBlockState(blockpos1).isAir() && worldborder.isWithinBounds(blockpos1) && !level.isOutsideBuildHeight(blockpos1)) {
 +                // CraftBukkit start
-+                org.bukkit.block.Block from = level.getWorld().getBlockAt(blockpos.getX(), blockpos.getY(), blockpos.getZ());
++                org.bukkit.block.Block from = level.getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ());
 +                org.bukkit.block.Block to = level.getWorld().getBlockAt(blockpos1.getX(), blockpos1.getY(), blockpos1.getZ());
 +                BlockFromToEvent event = new BlockFromToEvent(from, to);
 +                org.bukkit.Bukkit.getPluginManager().callEvent(event);

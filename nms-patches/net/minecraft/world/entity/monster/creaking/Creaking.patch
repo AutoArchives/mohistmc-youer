@@ -17,13 +17,4 @@
 +        this.remove(Entity.RemovalReason.DISCARDED, null); // CraftBukkit - add Bukkit remove cause
      }
  
-     public void creakingDeathEffects(DamageSource damagesource) {
-@@ -440,7 +440,7 @@
- 
-     @Override
-     protected SoundEvent getHurtSound(DamageSource damagesource) {
--        return this.isHeartBound() ? SoundEvents.CREAKING_SWAY : super.getHurtSound(damagesource);
-+        return SoundEvents.CREAKING_SWAY;
-     }
- 
-     @Override
+     public void creakingDeathEffects(DamageSource source) {
