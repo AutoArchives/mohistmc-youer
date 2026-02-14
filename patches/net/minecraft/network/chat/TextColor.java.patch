@@ -1,6 +1,13 @@
 --- a/net/minecraft/network/chat/TextColor.java
 +++ b/net/minecraft/network/chat/TextColor.java
-@@ -23,16 +_,28 @@
+@@ -17,22 +_,34 @@
+     public static final Codec<TextColor> CODEC = Codec.STRING.comapFlatMap(TextColor::parseColor, TextColor::serialize);
+     private static final Map<ChatFormatting, TextColor> LEGACY_FORMAT_TO_COLOR = Stream.of(ChatFormatting.values())
+         .filter(ChatFormatting::isColor)
+-        .collect(ImmutableMap.toImmutableMap(Function.identity(), p_237301_ -> new TextColor(p_237301_.getColor(), p_237301_.getName())));
++        .collect(ImmutableMap.toImmutableMap(Function.identity(), p_237301_ -> new TextColor(p_237301_.getColor(), p_237301_.getName(), p_237301_)));
+     private static final Map<String, TextColor> NAMED_COLORS = LEGACY_FORMAT_TO_COLOR.values()
+         .stream()
          .collect(ImmutableMap.toImmutableMap(p_237297_ -> p_237297_.name, Function.identity()));
      private final int value;
      private final @Nullable String name;

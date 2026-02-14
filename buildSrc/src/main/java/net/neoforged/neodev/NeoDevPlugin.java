@@ -313,6 +313,15 @@ public class NeoDevPlugin implements Plugin<Project> {
                                 "Implementation-Version", mcAndNeoFormVersion,
                                 "Implementation-Vendor", "NeoForged"),
                         "net/neoforged/neoforge/versions/neoform/");
+                manifest.attributes(
+                        Map.of(
+                                "Specification-Title", "Youer",
+                                "Specification-Vendor", "MohistMC",
+                                "Specification-Version", abbreviatedId,
+                                "Implementation-Title", "Youer",
+                                "Implementation-Version", abbreviatedId,
+                                "Implementation-Vendor", "\"MohistMC\""),
+                        "org/bukkit/");
             });
         });
 

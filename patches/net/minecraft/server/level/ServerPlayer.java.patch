@@ -17,7 +17,7 @@
  import net.minecraft.world.damagesource.DamageSource;
  import net.minecraft.world.damagesource.DamageTypes;
  import net.minecraft.world.effect.MobEffectInstance;
-@@ -152,6 +_,7 @@
+@@ -152,10 +_,12 @@
  import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEnderpearl;
  import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
  import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
@@ -25,11 +25,19 @@
  import net.minecraft.world.inventory.AbstractContainerMenu;
  import net.minecraft.world.inventory.ContainerListener;
  import net.minecraft.world.inventory.ContainerSynchronizer;
-@@ -200,6 +_,9 @@
+ import net.minecraft.world.inventory.HorseInventoryMenu;
++import net.minecraft.world.inventory.InventoryMenu;
+ import net.minecraft.world.inventory.NautilusInventoryMenu;
+ import net.minecraft.world.inventory.RemoteSlot;
+ import net.minecraft.world.inventory.ResultSlot;
+@@ -200,6 +_,12 @@
  import net.minecraft.world.scores.Scoreboard;
  import net.minecraft.world.scores.Team;
  import net.minecraft.world.scores.criteria.ObjectiveCriteria;
++import org.bukkit.Bukkit;
 +import org.bukkit.WeatherType;
++import org.bukkit.command.CommandSender;
++import org.bukkit.craftbukkit.CraftWorld;
 +import org.bukkit.craftbukkit.entity.CraftPlayer;
 +import org.bukkit.event.player.PlayerSpawnChangeEvent;
  import org.jspecify.annotations.Nullable;
@@ -73,7 +81,18 @@
              ServerPlayer.this.connection.send(new ClientboundContainerSetDataPacket(p_143455_.containerId, p_143456_, p_143457_));
          }
  
-@@ -362,6 +_,23 @@
+@@ -358,10 +_,34 @@
+         public void sendSystemMessage(Component p_376687_) {
+             ServerPlayer.this.sendSystemMessage(p_376687_);
+         }
++
++        // CraftBukkit start
++        @Override
++        public CommandSender getBukkitSender(CommandSourceStack wrapper) {
++            return getBukkitEntity();
++        }
++        // CraftBukkit end
+     };
      private Set<DebugSubscription<?>> requestedDebugSubscriptions = Set.of();
      private int containerCounter;
      public boolean wonGame;
@@ -97,6 +116,57 @@
  
      public ServerPlayer(MinecraftServer p_254143_, ServerLevel p_254435_, GameProfile p_253651_, ClientInformation p_301997_) {
          super(p_254435_, p_253651_);
+@@ -374,6 +_,20 @@
+         this.advancements = p_254143_.getPlayerList().getPlayerAdvancements(this);
+         this.updateOptions(p_301997_);
+         this.object = null;
++
++        // CraftBukkit start
++        this.displayName = this.getScoreboardName();
++        this.bukkitPickUpLoot = true;
++        this.maxHealthCache = this.getMaxHealth();
++    }
++
++    // Use method to resend items in hands in case of client desync, because the item use got cancelled.
++    // For example, when cancelling the leash event
++    public void resendItemInHands() {
++        containerMenu.findSlot(getInventory(), getInventory().getSelectedSlot()).ifPresent(s -> {
++            containerSynchronizer.sendSlotChange(containerMenu, s, getMainHandItem());
++        });
++        containerSynchronizer.sendSlotChange(inventoryMenu, InventoryMenu.SHIELD_SLOT, getOffhandItem());
+     }
+ 
+     @Override
+@@ -391,11 +_,21 @@
+         this.seenCredits = p_422091_.getBooleanOr("seenCredits", false);
+         p_422091_.read("recipeBook", ServerRecipeBook.Packed.CODEC)
+             .ifPresent(p_421332_ -> this.recipeBook.loadUntrusted(p_421332_, p_379046_ -> this.server.getRecipeManager().byKey(p_379046_).isPresent()));
++        this.getBukkitEntity().readExtraData(p_422091_); // CraftBukkit
+         if (this.isSleeping()) {
+             this.stopSleeping();
+         }
+ 
+         this.respawnConfig = p_422091_.read("respawn", ServerPlayer.RespawnConfig.CODEC).orElse(null);
++        // CraftBukkit start
++        String spawnWorld = p_422091_.getStringOr("SpawnWorld", "");
++        CraftWorld oldWorld = (CraftWorld) Bukkit.getWorld(spawnWorld);
++        if (oldWorld != null) {
++            ServerPlayer.RespawnConfig respawnConfig = this.respawnConfig;
++            LevelData.RespawnData respawnData = respawnConfig.respawnData();
++            this.respawnConfig = new RespawnConfig(LevelData.RespawnData.of(oldWorld.getHandle().dimension(), respawnData.pos(), respawnData.yaw(), respawnData.pitch()), respawnConfig.forced());
++        }
++        // CraftBukkit end
+         this.spawnExtraParticlesOnFall = p_422091_.getBooleanOr("spawn_extra_particles_on_fall", false);
+         this.raidOmenPosition = p_422091_.read("raid_omen_position", BlockPos.CODEC).orElse(null);
+         this.gameMode
+@@ -417,6 +_,7 @@
+         p_422225_.store("recipeBook", ServerRecipeBook.Packed.CODEC, this.recipeBook.pack());
+         p_422225_.putString("Dimension", this.level().dimension().identifier().toString());
+         p_422225_.storeNullable("respawn", ServerPlayer.RespawnConfig.CODEC, this.respawnConfig);
++        this.getBukkitEntity().setExtraData(p_422225_); // CraftBukkit
+         p_422225_.putBoolean("spawn_extra_particles_on_fall", this.spawnExtraParticlesOnFall);
+         p_422225_.storeNullable("raid_omen_position", BlockPos.CODEC, this.raidOmenPosition);
+         this.saveEnderPearls(p_422225_);
 @@ -541,7 +_,7 @@
          this.lastSentExp = -1;
      }
@@ -106,6 +176,18 @@
          p_143400_.addSlotListener(this.containerListener);
          p_143400_.setSynchronizer(this.containerSynchronizer);
      }
+@@ -574,6 +_,11 @@
+ 
+     @Override
+     public void tick() {
++        // CraftBukkit start
++        if (this.joining) {
++            this.joining = false;
++        }
++        // CraftBukkit end
+         this.connection.tickClientLoadTimeout();
+         this.gameMode.tick();
+         this.wardenSpawnTracker.tick();
 @@ -661,7 +_,11 @@
                  }
  

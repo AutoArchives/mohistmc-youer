@@ -5,8 +5,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
-import org.bukkit.craftbukkit.SpigotTimings; // Spigot
-import org.spigotmc.CustomTimingsHandler; // Spigot
 
 public class CraftTask implements BukkitTask, Runnable { // Spigot
 
@@ -32,7 +30,6 @@ public class CraftTask implements BukkitTask, Runnable { // Spigot
     private final int id;
     private final long createdAt = System.nanoTime();
 
-    final CustomTimingsHandler timings; // Spigot
     CraftTask() {
         this(null, null, CraftTask.NO_REPEATING, CraftTask.NO_REPEATING);
     }
@@ -58,7 +55,6 @@ public class CraftTask implements BukkitTask, Runnable { // Spigot
         }
         this.id = id;
         this.period = period;
-        this.timings = this.isSync() ? SpigotTimings.getPluginTaskTimings(this, period) : null; // Spigot
     }
 
     @Override

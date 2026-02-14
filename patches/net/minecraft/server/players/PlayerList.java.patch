@@ -1,10 +1,19 @@
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
-@@ -99,6 +_,8 @@
+@@ -66,6 +_,7 @@
+ import net.minecraft.server.PlayerAdvancements;
+ import net.minecraft.server.RegistryLayer;
+ import net.minecraft.server.ServerScoreboard;
++import net.minecraft.server.dedicated.DedicatedServer;
+ import net.minecraft.server.level.ServerLevel;
+ import net.minecraft.server.level.ServerPlayer;
+ import net.minecraft.server.network.CommonListenerCookie;
+@@ -99,6 +_,9 @@
  import net.minecraft.world.scores.Objective;
  import net.minecraft.world.scores.PlayerTeam;
  import net.minecraft.world.scores.Team;
 +import org.bukkit.Location;
++import org.bukkit.craftbukkit.CraftServer;
 +import org.bukkit.event.player.PlayerRespawnEvent;
  import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
@@ -18,7 +27,7 @@
      private final Map<UUID, ServerPlayer> playersByUUID = Maps.newHashMap();
      private final UserBanList bans;
      private final IpBanList ipBans;
-@@ -121,12 +_,13 @@
+@@ -121,14 +_,22 @@
      private final UserWhiteList whitelist;
      private final Map<UUID, ServerStatsCounter> stats = Maps.newHashMap();
      private final Map<UUID, PlayerAdvancements> advancements = Maps.newHashMap();
@@ -30,9 +39,18 @@
      private boolean allowCommandsForAllPlayers;
      private int sendAllPlayerInfoIn;
 +    private final List<ServerPlayer> playersView = java.util.Collections.unmodifiableList(players);
++
++    // CraftBukkit start
++    private CraftServer cserver;
++    private final Map<String,ServerPlayer> playersByName = new java.util.HashMap<>();
  
      public PlayerList(MinecraftServer p_203842_, LayeredRegistryAccess<RegistryLayer> p_251844_, PlayerDataStorage p_203844_, NotificationService p_443409_) {
++        this.cserver = p_203842_.server = new CraftServer((DedicatedServer) p_203842_, this);
++        p_203842_.console = org.bukkit.craftbukkit.command.ColouredConsoleSender.getInstance();
++        // CraftBukkit end
          this.server = p_203842_;
+         this.registries = p_251844_;
+         this.playerIo = p_203844_;
 @@ -158,7 +_,7 @@
          LevelData leveldata = serverlevel.getLevelData();
          ServerGamePacketListenerImpl servergamepacketlistenerimpl = new ServerGamePacketListenerImpl(this.server, p_11262_, p_11263_, p_301988_);
@@ -144,6 +162,14 @@
          if (this.ops.remove(p_435771_)) {
              ServerPlayer serverplayer = this.getPlayer(p_435771_.id());
              if (serverplayer != null) {
+@@ -572,6 +_,7 @@
+             p_11227_.connection.send(new ClientboundEntityEventPacket(p_11227_, b0));
+         }
+ 
++        p_11227_.getBukkitEntity().recalculatePermissions(); // CraftBukkit
+         this.server.getCommands().sendCommands(p_11227_);
+     }
+ 
 @@ -642,8 +_,12 @@
      public void sendLevelInfo(ServerPlayer p_11230_, ServerLevel p_11231_) {
          WorldBorder worldborder = p_11231_.getWorldBorder();

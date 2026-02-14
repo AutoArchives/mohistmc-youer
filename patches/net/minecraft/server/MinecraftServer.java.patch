@@ -8,13 +8,17 @@
  import net.minecraft.CrashReport;
  import net.minecraft.CrashReportCategory;
  import net.minecraft.ReportType;
-@@ -183,11 +_,14 @@
+@@ -183,11 +_,18 @@
  import net.minecraft.world.phys.Vec2;
  import net.minecraft.world.phys.Vec3;
  import net.minecraft.world.scores.ScoreboardSaveData;
 +import org.bukkit.Bukkit;
 +import org.bukkit.craftbukkit.CraftRegistry;
 +import org.bukkit.craftbukkit.CraftServer;
++import org.bukkit.craftbukkit.Main;
++import org.bukkit.event.server.ServerLoadEvent;
++import org.jline.terminal.Terminal;
++import org.jline.terminal.TerminalBuilder;
  import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
@@ -74,7 +78,7 @@
 +    public org.bukkit.craftbukkit.CraftServer server;
 +    public OptionSet options;
 +    public org.bukkit.command.ConsoleCommandSender console;
-+    // public Terminal terminal;
++    public Terminal terminal;
 +    public static int currentTick = (int) (System.currentTimeMillis() / 50);
 +    public java.util.Queue<Runnable> processQueue = new java.util.concurrent.ConcurrentLinkedQueue<Runnable>();
 +    public int autosavePeriod;
@@ -100,7 +104,7 @@
          thread.setUncaughtExceptionHandler((p_177909_, p_177910_) -> LOGGER.error("Uncaught exception in server thread", p_177910_));
          if (Runtime.getRuntime().availableProcessors() > 4) {
              thread.setPriority(8);
-@@ -330,9 +_,9 @@
+@@ -330,14 +_,36 @@
              this.structureTemplateManager = new StructureTemplateManager(p_236726_.resourceManager(), p_236724_, p_236728_, holdergetter);
              this.serverThread = p_236723_;
              this.executor = Util.backgroundExecutor();
@@ -112,6 +116,33 @@
              this.tickFrame = TracyClient.createDiscontinuousFrame("Server Tick");
              this.notificationManager = new NotificationManager();
              this.serverActivityMonitor = new ServerActivityMonitor(this.notificationManager, 30);
+             this.packetProcessor = new PacketProcessor(p_236723_);
+         }
++
++        this.vanillaCommandDispatcher = p_236726_.dataPackResources().commands; // CraftBukkit
++        // Try to see if we're actually running in a terminal, disable jline if not
++        if (System.console() == null && System.getProperty(TerminalBuilder.PROP_PROVIDER) == null) {
++            System.setProperty(TerminalBuilder.PROP_PROVIDER, Terminal.TYPE_DUMB);
++            Main.useJline = false;
++        }
++
++        try {
++            terminal = TerminalBuilder.builder().dumb(false).build();
++        } catch (Throwable e) {
++            try {
++                // Try again with jline disabled for Windows users without C++ 2008 Redistributable
++                System.setProperty(TerminalBuilder.PROP_PROVIDER, Terminal.TYPE_DUMB);
++                Main.useJline = false;
++                terminal = TerminalBuilder.builder().build();
++            } catch (IOException ex) {
++                LOGGER.warn((String) null, ex);
++            }
++        }
++        Runtime.getRuntime().addShutdownHook(new org.bukkit.craftbukkit.util.ServerShutdownThread(this));
++        // CraftBukkit end
+     }
+ 
+     protected abstract boolean initServer() throws IOException;
 @@ -414,6 +_,7 @@
          this.scoreboard.load(dimensiondatastorage.computeIfAbsent(ScoreboardSaveData.TYPE).getData());
          this.commandStorage = new CommandStorage(dimensiondatastorage);
@@ -128,10 +159,16 @@
              } else {
                  serverlevel1 = serverlevel;
              }
-@@ -502,6 +_,75 @@
+@@ -500,6 +_,79 @@
+         if (flag1) {
+             serverleveldata.setLegacyWorldBorderSettings(Optional.empty());
          }
-     }
- 
++
++        this.server.enablePlugins(org.bukkit.plugin.PluginLoadOrder.POSTWORLD);
++        this.server.getPluginManager().callEvent(new ServerLoadEvent(ServerLoadEvent.LoadType.STARTUP));
++        this.connection.acceptConnections();
++    }
++
 +    public void initWorld(ServerLevel serverlevel, ServerLevelData serverleveldata, WorldData saveData, WorldOptions worldoptions) {
 +        boolean flag = saveData.isDebugWorld();
 +        // CraftBukkit start
@@ -199,11 +236,9 @@
 +            serverleveldata.setLegacyWorldBorderSettings(Optional.empty());
 +        }
 +
-+    }
-+
+     }
+ 
      private static void setInitialSpawn(ServerLevel p_177897_, ServerLevelData p_177898_, boolean p_177899_, boolean p_177900_, LevelLoadListener p_435683_) {
-         if (SharedConstants.DEBUG_ONLY_GENERATE_HALF_THE_WORLD && SharedConstants.DEBUG_WORLD_RECREATE) {
-             p_177898_.setSpawn(LevelData.RespawnData.of(p_177897_.dimension(), new BlockPos(0, 64, -100), 0.0F, 0.0F));
 @@ -509,6 +_,7 @@
              p_177898_.setSpawn(LevelData.RespawnData.of(p_177897_.dimension(), BlockPos.ZERO.above(80), 0.0F, 0.0F));
          } else {
@@ -264,7 +299,7 @@
                  }
              });
          }
-@@ -654,7 +_,23 @@
+@@ -654,13 +_,34 @@
          this.stopServer();
      }
  
@@ -288,6 +323,17 @@
          this.packetProcessor.close();
          if (this.metricsRecorder.isRecording()) {
              this.cancelRecordingMetrics();
+         }
+ 
+         LOGGER.info("Stopping server");
++        // CraftBukkit start
++        if (this.server != null) {
++            this.server.disablePlugins();
++        }
++        // CraftBukkit end
+         this.getConnection().stop();
+         this.isSaving = true;
+         if (this.playerList != null) {
 @@ -693,6 +_,7 @@
          for (ServerLevel serverlevel2 : this.getAllLevels()) {
              if (serverlevel2 != null) {
@@ -296,7 +342,34 @@
                      serverlevel2.close();
                  } catch (IOException ioexception1) {
                      LOGGER.error("Exception closing the level", (Throwable)ioexception1);
-@@ -739,9 +_,11 @@
+@@ -708,6 +_,13 @@
+         } catch (IOException ioexception) {
+             LOGGER.error("Failed to unlock level {}", this.storageSource.getLevelId(), ioexception);
+         }
++
++        // Spigot start
++        if (org.spigotmc.SpigotConfig.saveUserCacheOnStopOnly) {
++            LOGGER.info("Saving usercache.json");
++            this.services().nameToIdCache().save();
++        }
++        // Spigot end
+     }
+ 
+     public String getLocalIp() {
+@@ -733,16 +_,28 @@
+         }
+     }
+ 
++    // Spigot Start
++    private static double calcTps(double avg, double exp, double tps)
++    {
++        return ( avg * exp ) + ( tps * ( 1 - exp ) );
++    }
++    // Spigot End
++
+     protected void runServer() {
+         try {
+             if (!this.initServer()) {
                  throw new IllegalStateException("Failed to initialize server");
              }
  
@@ -306,8 +379,45 @@
              this.status = this.buildServerStatus();
 +            resetStatusCache(status);
  
++            // Spigot start
++            Arrays.fill( recentTps, 20 );
++            long tickSection = Util.getMillis(), tickCount = 1;
              while (this.running) {
                  long i;
+                 if (!this.isPaused() && this.tickRateManager.isSprinting() && this.tickRateManager.checkShouldSprintThisTick()) {
+@@ -755,18 +_,32 @@
+                     if (k > OVERLOADED_THRESHOLD_NANOS + 20L * i
+                         && this.nextTickTimeNanos - this.lastOverloadWarningNanos >= OVERLOADED_WARNING_INTERVAL_NANOS + 100L * i) {
+                         long j = k / i;
++                        if (server.getWarnOnOverload()) // CraftBukkit
+                         LOGGER.warn("Can't keep up! Is the server overloaded? Running {}ms or {} ticks behind", k / TimeUtil.NANOSECONDS_PER_MILLISECOND, j);
+                         this.nextTickTimeNanos += j * i;
+                         this.lastOverloadWarningNanos = this.nextTickTimeNanos;
+                     }
+                 }
+ 
++                // Spigot start
++                if ( tickCount++ % SAMPLE_INTERVAL == 0 )
++                {
++                    long curTime = Util.getMillis();
++                    double currentTps = 1E3 / ( curTime - tickSection ) * SAMPLE_INTERVAL;
++                    recentTps[0] = calcTps( recentTps[0], 0.92, currentTps ); // 1/exp(5sec/1min)
++                    recentTps[1] = calcTps( recentTps[1], 0.9835, currentTps ); // 1/exp(5sec/5min)
++                    recentTps[2] = calcTps( recentTps[2], 0.9945, currentTps ); // 1/exp(5sec/15min)
++                    tickSection = curTime;
++                }
++                // Spigot end
++
+                 boolean flag = i == 0L;
+                 if (this.debugCommandProfilerDelayStart) {
+                     this.debugCommandProfilerDelayStart = false;
+                     this.debugCommandProfiler = new MinecraftServer.TimeProfiler(Util.getNanos(), this.tickCount);
+                 }
+ 
++                MinecraftServer.currentTick = (int) (System.currentTimeMillis() / 50); // CraftBukkit
+                 this.nextTickTimeNanos += i;
+ 
+                 try (Profiler.Scope profiler$scope = Profiler.use(this.createProfiler())) {
 @@ -791,6 +_,8 @@
                  this.isReady = true;
                  JvmProfiler.INSTANCE.onServerTick(this.smoothedTickTimeMillis);

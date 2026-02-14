@@ -16,7 +16,7 @@
  import net.minecraft.network.chat.PlayerChatMessage;
  import net.minecraft.network.chat.RemoteChatSession;
  import net.minecraft.network.chat.SignableCommand;
-@@ -210,6 +_,13 @@
+@@ -210,6 +_,15 @@
  import net.minecraft.world.phys.shapes.BooleanOp;
  import net.minecraft.world.phys.shapes.Shapes;
  import net.minecraft.world.phys.shapes.VoxelShape;
@@ -27,6 +27,8 @@
 +import org.bukkit.event.player.AsyncPlayerChatEvent;
 +import org.bukkit.event.player.PlayerChatEvent;
 +import org.bukkit.event.player.PlayerCommandPreprocessEvent;
++import org.bukkit.event.player.PlayerItemHeldEvent;
++import org.bukkit.event.player.PlayerToggleSprintEvent;
  import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
@@ -162,7 +164,37 @@
              ServerLevel serverlevel = this.player.level();
              InteractionHand interactionhand = p_9930_.getHand();
              ItemStack itemstack = this.player.getItemInHand(interactionhand);
-@@ -1454,8 +_,9 @@
+@@ -1428,7 +_,16 @@
+     @Override
+     public void handleSetCarriedItem(ServerboundSetCarriedItemPacket p_9909_) {
+         PacketUtils.ensureRunningOnSameThread(p_9909_, this, this.player.level());
++        if (this.player.isImmobile()) return; // CraftBukkit
+         if (p_9909_.getSlot() >= 0 && p_9909_.getSlot() < Inventory.getSelectionSize()) {
++            PlayerItemHeldEvent event = new PlayerItemHeldEvent(this.getCraftPlayer(), this.player.getInventory().getSelectedSlot(), p_9909_.getSlot());
++            this.cserver.getPluginManager().callEvent(event);
++            if (event.isCancelled()) {
++                this.send(new ClientboundSetHeldSlotPacket(this.player.getInventory().getSelectedSlot()));
++                this.player.resetLastActionTime();
++                return;
++            }
++            // CraftBukkit end
+             if (this.player.getInventory().getSelectedSlot() != p_9909_.getSlot() && this.player.getUsedItemHand() == InteractionHand.MAIN_HAND) {
+                 this.player.stopUsingItem();
+             }
+@@ -1442,6 +_,12 @@
+ 
+     @Override
+     public void handleChat(ServerboundChatPacket p_9841_) {
++        // CraftBukkit start - async chat
++        // SPIGOT-3638
++        if (this.server.isStopped()) {
++            return;
++        }
++        // CraftBukkit end
+         Optional<LastSeenMessages> optional = this.unpackAndApplyLastSeen(p_9841_.lastSeenMessages());
+         if (!optional.isEmpty()) {
+             this.tryHandleChat(p_9841_.message(), false, () -> {
+@@ -1454,24 +_,42 @@
                  }
  
                  CompletableFuture<FilteredText> completablefuture = this.filterTextPacket(playerchatmessage.signedContent());
@@ -173,7 +205,116 @@
                      PlayerChatMessage playerchatmessage1 = playerchatmessage.withUnsignedContent(component).filter(p_300785_.mask());
                      this.broadcastChatMessage(playerchatmessage1);
                  });
-@@ -1612,6 +_,121 @@
+-            });
++            }, false); // CraftBukkit - async chat
+         }
+     }
+ 
+     @Override
+     public void handleChatCommand(ServerboundChatCommandPacket p_215225_) {
+         this.tryHandleChat(p_215225_.command(), true, () -> {
++            // CraftBukkit start - SPIGOT-7346: Prevent disconnected players from executing commands
++            if (player.hasDisconnected()) {
++                return;
++            }
++            // CraftBukkit end
+             this.performUnsignedChatCommand(p_215225_.command());
+-            this.detectRateSpam();
+-        });
++            this.detectRateSpam("/" + p_215225_.command()); // Spigot
++        }, true); // CraftBukkit - sync commands
+     }
+ 
+     private void performUnsignedChatCommand(String p_338482_) {
++        // CraftBukkit start
++        String slashCommand = "/" + p_338482_;
++        ServerGamePacketListenerImpl.LOGGER.info(this.player.getScoreboardName() + " issued server command: " + slashCommand);
++
++        PlayerCommandPreprocessEvent event = new PlayerCommandPreprocessEvent(getCraftPlayer(), slashCommand, new LazyPlayerSet(server));
++        this.cserver.getPluginManager().callEvent(event);
++
++        if (event.isCancelled()) {
++            return;
++        }
++        p_338482_ = event.getMessage().substring(1);
++        // CraftBukkit end
+         ParseResults<CommandSourceStack> parseresults = this.parseCommand(p_338482_);
+         if (this.server.enforceSecureProfile() && SignableCommand.hasSignableArguments(parseresults)) {
+             LOGGER.error(
+@@ -1488,18 +_,36 @@
+         Optional<LastSeenMessages> optional = this.unpackAndApplyLastSeen(p_338604_.lastSeenMessages());
+         if (!optional.isEmpty()) {
+             this.tryHandleChat(p_338604_.command(), true, () -> {
++                // CraftBukkit start - SPIGOT-7346: Prevent disconnected players from executing commands
++                if (player.hasDisconnected()) {
++                    return;
++                }
++                // CraftBukkit end
+                 this.performSignedChatCommand(p_338604_, optional.get());
+-                this.detectRateSpam();
+-            });
++                this.detectRateSpam("/" + p_338604_.command()); // Spigot
++            }, true); // CraftBukkit - sync commands
+         }
+     }
+ 
+     private void performSignedChatCommand(ServerboundChatCommandSignedPacket p_338593_, LastSeenMessages p_250484_) {
+-        ParseResults<CommandSourceStack> parseresults = this.parseCommand(p_338593_.command());
++        // CraftBukkit start
++        String command = "/" + p_338593_.command();
++        ServerGamePacketListenerImpl.LOGGER.info(this.player.getScoreboardName() + " issued server command: " + command);
++
++        PlayerCommandPreprocessEvent event = new PlayerCommandPreprocessEvent(getCraftPlayer(), command, new LazyPlayerSet(server));
++        this.cserver.getPluginManager().callEvent(event);
++
++        if (event.isCancelled()) {
++            return;
++        }
++        command = event.getMessage().substring(1);
++
++        ParseResults<CommandSourceStack> parseresults = this.parseCommand(command);
++        // CraftBukkit end
+ 
+         Map<String, PlayerChatMessage> map;
+         try {
+-            map = this.collectSignedArguments(p_338593_, SignableCommand.of(parseresults), p_250484_);
++            map = (p_338593_.command().equals(command)) ? this.collectSignedArguments(p_338593_, SignableCommand.of(parseresults), p_250484_) : Collections.emptyMap(); // CraftBukkit
+         } catch (SignedMessageChain.DecodeException signedmessagechain$decodeexception) {
+             this.handleMessageDecodeFailure(signedmessagechain$decodeexception);
+             return;
+@@ -1507,7 +_,7 @@
+ 
+         CommandSigningContext commandsigningcontext = new CommandSigningContext.SignedArguments(map);
+         parseresults = Commands.mapSource(parseresults, p_301740_ -> p_301740_.withSigningContext(commandsigningcontext, this.chatMessageChain));
+-        this.server.getCommands().performCommand(parseresults, p_338593_.command());
++        this.server.getCommands().performCommand(parseresults, command); // CraftBukkit
+     }
+ 
+     private void handleMessageDecodeFailure(SignedMessageChain.DecodeException p_252068_) {
+@@ -1571,14 +_,20 @@
+         return commanddispatcher.parse(p_242938_, this.player.createCommandSourceStack());
+     }
+ 
+-    private void tryHandleChat(String p_338775_, boolean p_437229_, Runnable p_338235_) {
++    private void tryHandleChat(String p_338775_, boolean p_437229_, Runnable p_338235_, boolean sync) { // CraftBukkit
+         if (isChatMessageIllegal(p_338775_)) {
+             this.disconnect(Component.translatable("multiplayer.disconnect.illegal_characters"));
+         } else if (!p_437229_ && this.player.getChatVisibility() == ChatVisiblity.HIDDEN) {
+             this.send(new ClientboundSystemChatPacket(Component.translatable("chat.disabled.options").withStyle(ChatFormatting.RED), false));
+         } else {
+             this.player.resetLastActionTime();
+-            this.server.execute(p_338235_);
++            // CraftBukkit start
++            if (sync) {
++                this.server.execute(p_338235_);
++            } else {
++                p_338235_.run();
++            }
++            // CraftBukkit end
+         }
+     }
+ 
+@@ -1612,19 +_,156 @@
          return false;
      }
  
@@ -264,7 +405,6 @@
 +    }
 +
 +    private void handleCommand(String s) {
-+        org.bukkit.craftbukkit.SpigotTimings.playerCommandTimer.startTiming(); // Spigot
 +        if ( org.spigotmc.SpigotConfig.logCommands ) // Spigot
 +            this.LOGGER.info(this.player.getScoreboardName() + " issued server command: " + s);
 +
@@ -274,7 +414,6 @@
 +        this.cserver.getPluginManager().callEvent(event);
 +
 +        if (event.isCancelled()) {
-+            org.bukkit.craftbukkit.SpigotTimings.playerCommandTimer.stopTiming(); // Spigot
 +            return;
 +        }
 +
@@ -285,9 +424,6 @@
 +        } catch (org.bukkit.command.CommandException ex) {
 +            player.sendMessage(org.bukkit.ChatColor.RED + "An internal error occurred while attempting to perform this command");
 +            java.util.logging.Logger.getLogger(ServerGamePacketListenerImpl.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-+            return;
-+        } finally {
-+            org.bukkit.craftbukkit.SpigotTimings.playerCommandTimer.stopTiming(); // Spigot
 +        }
 +    }
 +    // CraftBukkit end
@@ -295,6 +431,85 @@
      private PlayerChatMessage getSignedMessage(ServerboundChatPacket p_251061_, LastSeenMessages p_250566_) throws SignedMessageChain.DecodeException {
          SignedMessageBody signedmessagebody = new SignedMessageBody(p_251061_.message(), p_251061_.timeStamp(), p_251061_.salt(), p_250566_);
          return this.signedMessageDecoder.unpack(p_251061_.signature(), signedmessagebody);
+     }
+ 
+     private void broadcastChatMessage(PlayerChatMessage p_243277_) {
+-        this.server.getPlayerList().broadcastChatMessage(p_243277_, this.player, ChatType.bind(ChatType.CHAT, this.player));
+-        this.detectRateSpam();
++        // CraftBukkit start
++        String s = p_243277_.signedContent();
++        if (s.isEmpty()) {
++            LOGGER.warn(this.player.getScoreboardName() + " tried to send an empty message");
++        } else if (getCraftPlayer().isConversing()) {
++            final String conversationInput = s;
++            this.server.processQueue.add(new Runnable() {
++                @Override
++                public void run() {
++                    getCraftPlayer().acceptConversationInput(conversationInput);
++                }
++            });
++        } else if (this.player.getChatVisibility() == ChatVisiblity.SYSTEM) { // Re-add "Command Only" flag check
++            this.send(new ClientboundSystemChatPacket(Component.translatable("chat.cannotSend").withStyle(ChatFormatting.RED), false));
++        } else {
++            this.chat(s, p_243277_, true);
++        }
++        // this.server.getPlayerList().broadcastChatMessage(playerchatmessage, this.player, ChatType.bind(ChatType.CHAT, (Entity) this.player));
++        // CraftBukkit end
++        this.detectRateSpam(s); // Spigot
+     }
+ 
+-    private void detectRateSpam() {
+-        this.chatSpamThrottler.increment();
+-        if (!this.chatSpamThrottler.isUnderThreshold()
++    private void detectRateSpam(String s) {
++        // CraftBukkit start - replaced with thread safe throttle
++        for ( String exclude : org.spigotmc.SpigotConfig.spamExclusions )
++        {
++            if ( exclude != null && s.startsWith( exclude ) )
++            {
++                return;
++            }
++        }
++        // Spigot end
++        // this.chatSpamThrottler.increment();
++        if (!this.chatSpamThrottler.isIncrementAndUnderThreshold()
+             && !this.server.getPlayerList().isOp(this.player.nameAndId())
+             && !this.server.isSingleplayerOwner(this.player.nameAndId())) {
+             this.disconnect(Component.translatable("disconnect.spam"));
+@@ -1658,6 +_,20 @@
+     public void handlePlayerCommand(ServerboundPlayerCommandPacket p_9891_) {
+         PacketUtils.ensureRunningOnSameThread(p_9891_, this, this.player.level());
+         if (this.hasClientLoaded()) {
++            // CraftBukkit start
++            if (this.player.isRemoved()) return;
++            switch (p_9891_.getAction()) {
++                case START_SPRINTING:
++                case STOP_SPRINTING:
++                    PlayerToggleSprintEvent e2 = new PlayerToggleSprintEvent(this.getCraftPlayer(), p_9891_.getAction() == ServerboundPlayerCommandPacket.Action.START_SPRINTING);
++                    this.cserver.getPluginManager().callEvent(e2);
++
++                    if (e2.isCancelled()) {
++                        return;
++                    }
++                    break;
++            }
++            // CraftBukkit end
+             this.player.resetLastActionTime();
+             switch (p_9891_.getAction()) {
+                 case START_SPRINTING:
+@@ -1702,6 +_,12 @@
+     }
+ 
+     public void sendPlayerChatMessage(PlayerChatMessage p_250321_, ChatType.Bound p_250910_) {
++        // CraftBukkit start - SPIGOT-7262: if hidden we have to send as disguised message. Query whether we should send at all (but changing this may not be expected).
++        if (!getCraftPlayer().canSeePlayer(p_250321_.link().sender())) {
++            sendDisguisedChatMessage(p_250321_.decoratedContent(), p_250910_);
++            return;
++        }
++        // CraftBukkit end
+         this.send(
+             new ClientboundPlayerChatPacket(
+                 this.nextChatIndex++,
 @@ -1737,6 +_,13 @@
          return this.connection.getRemoteAddress();
      }

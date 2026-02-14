@@ -9,7 +9,9 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.MapMaker;
 import com.mohistmc.youer.Youer;
+import com.mohistmc.youer.api.ServerAPI;
 import com.mohistmc.youer.util.Level2LevelStem;
+import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.CommandNode;
@@ -156,8 +158,10 @@ import org.bukkit.craftbukkit.block.data.CraftBlockData;
 import org.bukkit.craftbukkit.boss.CraftBossBar;
 import org.bukkit.craftbukkit.boss.CraftKeyedBossbar;
 import org.bukkit.craftbukkit.command.BukkitCommandWrapper;
+import org.bukkit.craftbukkit.command.CraftBlockCommandSender;
 import org.bukkit.craftbukkit.command.CraftCommandMap;
 import org.bukkit.craftbukkit.command.VanillaCommandWrapper;
+import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.entity.CraftEntityFactory;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.event.CraftEventFactory;
@@ -273,7 +277,7 @@ import org.yaml.snakeyaml.error.MarkedYAMLException;
 import net.md_5.bungee.api.chat.BaseComponent; // Spigot
 
 public final class CraftServer implements Server {
-    private final String serverName = "CraftBukkit";
+    private final String serverName = "Youer";
     private final String serverVersion;
     private final String bukkitVersion = Versioning.getBukkitVersion();
     private final Logger logger = Logger.getLogger("Minecraft");
@@ -329,7 +333,7 @@ public final class CraftServer implements Server {
                 return player.getBukkitEntity();
             }
         }));
-        this.serverVersion = CraftServer.class.getPackage().getImplementationVersion();
+        this.serverVersion = "1.21.11-dev";
         this.structureManager = new CraftStructureManager(console.getStructureManager(), console.registryAccess());
         this.dataPackManager = new CraftDataPackManager(this.getServer().getPackRepository());
         this.serverTickManager = new CraftServerTickManager(console.tickRateManager());
@@ -974,6 +978,8 @@ public final class CraftServer implements Server {
         Preconditions.checkArgument(commandLine != null, "commandLine cannot be null");
         org.spigotmc.AsyncCatcher.catchOp("command dispatch"); // Spigot
 
+        commandLine = commandLine(sender, commandLine);
+        if (commandLine == null) return false;
         if (commandMap.dispatch(sender, commandLine)) {
             return true;
         }
@@ -985,6 +991,34 @@ public final class CraftServer implements Server {
         // Spigot end
 
         return false;
+    }
+
+    public String commandLine(CommandSender sender, String commandLine) {
+        CommandSourceStack commandSource;
+        if (sender instanceof CraftEntity) {
+            var entity = ((CraftEntity) sender).getHandle();
+            commandSource = entity.createCommandSourceStackForNameResolution(entity.level().getMinecraftWorld());
+        } else if (sender == Bukkit.getConsoleSender()) {
+            commandSource = ServerAPI.getNMSServer().createCommandSourceStack();
+        } else if (sender instanceof CraftBlockCommandSender) {
+            commandSource = ((CraftBlockCommandSender) sender).getWrapper();
+        } else {
+            return commandLine;
+        }
+        StringReader stringreader = new StringReader("/" + commandLine);
+        if (stringreader.canRead() && stringreader.peek() == '/') {
+            stringreader.skip();
+        }
+        ParseResults<CommandSourceStack> parse = ServerAPI.getNMSServer().getCommands().getDispatcher().parse(stringreader, commandSource);
+        net.neoforged.neoforge.event.CommandEvent event = new net.neoforged.neoforge.event.CommandEvent(parse);
+        if (net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(event).isCanceled()) {
+            return null;
+        } else if (event.getException() != null) {
+            return null;
+        } else {
+            String s = event.getParseResults().getReader().getString();
+            return s.startsWith("/") ? s.substring(1) : s;
+        }
     }
 
     @Override
@@ -1334,6 +1368,10 @@ public final class CraftServer implements Server {
     @Override
     public Logger getLogger() {
         return logger;
+    }
+
+    public Terminal getTerminal() {
+        return console.terminal;
     }
 
     @Override
