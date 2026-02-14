@@ -1,0 +1,35 @@
+--- a/net/minecraft/client/gui/screens/worldselection/EditGameRulesScreen.java
++++ b/net/minecraft/client/gui/screens/worldselection/EditGameRulesScreen.java
+@@ -46,7 +_,7 @@
+     final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
+     private final Consumer<Optional<GameRules>> exitCallback;
+     private final Set<EditGameRulesScreen.RuleEntry> invalidEntries = Sets.newHashSet();
+-    public final GameRules gameRules;
++    final GameRules gameRules;
+     private EditGameRulesScreen.@Nullable RuleList ruleList;
+     private @Nullable Button doneButton;
+ 
+@@ -90,12 +_,12 @@
+         }
+     }
+ 
+-    public void markInvalid(EditGameRulesScreen.RuleEntry p_101061_) {
++    void markInvalid(EditGameRulesScreen.RuleEntry p_101061_) {
+         this.invalidEntries.add(p_101061_);
+         this.updateDoneButton();
+     }
+ 
+-    public void clearInvalid(EditGameRulesScreen.RuleEntry p_101075_) {
++    void clearInvalid(EditGameRulesScreen.RuleEntry p_101075_) {
+         this.invalidEntries.remove(p_101075_);
+         this.updateDoneButton();
+     }
+@@ -159,7 +_,7 @@
+ 
+     @FunctionalInterface
+     @OnlyIn(Dist.CLIENT)
+-    public interface EntryFactory<T> {
++    interface EntryFactory<T> {
+         EditGameRulesScreen.RuleEntry create(Component p_101155_, List<FormattedCharSequence> p_101156_, String p_101157_, GameRule<T> p_460772_);
+     }
+ 

@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/level/gamerules/GameRuleType.java
++++ b/net/minecraft/world/level/gamerules/GameRuleType.java
+@@ -2,7 +_,7 @@
+ 
+ import net.minecraft.util.StringRepresentable;
+ 
+-public enum GameRuleType implements StringRepresentable, net.neoforged.fml.common.asm.enumextension.IExtensibleEnum {
++public enum GameRuleType implements StringRepresentable {
+     INT("integer"),
+     BOOL("boolean");
+ 

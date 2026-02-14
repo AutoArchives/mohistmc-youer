@@ -13,7 +13,7 @@ import net.neoforged.neoforge.capabilities.BlockCapability;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Additional functionality for {@link GameTestHelper}
+ * Additional functionality for {@link net.minecraft.gametest.framework.GameTestHelper}
  */
 public interface GameTestHelperExtension {
     private GameTestHelper self() {

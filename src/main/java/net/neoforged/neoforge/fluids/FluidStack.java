@@ -66,10 +66,10 @@ public final class FluidStack implements MutableDataComponentHolder {
             "FluidStack",
             c -> RecordCodecBuilder.mapCodec(
                     instance -> instance.group(
-                                    FLUID_NON_EMPTY_CODEC.fieldOf("id").forGetter(FluidStack::getFluidHolder),
-                                    ExtraCodecs.POSITIVE_INT.fieldOf("amount").forGetter(FluidStack::getAmount), // note: no .orElse(1) compared to ItemStack
-                                    DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY)
-                                            .forGetter(stack -> stack.components.asPatch()))
+                            FLUID_NON_EMPTY_CODEC.fieldOf("id").forGetter(FluidStack::getFluidHolder),
+                            ExtraCodecs.POSITIVE_INT.fieldOf("amount").forGetter(FluidStack::getAmount), // note: no .orElse(1) compared to ItemStack
+                            DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY)
+                                    .forGetter(stack -> stack.components.asPatch()))
                             .apply(instance, FluidStack::new)));
     /**
      * A standard codec for fluid stacks that does not accept empty stacks.
@@ -86,9 +86,9 @@ public final class FluidStack implements MutableDataComponentHolder {
         return Codec.lazyInitialized(
                 () -> RecordCodecBuilder.create(
                         instance -> instance.group(
-                                        FLUID_NON_EMPTY_CODEC.fieldOf("id").forGetter(FluidStack::getFluidHolder),
-                                        DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY)
-                                                .forGetter(stack -> stack.components.asPatch()))
+                                FLUID_NON_EMPTY_CODEC.fieldOf("id").forGetter(FluidStack::getFluidHolder),
+                                DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY)
+                                        .forGetter(stack -> stack.components.asPatch()))
                                 .apply(instance, (holder, patch) -> new FluidStack(holder, amount, patch))));
     }
 

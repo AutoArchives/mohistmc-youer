@@ -7,7 +7,7 @@
       <img alt="GitHub Stars" src="https://img.shields.io/github/stars/MohistMC/Youer?logo=github&color=181717&style=flat-square">
     </a>
     <a href="https://neoforged.net/">
-      <img alt="NeoForge" src="https://img.shields.io/badge/NeoForge-21.11.32-beta-FF8B00?style=flat-square">
+      <img alt="NeoForge" src="https://img.shields.io/badge/NeoForge-21.11.38-beta-FF8B00?style=flat-square">
     </a>
     <a href="https://www.azul.com/downloads/?version=java-21-lts#zulu">
       <img alt="JDK" src="https://img.shields.io/badge/JDK-21.0.8-007396?logo=java&logoColor=white&style=flat-square">
@@ -30,7 +30,7 @@
 ## 📊 Progress Status
 
 ✅ **Core Integration**
-- [x] NeoForge ([fbdccc7e0](https://github.com/neoforged/NeoForge/commit/fbdccc7e0))
+- [x] NeoForge ([3f86c8c82](https://github.com/neoforged/NeoForge/commit/3f86c8c82))
 - [x] Bukkit([**711a73b4**](https://hub.spigotmc.org/stash/projects/SPIGOT/repos/bukkit/commits/711a73b4))
 - [x] CraftBukkit([**63148eeb7**](https://hub.spigotmc.org/stash/projects/SPIGOT/repos/craftbukkit/commits/63148eeb7))
 - [x] Spigot ([**4fc3fc9b**](https://hub.spigotmc.org/stash/projects/SPIGOT/repos/spigot/commits/4fc3fc9b))
