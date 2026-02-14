@@ -2,6 +2,7 @@ package net.neoforged.neodev;
 
 import java.io.File;
 import java.net.URI;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -48,6 +49,8 @@ public class NeoDevPlugin implements Plugin<Project> {
     static final String GROUP = "neoforge development";
     static final String INTERNAL_GROUP = "neoforge development/internal";
 
+    static String timestamp = Instant.now().toString();
+
     @Override
     public void apply(Project project) {
         project.getPlugins().apply(MinecraftDependenciesPlugin.class);
@@ -63,6 +66,8 @@ public class NeoDevPlugin implements Plugin<Project> {
 
         var extension = project.getExtensions().create(NeoDevExtension.NAME, NeoDevExtension.class);
         var configurations = NeoDevConfigurations.createAndSetup(project);
+
+        var abbreviatedId = project.getProviders().gradleProperty("git.abbreviatedId");
 
         // Pre-create the "client" source set
         project.getExtensions().getByType(JavaPluginExtension.class).getSourceSets().create("client");
@@ -275,10 +280,20 @@ public class NeoDevPlugin implements Plugin<Project> {
                     joinedJar.flatMap(AbstractArchiveTask::getArchiveFile)));
             task.exclude("net/minecraft/**");
             task.exclude("com/**");
+            task.exclude("org/**"); // Youer
             task.exclude("mcp/**");
 
             task.manifest(manifest -> {
                 manifest.attributes(Map.of("FML-System-Mods", "neoforge"));
+                manifest.attributes(Map.of("Build-Time", timestamp));
+                manifest.attributes(Map.of("Git-Commit", abbreviatedId));
+                manifest.attributes(Map.of("Brand-Id", "mohistmc:youer"));
+                manifest.attributes(Map.of("Specification-Title", "Youer"));
+                manifest.attributes(Map.of("Specification-Vendor", "MohistMC"));
+                manifest.attributes(Map.of("Specification-Version", minecraftVersion));
+                manifest.attributes(Map.of("Implementation-Title", "Youer"));
+                manifest.attributes(Map.of("Implementation-Version", minecraftVersion));
+                manifest.attributes(Map.of("Implementation-Vendor", "MohistMC"));
                 // These attributes are used from NeoForgeVersion.java to find the NF version without command line arguments.
                 manifest.attributes(
                         Map.of(
@@ -460,7 +475,7 @@ public class NeoDevPlugin implements Plugin<Project> {
             if (project.getProperties().containsKey(installerDebugProperty) && Boolean.parseBoolean(project.getProperties().get(installerDebugProperty).toString())) {
                 task.from(universalJar.flatMap(AbstractArchiveTask::getArchiveFile), spec -> {
                     spec.into("data");
-                    spec.rename(name -> String.format("neoforge-%s-universal.jar", neoForgeVersion.get()));
+                    spec.rename(_ -> String.format("neoforge-%s-universal.jar", neoForgeVersion.get()));
                 });
             }
         });
