@@ -331,7 +331,7 @@
          this.neighborUpdater.updateNeighborsAtExceptFromFacing(p_215052_, p_215053_, p_215054_, p_365231_);
      }
  
-@@ -1212,7 +_,7 @@
+@@ -1212,14 +_,18 @@
          Explosion.BlockInteraction explosion$blockinteraction = switch (p_255827_) {
              case NONE -> Explosion.BlockInteraction.KEEP;
              case BLOCK -> this.getDestroyType(GameRules.BLOCK_EXPLOSION_DROP_DECAY);
@@ -340,7 +340,10 @@
                  ? this.getDestroyType(GameRules.MOB_EXPLOSION_DROP_DECAY)
                  : Explosion.BlockInteraction.KEEP;
              case TNT -> this.getDestroyType(GameRules.TNT_EXPLOSION_DROP_DECAY);
-@@ -1220,6 +_,7 @@
+             case TRIGGER -> Explosion.BlockInteraction.TRIGGER_BLOCK;
++            // CraftBukkit start - handle custom explosion type
++            case STANDARD-> Explosion.BlockInteraction.DESTROY;
++            // CraftBukkit end
          };
          Vec3 vec3 = new Vec3(p_256067_, p_256370_, p_256153_);
          ServerExplosion serverexplosion = new ServerExplosion(this, p_256039_, p_255778_, p_256002_, vec3, p_256045_, p_255686_, explosion$blockinteraction);
@@ -348,6 +351,31 @@
          int i = serverexplosion.explode();
          ParticleOptions particleoptions = serverexplosion.isSmall() ? p_312436_ : p_312391_;
  
+@@ -1299,6 +_,24 @@
+         return this.sendParticles(p_8768_, false, false, p_8769_, p_8770_, p_8771_, p_8772_, p_8773_, p_8774_, p_8775_, p_8776_);
+     }
+ 
++    // CraftBukkit start - visibility api support
++    public <T extends ParticleOptions> int sendParticlesSource(ServerPlayer sender, T t0, boolean flag, boolean flag1, double d0, double d1, double d2, int i, double d3, double d4, double d5, double d6) {
++        // CraftBukkit end
++        ClientboundLevelParticlesPacket clientboundlevelparticlespacket = new ClientboundLevelParticlesPacket(t0, flag, flag1, d0, d1, d2, (float) d3, (float) d4, (float) d5, (float) d6, i);
++        int j = 0;
++
++        for (int k = 0; k < this.players.size(); ++k) {
++            ServerPlayer serverplayer = (ServerPlayer) this.players.get(k);
++            if (sender != null && !serverplayer.getBukkitEntity().canSee(sender.getBukkitEntity())) continue; // CraftBukkit
++
++            if (this.sendParticles(serverplayer, flag, d0, d1, d2, clientboundlevelparticlespacket)) {
++                ++j;
++            }
++        }
++
++        return j;
++    }
++
+     public <T extends ParticleOptions> int sendParticles(
+         T p_383163_,
+         boolean p_382791_,
 @@ -1397,7 +_,7 @@
      }
  

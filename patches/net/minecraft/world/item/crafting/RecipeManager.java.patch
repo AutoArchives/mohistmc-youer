@@ -1,5 +1,13 @@
 --- a/net/minecraft/world/item/crafting/RecipeManager.java
 +++ b/net/minecraft/world/item/crafting/RecipeManager.java
+@@ -9,6 +_,7 @@
+ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+ import java.util.ArrayList;
+ import java.util.Collection;
++import java.util.Collections;
+ import java.util.IdentityHashMap;
+ import java.util.List;
+ import java.util.Map;
 @@ -25,6 +_,7 @@
  import net.minecraft.resources.FileToIdConverter;
  import net.minecraft.resources.Identifier;
@@ -59,6 +67,29 @@
          List<SelectableRecipe.SingleInputEntry<StonecutterRecipe>> list = new ArrayList<>();
          List<RecipeManager.IngredientCollector> list1 = RECIPE_PROPERTY_SETS.entrySet()
              .stream()
+@@ -200,6 +_,22 @@
+         return new RecipeHolder<>(p_380059_, recipe);
+     }
+ 
++    // CraftBukkit start
++    public boolean removeRecipe(ResourceKey<Recipe<?>> mcKey) {
++        boolean removed = this.recipes.removeRecipe(mcKey);
++        if (removed) {
++            finalizeRecipeLoading();
++        }
++
++        return removed;
++    }
++
++    public void clearRecipes() {
++        this.recipes = RecipeMap.create(Collections.emptyList());
++        finalizeRecipeLoading();
++    }
++    // CraftBukkit end
++
+     public static <I extends RecipeInput, T extends Recipe<I>> RecipeManager.CachedCheck<I, T> createCheck(final RecipeType<T> p_220268_) {
+         return new RecipeManager.CachedCheck<I, T>() {
+             private @Nullable ResourceKey<Recipe<?>> lastRecipe;
 @@ -258,6 +_,16 @@
          return p_380850_ -> p_380850_.getType() == p_381108_ && p_380850_ instanceof SingleItemRecipe singleitemrecipe
              ? Optional.of(singleitemrecipe.input())

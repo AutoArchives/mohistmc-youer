@@ -1,8 +1,19 @@
 --- a/net/minecraft/server/dedicated/DedicatedServer.java
 +++ b/net/minecraft/server/dedicated/DedicatedServer.java
-@@ -84,15 +_,16 @@
+@@ -73,6 +_,7 @@
+ import net.minecraft.world.level.gamerules.GameRules;
+ import net.minecraft.world.level.storage.LevelData;
+ import net.minecraft.world.level.storage.LevelStorageSource;
++import org.bukkit.event.server.RemoteServerCommandEvent;
+ import org.jspecify.annotations.Nullable;
+ import org.slf4j.Logger;
+ 
+@@ -82,17 +_,18 @@
+     private static final int CONVERSION_RETRIES = 2;
+     private final List<ConsoleInput> consoleInput = Collections.synchronizedList(Lists.newArrayList());
      private @Nullable QueryThreadGs4 queryThreadGs4;
-     private final RconConsoleSource rconConsoleSource;
+-    private final RconConsoleSource rconConsoleSource;
++    // private final RconConsoleSource rconConsoleSource;
      private @Nullable RconThread rconThread;
 -    private final DedicatedServerSettings settings;
 +    public final DedicatedServerSettings settings;
@@ -19,6 +30,15 @@
  
      public DedicatedServer(
          Thread p_214789_,
+@@ -105,7 +_,7 @@
+     ) {
+         super(p_214789_, p_214790_, p_214791_, p_214792_, Proxy.NO_PROXY, p_214794_, p_214795_, LoggingLevelLoadListener.forDedicatedServer());
+         this.settings = p_214793_;
+-        this.rconConsoleSource = new RconConsoleSource(this);
++        // this.rconConsoleSource = new RconConsoleSource(this); // CraftBukkit - remove field
+         this.serverTextFilter = ServerTextFilter.createFromConfig(p_214793_.getProperties());
+         this.serverLinks = createServerLinks(p_214793_);
+         if (p_214793_.getProperties().codeOfConduct) {
 @@ -191,6 +_,7 @@
          Thread thread1 = new Thread("Server console handler") {
              @Override
@@ -66,7 +86,33 @@
          if (this.jsonRpcServer != null) {
              try {
                  this.jsonRpcServer.stop(true);
-@@ -720,7 +_,12 @@
+@@ -712,15 +_,35 @@
+ 
+     @Override
+     public String runCommand(String p_139644_) {
+-        this.rconConsoleSource.prepareForCommand();
+-        this.executeBlocking(() -> this.getCommands().performPrefixedCommand(this.rconConsoleSource.createCommandSourceStack(), p_139644_));
+-        return this.rconConsoleSource.getCommandResponse();
++        // CraftBukkit start - fire RemoteServerCommandEvent
++        throw new UnsupportedOperationException("Not supported - remote source required.");
++    }
++
++    public String runCommand(RconConsoleSource rconConsoleSource, String s) {
++        rconConsoleSource.prepareForCommand();
++        this.executeBlocking(() -> {
++            CommandSourceStack wrapper = rconConsoleSource.createCommandSourceStack();
++            RemoteServerCommandEvent event = new RemoteServerCommandEvent(rconConsoleSource.getBukkitSender(wrapper), s);
++            server.getPluginManager().callEvent(event);
++            if (event.isCancelled()) {
++                return;
++            }
++            ConsoleInput serverCommand = new ConsoleInput(event.getCommand(), wrapper);
++            server.dispatchServerCommand(event.getSender(), serverCommand);
++        });
++        return rconConsoleSource.getCommandResponse();
++        // CraftBukkit end
+     }
+ 
      @Override
      public void stopServer() {
          this.notificationManager().serverShuttingDown();

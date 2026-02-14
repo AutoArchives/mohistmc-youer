@@ -502,9 +502,9 @@ public class EntityClassLookup {
         add(ThrownTrident.class, new EntityClass<>(org.bukkit.entity.Trident.class, CraftTrident.class, CraftTrident::new));
         add(LightningBolt.class, new EntityClass<>(org.bukkit.entity.LightningStrike.class, CraftLightningStrike.class, CraftLightningStrike::new));
         add(ShulkerBullet.class, new EntityClass<>(org.bukkit.entity.ShulkerBullet.class, CraftShulkerBullet.class, CraftShulkerBullet::new));
-        add(Boat.class, new EntityClass<>(org.bukkit.entity.Boat.class, CraftBoat.class, CraftBoat::new));
+        //add(Boat.class, new EntityClass<>(org.bukkit.entity.Boat.class, CraftBoat.class, CraftBoat::new));
         add(LlamaSpit.class, new EntityClass<>(org.bukkit.entity.LlamaSpit.class, CraftLlamaSpit.class, CraftLlamaSpit::new));
-        add(ChestBoat.class, new EntityClass<>(org.bukkit.entity.ChestBoat.class, CraftChestBoat.class, CraftChestBoat::new));
+        //add(ChestBoat.class, new EntityClass<>(org.bukkit.entity.ChestBoat.class, CraftChestBoat.class, CraftChestBoat::new));
         add(Marker.class, new EntityClass<>(org.bukkit.entity.Marker.class, CraftMarker.class, CraftMarker::new));
         add(Display.BlockDisplay.class, new EntityClass<>(org.bukkit.entity.BlockDisplay.class, CraftBlockDisplay.class, CraftBlockDisplay::new));
         add(Interaction.class, new EntityClass<>(org.bukkit.entity.Interaction.class, CraftInteraction.class, CraftInteraction::new));
@@ -517,7 +517,7 @@ public class EntityClassLookup {
         add(LeashFenceKnotEntity.class, new EntityClass<>(org.bukkit.entity.LeashHitch.class, CraftLeash.class, CraftLeash::new));
         add(Snowball.class, new EntityClass<>(org.bukkit.entity.Snowball.class, CraftSnowball.class, CraftSnowball::new));
         add(EyeOfEnder.class, new EntityClass<>(org.bukkit.entity.EnderSignal.class, CraftEnderSignal.class, CraftEnderSignal::new));
-        add(ThrownPotion.class, new EntityClass<>(org.bukkit.entity.ThrownPotion.class, CraftThrownPotion.class, CraftThrownPotion::new));
+        //add(ThrownPotion.class, new EntityClass<>(org.bukkit.entity.ThrownPotion.class, CraftThrownPotion.class, CraftThrownPotion::new));
         add(PrimedTnt.class, new EntityClass<>(org.bukkit.entity.TNTPrimed.class, CraftTNTPrimed.class, CraftTNTPrimed::new));
         add(FallingBlockEntity.class, new EntityClass<>(org.bukkit.entity.FallingBlock.class, CraftFallingBlock.class, CraftFallingBlock::new));
         add(FireworkRocketEntity.class, new EntityClass<>(org.bukkit.entity.Firework.class, CraftFirework.class, CraftFirework::new));

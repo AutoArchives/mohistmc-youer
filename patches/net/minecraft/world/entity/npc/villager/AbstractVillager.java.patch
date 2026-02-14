@@ -1,5 +1,13 @@
 --- a/net/minecraft/world/entity/npc/villager/AbstractVillager.java
 +++ b/net/minecraft/world/entity/npc/villager/AbstractVillager.java
+@@ -35,6 +_,7 @@
+ import net.minecraft.world.level.storage.ValueInput;
+ import net.minecraft.world.level.storage.ValueOutput;
+ import net.minecraft.world.phys.Vec3;
++import org.bukkit.craftbukkit.inventory.CraftMerchant;
+ import org.jspecify.annotations.Nullable;
+ 
+ public abstract class AbstractVillager extends AgeableMob implements InventoryCarrier, Npc, Merchant {
 @@ -125,6 +_,7 @@
          if (this.tradingPlayer instanceof ServerPlayer) {
              CriteriaTriggers.TRADE.trigger((ServerPlayer)this.tradingPlayer, this, p_478567_.getResult());
@@ -8,3 +16,15 @@
      }
  
      protected abstract void rewardTradeXp(MerchantOffer p_478401_);
+@@ -247,4 +_,11 @@
+     public boolean stillValid(Player p_481031_) {
+         return this.getTradingPlayer() == p_481031_ && this.isAlive() && p_481031_.isWithinEntityInteractionRange(this, 4.0);
+     }
++
++    // CraftBukkit start
++    @Override
++    public CraftMerchant getCraftMerchant() {
++        return (org.bukkit.craftbukkit.entity.CraftAbstractVillager) getBukkitEntity();
++    }
++    // CraftBukkit end
+ }

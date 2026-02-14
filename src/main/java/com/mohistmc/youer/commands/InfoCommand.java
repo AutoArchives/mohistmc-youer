@@ -128,69 +128,6 @@ public class InfoCommand extends Command {
                 }
                 return true;
             }
-            case "entity" -> {
-                Entity entity = player.getTargetEntity(5, true);
-                if (entity == null) {
-                    sender.sendMessage(ChatColor.RED + I18n.as("info.entity.not_found"));
-                    return false;
-                } else {
-                    PlayerAPI.sendMessageByCopy(player, ChatColor.GOLD + I18n.as("info.entity.type") + ChatColor.YELLOW, entity.getType().name());
-                    PlayerAPI.sendMessageByCopy(player, ChatColor.GOLD + I18n.as("info.entity.key") + ChatColor.YELLOW, entity.getType().getKey().toString());
-                    PlayerAPI.sendMessageByCopy(player, ChatColor.GOLD + I18n.as("info.entity.uuid") + ChatColor.YELLOW, entity.getUniqueId().toString());
-                    sender.sendMessage(ChatColor.GOLD + I18n.as("info.entity.pos") + ChatColor.YELLOW +
-                            String.format("%.2f, %.2f, %.2f", entity.getLocation().getX(), entity.getLocation().getY(), entity.getLocation().getZ()));
-                    sender.sendMessage(ChatColor.GOLD + I18n.as("info.entity.world") + ChatColor.YELLOW + entity.getWorld().getName());
-                    sender.sendMessage(ChatColor.GOLD + I18n.as("info.entity.health") + ChatColor.YELLOW +
-                            (entity instanceof org.bukkit.entity.Damageable ? ((org.bukkit.entity.Damageable) entity).getHealth() : "N/A"));
-                    sender.sendMessage(ChatColor.GOLD + I18n.as("info.entity.onground") + ChatColor.YELLOW + entity.isOnGround());
-                    sender.sendMessage(ChatColor.GOLD + I18n.as("info.entity.burning") + ChatColor.YELLOW + entity.isVisualFire());
-                    sender.sendMessage(ChatColor.GOLD + I18n.as("info.entity.ticks") + ChatColor.YELLOW + entity.getTicksLived() + " ticks");
-                    sender.sendMessage(ChatColor.GOLD + I18n.as("info.entity.frozen") + ChatColor.YELLOW + entity.isFrozen());
-                    sender.sendMessage(ChatColor.GOLD + I18n.as("info.entity.gravity") + ChatColor.YELLOW + entity.hasGravity());
-
-                    if (entity.getCustomName() != null) {
-                        sender.sendMessage(ChatColor.GOLD + I18n.as("info.entity.custom_name") + ChatColor.YELLOW + entity.getCustomName());
-                    }
-
-                    if (entity instanceof org.bukkit.entity.LivingEntity livingEntity) {
-                        sender.sendMessage(ChatColor.GOLD + I18n.as("info.entity.max_health") + ChatColor.YELLOW + livingEntity.getMaxHealth());
-                        sender.sendMessage(ChatColor.GOLD + I18n.as("info.entity.ai") + ChatColor.YELLOW + livingEntity.hasAI());
-                        sender.sendMessage(ChatColor.GOLD + I18n.as("info.entity.sleeping") + ChatColor.YELLOW + livingEntity.isSleeping());
-
-                        if (livingEntity instanceof Player targetPlayer) {
-                            sender.sendMessage(ChatColor.GOLD + I18n.as("info.entity.player_info"));
-                            sender.sendMessage(ChatColor.GOLD + "  " + I18n.as("info.entity.gamemode") + ChatColor.YELLOW + targetPlayer.getGameMode().name());
-                            sender.sendMessage(ChatColor.GOLD + "  " + I18n.as("info.entity.level") + ChatColor.YELLOW + targetPlayer.getLevel());
-                            sender.sendMessage(ChatColor.GOLD + "  " + I18n.as("info.entity.exp") + ChatColor.YELLOW + targetPlayer.getTotalExperience());
-                            sender.sendMessage(ChatColor.GOLD + "  " + I18n.as("info.entity.food") + ChatColor.YELLOW + targetPlayer.getFoodLevel());
-                            sender.sendMessage(ChatColor.GOLD + "  " + I18n.as("info.entity.saturation") + ChatColor.YELLOW + targetPlayer.getSaturation());
-                        }
-
-                        sender.sendMessage(ChatColor.GOLD + I18n.as("info.entity.equipment"));
-                        if (livingEntity.getEquipment() != null) {
-                            sender.sendMessage(ChatColor.GOLD + "  " + I18n.as("info.entity.main_hand") + ChatColor.YELLOW +
-                                    (livingEntity.getEquipment().getItemInMainHand().getType() != Material.AIR ?
-                                            livingEntity.getEquipment().getItemInMainHand().getType().name() : I18n.as("info.entity.empty")));
-                            sender.sendMessage(ChatColor.GOLD + "  " + I18n.as("info.entity.off_hand") + ChatColor.YELLOW +
-                                    (livingEntity.getEquipment().getItemInOffHand().getType() != Material.AIR ?
-                                            livingEntity.getEquipment().getItemInOffHand().getType().name() : I18n.as("info.entity.empty")));
-                            sender.sendMessage(ChatColor.GOLD + "  " + I18n.as("info.entity.helmet") + ChatColor.YELLOW +
-                                    (livingEntity.getEquipment().getHelmet() != null ?
-                                            livingEntity.getEquipment().getHelmet().getType().name() : I18n.as("info.entity.empty")));
-                            sender.sendMessage(ChatColor.GOLD + "  " + I18n.as("info.entity.chestplate") + ChatColor.YELLOW +
-                                    (livingEntity.getEquipment().getChestplate() != null ?
-                                            livingEntity.getEquipment().getChestplate().getType().name() : I18n.as("info.entity.empty")));
-                            sender.sendMessage(ChatColor.GOLD + "  " + I18n.as("info.entity.leggings") + ChatColor.YELLOW +
-                                    (livingEntity.getEquipment().getLeggings() != null ?
-                                            livingEntity.getEquipment().getLeggings().getType().name() : I18n.as("info.entity.empty")));
-                            sender.sendMessage(ChatColor.GOLD + "  " + I18n.as("info.entity.boots") + ChatColor.YELLOW +
-                                    (livingEntity.getEquipment().getBoots() != null ?
-                                            livingEntity.getEquipment().getBoots().getType().name() : I18n.as("info.entity.empty")));
-                        }
-                    }
-                }
-                return true;
-            }
             case "cmd" -> {
                 if (args.length < 2) {
                     sender.sendMessage(ChatColor.RED + I18n.as("info.cmd.usage"));

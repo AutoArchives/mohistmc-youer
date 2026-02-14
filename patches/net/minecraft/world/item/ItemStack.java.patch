@@ -146,6 +146,19 @@
                  p_348383_ -> p_41624_.onEquippedItemBroken(p_348383_, p_319898_)
              );
          }
+@@ -762,6 +_,12 @@
+         return this.getItem().useOnRelease(this);
+     }
+ 
++    // CraftBukkit start
++    public void restorePatch(DataComponentPatch datacomponentpatch) {
++        this.components.restorePatch(datacomponentpatch);
++    }
++    // CraftBukkit end
++
+     public <T> @Nullable T set(DataComponentType<T> p_331064_, @Nullable T p_330775_) {
+         return this.components.set(p_331064_, p_330775_);
+     }
 @@ -797,6 +_,25 @@
          }
      }

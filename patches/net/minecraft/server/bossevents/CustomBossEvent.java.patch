@@ -1,0 +1,28 @@
+--- a/net/minecraft/server/bossevents/CustomBossEvent.java
++++ b/net/minecraft/server/bossevents/CustomBossEvent.java
+@@ -18,6 +_,8 @@
+ import net.minecraft.server.level.ServerPlayer;
+ import net.minecraft.util.Mth;
+ import net.minecraft.world.BossEvent;
++import org.bukkit.boss.KeyedBossBar;
++import org.bukkit.craftbukkit.boss.CraftKeyedBossbar;
+ 
+ public class CustomBossEvent extends ServerBossEvent {
+     private static final int DEFAULT_MAX = 100;
+@@ -25,6 +_,16 @@
+     private final Set<UUID> players = Sets.newHashSet();
+     private int value;
+     private int max = 100;
++    // CraftBukkit start
++    private KeyedBossBar bossBar;
++
++    public KeyedBossBar getBukkitEntity() {
++        if (bossBar == null) {
++            bossBar = new CraftKeyedBossbar(this);
++        }
++        return bossBar;
++    }
++    // CraftBukkit end
+ 
+     public CustomBossEvent(Identifier p_468071_, Component p_136262_) {
+         super(p_136262_, BossEvent.BossBarColor.WHITE, BossEvent.BossBarOverlay.PROGRESS);
