@@ -710,6 +710,18 @@
      public RegistryAccess.Frozen registryAccess() {
          return this.registries.compositeAccess();
      }
+@@ -2068,6 +_,11 @@
+         }
+     }
+ 
++    // CraftBukkit start
++    public final java.util.concurrent.ExecutorService chatExecutor = java.util.concurrent.Executors.newCachedThreadPool(
++            new com.google.common.util.concurrent.ThreadFactoryBuilder().setDaemon(true).setNameFormat("Async Chat Thread - #%d").build());
++    // CraftBukkit end
++
+     public ChatDecorator getChatDecorator() {
+         return ChatDecorator.PLAIN;
+     }
 @@ -2076,8 +_,11 @@
          return true;
      }

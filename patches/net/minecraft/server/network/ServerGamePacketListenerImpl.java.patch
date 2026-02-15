@@ -1,6 +1,6 @@
 --- a/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-@@ -22,6 +_,7 @@
+@@ -22,9 +_,11 @@
  import java.util.Set;
  import java.util.concurrent.CancellationException;
  import java.util.concurrent.CompletableFuture;
@@ -8,6 +8,10 @@
  import java.util.concurrent.TimeUnit;
  import java.util.function.BiFunction;
  import java.util.function.Consumer;
++import java.util.function.Function;
+ import java.util.stream.Collectors;
+ import java.util.stream.Stream;
+ import net.minecraft.ChatFormatting;
 @@ -53,6 +_,7 @@
  import net.minecraft.network.chat.LastSeenMessagesValidator;
  import net.minecraft.network.chat.MessageSignature;
@@ -32,7 +36,7 @@
  import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
-@@ -268,7 +_,7 @@
+@@ -268,15 +_,31 @@
      private int clientLoadedTimeoutTimer;
  
      public ServerGamePacketListenerImpl(MinecraftServer p_9770_, Connection p_9771_, ServerPlayer p_9772_, CommonListenerCookie p_301978_) {
@@ -41,10 +45,13 @@
          this.restartClientLoadTimerAfterRespawn();
          this.chunkSender = new PlayerChunkSender(p_9771_.isMemoryConnection());
          this.player = p_9772_;
-@@ -278,6 +_,22 @@
-         this.chatMessageChain = new FutureChain(p_9770_);
+         p_9772_.connection = this;
+         p_9772_.getTextFilter().join();
+         this.signedMessageDecoder = SignedMessageChain.Decoder.unsigned(p_9772_.getUUID(), p_9770_::enforceSecureProfile);
+-        this.chatMessageChain = new FutureChain(p_9770_);
++        this.chatMessageChain = new FutureChain(p_9770_.chatExecutor); // CraftBukkit - async chat
      }
- 
++
 +    // CraftBukkit start - add fields and methods
 +    private int lastTick = MinecraftServer.currentTick;
 +    private int allowedPlayerTicks = 1;
@@ -60,10 +67,9 @@
 +    private float lastYaw = Float.MAX_VALUE;
 +    private boolean justTeleported = false;
 +    // CraftBukkit end
-+
+ 
      @Override
      public void tick() {
-         if (this.ackBlockChangesUpTo > -1) {
 @@ -482,18 +_,21 @@
  
                  if (flag1 && serverlevel.noCollision(entity, aabb) || this.isEntityCollidingWithAnythingNew(serverlevel, entity, aabb, d3, d4, d5)) {
@@ -201,11 +207,13 @@
          Optional<LastSeenMessages> optional = this.unpackAndApplyLastSeen(p_9841_.lastSeenMessages());
          if (!optional.isEmpty()) {
              this.tryHandleChat(p_9841_.message(), false, () -> {
-@@ -1454,24 +_,42 @@
+@@ -1453,25 +_,43 @@
+                     return;
                  }
  
-                 CompletableFuture<FilteredText> completablefuture = this.filterTextPacket(playerchatmessage.signedContent());
+-                CompletableFuture<FilteredText> completablefuture = this.filterTextPacket(playerchatmessage.signedContent());
 -                Component component = this.server.getChatDecorator().decorate(this.player, playerchatmessage.decoratedContent());
++                CompletableFuture<FilteredText> completablefuture = this.filterTextPacket(playerchatmessage.signedContent()).thenApplyAsync(Function.identity(), this.server.chatExecutor); // CraftBukkit - async chat
 +                Component component = net.neoforged.neoforge.common.CommonHooks.getServerChatSubmittedDecorator().decorate(this.player, playerchatmessage.decoratedContent());
                  this.chatMessageChain.append(completablefuture, p_300785_ -> {
 +                    if (component == null) return; // Forge: ServerChatEvent was canceled if this is null.
@@ -306,7 +314,8 @@
 +    private void tryHandleChat(String p_338775_, boolean p_437229_, Runnable p_338235_, boolean sync) { // CraftBukkit
          if (isChatMessageIllegal(p_338775_)) {
              this.disconnect(Component.translatable("multiplayer.disconnect.illegal_characters"));
-         } else if (!p_437229_ && this.player.getChatVisibility() == ChatVisiblity.HIDDEN) {
+-        } else if (!p_437229_ && this.player.getChatVisibility() == ChatVisiblity.HIDDEN) {
++        } else if (this.player.isRemoved() || (!p_437229_ && this.player.getChatVisibility() == ChatVisiblity.HIDDEN)) {
              this.send(new ClientboundSystemChatPacket(Component.translatable("chat.disabled.options").withStyle(ChatFormatting.RED), false));
          } else {
              this.player.resetLastActionTime();

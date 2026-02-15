@@ -1,0 +1,14 @@
+--- a/net/minecraft/world/waypoints/WaypointTransmitter.java
++++ b/net/minecraft/world/waypoints/WaypointTransmitter.java
+@@ -20,6 +_,11 @@
+     Waypoint.Icon waypointIcon();
+ 
+     static boolean doesSourceIgnoreReceiver(LivingEntity p_416687_, ServerPlayer p_416170_) {
++        // CraftBukkit start
++        if (!p_416170_.getBukkitEntity().canSee(p_416687_.getBukkitEntity())) {
++            return true;
++        }
++        // CraftBukkit end
+         if (p_416170_.isSpectator()) {
+             return false;
+         } else if (!p_416687_.isSpectator() && !p_416687_.hasIndirectPassenger(p_416170_)) {

@@ -1,19 +1,23 @@
 --- a/net/minecraft/world/inventory/InventoryMenu.java
 +++ b/net/minecraft/world/inventory/InventoryMenu.java
-@@ -12,6 +12,12 @@
- import net.minecraft.world.item.crafting.RecipeHolder;
- import net.minecraft.world.level.Level;
+@@ -2,6 +_,7 @@
  
-+// CraftBukkit start
+ import java.util.List;
+ import java.util.Map;
 +import net.minecraft.network.chat.Component;
+ import net.minecraft.resources.Identifier;
+ import net.minecraft.server.level.ServerLevel;
+ import net.minecraft.world.Container;
+@@ -9,6 +_,8 @@
+ import net.minecraft.world.entity.player.Inventory;
+ import net.minecraft.world.entity.player.Player;
+ import net.minecraft.world.item.ItemStack;
 +import org.bukkit.craftbukkit.inventory.CraftInventoryCrafting;
 +import org.bukkit.craftbukkit.inventory.CraftInventoryView;
-+// CraftBukkit end
-+
- public class InventoryMenu extends AbstractCraftingMenu {
  
+ public class InventoryMenu extends AbstractCraftingMenu {
      public static final int CONTAINER_ID = 0;
-@@ -38,9 +44,15 @@
+@@ -44,9 +_,14 @@
      private static final EquipmentSlot[] SLOT_IDS = new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
      public final boolean active;
      private final Player owner;
@@ -21,16 +25,15 @@
 +    private CraftInventoryView bukkitEntity = null;
 +    // CraftBukkit end
  
-     public InventoryMenu(Inventory inventory, boolean active, final Player owner) {
--        super((MenuType) null, 0, 2, 2);
-+        // CraftBukkit start
-+        super((MenuType) null, 0, 2, 2, inventory); // CraftBukkit - save player
+     public InventoryMenu(Inventory p_39706_, boolean p_39707_, final Player p_39708_) {
+-        super(null, 0, 2, 2);
++        super(null, 0, 2, 2, p_39706_);
 +        setTitle(Component.translatable("container.crafting")); // SPIGOT-4722: Allocate title for player inventory
 +        // CraftBukkit end
-         this.active = active;
-         this.owner = owner;
-         this.addResultSlot(owner, 154, 28);
-@@ -190,4 +202,17 @@
+         this.active = p_39707_;
+         this.owner = p_39708_;
+         this.addResultSlot(p_39708_, 154, 28);
+@@ -188,4 +_,17 @@
      protected Player owner() {
          return this.owner;
      }

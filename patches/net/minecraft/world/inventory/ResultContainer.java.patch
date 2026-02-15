@@ -1,20 +1,18 @@
 --- a/net/minecraft/world/inventory/ResultContainer.java
 +++ b/net/minecraft/world/inventory/ResultContainer.java
-@@ -8,11 +8,50 @@
+@@ -6,11 +_,47 @@
+ import net.minecraft.world.entity.player.Player;
+ import net.minecraft.world.item.ItemStack;
  import net.minecraft.world.item.crafting.RecipeHolder;
- import org.jspecify.annotations.Nullable;
- 
-+// CraftBukkit start
 +import org.bukkit.Location;
 +import org.bukkit.craftbukkit.entity.CraftHumanEntity;
 +import org.bukkit.entity.HumanEntity;
-+// CraftBukkit end
-+
+ import org.jspecify.annotations.Nullable;
+ 
  public class ResultContainer implements Container, RecipeCraftingHolder {
- 
-     private final NonNullList<ItemStack> itemStacks;
+     private final NonNullList<ItemStack> itemStacks = NonNullList.withSize(1, ItemStack.EMPTY);
      private @Nullable RecipeHolder<?> recipeUsed;
- 
++
 +    // CraftBukkit start
 +    private int maxStack = MAX_STACK;
 +
@@ -47,7 +45,6 @@
 +        return null;
 +    }
 +    // CraftBukkit end
-+
-     public ResultContainer() {
-         this.itemStacks = NonNullList.<ItemStack>withSize(1, ItemStack.EMPTY);
-     }
+ 
+     @Override
+     public int getContainerSize() {

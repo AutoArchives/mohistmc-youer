@@ -1,36 +1,35 @@
 --- a/net/minecraft/world/inventory/SmithingMenu.java
 +++ b/net/minecraft/world/inventory/SmithingMenu.java
-@@ -18,6 +18,8 @@
+@@ -17,6 +_,7 @@
+ import net.minecraft.world.level.Level;
  import net.minecraft.world.level.block.Blocks;
  import net.minecraft.world.level.block.state.BlockState;
++import org.bukkit.craftbukkit.inventory.CraftInventoryView;
  
-+import org.bukkit.craftbukkit.inventory.CraftInventoryView; // CraftBukkit
-+
  public class SmithingMenu extends ItemCombinerMenu {
- 
      public static final int TEMPLATE_SLOT = 0;
-@@ -34,6 +36,9 @@
+@@ -33,6 +_,9 @@
      private final RecipePropertySet templateItemTest;
      private final RecipePropertySet additionItemTest;
-     private final DataSlot hasRecipeError;
+     private final DataSlot hasRecipeError = DataSlot.standalone();
 +    // CraftBukkit start
 +    private CraftInventoryView bukkitEntity;
 +    // CraftBukkit end
  
-     public SmithingMenu(int containerId, Inventory inventory) {
-         this(containerId, inventory, ContainerLevelAccess.NULL);
-@@ -129,7 +134,9 @@
-             ItemStack itemstack = ((SmithingRecipe) recipeholder.value()).assemble(smithingrecipeinput, this.level.registryAccess());
- 
-             this.resultSlots.setRecipeUsed(recipeholder);
+     public SmithingMenu(int p_40245_, Inventory p_40246_) {
+         this(p_40245_, p_40246_, ContainerLevelAccess.NULL);
+@@ -116,7 +_,9 @@
+         optional.ifPresentOrElse(p_379190_ -> {
+             ItemStack itemstack = p_379190_.value().assemble(smithingrecipeinput, this.level.registryAccess());
+             this.resultSlots.setRecipeUsed((RecipeHolder<?>)p_379190_);
 -            this.resultSlots.setItem(0, itemstack);
 +            // CraftBukkit start
 +            org.bukkit.craftbukkit.event.CraftEventFactory.callPrepareSmithingEvent(getBukkitView(), itemstack);
 +            // CraftBukkit end
          }, () -> {
-             this.resultSlots.setRecipeUsed((RecipeHolder) null);
+             this.resultSlots.setRecipeUsed(null);
              this.resultSlots.setItem(0, ItemStack.EMPTY);
-@@ -149,4 +156,18 @@
+@@ -140,4 +_,18 @@
      public boolean hasRecipeError() {
          return this.hasRecipeError.get() > 0;
      }

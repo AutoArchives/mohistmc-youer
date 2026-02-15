@@ -1,6 +1,15 @@
 --- a/net/minecraft/world/inventory/CraftingMenu.java
 +++ b/net/minecraft/world/inventory/CraftingMenu.java
-@@ -29,7 +_,7 @@
+@@ -16,6 +_,8 @@
+ import net.minecraft.world.item.crafting.RecipeType;
+ import net.minecraft.world.level.Level;
+ import net.minecraft.world.level.block.Blocks;
++import org.bukkit.craftbukkit.inventory.CraftInventoryCrafting;
++import org.bukkit.craftbukkit.inventory.CraftInventoryView;
+ import org.jspecify.annotations.Nullable;
+ 
+ public class CraftingMenu extends AbstractCraftingMenu {
+@@ -29,16 +_,19 @@
      private static final int INV_SLOT_END = 37;
      private static final int USE_ROW_SLOT_START = 37;
      private static final int USE_ROW_SLOT_END = 46;
@@ -8,4 +17,61 @@
 +    public final ContainerLevelAccess access;
      private final Player player;
      private boolean placingRecipe;
++    // CraftBukkit start
++    private CraftInventoryView bukkitEntity = null;
++    // CraftBukkit end
  
+     public CraftingMenu(int p_39353_, Inventory p_39354_) {
+         this(p_39353_, p_39354_, ContainerLevelAccess.NULL);
+     }
+ 
+     public CraftingMenu(int p_39356_, Inventory p_39357_, ContainerLevelAccess p_39358_) {
+-        super(MenuType.CRAFTING, p_39356_, 3, 3);
++        super(MenuType.CRAFTING, p_39356_, 3, 3, p_39357_);
+         this.access = p_39358_;
+         this.player = p_39357_.player;
+         this.addResultSlot(this.player, 124, 35);
+@@ -60,6 +_,9 @@
+         Optional<RecipeHolder<CraftingRecipe>> optional = p_379963_.getServer()
+             .getRecipeManager()
+             .getRecipeFor(RecipeType.CRAFTING, craftinginput, p_379963_, p_345124_);
++
++        p_150550_.setCurrentRecipe(optional.orElse(null)); // CraftBukkit
++
+         if (optional.isPresent()) {
+             RecipeHolder<CraftingRecipe> recipeholder = optional.get();
+             CraftingRecipe craftingrecipe = recipeholder.value();
+@@ -70,6 +_,7 @@
+                 }
+             }
+         }
++        itemstack = org.bukkit.craftbukkit.event.CraftEventFactory.callPreCraftEvent(p_150550_, p_150551_, itemstack, p_150547_.getBukkitView(), optional); // CraftBukkit
+ 
+         p_150551_.setItem(0, itemstack);
+         p_150547_.setRemoteSlot(0, itemstack);
+@@ -106,6 +_,7 @@
+ 
+     @Override
+     public boolean stillValid(Player p_39368_) {
++        if (!this.checkReachable) return true; // CraftBukkit
+         return stillValid(this.access, p_39368_, Blocks.CRAFTING_TABLE);
+     }
+ 
+@@ -180,4 +_,17 @@
+     protected Player owner() {
+         return this.player;
+     }
++
++    // CraftBukkit start
++    @Override
++    public CraftInventoryView getBukkitView() {
++        if (bukkitEntity != null) {
++            return bukkitEntity;
++        }
++
++        CraftInventoryCrafting inventory = new CraftInventoryCrafting(this.craftSlots, this.resultSlots);
++        bukkitEntity = new CraftInventoryView(this.player.getBukkitEntity(), inventory, this);
++        return bukkitEntity;
++    }
++    // CraftBukkit end
+ }

@@ -43,7 +43,7 @@
      private final IntList remoteDataSlots = new IntArrayList();
      private RemoteSlot remoteCarried = RemoteSlot.PLACEHOLDER;
      private int stateId;
-@@ -66,6 +_,77 @@
+@@ -66,6 +_,81 @@
      private @Nullable ContainerSynchronizer synchronizer;
      private boolean suppressRemoteUpdates;
  
@@ -114,6 +114,10 @@
 +                this.title = title;
 +            }
 +        }
++    }
++    protected boolean opened;
++    public void startOpen() {
++        this.opened = true;
 +    }
 +    // CraftBukkit end
 +    // Youer end

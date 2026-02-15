@@ -1,16 +1,13 @@
 --- a/net/minecraft/world/inventory/ShulkerBoxMenu.java
 +++ b/net/minecraft/world/inventory/ShulkerBoxMenu.java
-@@ -6,10 +6,35 @@
+@@ -5,10 +_,32 @@
+ import net.minecraft.world.entity.player.Inventory;
  import net.minecraft.world.entity.player.Player;
  import net.minecraft.world.item.ItemStack;
- 
-+// CraftBukkit start
 +import org.bukkit.craftbukkit.inventory.CraftInventory;
 +import org.bukkit.craftbukkit.inventory.CraftInventoryView;
-+// CraftBukkit end
-+
- public class ShulkerBoxMenu extends AbstractContainerMenu {
  
+ public class ShulkerBoxMenu extends AbstractContainerMenu {
      private static final int CONTAINER_SIZE = 27;
      private final Container container;
 +    // CraftBukkit start
@@ -34,23 +31,23 @@
 +    }
 +    // CraftBukkit end
  
-     public ShulkerBoxMenu(int containerId, Inventory inventory) {
-         this(containerId, inventory, new SimpleContainer(27));
-@@ -19,7 +44,8 @@
-         super(MenuType.SHULKER_BOX, containerId);
-         checkContainerSize(container, 27);
-         this.container = container;
--        container.startOpen(inventory.player);
-+        this.player = inventory; // CraftBukkit - save player
-+        // iinventory.startOpen(playerinventory.player); // CraftBukkit - don't startOpen until menu actually opens
-         int j = 3;
-         int k = 9;
+     public ShulkerBoxMenu(int p_40188_, Inventory p_40189_) {
+         this(p_40188_, p_40189_, new SimpleContainer(27));
+@@ -18,7 +_,8 @@
+         super(MenuType.SHULKER_BOX, p_40191_);
+         checkContainerSize(p_40193_, 27);
+         this.container = p_40193_;
+-        p_40193_.startOpen(p_40192_.player);
++        this.player = p_40192_; // CraftBukkit - save player
++        // p_40193_.startOpen(p_40192_.player); // CraftBukkit - don't startOpen until menu actually opens
+         int i = 3;
+         int j = 9;
  
-@@ -34,6 +60,7 @@
+@@ -33,6 +_,7 @@
  
      @Override
-     public boolean stillValid(Player player) {
+     public boolean stillValid(Player p_40195_) {
 +        if (!this.checkReachable) return true; // CraftBukkit
-         return this.container.stillValid(player);
+         return this.container.stillValid(p_40195_);
      }
  
