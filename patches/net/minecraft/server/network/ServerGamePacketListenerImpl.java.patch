@@ -32,13 +32,19 @@
  import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
-@@ -276,7 +_,24 @@
-         p_9772_.getTextFilter().join();
-         this.signedMessageDecoder = SignedMessageChain.Decoder.unsigned(p_9772_.getUUID(), p_9770_::enforceSecureProfile);
+@@ -268,7 +_,7 @@
+     private int clientLoadedTimeoutTimer;
+ 
+     public ServerGamePacketListenerImpl(MinecraftServer p_9770_, Connection p_9771_, ServerPlayer p_9772_, CommonListenerCookie p_301978_) {
+-        super(p_9770_, p_9771_, p_301978_);
++        super(p_9770_, p_9771_, p_301978_, p_9772_);
+         this.restartClientLoadTimerAfterRespawn();
+         this.chunkSender = new PlayerChunkSender(p_9771_.isMemoryConnection());
+         this.player = p_9772_;
+@@ -278,6 +_,22 @@
          this.chatMessageChain = new FutureChain(p_9770_);
-+        setPlayer(p_9772_);
      }
-+
+ 
 +    // CraftBukkit start - add fields and methods
 +    private int lastTick = MinecraftServer.currentTick;
 +    private int allowedPlayerTicks = 1;
@@ -54,9 +60,10 @@
 +    private float lastYaw = Float.MAX_VALUE;
 +    private boolean justTeleported = false;
 +    // CraftBukkit end
- 
++
      @Override
      public void tick() {
+         if (this.ackBlockChangesUpTo > -1) {
 @@ -482,18 +_,21 @@
  
                  if (flag1 && serverlevel.noCollision(entity, aabb) || this.isEntityCollidingWithAnythingNew(serverlevel, entity, aabb, d3, d4, d5)) {
@@ -574,7 +581,7 @@
                  .setupInboundProtocol(
                      ConfigurationProtocols.SERVERBOUND,
 -                    new ServerConfigurationPacketListenerImpl(this.server, this.connection, this.createCookie(this.player.clientInformation()))
-+                    new ServerConfigurationPacketListenerImpl(this.server, this.connection, this.createCookie(this.player.clientInformation(), this.connectionType))
++                    new ServerConfigurationPacketListenerImpl(this.server, this.connection, this.createCookie(this.player.clientInformation(), this.connectionType), this.player) // CraftBukkit
                  );
          }
      }

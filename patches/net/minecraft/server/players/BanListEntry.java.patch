@@ -1,15 +1,15 @@
 --- a/net/minecraft/server/players/BanListEntry.java
 +++ b/net/minecraft/server/players/BanListEntry.java
-@@ -27,7 +27,7 @@
+@@ -26,7 +_,7 @@
      }
  
-     protected BanListEntry(@Nullable T user, JsonObject object) {
--        super(user);
-+        super(checkExpiry(user, object)); // CraftBukkit
+     protected BanListEntry(@Nullable T p_10950_, JsonObject p_10951_) {
+-        super(p_10950_);
++        super(checkExpiry(p_10950_, p_10951_)); // CraftBukkit
  
          Date date;
- 
-@@ -100,4 +100,22 @@
+         try {
+@@ -99,4 +_,22 @@
              return false;
          }
      }

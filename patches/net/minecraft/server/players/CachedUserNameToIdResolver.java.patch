@@ -1,0 +1,11 @@
+--- a/net/minecraft/server/players/CachedUserNameToIdResolver.java
++++ b/net/minecraft/server/players/CachedUserNameToIdResolver.java
+@@ -115,7 +_,7 @@
+             cachedusernametoidresolver$gameprofileinfo.setLastAccess(this.getNextOperation());
+             optional = Optional.of(cachedusernametoidresolver$gameprofileinfo.nameAndId());
+         } else {
+-            Optional<NameAndId> optional1 = this.lookupGameProfile(this.profileRepository, s);
++            Optional<NameAndId> optional1 = this.lookupGameProfile(this.profileRepository, p_434791_);
+             if (optional1.isPresent()) {
+                 optional = Optional.of(this.addInternal(optional1.get()).nameAndId());
+                 flag = false;

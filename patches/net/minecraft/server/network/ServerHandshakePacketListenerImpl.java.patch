@@ -1,16 +1,22 @@
 --- a/net/minecraft/server/network/ServerHandshakePacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerHandshakePacketListenerImpl.java
-@@ -12,8 +12,17 @@
- import net.minecraft.network.protocol.status.StatusProtocols;
- import net.minecraft.server.MinecraftServer;
+@@ -1,5 +_,7 @@
+ package net.minecraft.server.network;
  
-+// CraftBukkit start
 +import java.net.InetAddress;
 +import java.util.HashMap;
-+// CraftBukkit end
-+
- public class ServerHandshakePacketListenerImpl implements ServerHandshakePacketListener {
+ import net.minecraft.SharedConstants;
+ import net.minecraft.network.Connection;
+ import net.minecraft.network.DisconnectionDetails;
+@@ -13,6 +_,15 @@
+ import net.minecraft.server.MinecraftServer;
  
+ public class ServerHandshakePacketListenerImpl implements ServerHandshakePacketListener {
++    // Spigot start
++    private static final com.google.gson.Gson gson = new com.google.gson.Gson();
++    static final java.util.regex.Pattern HOST_PATTERN = java.util.regex.Pattern.compile("[0-9a-f\\.:]{0,45}");
++    static final java.util.regex.Pattern PROP_PATTERN = java.util.regex.Pattern.compile("\\w{0,16}");
++    // Spigot end
 +    // CraftBukkit start - add fields
 +    private static final HashMap<InetAddress, Long> throttleTracker = new HashMap<InetAddress, Long>();
 +    private static int throttleCounter = 0;
@@ -18,17 +24,17 @@
      private static final Component IGNORE_STATUS_REASON = Component.translatable("disconnect.ignoring_status_request");
      private final MinecraftServer server;
      private final Connection connection;
-@@ -25,6 +34,7 @@
+@@ -24,6 +_,7 @@
  
      @Override
-     public void handleIntention(ClientIntentionPacket packet) {
-+        this.connection.hostname = packet.hostName() + ":" + packet.port(); // CraftBukkit  - set hostname
-         switch (packet.intention()) {
+     public void handleIntention(ClientIntentionPacket p_9975_) {
++        this.connection.hostname = p_9975_.hostName() + ":" + p_9975_.port(); // CraftBukkit  - set hostname
+         switch (p_9975_.intention()) {
              case LOGIN:
-                 this.beginLogin(packet, false);
-@@ -58,6 +68,40 @@
+                 this.beginLogin(p_9975_, false);
+@@ -54,6 +_,40 @@
  
-     private void beginLogin(ClientIntentionPacket packet, boolean transfer) {
+     private void beginLogin(ClientIntentionPacket p_320524_, boolean p_320853_) {
          this.connection.setupOutboundProtocol(LoginProtocols.CLIENTBOUND);
 +        // CraftBukkit start - Connection throttle
 +        try {
@@ -64,6 +70,6 @@
 +            org.apache.logging.log4j.LogManager.getLogger().debug("Failed to check connection throttle", t);
 +        }
 +        // CraftBukkit end
-         if (packet.protocolVersion() != SharedConstants.getCurrentVersion().protocolVersion()) {
+         if (p_320524_.protocolVersion() != SharedConstants.getCurrentVersion().protocolVersion()) {
              Component component;
- 
+             if (p_320524_.protocolVersion() < 754) {

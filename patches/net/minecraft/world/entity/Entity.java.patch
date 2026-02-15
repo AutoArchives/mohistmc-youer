@@ -16,10 +16,13 @@
  import net.minecraft.network.chat.Component;
  import net.minecraft.network.chat.ComponentSerialization;
  import net.minecraft.network.chat.HoverEvent;
-@@ -149,11 +_,14 @@
+@@ -149,11 +_,40 @@
  import net.minecraft.world.scores.ScoreHolder;
  import net.minecraft.world.scores.Team;
  import net.minecraft.world.waypoints.WaypointTransmitter;
++import org.bukkit.Bukkit;
++import org.bukkit.Server;
++import org.bukkit.craftbukkit.CraftWorld;
 +import org.bukkit.craftbukkit.entity.CraftEntity;
 +import org.bukkit.event.entity.CreatureSpawnEvent;
 +import org.bukkit.event.entity.EntityRemoveEvent;
@@ -29,6 +32,29 @@
  
 -public abstract class Entity implements SyncedDataHolder, DebugValueSource, Nameable, ItemOwner, SlotProvider, EntityAccess, ScoreHolder, DataComponentGetter, net.neoforged.neoforge.common.extensions.IEntityExtension {
 +public abstract class Entity extends net.neoforged.neoforge.attachment.AttachmentHolder implements SyncedDataHolder, DebugValueSource, Nameable, ItemOwner, SlotProvider, EntityAccess, ScoreHolder, DataComponentGetter, net.neoforged.neoforge.common.extensions.IEntityExtension {
++
++    // CraftBukkit start
++    private static final int CURRENT_LEVEL = 2;
++    static boolean isLevelAtLeast(ValueInput tag, int level) {
++        int updateLevel = tag.getIntOr("Bukkit.updateLevel", -1);
++        return updateLevel != -1 && tag.getIntOr("Bukkit.updateLevel", -1) >= level;
++    }
++
++    private CraftEntity bukkitEntity;
++
++    public CraftEntity getBukkitEntity() {
++        if (bukkitEntity == null) {
++            bukkitEntity = CraftEntity.getEntity(level.getCraftServer(), this);
++        }
++        return bukkitEntity;
++    }
++
++    // CraftBukkit - SPIGOT-6907: re-implement LivingEntity#setMaximumAir()
++    public int getDefaultMaxAirSupply() {
++        return TOTAL_AIR_SUPPLY;
++    }
++    // CraftBukkit end
++
      private static final Logger LOGGER = LogUtils.getLogger();
      public static final String TAG_ID = "id";
      public static final String TAG_UUID = "UUID";
@@ -81,7 +107,7 @@
      private Vec3 lastKnownSpeed = Vec3.ZERO;
      private @Nullable Vec3 lastKnownPosition;
      private @Nullable BlockState inBlockState = null;
-@@ -287,6 +_,59 @@
+@@ -287,6 +_,46 @@
      private final InsideBlockEffectApplier.StepBasedCollector insideEffectCollector = new InsideBlockEffectApplier.StepBasedCollector();
      private CustomData customData = CustomData.EMPTY;
  
@@ -108,15 +134,6 @@
 +    public void inactiveTick() { }
 +    // Spigot end
 +
-+    private CraftEntity bukkitEntity;
-+
-+    public CraftEntity getBukkitEntity() {
-+        if (bukkitEntity == null) {
-+            bukkitEntity = CraftEntity.getEntity(level.getCraftServer(), this);
-+        }
-+        return bukkitEntity;
-+    }
-+
 +    public CreatureSpawnEvent.SpawnReason spawnReason;  // Youer - Entity#getEntitySpawnReason
 +    public EntityRemoveEvent.Cause removeReason;  // Youer - EntityRemoveEvent
 +    public void spawnReason(CreatureSpawnEvent.SpawnReason spawnReason) {
@@ -131,10 +148,6 @@
 +
 +    public boolean isChunkLoaded() {
 +        return level.hasChunk((int) Math.floor(this.getX()) >> 4, (int) Math.floor(this.getZ()) >> 4);
-+    }
-+
-+    public int getDefaultMaxAirSupply() {
-+        return TOTAL_AIR_SUPPLY;
 +    }
 +    // CraftBukkit end
 +
@@ -399,7 +412,38 @@
              }
  
              p_422475_.store("Motion", Vec3.CODEC, this.getDeltaMovement());
-@@ -1995,6 +_,11 @@
+@@ -1960,7 +_,29 @@
+             p_422475_.putBoolean("OnGround", this.onGround());
+             p_422475_.putBoolean("Invulnerable", this.invulnerable);
+             p_422475_.putInt("PortalCooldown", this.portalCooldown);
+-            p_422475_.store("UUID", UUIDUtil.CODEC, this.getUUID());
++            // CraftBukkit start - selectively save uuid and world
++            if (saveWithoutId$includeAll.get()) {
++                p_422475_.store("UUID", UUIDUtil.CODEC, this.getUUID());
++                // PAIL: Check above UUID reads 1.8 properly, ie: UUIDMost / UUIDLeast
++                p_422475_.putLong("WorldUUIDLeast", ((ServerLevel) this.level).getWorld().getUID().getLeastSignificantBits());
++                p_422475_.putLong("WorldUUIDMost", ((ServerLevel) this.level).getWorld().getUID().getMostSignificantBits());
++            }
++            p_422475_.putInt("Bukkit.updateLevel", CURRENT_LEVEL);
++            if (!this.persist) {
++                p_422475_.putBoolean("Bukkit.persist", this.persist);
++            }
++            if (!this.visibleByDefault) {
++                p_422475_.putBoolean("Bukkit.visibleByDefault", this.visibleByDefault);
++            }
++            if (this.persistentInvisibility) {
++                p_422475_.putBoolean("Bukkit.invisible", this.persistentInvisibility);
++            }
++            // SPIGOT-6907: re-implement LivingEntity#setMaximumAir()
++            if (maxAirTicks != getDefaultMaxAirSupply()) {
++                p_422475_.putInt("Bukkit.MaxAirSupply", getMaxAirSupply());
++            }
++            p_422475_.putInt("Spigot.ticksLived", this.tickCount);
++            // CraftBukkit end
+             p_422475_.storeNullable("CustomName", ComponentSerialization.CODEC, this.getCustomName());
+             if (this.isCustomNameVisible()) {
+                 p_422475_.putBoolean("CustomNameVisible", this.isCustomNameVisible());
+@@ -1995,13 +_,18 @@
                  p_422475_.store("data", CustomData.CODEC, this.customData);
              }
  
@@ -411,6 +455,27 @@
              this.addAdditionalSaveData(p_422475_);
              if (this.isVehicle()) {
                  ValueOutput.ValueOutputList valueoutput$valueoutputlist = p_422475_.childrenList("Passengers");
+ 
+                 for (Entity entity : this.getPassengers()) {
+                     ValueOutput valueoutput = valueoutput$valueoutputlist.addChild();
+-                    if (!entity.saveAsPassenger(valueoutput)) {
++                    if (!entity.saveAsPassengerCB(valueoutput, saveWithoutId$includeAll.get())) {
+                         valueoutput$valueoutputlist.discardLast();
+                     }
+                 }
+@@ -2010,6 +_,12 @@
+                     p_422475_.discard("Passengers");
+                 }
+             }
++
++            // CraftBukkit start - stores eventually existing bukkit values
++            if (this.bukkitEntity != null) {
++                this.bukkitEntity.storeBukkitValues(p_422475_);
++            }
++            // CraftBukkit end
+         } catch (Throwable throwable) {
+             CrashReport crashreport = CrashReport.forThrowable(throwable, "Saving entity NBT");
+             CrashReportCategory crashreportcategory = crashreport.addCategory("Entity being saved");
 @@ -2055,6 +_,8 @@
                  this.setTicksFrozen(p_422206_.getIntOr("TicksFrozen", 0));
                  this.hasVisualFire = p_422206_.getBooleanOr("HasVisualFire", false);
@@ -420,6 +485,69 @@
                  this.tags.clear();
                  p_422206_.read("Tags", TAG_LIST_CODEC).ifPresent(this.tags::addAll);
                  this.readAdditionalSaveData(p_422206_);
+@@ -2064,6 +_,49 @@
+             } else {
+                 throw new IllegalStateException("Entity has invalid rotation");
+             }
++
++            // CraftBukkit start
++            // Spigot start
++            if (this instanceof LivingEntity) {
++                this.tickCount = p_422206_.getIntOr("Spigot.ticksLived", this.tickCount);
++            }
++            // Spigot end
++            this.persist = p_422206_.getBooleanOr("Bukkit.persist", this.persist);
++            this.visibleByDefault = p_422206_.getBooleanOr("Bukkit.visibleByDefault", this.visibleByDefault);
++            // SPIGOT-6907: re-implement LivingEntity#setMaximumAir()
++            this.maxAirTicks = p_422206_.getIntOr("Bukkit.MaxAirSupply", this.maxAirTicks);
++            // CraftBukkit end
++
++            // CraftBukkit start - Reset world
++            if (this instanceof ServerPlayer) {
++                Server server = Bukkit.getServer();
++                org.bukkit.World bworld = null;
++
++                // TODO: Remove World related checks, replaced with WorldUID
++                String worldName = p_422206_.getStringOr("world", "");
++
++                Optional<Long> most = p_422206_.getLong("WorldUUIDMost");
++                Optional<Long> least = p_422206_.getLong("WorldUUIDLeast");
++                if (most.isPresent() && least.isPresent()) {
++                    UUID uid = new UUID(most.get(), least.get());
++                    bworld = server.getWorld(uid);
++                } else {
++                    bworld = server.getWorld(worldName);
++                }
++
++                if (bworld == null) {
++                    bworld = ((org.bukkit.craftbukkit.CraftServer) server).getServer().getLevel(Level.OVERWORLD).getWorld();
++                }
++
++                ((ServerPlayer) this).setLevel(bworld == null ? null : ((CraftWorld) bworld).getHandle());
++            }
++            this.getBukkitEntity().readBukkitValues(p_422206_);
++            boolean bukkitInvisible = p_422206_.getBooleanOr("Bukkit.invisible", false);
++            if (bukkitInvisible) {
++                this.setInvisible(bukkitInvisible);
++                this.persistentInvisibility = bukkitInvisible;
++            }
++            // CraftBukkit end
+         } catch (Throwable throwable) {
+             CrashReport crashreport = CrashReport.forThrowable(throwable, "Loading entity NBT");
+             CrashReportCategory crashreportcategory = crashreport.addCategory("Entity being loaded");
+@@ -2082,6 +_,12 @@
+         return !entitytype.canSerialize() ? null : identifier.toString();
+     }
+ 
++    // CraftBukkit start - allow excluding certain data when saving
++    protected void addAdditionalSaveData(ValueOutput output, boolean includeAll) {
++        addAdditionalSaveData(output);
++    }
++    // CraftBukkit end
++
+     protected abstract void readAdditionalSaveData(ValueInput p_422333_);
+ 
+     protected abstract void addAdditionalSaveData(ValueOutput p_421996_);
 @@ -2100,6 +_,8 @@
          } else {
              ItemEntity itementity = new ItemEntity(p_426271_, this.getX() + p_426167_.x, this.getY() + p_426167_.y, this.getZ() + p_426167_.z, p_426002_);

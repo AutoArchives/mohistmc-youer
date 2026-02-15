@@ -35,17 +35,20 @@
  import net.minecraft.world.level.entity.EntityTypeTest;
  import net.minecraft.world.level.entity.LevelEntityGetter;
  import net.minecraft.world.level.gameevent.GameEvent;
-@@ -83,9 +_,16 @@
+@@ -83,9 +_,19 @@
  import net.minecraft.world.phys.Vec3;
  import net.minecraft.world.scores.Scoreboard;
  import org.apache.commons.lang3.mutable.MutableBoolean;
 +import org.bukkit.Bukkit;
++import org.bukkit.World;
 +import org.bukkit.craftbukkit.CraftServer;
 +import org.bukkit.craftbukkit.CraftWorld;
 +import org.bukkit.craftbukkit.block.CapturedBlockState;
 +import org.bukkit.craftbukkit.block.data.CraftBlockData;
 +import org.bukkit.entity.SpawnCategory;
 +import org.bukkit.event.block.BlockPhysicsEvent;
++import org.bukkit.generator.BiomeProvider;
++import org.bukkit.generator.ChunkGenerator;
  import org.jspecify.annotations.Nullable;
  
 -public abstract class Level implements LevelAccessor, AutoCloseable, net.neoforged.neoforge.common.extensions.ILevelExtension {
@@ -62,7 +65,7 @@
      protected final CollectingNeighborUpdater neighborUpdater;
      private final List<TickingBlockEntity> pendingBlockEntityTickers = Lists.newArrayList();
      private boolean tickingBlockEntities;
-@@ -117,14 +_,45 @@
+@@ -117,14 +_,55 @@
      @Deprecated
      private final RandomSource threadSafeRandom = RandomSource.createThreadSafe();
      private final Holder<DimensionType> dimensionTypeRegistration;
@@ -83,8 +86,10 @@
 +    private final java.util.ArrayList<BlockEntity> pendingFreshBlockEntities = new java.util.ArrayList<>();
 +
 +    // CraftBukkit start Added the following
-+    private CraftWorld world;
-+    public org.bukkit.generator.ChunkGenerator generator;
++    public CraftWorld world;
++    public static ChunkGenerator generator;
++    public static World.Environment environment;
++    public static BiomeProvider biomeProvider;
 +
 +    public boolean preventPoiUpdated = false; // CraftBukkit - SPIGOT-5710
 +    public boolean captureBlockStates = false;
@@ -106,7 +111,15 @@
 +        return (CraftServer) Bukkit.getServer();
 +    }
 +
-+    public abstract ResourceKey<LevelStem> getTypeKey();
++    public ResourceKey<LevelStem> getTypeKey() {
++        return Registries.levelToLevelStem(dimension);
++    }
++
++    public static void craftWorldData(World.Environment env, ChunkGenerator cg, BiomeProvider bp) {
++        environment = env;
++        biomeProvider = bp;
++        generator = cg;
++    }
  
      protected Level(
          WritableLevelData p_270739_,

@@ -1,19 +1,43 @@
 --- a/net/minecraft/server/players/PlayerList.java
 +++ b/net/minecraft/server/players/PlayerList.java
-@@ -66,6 +_,7 @@
+@@ -3,6 +_,7 @@
+ import com.google.common.collect.Lists;
+ import com.google.common.collect.Maps;
+ import com.google.common.collect.Sets;
++import com.mohistmc.youer.api.ColorAPI;
+ import com.mojang.authlib.GameProfile;
+ import com.mojang.logging.LogUtils;
+ import java.io.File;
+@@ -19,6 +_,7 @@
+ import java.util.Optional;
+ import java.util.Set;
+ import java.util.UUID;
++import java.util.concurrent.atomic.AtomicReference;
+ import java.util.function.Function;
+ import java.util.function.Predicate;
+ import net.minecraft.ChatFormatting;
+@@ -66,10 +_,13 @@
  import net.minecraft.server.PlayerAdvancements;
  import net.minecraft.server.RegistryLayer;
  import net.minecraft.server.ServerScoreboard;
 +import net.minecraft.server.dedicated.DedicatedServer;
++import net.minecraft.server.level.ClientInformation;
  import net.minecraft.server.level.ServerLevel;
  import net.minecraft.server.level.ServerPlayer;
  import net.minecraft.server.network.CommonListenerCookie;
-@@ -99,6 +_,9 @@
+ import net.minecraft.server.network.ServerGamePacketListenerImpl;
++import net.minecraft.server.network.ServerLoginPacketListenerImpl;
+ import net.minecraft.server.notifications.NotificationService;
+ import net.minecraft.server.permissions.LevelBasedPermissionSet;
+ import net.minecraft.sounds.SoundEvents;
+@@ -99,6 +_,11 @@
  import net.minecraft.world.scores.Objective;
  import net.minecraft.world.scores.PlayerTeam;
  import net.minecraft.world.scores.Team;
 +import org.bukkit.Location;
 +import org.bukkit.craftbukkit.CraftServer;
++import org.bukkit.craftbukkit.util.CraftChatMessage;
++import org.bukkit.event.player.PlayerLoginEvent;
 +import org.bukkit.event.player.PlayerRespawnEvent;
  import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
@@ -23,7 +47,7 @@
      private static final SimpleDateFormat BAN_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z", Locale.ROOT);
      private final MinecraftServer server;
 -    private final List<ServerPlayer> players = Lists.newArrayList();
-+    public final List<ServerPlayer> players = Lists.newArrayList();
++    public final List<ServerPlayer> players = new java.util.concurrent.CopyOnWriteArrayList(); // CraftBukkit - ArrayList -> CopyOnWriteArrayList: Iterator safety
      private final Map<UUID, ServerPlayer> playersByUUID = Maps.newHashMap();
      private final UserBanList bans;
      private final IpBanList ipBans;
@@ -51,6 +75,19 @@
          this.server = p_203842_;
          this.registries = p_251844_;
          this.playerIo = p_203844_;
+@@ -143,6 +_,12 @@
+         UserNameToIdResolver usernametoidresolver = this.server.services().nameToIdCache();
+         Optional<NameAndId> optional = usernametoidresolver.get(nameandid.id());
+         String s = optional.map(NameAndId::name).orElse(nameandid.name());
++        // CraftBukkit start - Better rename detection
++        String lastKnownName = p_11263_.getBukkitEntity().getLastKnownName();
++        if (lastKnownName != null) {
++            s = lastKnownName;
++        }
++        // CraftBukkit end
+         usernametoidresolver.add(nameandid);
+         ServerLevel serverlevel = p_11263_.level();
+         String s1 = p_11262_.getLoggableAddress(this.server.logIPs());
 @@ -158,7 +_,7 @@
          LevelData leveldata = serverlevel.getLevelData();
          ServerGamePacketListenerImpl servergamepacketlistenerimpl = new ServerGamePacketListenerImpl(this.server, p_11262_, p_11263_, p_301988_);
@@ -87,6 +124,18 @@
          Set<Objective> set = Sets.newHashSet();
  
          for (PlayerTeam playerteam : p_11274_.getPlayerTeams()) {
+@@ -276,9 +_,9 @@
+         });
+     }
+ 
+-    public Optional<CompoundTag> loadPlayerData(NameAndId p_433478_) {
++    public Optional<CompoundTag> loadPlayerData(Player p_433478_) {
+         CompoundTag compoundtag = this.server.getWorldData().getLoadedPlayerTag();
+-        if (this.server.isSingleplayerOwner(p_433478_) && compoundtag != null) {
++        if (this.server.isSingleplayerOwner(p_433478_.nameAndId()) && compoundtag != null) {
+             LOGGER.debug("loading single player");
+             return Optional.of(compoundtag);
+         } else {
 @@ -287,6 +_,7 @@
      }
  
@@ -103,18 +152,120 @@
          ServerLevel serverlevel = p_11287_.level();
          p_11287_.awardStat(Stats.LEAVE_GAME);
          this.save(p_11287_);
-@@ -385,17 +_,32 @@
-         return !set.isEmpty();
+@@ -334,7 +_,45 @@
+         this.broadcastAll(new ClientboundPlayerInfoRemovePacket(List.of(p_11287_.getUUID())));
      }
  
++    // Youer start
++    public final AtomicReference<ServerPlayer> youer$canPlayerLogin$entity = new AtomicReference<>(null);
++    private final AtomicReference<ServerLoginPacketListenerImpl> youer$canPlayerLogin$handler = new AtomicReference<>(null);
++    private final AtomicReference<GameProfile> youer$canPlayerLogin$gameProfile = new AtomicReference<>(null);
++
++    public void youer$putHandler(ServerLoginPacketListenerImpl handler, GameProfile gameProfile) {
++        this.youer$canPlayerLogin$handler.set(handler);
++        this.youer$canPlayerLogin$gameProfile.set(gameProfile);
++    }
++    // CraftBukkit start - Whole method, SocketAddress to LoginListener, added hostname to signature, return EntityPlayer
+     public @Nullable Component canPlayerLogin(SocketAddress p_11257_, NameAndId p_432865_) {
++        ServerLoginPacketListenerImpl handleR = youer$canPlayerLogin$handler.getAndSet(null);
++        GameProfile gameprofile = youer$canPlayerLogin$gameProfile.getAndSet(null);
++        // Moved from processLogin
++        UUID uuid = p_432865_.id();
++        Set<ServerPlayer> set = Sets.newIdentityHashSet();
++
++        for (ServerPlayer serverplayer : this.players) {
++            if (serverplayer.getUUID().equals(uuid)) {
++                set.add(serverplayer);
++            }
++        }
++
++        for (ServerPlayer serverplayer2 : set) {
++            save(serverplayer2); // CraftBukkit - Force the player's inventory to be saved
++            serverplayer2.connection.disconnect(PlayerList.DUPLICATE_LOGIN_DISCONNECT_MESSAGE);
++        }
++
++        // Instead of kicking then returning, we need to store the kick reason
++        // in the event, check with plugins to see if it's ok, and THEN kick
++        // depending on the outcome.
++        SocketAddress address = handleR.connection.getRemoteAddress();
++
++        ServerPlayer entity = new ServerPlayer(this.server, this.server.getLevel(Level.OVERWORLD), gameprofile, ClientInformation.createDefault());
++        youer$canPlayerLogin$entity.set(entity);
++        entity.transferCookieConnection = handleR;
++        org.bukkit.entity.Player player = entity.getBukkitEntity();
++        PlayerLoginEvent event = new PlayerLoginEvent(player, handleR.connection.hostname, ((java.net.InetSocketAddress) address).getAddress(), ((java.net.InetSocketAddress) handleR.connection.channel.remoteAddress()).getAddress());
++
+         if (this.bans.isBanned(p_432865_)) {
+             UserBanListEntry userbanlistentry = this.bans.get(p_432865_);
+             MutableComponent mutablecomponent1 = Component.translatable("multiplayer.disconnect.banned.reason", userbanlistentry.getReasonMessage());
+@@ -344,9 +_,10 @@
+                 );
+             }
+ 
+-            return mutablecomponent1;
++            event.disallow(PlayerLoginEvent.Result.KICK_BANNED, CraftChatMessage.fromComponent(mutablecomponent1));
+         } else if (!this.isWhiteListed(p_432865_)) {
+-            return Component.translatable("multiplayer.disconnect.not_whitelisted");
++            // return Component.translatable("multiplayer.disconnect.not_whitelisted");
++            event.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, org.spigotmc.SpigotConfig.whitelistMessage); // Spigot
+         } else if (this.ipBans.isBanned(p_11257_)) {
+             IpBanListEntry ipbanlistentry = this.ipBans.get(p_11257_);
+             MutableComponent mutablecomponent = Component.translatable("multiplayer.disconnect.banned_ip.reason", ipbanlistentry.getReasonMessage());
+@@ -356,46 +_,52 @@
+                 );
+             }
+ 
+-            return mutablecomponent;
++            // return mutablecomponent;
++            event.disallow(PlayerLoginEvent.Result.KICK_BANNED, CraftChatMessage.fromComponent(mutablecomponent));
+         } else {
+-            return this.players.size() >= this.getMaxPlayers() && !this.canBypassPlayerLimit(p_432865_)
+-                ? Component.translatable("multiplayer.disconnect.server_full")
+-                : null;
+-        }
+-    }
+-
+-    public boolean disconnectAllPlayersWithProfile(UUID p_434192_) {
+-        Set<ServerPlayer> set = Sets.newIdentityHashSet();
+-
+-        for (ServerPlayer serverplayer : this.players) {
+-            if (serverplayer.getUUID().equals(p_434192_)) {
+-                set.add(serverplayer);
++            if (this.players.size() >= this.getMaxPlayers() && !this.canBypassPlayerLimit(p_432865_)) {
++                event.disallow(org.bukkit.event.player.PlayerLoginEvent.Result.KICK_FULL, ColorAPI.string(org.spigotmc.SpigotConfig.serverFullMessage)); // Spigot // Paper - Adventure
+             }
+         }
+ 
+-        ServerPlayer serverplayer2 = this.playersByUUID.get(p_434192_);
+-        if (serverplayer2 != null) {
+-            set.add(serverplayer2);
+-        }
+-
+-        for (ServerPlayer serverplayer1 : set) {
+-            serverplayer1.connection.disconnect(DUPLICATE_LOGIN_DISCONNECT_MESSAGE);
+-        }
+-
+-        return !set.isEmpty();
++        cserver.getPluginManager().callEvent(event);
++        if (event.getResult() != org.bukkit.event.player.PlayerLoginEvent.Result.ALLOWED) {
++            youer$canPlayerLogin$entity.set(null);
++            return Component.literal(event.getKickMessage());
++        }
++        return null;
++    }
++
++    public boolean disconnectAllPlayersWithProfile(UUID p_434192_, ServerPlayer player) { // CraftBukkit - added EntityPlayer
++        return player == null;
++    }
++
 +    public ServerPlayer respawn(ServerPlayer serverplayer, boolean flag, Entity.RemovalReason entity_removalreason, PlayerRespawnEvent.RespawnReason reason, Location location) {
 +        return respawn(serverplayer, flag, entity_removalreason);
 +    }
 +
 +    public ServerPlayer respawn(ServerPlayer serverplayer, boolean flag, Entity.RemovalReason entity_removalreason, PlayerRespawnEvent.RespawnReason reason) {
 +        return respawn(serverplayer, flag, entity_removalreason, PlayerRespawnEvent.RespawnReason.PLUGIN, null);
-+    }
-+
+     }
+ 
      public ServerPlayer respawn(ServerPlayer p_11237_, boolean p_11238_, Entity.RemovalReason p_348558_) {
          TeleportTransition teleporttransition = p_11237_.findRespawnPositionAndUseSpawnBlock(!p_11238_, TeleportTransition.DO_NOTHING);
          this.players.remove(p_11237_);

@@ -1,9 +1,10 @@
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
-@@ -2,6 +_,8 @@
+@@ -2,6 +_,9 @@
  
  import com.google.common.annotations.VisibleForTesting;
  import com.google.common.collect.Lists;
++import com.mohistmc.youer.neoforge.NeoForgeInjectBukkit;
 +import com.mohistmc.youer.neoforge.YouerDerivedWorldInfo;
 +import com.mohistmc.youer.util.Level2LevelStem;
  import com.mojang.datafixers.DataFixer;
@@ -17,6 +18,24 @@
  import java.io.IOException;
  import java.io.Writer;
  import java.nio.file.Files;
+@@ -122,6 +_,7 @@
+ import net.minecraft.world.level.StructureManager;
+ import net.minecraft.world.level.WorldGenLevel;
+ import net.minecraft.world.level.biome.Biome;
++import net.minecraft.world.level.biome.BiomeSource;
+ import net.minecraft.world.level.block.Block;
+ import net.minecraft.world.level.block.Blocks;
+ import net.minecraft.world.level.block.SnowLayerBlock;
+@@ -153,7 +_,9 @@
+ import net.minecraft.world.level.gameevent.GameEventDispatcher;
+ import net.minecraft.world.level.gamerules.GameRule;
+ import net.minecraft.world.level.gamerules.GameRules;
++import net.minecraft.world.level.levelgen.FlatLevelSource;
+ import net.minecraft.world.level.levelgen.Heightmap;
++import net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator;
+ import net.minecraft.world.level.levelgen.structure.BoundingBox;
+ import net.minecraft.world.level.levelgen.structure.Structure;
+ import net.minecraft.world.level.levelgen.structure.StructureCheck;
 @@ -167,9 +_,11 @@
  import net.minecraft.world.level.saveddata.maps.MapId;
  import net.minecraft.world.level.saveddata.maps.MapIndex;
@@ -29,16 +48,24 @@
  import net.minecraft.world.level.storage.ServerLevelData;
  import net.minecraft.world.phys.AABB;
  import net.minecraft.world.phys.Vec3;
-@@ -178,6 +_,9 @@
+@@ -178,8 +_,17 @@
  import net.minecraft.world.phys.shapes.VoxelShape;
  import net.minecraft.world.ticks.LevelTicks;
  import net.minecraft.world.waypoints.WaypointTransmitter;
++import org.bukkit.craftbukkit.CraftWorld;
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
++import org.bukkit.craftbukkit.generator.CustomChunkGenerator;
++import org.bukkit.craftbukkit.generator.CustomWorldChunkManager;
++import org.bukkit.craftbukkit.util.CraftSpawnCategory;
 +import org.bukkit.craftbukkit.util.WorldUUID;
++import org.bukkit.entity.SpawnCategory;
 +import org.bukkit.event.weather.LightningStrikeEvent;
  import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
++import org.spigotmc.SpigotWorldConfig;
  
+ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLevel {
+     public static final BlockPos END_SPAWN_POINT = new BlockPos(100, 50, 0);
 @@ -193,11 +_,11 @@
      final List<ServerPlayer> players = Lists.newArrayList();
      private final ServerChunkCache chunkSource;
@@ -77,13 +104,13 @@
 +
 +    @Override
 +    public ResourceKey<LevelStem> getTypeKey() {
-+        return convertable.dimensionType;
++        return typeKey == null ? super.getTypeKey() : typeKey;
 +    }
 +
      public ServerLevel(
          MinecraftServer p_214999_,
          Executor p_215000_,
-@@ -235,10 +_,35 @@
+@@ -235,11 +_,60 @@
          @Nullable RandomSequences p_288977_
      ) {
          super(p_215002_, p_215003_, p_214999_.registryAccess(), p_215004_.type(), false, p_215006_, p_215007_, p_214999_.getMaxChainedNeighborUpdates());
@@ -117,10 +144,68 @@
 +        } else {
 +            this.I = YouerDerivedWorldInfo.create(p_215002_);
 +        }
++        this.spigotConfig = new SpigotWorldConfig(name); // Spigot
++        // CraftBukkit Ticks things
++        for (SpawnCategory spawnCategory : SpawnCategory.values()) {
++            if (CraftSpawnCategory.isValidForLimits(spawnCategory) && getCraftServer() != null) {
++                this.ticksPerSpawnCategory.put(spawnCategory, (long) this.getCraftServer().getTicksPerSpawns(spawnCategory));
++            }
++        }
          ChunkGenerator chunkgenerator = p_215004_.generator();
++        if (environment == null) {
++            environment = NeoForgeInjectBukkit.environment.get(getTypeKey());
++        }
++
++        this.world = new CraftWorld(this, generator, biomeProvider, environment);
++        if (biomeProvider != null) {
++            BiomeSource worldChunkManager = new CustomWorldChunkManager(world, biomeProvider, server.registryAccess().lookupOrThrow(Registries.BIOME));
++            if (chunkgenerator instanceof NoiseBasedChunkGenerator cga) {
++                chunkgenerator = new NoiseBasedChunkGenerator(worldChunkManager, cga.settings);
++            } else if (chunkgenerator instanceof FlatLevelSource cpf) {
++                chunkgenerator = new FlatLevelSource(cpf.settings(), worldChunkManager);
++            }
++        }
++
++        if (generator != null) {
++            chunkgenerator = new CustomChunkGenerator(this, chunkgenerator, generator);
++        }
          boolean flag = p_214999_.forceSynchronousWrites();
          DataFixer datafixer = p_214999_.getFixerUpper();
-@@ -304,6 +_,11 @@
+         EntityPersistentStorage<Entity> entitypersistentstorage = new EntityStorage(
+@@ -254,6 +_,8 @@
+             p_214999_
+         );
+         this.entityManager = new PersistentEntitySectionManager<>(Entity.class, new ServerLevel.EntityCallbacks(), entitypersistentstorage);
++        int j = this.spigotConfig.viewDistance; // Spigot
++        int k = this.spigotConfig.simulationDistance; // Spigot
+         this.chunkSource = new ServerChunkCache(
+             this,
+             p_215001_,
+@@ -261,8 +_,8 @@
+             p_214999_.getStructureManager(),
+             p_215000_,
+             chunkgenerator,
+-            p_214999_.getPlayerList().getViewDistance(),
+-            p_214999_.getPlayerList().getSimulationDistance(),
++            j,
++            k,
+             flag,
+             this.entityManager::updateChunkStatus,
+             () -> p_214999_.overworld().getDataStorage()
+@@ -291,9 +_,9 @@
+             i,
+             datafixer
+         );
+-        this.structureManager = new StructureManager(this, p_214999_.getWorldData().worldGenOptions(), this.structureCheck);
+-        if (this.dimension() == Level.END && this.dimensionTypeRegistration().is(BuiltinDimensionTypes.END)) {
+-            this.dragonFight = new EndDragonFight(this, i, p_214999_.getWorldData().endDragonFightData());
++        this.structureManager = new StructureManager(this, this.I.worldGenOptions(), this.structureCheck);
++        if (this.dimension() == Level.END && this.dimensionTypeRegistration().is(BuiltinDimensionTypes.END) || environment == org.bukkit.World.Environment.THE_END) { // CraftBukkit - Allow to create EnderDragonBattle in default and custom END
++            this.dragonFight = new EndDragonFight(this, this.I.worldGenOptions().seed(), this.I.endDragonFightData()); // CraftBukkit
+         } else {
+             this.dragonFight = null;
+         }
+@@ -304,6 +_,13 @@
          this.waypointManager = new ServerWaypointManager();
          this.environmentAttributes = EnvironmentAttributeSystem.builder().addDefaultLayers(this).build();
          this.updateSkyBrightness();
@@ -129,6 +214,8 @@
 +        // Neo: Move the initialization of customSpawners to the end of costructor
 +        // Providing a fully initialized ServerLevel instance for the ServerLevelEvent.CustomSpawners
 +        this.customSpawners = net.neoforged.neoforge.event.EventHooks.getCustomSpawners(this, p_215008_);
++        this.getCraftServer().addWorld(this.getWorld()); // CraftBukkit
++        this.I.setWorld(this);
      }
  
      @Deprecated

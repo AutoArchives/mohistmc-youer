@@ -33,7 +33,7 @@
 -            }).group(eventloopgroupholder.eventLoopGroup()).localAddress(p_9712_, p_9713_).bind().syncUninterruptibly());
 -        }
 -    }
-+            }).group(eventloopgroupholder.serverEventLoopGroup()).localAddress(p_9712_, p_9713_).bind().syncUninterruptibly());
++            }).group(eventloopgroupholder.serverEventLoopGroup()).localAddress(p_9712_, p_9713_).option(ChannelOption.AUTO_READ, false).bind().syncUninterruptibly()); // CraftBukkit
 +        }
 +    }
 +

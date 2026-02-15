@@ -31,7 +31,7 @@
          }
  
 -        if (!list.isEmpty()) {
-+        if (!list.isEmpty() && p_379913_.connection != null) { // SPIGOT-4478 during PlayerLoginEvent
++        if (!list.isEmpty() && p_12793_.connection != null) { // SPIGOT-4478 during PlayerLoginEvent
              p_12793_.connection.send(new ClientboundRecipeBookAddPacket(list, false));
          }
  

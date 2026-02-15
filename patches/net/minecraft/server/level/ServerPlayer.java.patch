@@ -167,6 +167,27 @@
          p_422225_.putBoolean("spawn_extra_particles_on_fall", this.spawnExtraParticlesOnFall);
          p_422225_.storeNullable("raid_omen_position", BlockPos.CODEC, this.raidOmenPosition);
          this.saveEnderPearls(p_422225_);
+@@ -510,6 +_,20 @@
+         }
+     }
+ 
++    // CraftBukkit start - World fallback code, either respawn location or global spawn
++    public void spawnIn(Level level, boolean flag) {
++        this.setLevel(level);
++        if (level == null) {
++            this.unsetRemoved();
++            TeleportTransition teleporttransition = this.findRespawnPositionAndUseSpawnBlock(!flag, TeleportTransition.DO_NOTHING);
++
++            this.setLevel(teleporttransition.newLevel());
++            this.setPos(teleporttransition.position());
++        }
++        this.gameMode.setLevel((ServerLevel) level);
++    }
++    // CraftBukkit end
++
+     public void setExperiencePoints(int p_8986_) {
+         float f = this.getXpNeededForNextLevel();
+         float f1 = (f - 1.0F) / f;
 @@ -541,7 +_,7 @@
          this.lastSentExp = -1;
      }

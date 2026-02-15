@@ -1,0 +1,16 @@
+--- a/net/minecraft/world/level/levelgen/FlatLevelSource.java
++++ b/net/minecraft/world/level/levelgen/FlatLevelSource.java
+@@ -34,7 +_,12 @@
+     private final FlatLevelGeneratorSettings settings;
+ 
+     public FlatLevelSource(FlatLevelGeneratorSettings p_256337_) {
+-        super(new FixedBiomeSource(p_256337_.getBiome()), Util.memoize(p_256337_::adjustGenerationSettings));
++        this(p_256337_, new FixedBiomeSource(p_256337_.getBiome()));
++    }
++
++    public FlatLevelSource(FlatLevelGeneratorSettings p_256337_, net.minecraft.world.level.biome.BiomeSource biomesource) {
++        super(biomesource, Util.memoize(p_256337_::adjustGenerationSettings));
++        // CraftBukkit end
+         this.settings = p_256337_;
+     }
+ 

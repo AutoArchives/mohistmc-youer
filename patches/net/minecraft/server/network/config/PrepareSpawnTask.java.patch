@@ -1,10 +1,65 @@
 --- a/net/minecraft/server/network/config/PrepareSpawnTask.java
 +++ b/net/minecraft/server/network/config/PrepareSpawnTask.java
-@@ -186,6 +_,7 @@
+@@ -25,6 +_,9 @@
+ import net.minecraft.world.level.storage.ValueInput;
+ import net.minecraft.world.phys.Vec2;
+ import net.minecraft.world.phys.Vec3;
++import org.bukkit.Location;
++import org.bukkit.craftbukkit.CraftWorld;
++import org.bukkit.entity.Player;
+ import org.jspecify.annotations.Nullable;
+ import org.slf4j.Logger;
+ 
+@@ -33,11 +_,11 @@
+     public static final ConfigurationTask.Type TYPE = new ConfigurationTask.Type("prepare_spawn");
+     public static final int PREPARE_CHUNK_RADIUS = 3;
+     final MinecraftServer server;
+-    final NameAndId nameAndId;
++    final ServerPlayer nameAndId;
+     final LevelLoadListener loadListener;
+     private PrepareSpawnTask.@Nullable State state;
+ 
+-    public PrepareSpawnTask(MinecraftServer p_434780_, NameAndId p_435413_) {
++    public PrepareSpawnTask(MinecraftServer p_434780_, ServerPlayer p_435413_) {
+         this.server = p_434780_;
+         this.nameAndId = p_435413_;
+         this.loadListener = p_434780_.getLevelLoadListener();
+@@ -54,7 +_,7 @@
+                     p_432966_ -> p_432966_.read(ServerPlayer.SavedPosition.MAP_CODEC)
+                 )
+                 .orElse(ServerPlayer.SavedPosition.EMPTY);
+-            LevelData.RespawnData leveldata$respawndata = this.server.getWorldData().overworldData().getRespawnData();
++            LevelData.RespawnData leveldata$respawndata = this.nameAndId.level().getRespawnData(); // CraftBukkit - SPIGOT-7507: If no dimension, fall back to existing dimension loaded from "WorldUUID", which in turn defaults to World.OVERWORLD
+             ServerLevel serverlevel = serverplayer$savedposition.dimension().map(this.server::getLevel).orElseGet(() -> {
+                 ServerLevel serverlevel1 = this.server.getLevel(leveldata$respawndata.dimension());
+                 return serverlevel1 != null ? serverlevel1 : this.server.overworld();
+@@ -175,7 +_,7 @@
+         public ServerPlayer spawn(Connection p_436059_, CommonListenerCookie p_434132_) {
+             ChunkPos chunkpos = new ChunkPos(BlockPos.containing(this.spawnPosition));
+             this.spawnLevel.waitForEntities(chunkpos, 3);
+-            ServerPlayer serverplayer = new ServerPlayer(PrepareSpawnTask.this.server, this.spawnLevel, p_434132_.gameProfile(), p_434132_.clientInformation());
++            ServerPlayer serverplayer = nameAndId;
+ 
+             ServerPlayer serverplayer1;
+             try (ProblemReporter.ScopedCollector problemreporter$scopedcollector = new ProblemReporter.ScopedCollector(
+@@ -186,7 +_,20 @@
                      .loadPlayerData(PrepareSpawnTask.this.nameAndId)
                      .map(p_435936_ -> TagValueInput.create(problemreporter$scopedcollector, PrepareSpawnTask.this.server.registryAccess(), p_435936_));
                  optional.ifPresent(serverplayer::load);
 +                net.neoforged.neoforge.event.EventHooks.firePlayerLoadingEvent(serverplayer, PrepareSpawnTask.this.server.getPlayerList(), serverplayer.getStringUUID());
                  serverplayer.snapTo(this.spawnPosition, this.spawnAngle.x, this.spawnAngle.y);
++                // Spigot start - spawn location event
++                Player spawnPlayer = serverplayer.getBukkitEntity();
++                org.spigotmc.event.player.PlayerSpawnLocationEvent ev = new org.spigotmc.event.player.PlayerSpawnLocationEvent(spawnPlayer, spawnPlayer.getLocation());
++                spawnPlayer.getServer().getPluginManager().callEvent(ev);
++
++                Location loc = ev.getSpawnLocation();
++                ServerLevel spawnWorld = ((CraftWorld) loc.getWorld()).getHandle();
++
++                serverplayer.spawnIn(spawnWorld, true);
++                serverplayer.gameMode.setLevel((ServerLevel) serverplayer.level());
++                serverplayer.absSnapTo(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch());
++                // Spigot end
                  PrepareSpawnTask.this.server.getPlayerList().placeNewPlayer(p_436059_, serverplayer, p_434132_);
                  optional.ifPresent(p_433587_ -> {
+                     serverplayer.loadAndSpawnEnderPearls(p_433587_);

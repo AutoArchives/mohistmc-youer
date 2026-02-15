@@ -1,5 +1,39 @@
 --- a/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java
 +++ b/net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java
+@@ -1,5 +_,6 @@
+ package net.minecraft.server.network;
+ 
++import com.mohistmc.youer.util.ThreadUtils;
+ import com.mojang.authlib.GameProfile;
+ import com.mojang.logging.LogUtils;
+ import java.util.List;
+@@ -30,6 +_,7 @@
+ import net.minecraft.server.RegistryLayer;
+ import net.minecraft.server.ServerLinks;
+ import net.minecraft.server.level.ClientInformation;
++import net.minecraft.server.level.ServerPlayer;
+ import net.minecraft.server.network.config.JoinWorldTask;
+ import net.minecraft.server.network.config.PrepareSpawnTask;
+ import net.minecraft.server.network.config.ServerCodeOfConductConfigurationTask;
+@@ -40,6 +_,7 @@
+ import net.minecraft.server.players.NameAndId;
+ import net.minecraft.server.players.PlayerList;
+ import net.minecraft.world.flag.FeatureFlags;
++import org.bukkit.craftbukkit.CraftServerLinks;
+ import org.jspecify.annotations.Nullable;
+ import org.slf4j.Logger;
+ 
+@@ -54,8 +_,8 @@
+     private @Nullable SynchronizeRegistriesTask synchronizeRegistriesTask;
+     private @Nullable PrepareSpawnTask prepareSpawnTask;
+ 
+-    public ServerConfigurationPacketListenerImpl(MinecraftServer p_294645_, Connection p_295787_, CommonListenerCookie p_302003_) {
+-        super(p_294645_, p_295787_, p_302003_);
++    public ServerConfigurationPacketListenerImpl(MinecraftServer p_294645_, Connection p_295787_, CommonListenerCookie p_302003_, ServerPlayer player) {
++        super(p_294645_, p_295787_, p_302003_, player);
+         this.gameProfile = p_302003_.gameProfile();
+         this.clientInformation = p_302003_.clientInformation();
+     }
 @@ -82,6 +_,15 @@
      }
  
@@ -25,6 +59,15 @@
          this.synchronizeRegistriesTask = new SynchronizeRegistriesTask(list, layeredregistryaccess);
          this.configurationTasks.add(this.synchronizeRegistriesTask);
          this.addOptionalTasks();
+@@ -98,7 +_,7 @@
+     }
+ 
+     public void returnToWorld() {
+-        this.prepareSpawnTask = new PrepareSpawnTask(this.server, new NameAndId(this.gameProfile));
++        this.prepareSpawnTask = new PrepareSpawnTask(this.server, this.player);
+         this.configurationTasks.add(this.prepareSpawnTask);
+         this.configurationTasks.add(new JoinWorldTask());
+         this.startNextTask();
 @@ -122,6 +_,32 @@
          }
  
@@ -58,6 +101,14 @@
      }
  
      @Override
+@@ -150,6 +_,7 @@
+ 
+     @Override
+     public void handleAcceptCodeOfConduct(ServerboundAcceptCodeOfConductPacket p_439567_) {
++        PacketUtils.ensureRunningOnSameThread(p_439567_, this, this.server.packetProcessor()); // CraftBukkit
+         this.finishCurrentTask(ServerCodeOfConductConfigurationTask.TYPE);
+     }
+ 
 @@ -157,7 +_,13 @@
      public void handleConfigurationFinished(ServerboundFinishConfigurationPacket p_294283_) {
          PacketUtils.ensureRunningOnSameThread(p_294283_, this, this.server.packetProcessor());
@@ -73,11 +124,22 @@
  
          try {
              PlayerList playerlist = this.server.getPlayerList();
-@@ -172,7 +_,7 @@
+@@ -166,13 +_,16 @@
                  return;
              }
  
+-            Component component = playerlist.canPlayerLogin(this.connection.getRemoteAddress(), new NameAndId(this.gameProfile));
++            Component component = null; // CraftBukkit - login checks already completed
+             if (component != null) {
+                 this.disconnect(component);
+                 return;
+             }
+-
 -            Objects.requireNonNull(this.prepareSpawnTask).spawnPlayer(this.connection, this.createCookie(this.clientInformation));
++            // CraftBukkit start
++            ServerPlayer serverplayer = this.player;
++            serverplayer.updateOptions(this.clientInformation);
++            // CraftBukkit end
 +            Objects.requireNonNull(this.prepareSpawnTask).spawnPlayer(this.connection, this.createCookie(this.clientInformation, this.connectionType));
          } catch (Exception exception) {
              LOGGER.error("Couldn't place player in world", (Throwable)exception);

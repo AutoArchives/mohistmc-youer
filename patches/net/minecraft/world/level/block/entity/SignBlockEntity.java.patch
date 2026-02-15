@@ -1,0 +1,19 @@
+--- a/net/minecraft/world/level/block/entity/SignBlockEntity.java
++++ b/net/minecraft/world/level/block/entity/SignBlockEntity.java
+@@ -16,6 +_,7 @@
+ import net.minecraft.network.chat.Style;
+ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+ import net.minecraft.server.level.ServerLevel;
++import net.minecraft.server.level.ServerPlayer;
+ import net.minecraft.server.network.FilteredText;
+ import net.minecraft.server.permissions.LevelBasedPermissionSet;
+ import net.minecraft.sounds.SoundEvent;
+@@ -202,7 +_,7 @@
+                     flag = true;
+                     break;
+                 case ClickEvent.Custom clickevent$custom:
+-                    p_426215_.getServer().handleCustomClickAction(clickevent$custom.id(), clickevent$custom.payload());
++                    p_426215_.getServer().handleCustomClickAction(clickevent$custom.id(), clickevent$custom.payload(), (ServerPlayer) p_279304_); // CraftBukkit - add player
+                     flag = true;
+                     break;
+                 case null:

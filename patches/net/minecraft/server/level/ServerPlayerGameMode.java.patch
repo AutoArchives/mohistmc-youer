@@ -30,6 +30,15 @@
                      blockstate.attack(this.level, p_215120_, this.player);
                      f = blockstate.getDestroyProgress(this.player, this.player.level(), p_215120_);
                  }
+@@ -232,7 +_,7 @@
+             } else if (p_215121_ == ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK) {
+                 this.isDestroyingBlock = false;
+                 if (!Objects.equals(this.destroyPos, p_215120_)) {
+-                    LOGGER.warn("Mismatch in destroy block pos: {} {}", this.destroyPos, p_215120_);
++                    LOGGER.debug("Mismatch in destroy block pos: {} {}", this.destroyPos, p_215120_); // CraftBukkit - SPIGOT-5457 sent by client when interact event cancelled
+                     this.level.destroyBlockProgress(this.player.getId(), this.destroyPos, -1);
+                     this.debugLogging(p_215120_, true, p_215124_, "aborted mismatched destroying");
+                 }
 @@ -254,7 +_,8 @@
  
      public boolean destroyBlock(BlockPos p_9281_) {
