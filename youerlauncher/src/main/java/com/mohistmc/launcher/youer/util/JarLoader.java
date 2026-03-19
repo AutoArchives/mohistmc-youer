@@ -1,6 +1,6 @@
 /*
  * Mohist - MohistMC
- * Copyright (C) 2018-2024.
+ * Copyright (C) 2018-2026.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,19 +25,17 @@ import java.util.jar.JarFile;
 
 public class JarLoader {
 
-    private static Instrumentation inst = null;
+    static Instrumentation inst = null;
 
     public JarLoader() {
     }
 
-    // The JRE will call method before launching your main()
-    public static void agentmain(final String a, final Instrumentation inst) {
-        JarLoader.inst = inst;
+    public static void premain(String args, Instrumentation instrumentation) {
+        agentmain(args, instrumentation);
     }
 
-    // Don't forget to specify -javaagent:<mohist jar> on Java 9+,
-    // if you load the main Mohist jar from -cp rather than direct-jar
-    public static void premain(String agentArgs, Instrumentation inst) {
+    // The JRE will call method before launching your main()
+    public static void agentmain(String a, Instrumentation inst) {
         JarLoader.inst = inst;
     }
 

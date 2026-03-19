@@ -18,6 +18,14 @@
  import java.io.IOException;
  import java.io.Writer;
  import java.nio.file.Files;
+@@ -27,6 +_,7 @@
+ import java.util.Set;
+ import java.util.UUID;
+ import java.util.concurrent.Executor;
++import java.util.concurrent.atomic.AtomicBoolean;
+ import java.util.function.BooleanSupplier;
+ import java.util.function.Function;
+ import java.util.function.Predicate;
 @@ -122,6 +_,7 @@
  import net.minecraft.world.level.StructureManager;
  import net.minecraft.world.level.WorldGenLevel;
@@ -48,7 +56,7 @@
  import net.minecraft.world.level.storage.ServerLevelData;
  import net.minecraft.world.phys.AABB;
  import net.minecraft.world.phys.Vec3;
-@@ -178,8 +_,17 @@
+@@ -178,8 +_,18 @@
  import net.minecraft.world.phys.shapes.VoxelShape;
  import net.minecraft.world.ticks.LevelTicks;
  import net.minecraft.world.waypoints.WaypointTransmitter;
@@ -59,6 +67,7 @@
 +import org.bukkit.craftbukkit.util.CraftSpawnCategory;
 +import org.bukkit.craftbukkit.util.WorldUUID;
 +import org.bukkit.entity.SpawnCategory;
++import org.bukkit.event.entity.CreatureSpawnEvent;
 +import org.bukkit.event.weather.LightningStrikeEvent;
  import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
@@ -310,6 +319,59 @@
          }
      }
  
+@@ -953,22 +_,45 @@
+         return list.isEmpty() ? null : list.get(this.random.nextInt(list.size()));
+     }
+ 
++    // Mohist start
++    public AtomicBoolean canaddFreshEntity = new AtomicBoolean(false);
++
++    public boolean canAddFreshEntity() {
++        return canaddFreshEntity.getAndSet(false);
++    }
++    // Mohist end
++
+     @Override
+     public boolean addFreshEntity(Entity p_8837_) {
+-        return this.addEntity(p_8837_);
++        boolean add = this.addEntity(p_8837_);
++        canaddFreshEntity.set(add);
++        return add;
++    }
++
++    public boolean addFreshEntity(Entity entity, CreatureSpawnEvent.SpawnReason reason) {
++        return this.addEntityByReason(entity, reason);
+     }
+ 
+     public boolean addWithUUID(Entity p_8848_) {
+         return this.addEntity(p_8848_);
+     }
+ 
++    public boolean addWithUUID(Entity entity, CreatureSpawnEvent.SpawnReason reason) {
++        return this.addEntityByReason(entity, reason);
++    }
++
+     public void addDuringTeleport(Entity p_143335_) {
+-        if (p_143335_ instanceof ServerPlayer serverplayer) {
+-            this.addPlayer(serverplayer);
+-        } else {
+-            this.addEntity(p_143335_);
+-        }
+-    }
++        // SPIGOT-6415: Don't call spawn event for entities which travel trough worlds,
++        // since it is only an implementation detail, that a new entity is created when
++        // they are traveling between worlds.
++        p_143335_.spawnReason(null); // Mohist
++        this.addEntity(p_143335_);
++    }
++
++    public void addDuringTeleport(Entity entity, CreatureSpawnEvent.SpawnReason reason) {
++        this.addEntityByReason(entity, reason);
++    }
++    // CraftBukkit end
+ 
+     public void addNewPlayer(ServerPlayer p_8835_) {
+         this.addPlayer(p_8835_);
 @@ -979,6 +_,7 @@
      }
  
@@ -328,7 +390,7 @@
      }
  
      private boolean addEntity(Entity p_8873_) {
-@@ -994,7 +_,12 @@
+@@ -994,9 +_,21 @@
              LOGGER.warn("Tried to add entity {} but it was marked as removed already", EntityType.getKey(p_8873_.getType()));
              return false;
          } else {
@@ -341,7 +403,32 @@
 +            }
          }
      }
++
++    // Mohist start
++    public boolean addEntityByReason(Entity entity, CreatureSpawnEvent.SpawnReason spawnReason) {
++        entity.spawnReason(spawnReason);
++        return addEntity(entity);
++    }
++    // Mohist end
  
+     public boolean tryAddFreshEntityWithPassengers(Entity p_8861_) {
+         if (p_8861_.getSelfAndPassengers().map(Entity::getUUID).anyMatch(this.entityManager::isLoaded)) {
+@@ -1007,6 +_,15 @@
+         }
+     }
+ 
++    public boolean tryAddFreshEntityWithPassengers(Entity pEntity, CreatureSpawnEvent.SpawnReason reason) {
++        if (pEntity.getSelfAndPassengers().map(Entity::getUUID).anyMatch(this.entityManager::isLoaded)) {
++            return false;
++        } else {
++            this.addFreshEntityWithPassengers(pEntity, reason);
++            return true;
++        }
++    }
++
+     public void unload(LevelChunk p_8713_) {
+         p_8713_.clearAllBlockEntities();
+         p_8713_.unregisterTickContainerFromLevel(this);
 @@ -1017,6 +_,22 @@
          p_143262_.remove(p_143263_);
      }
