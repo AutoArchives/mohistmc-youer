@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/level/chunk/storage/RegionFileStorage.java
 +++ b/net/minecraft/world/level/chunk/storage/RegionFileStorage.java
-@@ -29,7 +_,7 @@
+@@ -29,18 +_,22 @@
          this.info = info;
      }
  
@@ -9,7 +9,15 @@
          long key = ChunkPos.pack(pos.getRegionX(), pos.getRegionZ());
          RegionFile region = this.regionCache.getAndMoveToFirst(key);
          if (region != null) {
-@@ -41,6 +_,7 @@
+             return region;
+         } else {
+-            if (this.regionCache.size() >= 256) {
++            // Paper start - Sanitise RegionFileCache and make configurable - Config not available during initial FileFixerUpper run
++            int cacheSize = io.papermc.paper.configuration.GlobalConfiguration.get() == null ? 256 : io.papermc.paper.configuration.GlobalConfiguration.get().misc.regionFileCacheSize;
++            if (this.regionCache.size() >= cacheSize) {
++            // Paper end - Sanitise RegionFileCache and make configurable
+                 this.regionCache.removeLast().close();
+             }
  
              FileUtil.createDirectoriesSafe(this.folder);
              Path file = this.folder.resolve("r." + pos.getRegionX() + "." + pos.getRegionZ() + ".mca");

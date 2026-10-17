@@ -1,5 +1,14 @@
 --- a/net/minecraft/server/players/BanListEntry.java
 +++ b/net/minecraft/server/players/BanListEntry.java
+@@ -18,7 +_,7 @@
+     protected final @Nullable String reason;
+ 
+     public BanListEntry(@Nullable T user, @Nullable Date created, @Nullable String source, @Nullable Date expires, @Nullable String reason) {
+-        super(user);
++        super(BanListEntry.checkExpiry(user, object)); // CraftBukkit
+         this.created = created == null ? new Date() : created;
+         this.source = source == null ? "(Unknown)" : source;
+         this.expires = expires;
 @@ -26,7 +_,7 @@
      }
  

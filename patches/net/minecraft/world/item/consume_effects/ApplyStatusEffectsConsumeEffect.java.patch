@@ -8,7 +8,7 @@
  
  public record ApplyStatusEffectsConsumeEffect(List<MobEffectInstance> effects, float probability) implements ConsumeEffect {
      public static final MapCodec<ApplyStatusEffectsConsumeEffect> CODEC = RecordCodecBuilder.mapCodec(
-@@ -46,13 +_,14 @@
+@@ -46,14 +_,14 @@
      }
  
      @Override
@@ -20,7 +20,8 @@
              boolean anyApplied = false;
  
              for (MobEffectInstance effect : this.effects) {
-+                user.addEffectCause(cause);
-                 if (user.addEffect(new MobEffectInstance(effect))) {
+-                if (user.addEffect(new MobEffectInstance(effect))) {
++                if (user.addEffect(new MobEffectInstance(effect), cause)) { // CraftBukkit
                      anyApplied = true;
                  }
+             }

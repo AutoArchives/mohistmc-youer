@@ -18,6 +18,18 @@
              if (newBlock.isEmpty()) {
                  return InteractionResult.PASS;
              } else {
+@@ -73,6 +_,11 @@
+                     CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger((ServerPlayer)player, pos, itemInHand);
+                 }
+ 
++                // Paper start - EntityChangeBlockEvent
++                if (!org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(player, pos, newBlock.get())) {
++                    return InteractionResult.PASS;
++                }
++                // Paper end
+                 level.setBlock(pos, newBlock.get(), 11);
+                 level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, newBlock.get()));
+                 if (player != null) {
 @@ -91,19 +_,18 @@
              && !player.isSecondaryUseActive();
      }

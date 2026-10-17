@@ -16,10 +16,12 @@
  
  public class FishingRodItem extends Item {
      public FishingRodItem(Item.Properties properties) {
-@@ -24,7 +_,11 @@
+@@ -23,8 +_,12 @@
+         ItemStack itemStack = player.getItemInHand(hand);
          if (player.fishing != null) {
              if (!level.isClientSide()) {
-                 int dmg = player.fishing.retrieve(itemStack);
+-                int dmg = player.fishing.retrieve(itemStack);
++                int dmg = player.fishing.retrieve(itemStack, hand); // Paper - Add hand parameter to PlayerFishEvent
 +                ItemStack original = itemStack.copy();
                  itemStack.hurtAndBreak(dmg, player, hand.asEquipmentSlot());
 +                if(itemStack.isEmpty()) {

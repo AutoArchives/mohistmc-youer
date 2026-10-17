@@ -1,5 +1,17 @@
 --- a/net/minecraft/world/entity/monster/creaking/Creaking.java
 +++ b/net/minecraft/world/entity/monster/creaking/Creaking.java
+@@ -190,9 +_,9 @@
+     }
+ 
+     @Override
+-    public void push(double xa, double ya, double za) {
++    public void push(double xa, double ya, double za, @Nullable Entity pushingEntity) { // Paper - add push source entity param
+         if (this.canMove()) {
+-            super.push(xa, ya, za);
++            super.push(xa, ya, za, pushingEntity); // Paper - add push source entity param
+         }
+     }
+ 
 @@ -317,7 +_,7 @@
          }
  
@@ -9,6 +21,18 @@
      }
  
      public void creakingDeathEffects(DamageSource source) {
+@@ -445,9 +_,9 @@
+     }
+ 
+     @Override
+-    public void knockback(double power, double xd, double zd) {
++    public void knockback(double power, double xd, double zd, @Nullable Entity attacker, io.papermc.paper.event.entity.EntityKnockbackEvent.Cause cause) { // Paper - knockback events
+         if (this.canMove()) {
+-            super.knockback(power, xd, zd);
++            super.knockback(power, xd, zd, attacker, cause);
+         }
+     }
+ 
 @@ -466,7 +_,8 @@
              for (Player player : players) {
                  if (this.canAttack(player) && !this.isAlliedTo(player)) {

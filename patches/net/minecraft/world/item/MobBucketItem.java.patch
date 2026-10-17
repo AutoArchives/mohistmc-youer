@@ -8,11 +8,12 @@
  import org.jspecify.annotations.Nullable;
  
  public class MobBucketItem extends BucketItem {
-@@ -49,6 +_,7 @@
+@@ -49,7 +_,7 @@
          }
  
          if (mob != null) {
-+            mob.spawnReason(CreatureSpawnEvent.SpawnReason.BUCKET); // CraftBukkit
-             level.addFreshEntityWithPassengers(mob);
+-            level.addFreshEntityWithPassengers(mob);
++            level.addFreshEntityWithPassengers(mob, CreatureSpawnEvent.SpawnReason.BUCKET); // Paper - Add SpawnReason
              mob.playAmbientSound();
          }
+     }

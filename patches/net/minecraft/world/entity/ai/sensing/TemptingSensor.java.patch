@@ -10,8 +10,8 @@
 +            if (event.isCancelled()) {
 +                return;
 +            }
-+            if (event.getTarget() instanceof org.bukkit.entity.HumanEntity) {
-+                brain.setMemory(MemoryModuleType.TEMPTING_PLAYER, ((org.bukkit.craftbukkit.entity.CraftHumanEntity) event.getTarget()).getHandle());
++            if (event.getTarget() instanceof org.bukkit.craftbukkit.entity.CraftHumanEntity target) {
++                brain.setMemory(MemoryModuleType.TEMPTING_PLAYER, target.getHandle());
 +            } else {
 +                brain.eraseMemory(MemoryModuleType.TEMPTING_PLAYER);
 +            }

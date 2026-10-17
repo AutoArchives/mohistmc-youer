@@ -13,7 +13,7 @@
      protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
          if (level.getGameRules().get(GameRules.SPREAD_VINES)) {
 -            if (random.nextInt(4) == 0) {
-+            if (level.getRandom().nextInt(4) == 0 && level.isAreaLoaded(pos, 4)) { // Forge: check area to prevent loading unloaded chunks
++            if (random.nextFloat() < (level.spigotConfig.vineModifier / (100.0F * 4)) && level.isAreaLoaded(pos, 4)) { // Spigot - SPIGOT-7159: Better modifier resolution // Forge: check area to prevent loading unloaded chunks
                  Direction testDirection = Direction.getRandom(random);
                  BlockPos abovePos = pos.above();
                  if (testDirection.getAxis().isHorizontal() && !state.getValue(getPropertyForFace(testDirection))) {

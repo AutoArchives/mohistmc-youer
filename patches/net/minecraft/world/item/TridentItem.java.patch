@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/item/TridentItem.java
 +++ b/net/minecraft/world/item/TridentItem.java
-@@ -78,18 +_,31 @@
+@@ -78,18 +_,42 @@
                              .orElse(SoundEvents.TRIDENT_THROW);
                          player.awardStat(Stats.ITEM_USED.get(this));
                          if (level instanceof ServerLevel serverLevel) {
@@ -8,19 +8,30 @@
 +                            // itemStack.hurtWithoutBreaking(1, player); // CraftBukkit - moved down
                              if (riptideStrength == 0.0F) {
 -                                ItemStack thrownItemStack = itemStack.consumeAndReturn(1, player);
-                                 ThrownTrident trident = Projectile.spawnProjectileFromRotation(
--                                    ThrownTrident::new, serverLevel, thrownItemStack, player, 0.0F, 2.5F, 1.0F
-+                                    ThrownTrident::new, serverLevel, itemStack, player, 0.0F, 2.5F, 1.0F
+-                                ThrownTrident trident = Projectile.spawnProjectileFromRotation(
++                                ItemStack thrownItemStack = itemStack.copyWithCount(1); // Paper
++                                Projectile.Delayed<ThrownTrident> tridentDelayed = Projectile.spawnProjectileFromRotationDelayed( // Paper - PlayerLaunchProjectileEvent
+                                     ThrownTrident::new, serverLevel, thrownItemStack, player, 0.0F, 2.5F, 1.0F
                                  );
-+                                if (trident.isRemoved()) {
++                                // Paper start - PlayerLaunchProjectileEvent
++                                com.destroystokyo.paper.event.player.PlayerLaunchProjectileEvent event = new com.destroystokyo.paper.event.player.PlayerLaunchProjectileEvent((org.bukkit.entity.Player) player.getBukkitEntity(), org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(itemStack), (org.bukkit.entity.Projectile) tridentDelayed.projectile().getBukkitEntity());
++                                if (!event.callEvent() || !tridentDelayed.attemptSpawn()) {
++                                    // Paper end - PlayerLaunchProjectileEvent
++                                    // CraftBukkit start
 +                                    if (player instanceof net.minecraft.server.level.ServerPlayer) {
 +                                        ((net.minecraft.server.level.ServerPlayer) player).getBukkitEntity().updateInventory();
 +                                    }
++                                    // CraftBukkit end
 +                                    return false;
 +                                }
-+                                itemStack.hurtWithoutBreaking(1, player);
-+                                ItemStack thrownItemStack = itemStack.consumeAndReturn(1, player);
-+                                trident.pickupItemStack = thrownItemStack.copy(); // SPIGOT-4511 update since damage call moved
++                                ThrownTrident trident = tridentDelayed.projectile(); // Paper - PlayerLaunchProjectileEvent
++                                if (event.shouldConsume()) {
++                                    thrownItemStack.hurtWithoutBreaking(1, player); // Paper - PlayerLaunchProjectileEvent - use thrownItemStack; pickup item damage
++                                }
++                                trident.pickupItemStack = thrownItemStack.copy(); // SPIGOT-4511 update since damage call moved - use thrownItemStack; count = 1
++                                if (event.shouldConsume()) {
++                                    itemStack.consume(1, player);
++                                }
 +                                // CraftBukkit end
                                  if (player.hasInfiniteMaterials()) {
                                      trident.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
@@ -39,7 +50,7 @@
                              xd *= riptideStrength / dist;
                              yd *= riptideStrength / dist;
                              zd *= riptideStrength / dist;
-+                            org.bukkit.craftbukkit.event.CraftEventFactory.callPlayerRiptideEvent(player, itemStack, xd, yd, zd); // CraftBukkit
++                            if (!org.bukkit.craftbukkit.event.CraftEventFactory.callPlayerRiptideEvent(player, itemStack, xd, yd, zd)) return false; // Paper - Add player riptide event
                              player.push(xd, yd, zd);
                              player.startAutoSpinAttack(20, 8.0F, itemStack);
                              if (player.onGround()) {

@@ -32,6 +32,25 @@
              this.press(state, level, pos, player);
              return InteractionResult.SUCCESS;
          }
+@@ -97,7 +_,9 @@
+     @Override
+     protected void onExplosionHit(BlockState state, ServerLevel level, BlockPos pos, Explosion explosion, BiConsumer<ItemStack, BlockPos> onHit) {
+         if (explosion.canTriggerBlocks() && !state.getValue(POWERED)) {
+-            this.press(state, level, pos, null);
++            if (org.bukkit.craftbukkit.event.CraftEventFactory.callBinaryRedstoneChange(level, pos, true)) { // Paper - Call BlockRedstoneEvent
++                this.press(state, level, pos, null);
++            } // Paper - Call BlockRedstoneEvent
+         }
+ 
+         super.onExplosionHit(state, level, pos, explosion, onHit);
+@@ -150,6 +_,7 @@
+ 
+     @Override
+     protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effectApplier, boolean isPrecise) {
++        if (!new io.papermc.paper.event.entity.EntityInsideBlockEvent(entity.getBukkitEntity(), org.bukkit.craftbukkit.block.CraftBlock.at(level, pos)).callEvent()) { return; } // Paper - Add EntityInsideBlockEvent
+         if (!level.isClientSide() && this.type.canButtonBeActivatedByArrows() && !state.getValue(POWERED)) {
+             this.checkPressed(state, level, pos);
+         }
 @@ -161,7 +_,33 @@
              : null;
          boolean shouldBePressed = firstArrow != null;

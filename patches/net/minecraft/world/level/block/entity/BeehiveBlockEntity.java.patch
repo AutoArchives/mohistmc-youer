@@ -19,7 +19,7 @@
  
      public BeehiveBlockEntity(BlockPos worldPosition, BlockState blockState) {
          super(BlockEntityType.BEEHIVE, worldPosition, blockState);
-@@ -119,7 +_,7 @@
+@@ -119,16 +_,17 @@
      }
  
      public boolean isFull() {
@@ -28,7 +28,9 @@
      }
  
      public void emptyAllLivingFromHive(@Nullable Player player, BlockState state, BeehiveBlockEntity.BeeReleaseStatus releaseReason) {
-@@ -128,7 +_,7 @@
++        if (this.level == null) return; // Paper - do not fire from worldgen thread
+         List<Entity> releasedFromHive = this.releaseAllOccupants(state, releaseReason);
+         if (player != null) {
              for (Entity released : releasedFromHive) {
                  if (released instanceof Bee bee && player.position().distanceToSqr(released.position()) <= 16.0) {
                      if (!this.isSedated()) {
@@ -67,6 +69,19 @@
      }
  
      @VisibleForDebug
+@@ -155,6 +_,12 @@
+         return this.stored.size();
+     }
+ 
++    // Paper start - Add EntityBlockStorage clearEntities
++    public void clearBees() {
++        this.stored.clear();
++    }
++    // Paper end - Add EntityBlockStorage clearEntities
++
+     public static int getHoneyLevel(BlockState blockState) {
+         return blockState.getValue(BeehiveBlock.HONEY_LEVEL);
+     }
 @@ -165,7 +_,17 @@
      }
  
@@ -129,6 +144,21 @@
                      if (entity instanceof Bee bee) {
                          RandomSource random = level.getRandom();
                          if (savedFlowerPos != null && !bee.hasSavedFlowerPos() && random.nextFloat() < 0.9F) {
+@@ -236,7 +_,13 @@
+                                         levelIncrease--;
+                                     }
+ 
+-                                    level.setBlockAndUpdate(blockPos, state.setValue(BeehiveBlock.HONEY_LEVEL, honeyLevel + levelIncrease));
++                                    // Paper start - Fire EntityChangeBlockEvent in more places
++                                    BlockState newBlockState = state.setValue(BeehiveBlock.HONEY_LEVEL, honeyLevel + levelIncrease);
++
++                                    if (org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(entity, blockPos, newBlockState)) {
++                                        level.setBlockAndUpdate(blockPos, newBlockState);
++                                    }
++                                    // Paper end - Fire EntityChangeBlockEvent in more places
+                                 }
+                             }
+                         }
 @@ -245,17 +_,19 @@
                              spawned.add(bee);
                          }
@@ -150,13 +180,18 @@
                  } else {
                      return false;
                  }
-@@ -280,6 +_,10 @@
+@@ -280,6 +_,15 @@
                  if (releaseOccupant(level, pos, state, data.toOccupant(), null, releaseStatus, savedFlowerPos)) {
                      changed = true;
                      iterator.remove();
 +                    // CraftBukkit start
 +                } else {
-+                    data.ticksInHive = data.occupant.minTicksInHive / 2; // Not strictly Vanilla behaviour in cases where bees cannot spawn but still reasonable
++                    // CraftBukkit start - Not strictly Vanilla behaviour in cases where bees cannot spawn but still reasonable
++                    // Paper start - Fix bees aging inside; use exitTickCounter to keep actual bee life
++                    if (level.paperConfig().entities.behavior.cooldownFailedBeehiveReleases) {
++                        data.exitTickCounter = data.occupant.minTicksInHive / 2;
++                    }
++                    // Paper end - Fix bees aging inside
 +                    // CraftBukkit end
                  }
              }
@@ -190,3 +225,23 @@
          List<BeehiveBlockEntity.Occupant> bees = components.getOrDefault(DataComponents.BEES, Bees.EMPTY).bees();
          bees.forEach(this::storeBee);
      }
+@@ -345,15 +_,18 @@
+ 
+     private static class BeeData {
+         private final BeehiveBlockEntity.Occupant occupant;
++        private int exitTickCounter; // Paper - Fix bees aging inside hives; separate counter for checking if bee should exit to reduce exit attempts
+         private int ticksInHive;
+ 
+         private BeeData(BeehiveBlockEntity.Occupant occupant) {
+             this.occupant = occupant;
+             this.ticksInHive = occupant.ticksInHive();
++            this.exitTickCounter = this.ticksInHive; // Paper - Fix bees aging inside hives
+         }
+ 
+         public boolean tick() {
+-            return this.ticksInHive++ > this.occupant.minTicksInHive;
++            this.ticksInHive++; // Paper - Fix bees aging inside hives
++            return this.exitTickCounter++ > this.occupant.minTicksInHive; // Paper - Fix bees aging inside hives
+         }
+ 
+         public BeehiveBlockEntity.Occupant toOccupant() {

@@ -9,7 +9,7 @@
  import java.util.Objects;
  import java.util.Optional;
  import net.minecraft.advancements.CriteriaTriggers;
-@@ -29,6 +_,14 @@
+@@ -29,26 +_,28 @@
  import net.minecraft.world.item.enchantment.EnchantmentInstance;
  import net.minecraft.world.level.block.Blocks;
  import net.minecraft.world.level.block.EnchantingTableBlock;
@@ -24,21 +24,21 @@
  
  public class EnchantmentMenu extends AbstractContainerMenu {
      private static final Identifier EMPTY_SLOT_LAPIS_LAZULI = Identifier.withDefaultNamespace("container/slot/lapis_lazuli");
-@@ -42,6 +_,13 @@
-             super.setChanged();
-             EnchantmentMenu.this.slotsChanged(this);
-         }
-+
-+        // CraftBukkit start
-+        @Override
-+        public Location getLocation() {
-+            return access.getLocation();
-+        }
-+        // CraftBukkit end
-     };
+-    private final Container enchantSlots = new SimpleContainer(2) {
+-        {
+-            Objects.requireNonNull(EnchantmentMenu.this);
+-        }
+-
+-        @Override
+-        public void setChanged() {
+-            super.setChanged();
+-            EnchantmentMenu.this.slotsChanged(this);
+-        }
+-    };
++    private final Container enchantSlots; // Paper - Add missing InventoryHolders - move down
      private final ContainerLevelAccess access;
      private final RandomSource random = RandomSource.create();
-@@ -49,6 +_,10 @@
+     private final DataSlot enchantmentSeed = DataSlot.standalone();
      public final int[] costs = new int[3];
      public final int[] enchantClue = new int[]{-1, -1, -1};
      public final int[] levelClue = new int[]{-1, -1, -1};
@@ -49,6 +49,29 @@
  
      public EnchantmentMenu(int containerId, Inventory inventory) {
          this(containerId, inventory, ContainerLevelAccess.NULL);
+@@ -56,6 +_,22 @@
+ 
+     public EnchantmentMenu(int containerId, Inventory inventory, ContainerLevelAccess access) {
+         super(MenuType.ENCHANTMENT, containerId);
++        // Paper start - Add missing InventoryHolders
++        this.enchantSlots = new SimpleContainer(this.createBlockHolder(access), 2) {
++            @Override
++            public void setChanged() {
++                super.setChanged();
++                EnchantmentMenu.this.slotsChanged(this);
++            }
++
++            // CraftBukkit start
++            @Override
++            public Location getLocation() {
++                return access.getLocation();
++            }
++            // CraftBukkit end
++        };
++        // Paper end - Add missing InventoryHolders
+         this.access = access;
+         this.addSlot(new Slot(this.enchantSlots, 0, 15, 47) {
+             {
 @@ -74,7 +_,7 @@
  
              @Override
@@ -188,6 +211,19 @@
  
                          currency.consume(enchantmentCost, player);
                          if (currency.isEmpty()) {
+@@ -215,6 +_,12 @@
+         return goldStack.isEmpty() ? 0 : goldStack.getCount();
+     }
+ 
++    // Paper start - add enchantment seed update API
++    public void setEnchantmentSeed(int seed) {
++        this.enchantmentSeed.set(seed);
++    }
++    // Paper end - add enchantment seed update API
++
+     public int getEnchantmentSeed() {
+         return this.enchantmentSeed.get();
+     }
 @@ -227,6 +_,7 @@
  
      @Override

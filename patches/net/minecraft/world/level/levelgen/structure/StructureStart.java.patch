@@ -43,8 +43,8 @@
 +            */
 +            List<StructurePiece> pieces = list.stream().filter(piece -> piece.getBoundingBox().intersects(chunkBB)).toList();
 +            if (!pieces.isEmpty()) {
-+                org.bukkit.craftbukkit.util.TransformerGeneratorAccess transformerAccess = new org.bukkit.craftbukkit.util.TransformerGeneratorAccess();
-+                transformerAccess.setHandle(level);
++                org.bukkit.craftbukkit.util.TransformerLevelAccessor transformerAccess = new org.bukkit.craftbukkit.util.TransformerLevelAccessor();
++                transformerAccess.setDelegate(level);
 +                transformerAccess.setStructureTransformer(new org.bukkit.craftbukkit.util.CraftStructureTransformer(generationEventCause, level, structureManager, structure, chunkBB, chunkPos));
 +                for (StructurePiece piece : pieces) {
 +                    piece.postProcess(transformerAccess, structureManager, generator, random, chunkBB, chunkPos, blockpos1);

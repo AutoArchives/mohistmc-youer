@@ -12,21 +12,26 @@
  public abstract class BlockBehaviour implements FeatureElement {
      protected static final Direction[] UPDATE_SHAPE_ORDER = new Direction[]{
          Direction.WEST, Direction.EAST, Direction.NORTH, Direction.SOUTH, Direction.DOWN, Direction.UP
-@@ -167,6 +_,12 @@
-     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+@@ -165,32 +_,40 @@
      }
  
+     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+-    }
++        org.spigotmc.AsyncCatcher.catchOp("block onPlace"); // Spigot
++    }
++
 +    // CraftBukkit start
 +    protected void onPlace(BlockState blockstate, Level level, BlockPos blockpos, BlockState blockstate1, boolean flag, @Nullable UseOnContext context) {
 +        this.onPlace(blockstate, level, blockpos, blockstate1, flag);
 +    }
 +    // CraftBukkit end
-+
+ 
      protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
      }
  
-@@ -174,23 +_,24 @@
-         if (!state.isAir() && explosion.getBlockInteraction() != Explosion.BlockInteraction.TRIGGER_BLOCK) {
+     protected void onExplosionHit(BlockState state, ServerLevel level, BlockPos pos, Explosion explosion, BiConsumer<ItemStack, BlockPos> onHit) {
+-        if (!state.isAir() && explosion.getBlockInteraction() != Explosion.BlockInteraction.TRIGGER_BLOCK) {
++        if (!state.isAir() && explosion.getBlockInteraction() != Explosion.BlockInteraction.TRIGGER_BLOCK && state.isDestroyable()) { // Paper - Protect Bedrock and End Portal/Frames from being destroyed
              Block block = state.getBlock();
              boolean doDropExperienceHack = explosion.getIndirectSourceEntity() instanceof Player;
 -            if (block.dropFromExplosion(explosion)) {
@@ -55,6 +60,15 @@
          }
      }
  
+@@ -254,7 +_,7 @@
+     }
+ 
+     protected boolean canBeReplaced(BlockState state, BlockPlaceContext context) {
+-        return state.canBeReplaced() && (context.getItemInHand().isEmpty() || !context.getItemInHand().is(this.asItem()));
++        return state.canBeReplaced() && (context.getItemInHand().isEmpty() || !context.getItemInHand().is(this.asItem())) && (state.isDestroyable() || (context.getPlayer() != null && context.getPlayer().getAbilities().instabuild)); // Paper - Protect Bedrock and End Portal/Frames from being destroyed
+     }
+ 
+     protected boolean canBeReplaced(BlockState state, Fluid fluid) {
 @@ -343,8 +_,8 @@
          if (destroySpeed == -1.0F) {
              return 0.0F;
@@ -91,6 +105,37 @@
      public abstract static class BlockStateBase extends StateHolder<Block, BlockState> implements TypedInstance<Block> {
          private static final Direction[] DIRECTIONS = Direction.values();
          private static final VoxelShape[] EMPTY_OCCLUSION_SHAPES = Util.make(new VoxelShape[DIRECTIONS.length], s -> Arrays.fill(s, Shapes.empty()));
+@@ -439,6 +_,15 @@
+         private boolean propagatesSkylightDown;
+         private int lightDampening;
+ 
++        // Paper start - Perf: impl cached craft block data, lazy load to fix issue with loading at the wrong time
++        private org.bukkit.craftbukkit.block.data.@Nullable CraftBlockData cachedBlockData;
++
++        public org.bukkit.craftbukkit.block.data.CraftBlockData asBlockData() {
++            if (this.cachedBlockData == null) this.cachedBlockData = org.bukkit.craftbukkit.block.data.CraftBlockData.createData(this.asState());
++            return (org.bukkit.craftbukkit.block.data.CraftBlockData) this.cachedBlockData.clone();
++        }
++        // Paper end - Perf: impl cached craft block data, lazy load to fix issue with loading at the wrong time
++
+         protected BlockStateBase(Block owner, Property<?>[] propertyKeys, Comparable<?>[] propertyValues) {
+             super(owner, propertyKeys, propertyValues);
+             BlockBehaviour.Properties properties = owner.properties;
+@@ -481,12 +_,14 @@
+             }
+         }
+ 
++        protected boolean shapeExceedsCube = true; // Paper - moved from actual method to here
+         public void initCache() {
+             this.fluidState = this.owner.getFluidState(this.asState());
+             this.isRandomlyTicking = this.owner.isRandomlyTicking(this.asState());
+             if (!this.getBlock().hasDynamicShape()) {
+                 this.cache = new BlockBehaviour.BlockStateBase.Cache(this.asState());
+             }
++            this.shapeExceedsCube = this.cache == null || this.cache.largeCollisionShape; // Paper - moved from actual method to here
+ 
+             this.legacySolid = this.calculateSolid();
+             this.occlusionShape = this.canOcclude ? this.owner.getOcclusionShape(this.asState()) : Shapes.empty();
 @@ -499,7 +_,12 @@
                  this.occlusionShapesByFace = new VoxelShape[DIRECTIONS.length];
  
@@ -105,18 +150,39 @@
                  }
              }
  
-@@ -555,14 +_,18 @@
+@@ -547,22 +_,32 @@
+             return this.occlusionShape;
+         }
+ 
+-        public boolean hasLargeCollisionShape() {
+-            return this.cache == null || this.cache.largeCollisionShape;
+-        }
+-
+-        public boolean useShapeForLightOcclusion() {
++        // Paper start - Protect Bedrock and End Portal/Frames from being destroyed
++        public final boolean isDestroyable() {
++            return getBlock().isDestroyable();
++        }
++        // Paper end - Protect Bedrock and End Portal/Frames from being destroyed
++
++        public final boolean hasLargeCollisionShape() { // Paper
++            return this.shapeExceedsCube; // Paper - moved into shape cache init
++        }
++
++        public final boolean useShapeForLightOcclusion() { // Paper - Perf: Final for inlining
              return this.useShapeForLightOcclusion;
          }
  
+-        public int getLightEmission() {
 +        /** @deprecated Neo: Use {@link net.neoforged.neoforge.common.extensions.IBlockStateExtension#getLightEmission(BlockGetter, BlockPos)} instead */
 +        @Deprecated
-         public int getLightEmission() {
++        public final int getLightEmission() { // Paper - Perf: Final for inlining
              return this.lightEmission;
          }
  
-         public boolean isAir() {
+-        public boolean isAir() {
 -            return this.isAir;
++        public final boolean isAir() { // Paper - Perf: Final for inlining
 +            return this.getBlock().isAir((BlockState)this);
          }
  
@@ -138,13 +204,23 @@
          public BlockState rotate(Rotation rotation) {
              return this.getBlock().rotate(this.asState(), rotation);
          }
-@@ -629,6 +_,8 @@
+@@ -629,14 +_,16 @@
          }
  
          public PushReaction getPistonPushReaction() {
+-            return this.pushReaction;
 +            PushReaction reaction = getBlock().getPistonPushReaction(asState());
 +            if (reaction != null) return reaction;
-             return this.pushReaction;
++            return !this.isDestroyable() ? PushReaction.BLOCK : this.pushReaction; // Paper - Protect Bedrock and End Portal/Frames from being destroyed
+         }
+ 
+         public boolean isSolidRender() {
+             return this.solidRender;
+         }
+ 
+-        public boolean canOcclude() {
++        public final boolean canOcclude() { // Paper - Perf: Final for inlining
+             return this.canOcclude;
          }
  
 @@ -723,7 +_,13 @@
@@ -162,6 +238,14 @@
          }
  
          public void affectNeighborsAfterRemoval(ServerLevel level, BlockPos pos, boolean movedByPiston) {
+@@ -748,6 +_,7 @@
+ 
+         public void spawnAfterBreak(ServerLevel level, BlockPos pos, ItemStack tool, boolean dropExperience) {
+             this.getBlock().spawnAfterBreak(this.asState(), level, pos, tool, dropExperience);
++            if (dropExperience) {this.getBlock().popExperience(level, pos, this.getBlock().getExpDrop(this.asState(), level, pos, tool, true));} // Paper - Properly handle xp dropping
+         }
+ 
+         public List<ItemStack> getDrops(LootParams.Builder params) {
 @@ -755,6 +_,9 @@
          }
  
@@ -170,6 +254,20 @@
 +            var e = net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.player.UseItemOnBlockEvent(useOnContext, net.neoforged.neoforge.event.entity.player.UseItemOnBlockEvent.UsePhase.BLOCK));
 +            if (e.isCanceled()) return e.getCancellationResult();
              return this.getBlock().useItemOn(itemStack, this.asState(), level, hitResult.getBlockPos(), player, hand, hitResult);
+         }
+ 
+@@ -830,11 +_,11 @@
+             return this.getBlock() instanceof EntityBlock ? ((EntityBlock)this.getBlock()).getTicker(level, this.asState(), type) : null;
+         }
+ 
+-        public FluidState getFluidState() {
++        public final FluidState getFluidState() { // Paper - Perf: Final for inlining
+             return this.fluidState;
+         }
+ 
+-        public boolean isRandomlyTicking() {
++        public final boolean isRandomlyTicking() { // Paper - Perf: Final for inlining
+             return this.isRandomlyTicking;
          }
  
 @@ -842,6 +_,7 @@

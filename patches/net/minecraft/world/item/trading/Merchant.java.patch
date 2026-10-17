@@ -1,5 +1,14 @@
 --- a/net/minecraft/world/item/trading/Merchant.java
 +++ b/net/minecraft/world/item/trading/Merchant.java
+@@ -20,6 +_,8 @@
+ 
+     void notifyTrade(MerchantOffer offer);
+ 
++    default void processTrade(MerchantOffer offer, io.papermc.paper.event.player.@Nullable PlayerPurchaseEvent event) { this.notifyTrade(offer); } // Paper
++
+     void notifyTradeUpdated(ItemStack itemStack);
+ 
+     int getVillagerXp();
 @@ -47,4 +_,6 @@
      boolean isClientSide();
  

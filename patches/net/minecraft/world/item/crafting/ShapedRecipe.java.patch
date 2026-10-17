@@ -68,7 +68,7 @@
 +        }
 +        char c = 'a';
 +        for (Optional<Ingredient> list : this.pattern.ingredients()) {
-+            RecipeChoice choice = CraftRecipe.toBukkit(list);
++            RecipeChoice choice = CraftRecipe.toChoice(list);
 +            if (choice != null) {
 +                recipe.setIngredient(c, choice);
 +            }

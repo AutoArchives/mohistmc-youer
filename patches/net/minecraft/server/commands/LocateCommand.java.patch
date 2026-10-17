@@ -1,0 +1,10 @@
+--- a/net/minecraft/server/commands/LocateCommand.java
++++ b/net/minecraft/server/commands/LocateCommand.java
+@@ -191,6 +_,6 @@
+     private static float dist(int x1, int z1, int x2, int z2) {
+         int dx = x2 - x1;
+         int dz = z2 - z1;
+-        return Mth.sqrt(dx * dx + dz * dz);
++        return (float) Math.hypot(dx, dz); // Paper - Fix MC-177381
+     }
+ }

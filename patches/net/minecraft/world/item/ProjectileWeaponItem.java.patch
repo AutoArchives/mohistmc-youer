@@ -43,6 +43,14 @@
      public static ItemStack getHeldProjectile(LivingEntity entity, Predicate<ItemStack> valid) {
          if (valid.test(entity.getItemInHand(InteractionHand.OFF_HAND))) {
              return entity.getItemInHand(InteractionHand.OFF_HAND);
+@@ -50,6 +_,7 @@
+         float uncertainty,
+         boolean isCrit,
+         @Nullable LivingEntity targetOverride
++        , final float drawStrength // Paper - Pass draw strength
+     ) {
+         float maxAngle = EnchantmentHelper.processProjectileSpread(level, weapon, shooter, 0.0F);
+         float angleStep = projectiles.size() == 1 ? 0.0F : 2.0F * maxAngle / (projectiles.size() - 1);
 @@ -62,12 +_,25 @@
                  float angle = angleOffset + direction * ((i + 1) / 2) * angleStep;
                  direction = -direction;
@@ -57,7 +65,7 @@
 +                Projectile projectilE = this.createProjectile(level, shooter, weapon, projectile, isCrit);
 +                this.shootProjectile(shooter, projectilE, index, power, uncertainty, angle, targetOverride);
 +
-+                org.bukkit.event.entity.EntityShootBowEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityShootBowEvent(shooter, weapon, projectile, projectilE, hand, power, true);
++                org.bukkit.event.entity.EntityShootBowEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityShootBowEvent(shooter, weapon, projectile, projectilE, hand, drawStrength, true); // Paper - Pass draw strength
 +                if (event.isCancelled()) {
 +                    event.getProjectile().remove();
 +                    return;
@@ -75,7 +83,7 @@
                  weapon.hurtAndBreak(this.getDurabilityUse(projectile), shooter, hand.asEquipmentSlot());
                  if (weapon.isEmpty()) {
                      break;
-@@ -97,7 +_,7 @@
+@@ -97,10 +_,16 @@
              arrowx.setCritArrow(true);
          }
  
@@ -84,6 +92,24 @@
      }
  
      protected static List<ItemStack> draw(ItemStack weapon, ItemStack projectile, LivingEntity shooter) {
++        // Paper start
++        return draw(weapon, projectile, shooter, true);
++    }
++
++    protected static List<ItemStack> draw(ItemStack weapon, ItemStack projectile, LivingEntity shooter, boolean consume) {
++        // Paper end
+         if (projectile.isEmpty()) {
+             return List.of();
+         } else {
+@@ -111,7 +_,7 @@
+             ItemStack projectileCopy = projectile.copy();
+ 
+             for (int i = 0; i < numProjectiles; i++) {
+-                ItemStack drawnStack = useAmmo(weapon, i == 0 ? projectile : projectileCopy, shooter, i > 0);
++                ItemStack drawnStack = useAmmo(weapon, i == 0 ? projectile : projectileCopy, shooter, i > 0 || !consume); // Paper
+                 if (!drawnStack.isEmpty()) {
+                     drawn.add(drawnStack);
+                 }
 @@ -122,7 +_,8 @@
      }
  

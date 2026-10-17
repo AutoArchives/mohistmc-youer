@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/inventory/ResultContainer.java
 +++ b/net/minecraft/world/inventory/ResultContainer.java
-@@ -6,11 +_,47 @@
+@@ -6,11 +_,63 @@
  import net.minecraft.world.entity.player.Player;
  import net.minecraft.world.item.ItemStack;
  import net.minecraft.world.item.crafting.RecipeHolder;
@@ -20,8 +20,14 @@
 +        return this.itemStacks;
 +    }
 +
-+    public org.bukkit.inventory.InventoryHolder getOwner() {
-+        return null; // Result slots don't get an owner
++    @Override
++    public org.bukkit.inventory.@Nullable InventoryHolder getOwner() {
++        // Paper start - Add missing InventoryHolders
++        if (this.holder == null && this.holderCreator != null) {
++            this.holder = this.holderCreator.get();
++        }
++        return this.holder; // Result slots don't get an owner
++        // Paper end - Add missing InventoryHolders
 +    }
 +
 +    // Don't need a transaction; the InventoryCrafting keeps track of it for us
@@ -45,6 +51,16 @@
 +        return null;
 +    }
 +    // CraftBukkit end
++    // Paper start - Add missing InventoryHolders
++    private java.util.function.@Nullable Supplier<? extends org.bukkit.inventory.InventoryHolder> holderCreator;
++    private org.bukkit.inventory.@Nullable InventoryHolder holder;
++    public ResultContainer(java.util.function.Supplier<? extends org.bukkit.inventory.InventoryHolder> holderCreator) {
++        this.holderCreator = holderCreator;
++    }
++
++    public ResultContainer() {
++    }
++    // Paper end - Add missing InventoryHolders
  
      @Override
      public int getContainerSize() {

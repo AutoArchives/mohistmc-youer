@@ -408,7 +408,7 @@
              Suggestions suggestions = results.getList().size() <= 1000 ? results : new Suggestions(results.getRange(), results.getList().subList(0, 1000));
              this.send(new ClientboundCommandSuggestionsPacket(packet.getId(), suggestions));
          });
-@@ -700,9 +_,9 @@
+@@ -700,13 +_,13 @@
              if (level.isLoaded(pos)) {
                  BlockState blockState = level.getBlockState(pos);
                  boolean includeData = this.player.hasInfiniteMaterials() && packet.includeData();
@@ -419,6 +419,62 @@
 +                    if (includeData && this.player.getBukkitEntity().hasPermission("minecraft.nbt.copy")) { // Spigot
                          addBlockDataToItem(blockState, level, pos, itemStack);
                      }
+ 
+-                    this.tryPickItem(itemStack);
++                    this.tryPickItem(itemStack, pos, null, packet.includeData()); // Paper - Extend PlayerPickItemEvent API
+                 }
+             }
+         }
+@@ -733,7 +_,7 @@
+         if (entity != null && this.player.isWithinEntityInteractionRange(entity, 3.0)) {
+             ItemStack itemStack = entity.getPickResult();
+             if (itemStack != null && !itemStack.isEmpty()) {
+-                this.tryPickItem(itemStack);
++                this.tryPickItem(itemStack, null, entity, packet.includeData()); // Paper - Extend PlayerPickItemEvent API
+             }
+ 
+             if (packet.includeData() && this.player.canUseGameMasterBlocks() && entity instanceof Avatar avatar) {
+@@ -742,22 +_,35 @@
+         }
+     }
+ 
+-    private void tryPickItem(ItemStack itemStack) {
++    private void tryPickItem(ItemStack itemStack, @Nullable BlockPos blockPos, @Nullable Entity entity, boolean includeData) { // Paper - Extend PlayerPickItemEvent API
+         if (itemStack.isItemEnabled(this.player.level().enabledFeatures())) {
+             Inventory inventory = this.player.getInventory();
+             int slotWithExistingItem = inventory.findSlotMatchingItem(itemStack);
+-            if (slotWithExistingItem != -1) {
+-                if (Inventory.isHotbarSlot(slotWithExistingItem)) {
+-                    inventory.setSelectedSlot(slotWithExistingItem);
++            // Paper start - Add PlayerPickItemEvent
++            final int sourceSlot = slotWithExistingItem;
++            final int targetSlot = Inventory.isHotbarSlot(sourceSlot) ? sourceSlot : inventory.getSuitableHotbarSlot();
++            final org.bukkit.entity.Player bukkitPlayer = this.player.getBukkitEntity();
++            final io.papermc.paper.event.player.PlayerPickItemEvent event = entity != null
++                ? new io.papermc.paper.event.player.PlayerPickEntityEvent(bukkitPlayer, entity.getBukkitEntity(), includeData, targetSlot, sourceSlot)
++                : new io.papermc.paper.event.player.PlayerPickBlockEvent(bukkitPlayer, org.bukkit.craftbukkit.block.CraftBlock.at(this.player.level(), blockPos), includeData, targetSlot, sourceSlot);
++            if (!event.callEvent()) {
++                return;
++            }
++            slotWithExistingItem = event.getSourceSlot();
++            // Paper end - Add PlayerPickItemEvent
++            if (slotWithExistingItem != Inventory.NOT_FOUND_INDEX) {
++                if (Inventory.isHotbarSlot(slotWithExistingItem) && Inventory.isHotbarSlot(event.getTargetSlot())) { // Paper - Add PlayerPickItemEvent
++                    inventory.setSelectedSlot(event.getTargetSlot()); // Paper - Add PlayerPickItemEvent
+                 } else {
+-                    inventory.pickSlot(slotWithExistingItem);
++                    inventory.pickSlot(slotWithExistingItem, event.getTargetSlot()); // Paper - Add PlayerPickItemEvent
+                 }
+             } else if (this.player.hasInfiniteMaterials()) {
+-                inventory.addAndPickItem(itemStack);
++                inventory.addAndPickItem(itemStack, event.getTargetSlot()); // Paper - Add PlayerPickItemEvent
+             }
+ 
+             this.send(new ClientboundSetHeldSlotPacket(inventory.getSelectedSlot()));
+             this.player.inventoryMenu.broadcastChanges();
++            if (io.papermc.paper.configuration.GlobalConfiguration.get().unsupportedSettings.updateEquipmentOnPlayerActions) this.player.detectEquipmentUpdates(); // Paper - Force update attributes.
+         }
+     }
  
 @@ -808,7 +_,7 @@
  
@@ -992,11 +1048,13 @@
  
 -                CompletableFuture<FilteredText> filteredFuture = this.filterTextPacket(signedMessage.signedContent());
 -                Component decorated = this.server.getChatDecorator().decorate(this.player, signedMessage.decoratedContent());
+-                this.chatMessageChain.append(filteredFuture, filtered -> {
+-                    PlayerChatMessage filteredMessage = signedMessage.withUnsignedContent(decorated).filter(filtered.mask());
 +                CompletableFuture<FilteredText> filteredFuture = this.filterTextPacket(signedMessage.signedContent()).thenApplyAsync(Function.identity(), this.server.chatExecutor); // CraftBukkit - async chat
-+                Component decorated = net.neoforged.neoforge.common.CommonHooks.getServerChatSubmittedDecorator().decorate(this.player, signedMessage.decoratedContent());
-                 this.chatMessageChain.append(filteredFuture, filtered -> {
-+                    if (decorated == null) return; // Forge: ServerChatEvent was canceled if this is null.
-                     PlayerChatMessage filteredMessage = signedMessage.withUnsignedContent(decorated).filter(filtered.mask());
++                CompletableFuture<Component> decorated = net.neoforged.neoforge.common.CommonHooks.getServerChatSubmittedDecorator().decorate(this.player, signedMessage.decoratedContent()); // Paper - Adventure
++                this.chatMessageChain.append(CompletableFuture.allOf(filteredFuture, decorated), filtered -> {
++                    if (decorated.join() == null) return; // Forge: ServerChatEvent was canceled if this is null.
++                    PlayerChatMessage filteredMessage = signedMessage.withUnsignedContent(decorated.join()).filter(filteredFuture.join().mask());
                      this.broadcastChatMessage(filteredMessage);
                  });
 -            });

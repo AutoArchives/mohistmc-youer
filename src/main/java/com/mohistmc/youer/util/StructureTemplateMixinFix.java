@@ -11,7 +11,7 @@ import org.bukkit.craftbukkit.block.CraftBlockState;
 import org.bukkit.craftbukkit.block.CraftBlockStates;
 import org.bukkit.craftbukkit.block.CraftLootable;
 import org.bukkit.craftbukkit.util.CraftStructureTransformer;
-import org.bukkit.craftbukkit.util.TransformerGeneratorAccess;
+import org.bukkit.craftbukkit.util.TransformerLevelAccessor;
 
 public class StructureTemplateMixinFix {
 
@@ -21,8 +21,8 @@ public class StructureTemplateMixinFix {
 
     public static ServerLevelAccessor init(ServerLevelAccessor p_230329_) {
         // CraftBukkit start
-        if (wrappedAccess instanceof TransformerGeneratorAccess transformerAccess) {
-            p_230329_ = transformerAccess.getHandle();
+        if (wrappedAccess instanceof TransformerLevelAccessor transformerAccess) {
+            p_230329_ = transformerAccess.getDelegate();
             structureTransformer = transformerAccess.getStructureTransformer();
             if (structureTransformer != null && !structureTransformer.canTransformBlocks()) {
                 structureTransformer = null;

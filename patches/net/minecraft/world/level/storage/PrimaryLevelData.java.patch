@@ -25,6 +25,15 @@
  import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
+@@ -35,6 +_,8 @@
+     private final PrimaryLevelData.SpecialWorldProperty specialWorldProperty;
+     private final Lifecycle worldGenSettingsLifecycle;
+     private LevelData.RespawnData respawnData;
++    public static final String PAPER_RESPAWN_DIMENSION = "paperSpawnDimension"; // Paper
++    public net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> respawnDimension = net.minecraft.world.level.Level.OVERWORLD; // Paper
+     private long gameTime;
+     private final @Nullable UUID singlePlayerUUID;
+     private final int version;
 @@ -42,6 +_,21 @@
      private final Set<String> knownServerBrands;
      private boolean wasModded;
@@ -56,7 +65,7 @@
              input.get("singleplayer_uuid").flatMap(UUIDUtil.CODEC::parse).result().orElse(null),
              input.get("WasModded").asBoolean(false),
              input.get("spawn").read(LevelData.RespawnData.CODEC).result().orElse(LevelData.RespawnData.DEFAULT),
-@@ -98,11 +_,16 @@
+@@ -98,11 +_,22 @@
              levelVersion.levelDataVersion(),
              input.get("initialized").asBoolean(true),
              input.get("ServerBrands").asStream().flatMap(b -> b.asString().result().stream()).collect(Collectors.toCollection(Sets::newLinkedHashSet)),
@@ -71,10 +80,24 @@
 +        // Neo:
 +        result.setDayTimeFraction(input.get("neoDayTimeFraction").asFloat(0f));
 +        result.setDayTimePerTick(input.get("neoDayTimePerTick").asFloat(-1f));
++        // Paper start
++        result.respawnDimension = input.get(PAPER_RESPAWN_DIMENSION)
++            .read(net.minecraft.world.level.Level.RESOURCE_KEY_CODEC)
++            .result()
++            .orElse(result.respawnData.dimension());
++        // Paper end
 +        return result;
      }
  
      @Override
+@@ -127,6 +_,7 @@
+         NbtUtils.addCurrentDataVersion(tag);
+         tag.putInt("GameType", this.settings.gameType().getId());
+         tag.store("spawn", LevelData.RespawnData.CODEC, this.respawnData);
++        tag.store(PAPER_RESPAWN_DIMENSION, net.minecraft.world.level.Level.RESOURCE_KEY_CODEC, this.respawnDimension); // Paper
+         tag.putLong("Time", this.gameTime);
+         writeLastPlayed(tag);
+         tag.putString("LevelName", this.settings.levelName());
 @@ -139,6 +_,13 @@
          }
  

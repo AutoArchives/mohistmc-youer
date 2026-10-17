@@ -1,15 +1,29 @@
 --- a/net/minecraft/world/entity/monster/Shulker.java
 +++ b/net/minecraft/world/entity/monster/Shulker.java
-@@ -390,6 +_,19 @@
+@@ -277,8 +_,10 @@
+     }
+ 
+     @Override
+-    public void stopRiding() {
+-        super.stopRiding();
++    // Paper start - Force entity dismount during teleportation
++    public void stopRiding(boolean suppressCancellation) {
++        super.stopRiding(suppressCancellation);
++        // Paper end - Force entity dismount during teleportation
+         if (this.level().isClientSide()) {
+             this.clientOldAttachPosition = this.blockPosition();
+         }
+@@ -390,6 +_,20 @@
                      && this.level().noCollision(this, new AABB(target).deflate(1.0E-6))) {
                      Direction attachmentDirection = this.findAttachableSurface(target);
                      if (attachmentDirection != null) {
 +                        // CraftBukkit start
 +                        org.bukkit.event.entity.EntityTeleportEvent teleportEvent = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityTeleportEvent(this, target.getX(), target.getY(), target.getZ());
-+                        if (teleportEvent.isCancelled()) {
++                        if (teleportEvent.isCancelled() || teleportEvent.getTo() == null) { // Paper
 +                            return false;
++                        } else {
++                            target = org.bukkit.craftbukkit.util.CraftLocation.toBlockPos(teleportEvent.getTo());
 +                        }
-+                        target = org.bukkit.craftbukkit.util.CraftLocation.toBlockPosition(teleportEvent.getTo());
 +                        // CraftBukkit end
 +                        net.neoforged.neoforge.event.entity.EntityTeleportEvent.EnderEntity event = net.neoforged.neoforge.event.EventHooks.onEnderTeleport(this, target.getX(), target.getY(), target.getZ());
 +                        if (event.isCanceled()) attachmentDirection = null;
@@ -20,11 +34,16 @@
                          this.unRide();
                          this.setAttachFace(attachmentDirection);
                          this.playSound(SoundEvents.SHULKER_TELEPORT, 1.0F, 1.0F);
-@@ -453,7 +_,7 @@
+@@ -453,7 +_,12 @@
                  if (baby != null) {
                      baby.setVariant(this.getVariant());
                      baby.snapTo(oldPosition);
 -                    this.level().addFreshEntity(baby);
++                    // Paper start - Call ShulkerDuplicateEvent
++                    if (!new io.papermc.paper.event.entity.ShulkerDuplicateEvent((org.bukkit.entity.Shulker) baby.getBukkitEntity(), (org.bukkit.entity.Shulker) this.getBukkitEntity()).callEvent()) {
++                        return;
++                    }
++                    // Paper end - Call ShulkerDuplicateEvent
 +                    this.level().addFreshEntity(baby, org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.BREEDING); // CraftBukkit - the mysteries of life
                  }
              }

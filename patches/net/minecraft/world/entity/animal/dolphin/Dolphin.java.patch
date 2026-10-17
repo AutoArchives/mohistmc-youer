@@ -67,3 +67,14 @@
                  this.player.addEffect(new MobEffectInstance(MobEffects.DOLPHINS_GRACE, 100), this.dolphin);
              }
          }
+@@ -574,7 +_,9 @@
+                     0.3F * Mth.cos(Dolphin.this.getYRot() * (float) (Math.PI / 180.0)) * Mth.cos(Dolphin.this.getXRot() * (float) (Math.PI / 180.0))
+                         + Mth.sin(dir) * pow2
+                 );
+-                Dolphin.this.level().addFreshEntity(thrownItem);
++                if (Dolphin.this.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
++                    Dolphin.this.spawnAtLocation(serverLevel, thrownItem); // Paper - Call EntityDropItemEvent
++                }
+             }
+         }
+     }

@@ -1,5 +1,14 @@
 --- a/net/minecraft/world/entity/animal/rabbit/Rabbit.java
 +++ b/net/minecraft/world/entity/animal/rabbit/Rabbit.java
+@@ -111,7 +_,7 @@
+         super(type, level);
+         this.jumpControl = new Rabbit.RabbitJumpControl(this);
+         this.moveControl = new Rabbit.RabbitMoveControl(this);
+-        this.setSpeedModifier(0.0);
++        // this.setSpeedModifier(0.0); // CraftBukkit
+     }
+ 
+     @Override
 @@ -600,7 +_,7 @@
          @Override
          public boolean canUse() {
@@ -9,22 +18,18 @@
                      return false;
                  }
  
-@@ -630,9 +_,19 @@
+@@ -630,9 +_,15 @@
                  if (this.canRaid && block instanceof CarrotBlock) {
                      int carrotAge = blockState.getValue(CarrotBlock.AGE);
                      if (carrotAge == 0) {
 +                        // CraftBukkit start
-+                        if (!org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(this.rabbit, cropsPos, Blocks.AIR.defaultBlockState())) {
-+                            return;
-+                        }
++                        if (!org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(this.rabbit, cropsPos, blockState.getFluidState().createLegacyBlock())) return; // Paper - fix wrong block state
 +                        // CraftBukkit end
                          level.setBlock(cropsPos, Blocks.AIR.defaultBlockState(), 2);
                          level.destroyBlock(cropsPos, true, this.rabbit);
                      } else {
 +                        // CraftBukkit start
-+                        if (!org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(this.rabbit, cropsPos, blockState.setValue(CarrotBlock.AGE, carrotAge - 1))) {
-+                            return;
-+                        }
++                        if (!org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(this.rabbit, cropsPos, blockState.setValue(CarrotBlock.AGE, carrotAge - 1))) return; // Paper - fix wrong block state
 +                        // CraftBukkit end
                          level.setBlock(cropsPos, blockState.setValue(CarrotBlock.AGE, carrotAge - 1), 2);
                          level.gameEvent(GameEvent.BLOCK_CHANGE, cropsPos, GameEvent.Context.of(this.rabbit));

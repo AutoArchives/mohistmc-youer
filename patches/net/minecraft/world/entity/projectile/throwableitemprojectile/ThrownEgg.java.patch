@@ -25,7 +25,7 @@
  public class ThrownEgg extends ThrowableItemProjectile {
      private static final EntityDimensions ZERO_SIZED_DIMENSIONS = EntityDimensions.fixed(0.0F, 0.0F);
  
-@@ -65,29 +_,66 @@
+@@ -65,29 +_,73 @@
      protected void onHit(HitResult hitResult) {
          super.onHit(hitResult);
          if (!this.level().isClientSide()) {
@@ -60,6 +60,13 @@
 +                    }
 +                }
 +                // CraftBukkit end
++                // Paper start - Add ThrownEggHatchEvent
++                com.destroystokyo.paper.event.entity.ThrownEggHatchEvent paperEvent = new com.destroystokyo.paper.event.entity.ThrownEggHatchEvent((org.bukkit.entity.Egg) getBukkitEntity(), hatching, (byte) count, hatchingType);
++                paperEvent.callEvent();
++                hatching = paperEvent.isHatching();
++                count = hatching ? paperEvent.getNumHatches() : 0; // If hatching is set to false, ensure child count is 0
++                hatchingType = paperEvent.getHatchingType();
++                // Paper end - Add ThrownEggHatchEvent
 +
                  for (int i = 0; i < count; i++) {
 -                    Chicken chicken = EntityType.CHICKEN.create(this.level(), EntitySpawnReason.TRIGGERED);

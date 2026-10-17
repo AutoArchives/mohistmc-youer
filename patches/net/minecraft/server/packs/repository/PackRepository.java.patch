@@ -9,7 +9,20 @@
      }
  
      public static String displayPackList(Collection<Pack> packs) {
-@@ -37,10 +_,13 @@
+@@ -31,28 +_,41 @@
+     }
+ 
+     public void reload() {
++        // Paper start - add pendingReload flag to determine required pack loading
++        this.reload(false);
++    }
++
++    public void reload(final boolean pendingReload) {
++        // Paper end - add pendingReload flag to determine required pack loading
+         List<String> currentlySelectedNames = this.selected.stream().map(Pack::getId).collect(ImmutableList.toImmutableList());
+         this.available = this.discoverAvailable();
+-        this.selected = this.rebuildSelected(currentlySelectedNames);
++        this.selected = this.rebuildSelected(currentlySelectedNames, pendingReload); // Paper - add pendingReload flag to determine required pack loading
      }
  
      private Map<String, Pack> discoverAvailable() {
@@ -25,16 +38,39 @@
          }
  
          return ImmutableMap.copyOf(discovered);
-@@ -80,11 +_,12 @@
+     }
+ 
+     public boolean isAbleToClearAnyPack() {
+-        List<Pack> newSelected = this.rebuildSelected(List.of());
++        List<Pack> newSelected = this.rebuildSelected(List.of(), false); // Paper - add pendingReload flag to determine required pack loading
+         return !this.selected.equals(newSelected);
+     }
+ 
+     public void setSelected(Collection<String> packs) {
+-        this.selected = this.rebuildSelected(packs);
++        this.setSelected(packs, false);
++    }
++
++    public void setSelected(final Collection<String> packs, final boolean pendingReload) { // Paper - add pendingReload flag to determine required pack loading
++        this.selected = this.rebuildSelected(packs, pendingReload);
+     }
+ 
+     public boolean addPack(String packId) {
+@@ -80,11 +_,16 @@
      }
  
      public List<Pack> rebuildSelected(Collection<String> selectedNames) {
 -        List<Pack> selectedAndPresent = this.getAvailablePacks(selectedNames).collect(Util.toMutableList());
++        return this.rebuildSelected(selectedNames, false);
++    }
++
++    public List<Pack> rebuildSelected(final Collection<String> selectedNames, final boolean pendingReload) { // Paper - add pendingReload flag to determine required pack loading
 +        List<Pack> selectedAndPresent = net.neoforged.neoforge.resource.ResourcePackLoader.expandAndRemoveRootChildren(this.getAvailablePacks(selectedNames), this.available.values());
  
          for (Pack pack : this.available.values()) {
-             if (pack.isRequired() && !selectedAndPresent.contains(pack)) {
+-            if (pack.isRequired() && !selectedAndPresent.contains(pack)) {
 -                pack.getDefaultPosition().insert(selectedAndPresent, pack, Pack::selectionConfig, false);
++            if (pack.isRequired() && !selectedAndPresent.contains(pack) && pendingReload) { // Paper - add pendingReload flag to determine required pack loading
 +                int i = pack.getDefaultPosition().insert(selectedAndPresent, pack, Pack::selectionConfig, false);
 +                selectedAndPresent.addAll(i + 1, pack.getChildren());
              }

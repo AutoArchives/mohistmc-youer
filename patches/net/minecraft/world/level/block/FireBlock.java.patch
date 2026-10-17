@@ -15,18 +15,19 @@
  public class FireBlock extends BaseFireBlock {
      public static final MapCodec<FireBlock> CODEC = simpleCodec(FireBlock::new);
      public static final int MAX_AGE = 15;
-@@ -99,7 +_,23 @@
+@@ -99,7 +_,24 @@
          BlockState neighbourState,
          RandomSource random
      ) {
 -        return this.canSurvive(state, level, pos) ? this.getStateWithAge(level, pos, state.getValue(AGE)) : Blocks.AIR.defaultBlockState();
 +        // CraftBukkit start
++        if (!(level instanceof ServerLevel)) return this.canSurvive(state, level, pos) ? this.getStateWithAge(level, pos, state.getValue(AGE)) : Blocks.AIR.defaultBlockState(); // Paper - don't fire events in world generation
 +        if (!this.canSurvive(state, level, pos)) {
 +            if (!(level instanceof Level actualLevel)) {
 +                return Blocks.AIR.defaultBlockState();
 +            }
 +            CraftBlockState blockState = CraftBlockStates.getBlockState(actualLevel, pos);
-+            blockState.setData(Blocks.AIR.defaultBlockState());
++            blockState.setBlock(Blocks.AIR.defaultBlockState());
 +
 +            BlockFadeEvent event = new BlockFadeEvent(blockState.getBlock(), blockState);
 +            actualLevel.getCraftServer().getPluginManager().callEvent(event);
@@ -62,7 +63,7 @@
  
 +    private void fireExtinguished(Level level, BlockPos pos) {
 +        org.bukkit.craftbukkit.block.CraftBlockState blockState = org.bukkit.craftbukkit.block.CraftBlockStates.getBlockState(level, pos);
-+        blockState.setData(Blocks.AIR.defaultBlockState());
++        blockState.setBlock(Blocks.AIR.defaultBlockState());
 +        org.bukkit.event.block.BlockFadeEvent event = new org.bukkit.event.block.BlockFadeEvent(blockState.getBlock(), blockState);
 +        level.getCraftServer().getPluginManager().callEvent(event);
 +        if (!event.isCancelled()) {
@@ -72,7 +73,8 @@
 +
      @Override
      protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
-         level.scheduleTick(pos, this, getFireTickDelay(level.getRandom()));
+-        level.scheduleTick(pos, this, getFireTickDelay(level.getRandom()));
++        level.scheduleTick(pos, this, getFireTickDelay(level)); // Paper - Add fire-tick-delay option
          if (level.canSpreadFireAround(pos)) {
              if (!state.canSurvive(level, pos)) {
 -                level.removeBlock(pos, false);
@@ -143,7 +145,7 @@
                                      }
                                  }
                              }
-@@ -221,33 +_,47 @@
+@@ -221,33 +_,56 @@
              || level.isRainingAt(testPos.south());
      }
  
@@ -182,19 +184,27 @@
 +                return;
 +            }
 +            // CraftBukkit end
-+            oldState.onCaughtFire(level, pos, face, null);
-+
              if (random.nextInt(age + 10) < 5 && !level.isRainingAt(pos)) {
                  int newAge = Math.min(age + random.nextInt(5) / 4, 15);
                  level.setBlock(pos, this.getStateWithAge(level, pos, newAge), 3);
              } else {
-                 level.removeBlock(pos, false);
+-                level.removeBlock(pos, false);
++                if (!oldState.is(Blocks.TNT)) level.removeBlock(pos, false); // Paper - TNTPrimeEvent; We might be cancelling it below, move the setAir down
              }
--
+ 
 -            Block block = oldState.getBlock();
 -            if (block instanceof TntBlock) {
 -                TntBlock.prime(level, pos);
--            }
++            // Paper start - TNTPrimeEvent
++            if (oldState.getBlock() instanceof TntBlock) {
++                org.bukkit.block.Block tntBlock = org.bukkit.craftbukkit.block.CraftBlock.at(level, pos);
++                if (!new com.destroystokyo.paper.event.block.TNTPrimeEvent(tntBlock, com.destroystokyo.paper.event.block.TNTPrimeEvent.PrimeReason.FIRE, null).callEvent()) {
++                    return;
++                }
++                level.removeBlock(pos, false);
+             }
++            // Paper end
++            oldState.onCaughtFire(level, pos, face, null);
          }
      }
  
@@ -216,7 +226,7 @@
              }
  
              return odds;
-@@ -282,6 +_,7 @@
+@@ -282,18 +_,21 @@
      }
  
      @Override
@@ -224,6 +234,25 @@
      protected boolean canBurn(BlockState state) {
          return this.getIgniteOdds(state) > 0;
      }
+ 
+     @Override
+-    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+-        super.onPlace(state, level, pos, oldState, movedByPiston);
+-        level.scheduleTick(pos, this, getFireTickDelay(level.getRandom()));
++    // CraftBukkit start
++    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston, final net.minecraft.world.item.context.UseOnContext context) {
++        super.onPlace(state, level, pos, oldState, movedByPiston, context);
++        // CraftBukkit end
++        level.scheduleTick(pos, this, FireBlock.getFireTickDelay(level)); // Paper - Add fire-tick-delay option
+     }
+ 
+-    private static int getFireTickDelay(RandomSource random) {
+-        return 30 + random.nextInt(10);
++    private static int getFireTickDelay(Level level) { // Paper - Add fire-tick-delay option
++        return level.paperConfig().fireTickDelay + level.getRandom().nextInt(10); // Paper - Add fire-tick-delay option
+     }
+ 
+     @Override
 @@ -302,8 +_,21 @@
      }
  

@@ -10,14 +10,13 @@
  import org.slf4j.Logger;
  
  public class ShulkerBoxDispenseBehavior extends OptionalDispenseItemBehavior {
-@@ -21,6 +_,30 @@
-             Direction facing = source.state().getValue(DispenserBlock.FACING);
+@@ -22,10 +_,39 @@
              BlockPos relativePos = source.pos().relative(facing);
              Direction clickedFace = source.level().isEmptyBlock(relativePos.below()) ? facing : Direction.UP;
-+
+ 
 +            // CraftBukkit start
 +            org.bukkit.block.Block bukkitBlock = CraftBlock.at(source.level(), source.pos());
-+            CraftItemStack craftItem = CraftItemStack.asCraftMirror(dispensed);
++            CraftItemStack craftItem = CraftItemStack.asCraftMirror(dispensed.copyWithCount(1));
 +
 +            BlockDispenseEvent event = new BlockDispenseEvent(bukkitBlock, craftItem.clone(), new org.bukkit.util.Vector(relativePos.getX(), relativePos.getY(), relativePos.getZ()));
 +            if (!DispenserBlock.eventFired) {
@@ -38,6 +37,17 @@
 +                }
 +            }
 +            // CraftBukkit end
- 
++
              try {
++                // Paper start - track changed items in the dispense event
                  this.setSuccess(
+-                    ((BlockItem)item).place(new DirectionalPlaceContext(source.level(), relativePos, facing, dispensed, clickedFace)).consumesAction()
++                    ((BlockItem)item).place(new DirectionalPlaceContext(source.level(), relativePos, facing, CraftItemStack.asNMSCopy(event.getItem()), clickedFace)).consumesAction()
+                 );
++                if (this.isSuccess()) {
++                    dispensed.shrink(1); // vanilla shrink is in the place function above, manually handle it here
++                }
++                // Paper end - track changed items in the dispense event
+             } catch (Exception var8) {
+                 LOGGER.error("Error trying to place shulker box at {}", relativePos, var8);
+             }

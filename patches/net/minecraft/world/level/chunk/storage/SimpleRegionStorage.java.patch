@@ -13,8 +13,32 @@
  import org.jspecify.annotations.Nullable;
  
  public class SimpleRegionStorage implements AutoCloseable {
-@@ -46,13 +_,31 @@
+@@ -42,17 +_,53 @@
      }
+ 
+     public CompletableFuture<Void> write(ChunkPos pos, Supplier<CompoundTag> supplier) {
+-        return this.worker.store(pos, supplier);
+-    }
++        // Paper start - guard against possible chunk pos desync
++        final Supplier<CompoundTag> guardedPosCheck = () -> {
++            final CompoundTag nbt = supplier.get();
++            final boolean chunkStorage = this.dataFixType == net.minecraft.util.datafix.DataFixTypes.CHUNK;
++            if (chunkStorage && nbt != null && !pos.equals(this.chunkCoordinateOf(nbt))) {
++                final String world = (this instanceof net.minecraft.server.level.ChunkMap chunkMap) ? io.papermc.paper.util.MCUtil.getLevelName(chunkMap.level) : null;
++                throw new IllegalArgumentException("Chunk coordinate and serialized data do not have matching coordinates, trying to serialize coordinate " + pos
++                    + " but compound says coordinate is " + this.chunkCoordinateOf(nbt) + (world == null ? " for an unknown world" : (" for world: " + world)));
++            }
++            return nbt;
++        };
++        return this.worker.store(pos, guardedPosCheck);
++        // Paper end - guard against possible chunk pos desync
++    }
++
++    // Paper start - guard against possible chunk pos desync
++    private ChunkPos chunkCoordinateOf(CompoundTag nbt) {
++        return new ChunkPos(nbt.getIntOr("xPos", 0), nbt.getIntOr("zPos", 0));
++    }
++    // Paper end - guard against possible chunk pos desync
  
      public CompoundTag upgradeChunkTag(CompoundTag chunkTag, int defaultVersion, @Nullable CompoundTag dataFixContextTag, int targetVersion) {
 +        // CraftBukkit start

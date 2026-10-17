@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/entity/boss/wither/WitherBoss.java
 +++ b/net/minecraft/world/entity/boss/wither/WitherBoss.java
-@@ -56,6 +_,18 @@
+@@ -56,6 +_,17 @@
  import net.minecraft.world.level.storage.ValueInput;
  import net.minecraft.world.level.storage.ValueOutput;
  import net.minecraft.world.phys.Vec3;
@@ -8,7 +8,6 @@
 +// CraftBukkit start
 +import net.minecraft.network.protocol.game.ClientboundLevelEventPacket;
 +import net.minecraft.server.MinecraftServer;
-+import net.minecraft.world.level.block.Blocks;
 +import org.bukkit.craftbukkit.event.CraftEventFactory;
 +import org.bukkit.event.entity.EntityRegainHealthEvent;
 +import org.bukkit.event.entity.EntityRemoveEvent;
@@ -19,7 +18,15 @@
  import org.jspecify.annotations.Nullable;
  
  public class WitherBoss extends Monster implements RangedAttackMob {
-@@ -264,15 +_,39 @@
+@@ -73,6 +_,7 @@
+     private final int[] nextHeadUpdate = new int[2];
+     private final int[] idleHeadUpdates = new int[2];
+     private int destroyBlocksTick;
++    private boolean canPortal = false; // Paper
+     public final ServerBossEvent bossEvent = Util.make(
+         new ServerBossEvent(Mth.createInsecureUUID(this.random), this.getDisplayName(), BossEvent.BossBarColor.PURPLE, BossEvent.BossBarOverlay.PROGRESS),
+         e -> e.setDarkenScreen(true)
+@@ -264,15 +_,40 @@
              int newCount = this.getInvulnerableTicks() - 1;
              this.bossEvent.setProgress(1.0F - newCount / 220.0F);
              if (newCount <= 0) {
@@ -41,7 +48,8 @@
 +                    for (ServerPlayer player : (List<ServerPlayer>) MinecraftServer.getServer().getPlayerList().players) {
 +                        double deltaX = this.getX() - player.getX();
 +                        double deltaZ = this.getZ() - player.getZ();
-+                        double distanceSquared = deltaX * deltaX + deltaZ * deltaZ;
++                        double distanceSquared = Mth.square(deltaX) + Mth.square(deltaZ);
++                        if (!level.getGameRules().get(GameRules.GLOBAL_SOUND_EVENTS) && distanceSquared > Mth.square(level.spigotConfig.witherSpawnSoundRadius)) continue; // Spigot // Paper - respect global sound events gamerule
 +                        if (distanceSquared > viewDistance * viewDistance) {
 +                            double deltaLength = Math.sqrt(distanceSquared);
 +                            double relativeX = player.getX() + (deltaX / deltaLength) * viewDistance;
@@ -86,7 +94,7 @@
                          if (canDestroy(state)) {
 -                            destroyed = level.destroyBlock(blockPos, true, this) || destroyed;
 +                            // CraftBukkit start
-+                            if (!CraftEventFactory.callEntityChangeBlockEvent(this, blockPos, Blocks.AIR.defaultBlockState())) {
++                            if (!CraftEventFactory.callEntityChangeBlockEvent(this, blockPos, state.getFluidState().createLegacyBlock())) { // Paper - fix wrong block state
 +                                continue;
 +                            }
 +                            // CraftBukkit end
@@ -126,3 +134,25 @@
          } else {
              this.noActionTime = 0;
          }
+@@ -548,12 +_,18 @@
+ 
+     @Override
+     public boolean canUsePortal(boolean ignorePassenger) {
+-        return false;
+-    }
++        return this.canPortal; // Paper
++    }
++
++    // Paper start
++    public void setCanTravelThroughPortals(boolean canPortal) {
++        this.canPortal = canPortal;
++    }
++    // Paper end
+ 
+     @Override
+     public boolean canBeAffected(MobEffectInstance newEffect) {
+-        return newEffect.is(MobEffects.WITHER) ? false : super.canBeAffected(newEffect);
++        return (!newEffect.is(MobEffects.WITHER) || !this.level().paperConfig().entities.mobEffects.immuneToWitherEffect.wither) && super.canBeAffected(newEffect); // Paper
+     }
+ 
+     private class WitherDoNothingGoal extends Goal {

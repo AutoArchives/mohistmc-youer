@@ -1,5 +1,14 @@
 --- a/net/minecraft/world/level/chunk/ChunkAccess.java
 +++ b/net/minecraft/world/level/chunk/ChunkAccess.java
+@@ -64,7 +_,7 @@
+     protected final @Nullable ShortList[] postProcessing;
+     private volatile boolean unsaved;
+     private volatile boolean isLightCorrect;
+-    protected final ChunkPos chunkPos;
++    protected final ChunkPos chunkPos; public final long coordinateKey; public final int locX; public final int locZ; // Paper - cache coordinate key
+     private long inhabitedTime;
+     @Deprecated
+     private @Nullable BiomeGenerationSettings carverBiomeSettings;
 @@ -80,6 +_,11 @@
      protected final LevelHeightAccessor levelHeightAccessor;
      protected final LevelChunkSection[] sections;
@@ -12,6 +21,25 @@
      public ChunkAccess(
          ChunkPos chunkPos,
          UpgradeData upgradeData,
+@@ -89,7 +_,8 @@
+         LevelChunkSection @Nullable [] sections,
+         @Nullable BlendingData blendingData
+     ) {
+-        this.chunkPos = chunkPos;
++        this.locX = chunkPos.x(); this.locZ = chunkPos.z(); // Paper - reduce need for field lookups
++        this.chunkPos = chunkPos; this.coordinateKey = ChunkPos.pack(this.locX, this.locZ); // Paper - cache long key
+         this.upgradeData = upgradeData;
+         this.levelHeightAccessor = levelHeightAccessor;
+         this.sections = new LevelChunkSection[levelHeightAccessor.getSectionsCount()];
+@@ -120,6 +_,8 @@
+         return GameEventListenerRegistry.NOOP;
+     }
+ 
++    public abstract BlockState getBlockState(final int x, final int y, final int z); // Paper
++
+     public @Nullable BlockState setBlockState(BlockPos pos, BlockState state) {
+         return this.setBlockState(pos, state, 3);
+     }
 @@ -266,6 +_,7 @@
      public boolean tryMarkSaved() {
          if (this.unsaved) {
@@ -57,7 +85,7 @@
                              }
                          }
                      }
-@@ -439,6 +_,27 @@
+@@ -439,6 +_,44 @@
          }
      }
  
@@ -78,6 +106,23 @@
 +                return CrashReportCategory.formatLocation(this, i, j, k);
 +            });
 +            throw new ReportedException(crashreport);
++        }
++    }
++    // CraftBukkit end
++
++    // CraftBukkit start
++    public void setNoiseBiome(int quartX, int quartY, int quartZ, Holder<Biome> biome) {
++        try {
++            int quartMinY = QuartPos.fromBlock(this.getMinY());
++            int quartMaxY = quartMinY + QuartPos.fromBlock(this.getHeight()) - 1;
++            int clampedQuartY = Mth.clamp(quartY, quartMinY, quartMaxY);
++            int sectionIndex = this.getSectionIndex(QuartPos.toBlock(clampedQuartY));
++            this.sections[sectionIndex].setNoiseBiome(quartX & 3, clampedQuartY & 3, quartZ & 3, biome);
++        } catch (Throwable throwable) {
++            CrashReport report = CrashReport.forThrowable(throwable, "Setting biome");
++            CrashReportCategory category = report.addCategory("Biome being set");
++            category.setDetail("Location", () -> CrashReportCategory.formatLocation(this, quartX, quartY, quartZ));
++            throw new ReportedException(report);
 +        }
 +    }
 +    // CraftBukkit end

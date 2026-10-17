@@ -182,18 +182,9 @@ dependencies {
     libraries 'com.mohistmc:i18n:0.6'
     libraries 'com.mohistmc:json:0.5'
     libraries 'com.mohistmc:tools:0.6.3'
-    libraries ('com.mohistmc:librariesvault:1.21.1-2') {
-        exclude group: 'org.yaml'
-        exclude group: 'io.leangen.geantyref'
-        exclude group: 'org.spongepowered'
-        exclude group: 'org.apache.httpcomponents'
-        exclude group: 'org.apache.commons'
-        exclude group: 'org.mariadb.jdbc'
-    }
-    libraries 'com.konghq:unirest-java-core:4.5.1'
+    libraries 'com.konghq:unirest-java-core:4.10.0'
     // Bukkit
     libraries "org.yaml:snakeyaml:2.6"
-    libraries "org.jline:jline:3.30.4"
     // LibraryLoader start
     libraries 'org.checkerframework:checker-qual:3.33.0'
     libraries 'org.eclipse.sisu:org.eclipse.sisu.inject:0.9.0.M2'
@@ -209,23 +200,26 @@ dependencies {
     // LibraryLoader end
 
     // Paper start
+    libraries "ca.spottedleaf:concurrentutil:0.0.10"
+    libraries "org.spongepowered:configurate-yaml:4.2.0"
+    libraries 'org.joml:joml:1.10.8'
     libraries "org.jspecify:jspecify:1.0.0"
     // libraries 'net.md-5:bungeecord-chat:1.20-R0.2-deprecated+build. TODO youer
-    libraries("net.kyori:adventure-api:4.17.0")
-    libraries("net.kyori:adventure-key:4.17.0")
-    libraries("net.kyori:adventure-text-logger-slf4j:4.17.0")
-    libraries("net.kyori:adventure-text-serializer-ansi:4.17.0")
-    libraries("net.kyori:adventure-text-minimessage:4.17.0")
-    libraries("net.kyori:adventure-text-serializer-gson:4.17.0")
-    libraries("net.kyori:adventure-text-serializer-json:4.17.0")
-    libraries("net.kyori:adventure-text-serializer-legacy:4.17.0")
-    libraries("net.kyori:adventure-text-serializer-plain:4.17.0")
+    libraries("net.kyori:adventure-api:4.26.1")
+    libraries("net.kyori:adventure-key:4.26.1")
+    libraries("net.kyori:adventure-text-logger-slf4j:4.26.1")
+    libraries("net.kyori:adventure-text-serializer-ansi:4.26.1")
+    libraries("net.kyori:adventure-text-minimessage:4.26.1")
+    libraries("net.kyori:adventure-text-serializer-gson:4.26.1")
+    libraries("net.kyori:adventure-text-serializer-json:4.26.1")
+    libraries("net.kyori:adventure-text-serializer-legacy:4.26.1")
+    libraries("net.kyori:adventure-text-serializer-plain:4.26.1")
     libraries("net.kyori:ansi:1.0.3")
     libraries("net.kyori:examination-api:1.3.0")
     libraries("net.kyori:examination-string:1.3.0")
     libraries("net.kyori:option:1.0.0")
     libraries("io.netty:netty-codec-haproxy:4.1.97.Final") // Paper - Add support for proxy protocol
-    libraries("com.velocitypowered:velocity-native:3.3.0-SNAPSHOT") {
+    libraries("com.velocitypowered:velocity-native:3.4.0-SNAPSHOT") {
         exclude group: 'io.netty'
     }
     // Paper end
@@ -258,6 +252,7 @@ neoDev {
         gameTestServer {
             type = "gameTestServer"
             loadedMods = [commonMod, neoDev.mods."neoforge-coremods"]
+            systemProperty("eventbus.checkTypesOnDispatch", "true")
         }
         data {
             // We perform client and server datagen in a single clientData run to avoid
@@ -271,7 +266,6 @@ neoDev {
         }
     }
 }
-
 
 generateAccessTransformers {
     // Make all render pipeline snippet fields public
@@ -363,7 +357,7 @@ tasks.register('generateFinalizeSpawnTargets', GenerateFinalizeSpawnTargets.clas
     output = rootProject.file("coremods/src/main/resources/net/neoforged/neoforge/coremods/finalize_spawn_targets.json")
 }
 
-tasks.withType(JavaCompile.class).configureEach{
+tasks.withType(JavaCompile.class).configureEach {
     // Increase memory used during compilation, to avoid OutOfMemoryErrors
     options.forkOptions.memoryMaximumSize = '2g'
     options.encoding = 'UTF-8'
@@ -387,7 +381,7 @@ Map<String, String> placeholders = [
         'youer_version' : gradleutils.gitInfo.abbreviatedId,
         'neoform_version' : project.neoform_version,
         'minecraft_version' : project.minecraft_version,
-        'build_type' : 'BETA'
+        'build_type' : 'STABLE'
 ]
 
 // Generates the neoforge.mods.toml and version.properties, so they contain fully realized version numbers

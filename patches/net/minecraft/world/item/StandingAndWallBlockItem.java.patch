@@ -26,7 +26,7 @@
 +            boolean defaultReturn = level.isUnobstructed(stateForPlacement, pos, CollisionContext.empty());
 +            org.bukkit.entity.Player player = (context.getPlayer() instanceof ServerPlayer) ? (org.bukkit.entity.Player) context.getPlayer().getBukkitEntity() : null;
 +
-+            BlockCanBuildEvent event = new BlockCanBuildEvent(CraftBlock.at(context.getLevel(), pos), player, CraftBlockData.fromData(stateForPlacement), defaultReturn);
++            BlockCanBuildEvent event = new BlockCanBuildEvent(CraftBlock.at(context.getLevel(), pos), player, stateForPlacement.asBlockData(), defaultReturn, org.bukkit.craftbukkit.CraftEquipmentSlot.getHand(context.getHand())); // Paper - Expose hand in BlockCanBuildEvent
 +            context.getLevel().getCraftServer().getPluginManager().callEvent(event);
 +
 +            return (event.isBuildable()) ? stateForPlacement : null;

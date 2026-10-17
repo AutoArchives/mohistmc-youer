@@ -15,12 +15,12 @@
  public class SweetBerryBushBlock extends VegetationBlock implements BonemealableBlock {
      public static final MapCodec<SweetBerryBushBlock> CODEC = simpleCodec(SweetBerryBushBlock::new);
      private static final float HURT_SPEED_THRESHOLD = 0.003F;
-@@ -71,9 +_,12 @@
+@@ -71,15 +_,19 @@
      @Override
      protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
          int age = state.getValue(AGE);
 -        if (age < 3 && random.nextInt(5) == 0 && level.getRawBrightness(pos.above(), 0) >= 9) {
-+        if (age < 3 && level.getRawBrightness(pos.above(), 0) >= 9 && net.neoforged.neoforge.common.CommonHooks.canCropGrow(level, pos, state, random.nextInt(5) == 0)) {
++        if (age < 3 && level.getRawBrightness(pos.above(), 0) >= 9 && net.neoforged.neoforge.common.CommonHooks.canCropGrow(level, pos, state, random.nextFloat() < (level.spigotConfig.sweetBerryModifier / (100.0F * 5)))) { // Spigot - SPIGOT-7159: Better modifier resolution
              BlockState newState = state.setValue(AGE, age + 1);
 -            level.setBlock(pos, newState, 2);
 +            // CraftBukkit start
@@ -30,6 +30,13 @@
              level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(newState));
          }
      }
+ 
+     @Override
+     protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effectApplier, boolean isPrecise) {
++        if (!new io.papermc.paper.event.entity.EntityInsideBlockEvent(entity.getBukkitEntity(), org.bukkit.craftbukkit.block.CraftBlock.at(level, pos)).callEvent()) { return; } // Paper - Add EntityInsideBlockEvent
+         if (entity instanceof LivingEntity && !entity.is(EntityType.FOX) && !entity.is(EntityType.BEE)) {
+             entity.makeStuckInBlock(state, new Vec3(0.8F, 0.75, 0.8F));
+             if (level instanceof ServerLevel serverLevel && state.getValue(AGE) != 0) {
 @@ -88,7 +_,7 @@
                      double xs = Math.abs(movement.x());
                      double zs = Math.abs(movement.z());

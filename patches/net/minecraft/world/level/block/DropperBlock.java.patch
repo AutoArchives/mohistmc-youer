@@ -18,7 +18,13 @@
  
      @Override
      public MapCodec<DropperBlock> codec() {
-@@ -58,17 +_,45 @@
+@@ -53,22 +_,52 @@
+             BlockSource source = new BlockSource(level, pos, state, blockEntity);
+             int slot = blockEntity.getRandomSlot(level.getRandom());
+             if (slot < 0) {
++                if (org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockFailedDispenseEvent(level, pos)) // Paper - Add BlockFailedDispenseEvent
+                 level.levelEvent(1001, pos, 0);
+             } else {
                  ItemStack itemStack = blockEntity.getItem(slot);
                  if (!itemStack.isEmpty()) {
                      Direction direction = level.getBlockState(pos).getValue(FACING);
@@ -27,6 +33,7 @@
                      ItemStack remaining;
 -                    if (into == null) {
 +                    if (into.isEmpty()) {
++                        if (!org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockPreDispenseEvent(level, pos, itemStack, slot)) return; // Paper - Add BlockPreDispenseEvent
                          remaining = DISPENSE_BEHAVIOUR.dispense(source, itemStack);
                      } else {
 -                        remaining = HopperBlockEntity.addItem(blockEntity, into, itemStack.copyWithCount(1), direction.getOpposite());

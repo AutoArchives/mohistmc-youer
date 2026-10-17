@@ -58,7 +58,7 @@
 +                newXRot = to.getPitch();
 +                level = ((CraftWorld) to.getWorld()).getHandle();
 +
-+                result = victim.teleportTo(level, relativeOrAbsoluteX, relativeOrAbsoluteY, relativeOrAbsoluteZ, relatives, newYRot, newXRot, true);
++                result = victim.teleportTo(level, relativeOrAbsoluteX, relativeOrAbsoluteY, relativeOrAbsoluteZ, relatives, newYRot, newXRot, true, org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.COMMAND); // Paper - teleport cause
 +            }
 +
 +            if (result) {

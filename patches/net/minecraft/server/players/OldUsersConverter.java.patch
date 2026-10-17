@@ -13,12 +13,13 @@
  public class OldUsersConverter {
      private static final Logger LOGGER = LogUtils.getLogger();
      public static final File OLD_IPBANLIST = new File("banned-ips.txt");
-@@ -50,7 +_,7 @@
+@@ -50,7 +_,8 @@
  
      private static void lookupPlayers(MinecraftServer server, Collection<String> names, ProfileLookupCallback callback) {
          String[] filteredNames = names.stream().filter(s -> !StringUtil.isNullOrEmpty(s)).toArray(String[]::new);
 -        if (server.usesAuthentication()) {
-+        if (server.usesAuthentication() || org.spigotmc.SpigotConfig.bungee) { // Spigot: bungee = online mode, for now.
++        if (server.usesAuthentication() ||
++            (io.papermc.paper.configuration.GlobalConfiguration.get().proxies.isProxyOnlineMode())) { // Spigot: bungee = online mode, for now.  // Paper - Add setting for proxy online mode status
              server.services().profileRepository().findProfilesByNames(filteredNames, callback);
          } else {
              for (String name : filteredNames) {

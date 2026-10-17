@@ -9,20 +9,28 @@
  public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
      public static final MapCodec<CommandBlock> CODEC = RecordCodecBuilder.mapCodec(
          i -> i.group(Codec.BOOL.fieldOf("automatic").forGetter(b -> b.automatic), propertiesCodec()).apply(i, CommandBlock::new)
-@@ -69,6 +_,16 @@
+@@ -67,9 +_,14 @@
+         }
+     }
  
-     private void setPoweredAndUpdate(Level level, BlockPos pos, CommandBlockEntity commandBlock, boolean isPowered) {
+-    private void setPoweredAndUpdate(Level level, BlockPos pos, CommandBlockEntity commandBlock, boolean isPowered) {
++    private void setPoweredAndUpdate(Level level, BlockPos pos, CommandBlockEntity commandBlock, boolean isPowered) { // Paper - remove final from isPowered
          boolean wasPowered = commandBlock.isPowered();
-+        // CraftBukkit start
-+        org.bukkit.block.Block bukkitBlock = level.getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ());
-+        int old = wasPowered ? 15 : 0;
-+        int current = isPowered ? 15 : 0;
-+
-+        BlockRedstoneEvent eventRedstone = new BlockRedstoneEvent(bukkitBlock, old, current);
-+        level.getCraftServer().getPluginManager().callEvent(eventRedstone);
-+        isPowered = eventRedstone.getNewCurrent() > 0;
-+        // CraftBukkit end
-+
          if (isPowered != wasPowered) {
++            // Paper start - Call BlockRedstoneEvent
++            if (!org.bukkit.craftbukkit.event.CraftEventFactory.callBinaryRedstoneChange(level, pos, isPowered)) {
++                return;
++            }
++            // Paper end - Call BlockRedstoneEvent
              commandBlock.setPowered(isPowered);
              if (isPowered) {
+                 if (commandBlock.isAutomatic() || commandBlock.getMode() == CommandBlockEntity.Mode.SEQUENCE) {
+@@ -125,7 +_,7 @@
+     @Override
+     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+         BlockEntity blockEntity = level.getBlockEntity(pos);
+-        if (blockEntity instanceof CommandBlockEntity && player.canUseGameMasterBlocks()) {
++        if (blockEntity instanceof CommandBlockEntity && (player.canUseGameMasterBlocks() || (player.isCreative() && player.getBukkitEntity().hasPermission("minecraft.commandblock")))) { // Paper - command block permission
+             player.openCommandBlock((CommandBlockEntity)blockEntity);
+             return InteractionResult.SUCCESS;
+         } else {

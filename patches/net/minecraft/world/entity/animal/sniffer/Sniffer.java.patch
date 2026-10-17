@@ -23,3 +23,29 @@
                          );
                  }
              }
+@@ -345,12 +_,22 @@
+ 
+     @Override
+     public void spawnChildFromBreeding(ServerLevel level, Animal partner) {
++        // Paper start - Add EntityFertilizeEggEvent event
++        final io.papermc.paper.event.entity.EntityFertilizeEggEvent result = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityFertilizeEggEvent(this, partner);
++        if (result.isCancelled()) return;
++        // Paper end - Add EntityFertilizeEggEvent event
+         ItemStack itemStack = new ItemStack(Items.SNIFFER_EGG);
+         ItemEntity entity = new ItemEntity(level, this.position().x(), this.position().y(), this.position().z(), itemStack);
+         entity.setDefaultPickUpDelay();
+-        this.finalizeSpawnChildFromBreeding(level, partner, null);
+-        this.playSound(SoundEvents.SNIFFER_EGG_PLOP, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 0.5F);
+-        level.addFreshEntity(entity);
++        this.finalizeSpawnChildFromBreeding(level, partner, null, result.getExperience()); // Paper - Add EntityFertilizeEggEvent event
++        // CraftBukkit start - Call EntityDropItemEvent
++        org.bukkit.event.entity.EntityDropItemEvent dropEvent = new org.bukkit.event.entity.EntityDropItemEvent(this.getBukkitEntity(), (org.bukkit.entity.Item) entity.getBukkitEntity());
++        org.bukkit.Bukkit.getPluginManager().callEvent(dropEvent);
++        if (!dropEvent.isCancelled()) {
++            level.addFreshEntity(entity);
++            this.playSound(SoundEvents.SNIFFER_EGG_PLOP, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 0.5F);
++        }
++        // CraftBukkit end
+     }
+ 
+     @Override

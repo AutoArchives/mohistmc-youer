@@ -1,0 +1,15 @@
+--- a/net/minecraft/network/protocol/game/ClientboundLevelChunkWithLightPacket.java
++++ b/net/minecraft/network/protocol/game/ClientboundLevelChunkWithLightPacket.java
+@@ -29,6 +_,12 @@
+         this.lightData = new ClientboundLightUpdatePacketData(chunkPos, lightEngine, skyChangedLightSectionFilter, blockChangedLightSectionFilter);
+     }
+ 
++    // Paper start - Anti-Xray
++    public void setReady(final boolean ready) {
++        // Empty hook, updated by feature patch
++    }
++    // Paper end - Anti-Xray
++
+     private ClientboundLevelChunkWithLightPacket(RegistryFriendlyByteBuf input) {
+         this.x = input.readInt();
+         this.z = input.readInt();

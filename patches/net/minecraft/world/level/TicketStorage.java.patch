@@ -82,11 +82,10 @@
      }
  
      public void replaceTicketLevelOfType(int newLevel, TicketType ticketType) {
-@@ -409,5 +_,26 @@
- 
+@@ -410,4 +_,41 @@
      public interface TicketPredicate {
          boolean test(Ticket ticket, long chunkPos);
-+    }
+     }
 +
 +    // Neo: Keep track of forced loaded chunks caused by entities or blocks.
 +    private final net.neoforged.neoforge.common.world.chunk.ForcedChunkManager.TicketTracker<net.minecraft.core.BlockPos> blockForcedChunks = new net.neoforged.neoforge.common.world.chunk.ForcedChunkManager.TicketTracker<>(this, net.neoforged.neoforge.common.NeoForgeMod.BLOCK_TICKET, net.neoforged.neoforge.common.NeoForgeMod.BLOCK_WITH_NATURAL_SPAWNING_TICKET);
@@ -107,5 +106,21 @@
 +
 +    public boolean shouldForceNaturalSpawning(ChunkPos chunkPos) {
 +        return chunksWithForceNaturalSpawning.contains(chunkPos.pack());
-     }
++    }
++
++    // Paper start
++    public boolean addPluginRegionTicket(final ChunkPos pos, final org.bukkit.plugin.Plugin value) {
++        // Keep inline with force loading
++        return addTicket(pos.pack(), new Ticket(TicketType.PLUGIN_TICKET, ChunkMap.FORCED_TICKET_LEVEL, value));
++    }
++
++    public boolean removePluginRegionTicket(final ChunkPos pos, final org.bukkit.plugin.Plugin value) {
++        // Keep inline with force loading
++        return removeTicket(pos.pack(), new Ticket(TicketType.PLUGIN_TICKET, ChunkMap.FORCED_TICKET_LEVEL, value));
++    }
++
++    public void removeAllPluginRegionTickets(TicketType ticketType, int ticketLevel, org.bukkit.plugin.Plugin ticketIdentifier) {
++        removeTicketIf((ticket, chunkPos) -> ticket.getType() == ticketType && ticket.getTicketLevel() == ticketLevel && ticket.getIdentifier() == ticketIdentifier, null);
++    }
++    // Paper end
  }

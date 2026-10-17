@@ -97,3 +97,17 @@
          return this.interactWithContainerVehicle(player);
      }
  
+@@ -163,4 +_,13 @@
+     public void clearItemStacks() {
+         this.itemStacks = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
+     }
++    // Paper start - LootTable API
++    private final com.destroystokyo.paper.loottable.PaperLootableInventoryData lootableData = new com.destroystokyo.paper.loottable.PaperLootableInventoryData();
++
++    @Override
++    public com.destroystokyo.paper.loottable.PaperLootableInventoryData lootableData() {
++        return this.lootableData;
++    }
++    // Paper end - LootTable API
++
+ }

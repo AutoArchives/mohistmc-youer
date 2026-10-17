@@ -1,13 +1,20 @@
 --- a/net/minecraft/world/level/block/SculkCatalystBlock.java
 +++ b/net/minecraft/world/level/block/SculkCatalystBlock.java
-@@ -59,8 +_,14 @@
+@@ -59,8 +_,23 @@
      @Override
      protected void spawnAfterBreak(BlockState state, ServerLevel level, BlockPos pos, ItemStack tool, boolean dropExperience) {
          super.spawnAfterBreak(state, level, pos, tool, dropExperience);
--        if (dropExperience) {
--            this.tryDropExperience(level, pos, tool, this.xpRange);
--        }
 +
++    }
++
++    @Override
++    public int getExpDrop(BlockState state, ServerLevel level, BlockPos pos, ItemStack tool, boolean dropExperience) {
+         if (dropExperience) {
+-            this.tryDropExperience(level, pos, tool, this.xpRange);
++            return this.tryDropExperience(level, pos, tool, this.xpRange);
+         }
++
++        return 0;
 +    }
 +
 +    // Neo: Patch-in override for getExpDrop. Original vanilla logic passes this.xpRange to tryDropExperience.

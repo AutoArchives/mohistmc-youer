@@ -12,8 +12,12 @@
  public class FarmlandBlock extends Block {
      public static final MapCodec<FarmlandBlock> CODEC = simpleCodec(FarmlandBlock::new);
      public static final IntegerProperty MOISTURE = BlockStateProperties.MOISTURE;
-@@ -96,22 +_,38 @@
+@@ -94,31 +_,53 @@
+     @Override
+     protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
          int moisture = state.getValue(MOISTURE);
++        if (moisture > 0 && level.paperConfig().tickRates.wetFarmland != 1 && (level.paperConfig().tickRates.wetFarmland < 1 || (net.minecraft.server.MinecraftServer.currentTick + pos.hashCode()) % level.paperConfig().tickRates.wetFarmland != 0)) { return; } // Paper - Configurable random tick rates for blocks
++        if (moisture == 0 && level.paperConfig().tickRates.dryFarmland != 1 && (level.paperConfig().tickRates.dryFarmland < 1 || (net.minecraft.server.MinecraftServer.currentTick + pos.hashCode()) % level.paperConfig().tickRates.dryFarmland != 0)) { return; } // Paper - Configurable random tick rates for blocks
          if (!isNearWater(level, pos) && !level.isRainingAt(pos.above())) {
              if (moisture > 0) {
 -                level.setBlock(pos, state.setValue(MOISTURE, moisture - 1), 2);
@@ -29,6 +33,7 @@
  
      @Override
      public void fallOn(Level level, BlockState state, BlockPos pos, Entity entity, double fallDistance) {
++        super.fallOn(level, state, pos, entity, fallDistance); // CraftBukkit - moved here as game rules / events shouldn't affect fall damage.
          if (level instanceof ServerLevel serverLevel
 -            && level.getRandom().nextFloat() < fallDistance - 0.5
 -            && entity instanceof LivingEntity
@@ -45,34 +50,57 @@
 +            }
 +
 +            if (cancellable.isCancelled()) {
-+                super.fallOn(level, state, pos, entity, fallDistance);
 +                return;
 +            }
 +
 +            if (!CraftEventFactory.callEntityChangeBlockEvent(entity, pos, Blocks.DIRT.defaultBlockState())) {
-+                super.fallOn(level, state, pos, entity, fallDistance);
 +                return;
 +            }
 +            // CraftBukkit end
              turnToDirt(entity, state, level, pos);
          }
- 
-@@ -119,6 +_,11 @@
+-
+-        super.fallOn(level, state, pos, entity, fallDistance);
      }
  
      public static void turnToDirt(@Nullable Entity sourceEntity, BlockState state, Level level, BlockPos pos) {
 +        // CraftBukkit start
-+        if (CraftEventFactory.callBlockFadeEvent(level, pos, Blocks.DIRT.defaultBlockState()).isCancelled()) {
-+            return;
++        if (sourceEntity == null) {
++            if (CraftEventFactory.callBlockFadeEvent(level, pos, Blocks.DIRT.defaultBlockState()).isCancelled()) {
++                return;
++            }
 +        }
 +        // CraftBukkit end
          BlockState newState = pushEntitiesUp(state, Blocks.DIRT.defaultBlockState(), level, pos);
          level.setBlockAndUpdate(pos, newState);
          level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(sourceEntity, newState));
-@@ -129,13 +_,14 @@
+@@ -129,13 +_,37 @@
      }
  
      private static boolean isNearWater(LevelReader level, BlockPos pos) {
++        BlockState state = level.getBlockState(pos);
++        // Paper start - Perf: remove abstract block iteration
++        int xOff = pos.getX();
++        int yOff = pos.getY();
++        int zOff = pos.getZ();
++        for (int dz = -4; dz <= 4; ++dz) {
++            int z = zOff + dz;
++            for (int dx = -4; dx <= 4; ++dx) {
++                int x = xOff + dx;
++                for (int dy = 0; dy <= 1; ++dy) {
++                    int y = yOff + dy;
++                    net.minecraft.world.level.material.FluidState fluid = ((net.minecraft.world.level.Level)level).getChunk(x >> 4, z >> 4).getBlockStateFinal(x, y, z).getFluidState();
++                    if (state.canBeHydrated(level, pos, fluid, pos.offset(dx, dy, dz))) {
++                        return true;
++                    }
++                }
++            }
++        }
++
++        return false;
++    }
++
++    private static boolean isNearWaterUnused(LevelReader level, BlockPos pos) {
 +        BlockState state = level.getBlockState(pos);
          for (BlockPos blockPos : BlockPos.betweenClosed(pos.offset(-4, 0, -4), pos.offset(4, 1, 4))) {
 -            if (level.getFluidState(blockPos).is(FluidTags.WATER)) {

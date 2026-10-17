@@ -97,7 +97,7 @@
          MutableBoolean set = new MutableBoolean();
          this.modifyClock(clock, instance -> {
              ClockTimeMarker timeMarker = instance.timeMarkers.get(timeMarkerId);
-@@ -93,32 +_,76 @@
+@@ -93,32 +_,85 @@
                  instance.partialTick = 0.0F;
                  set.setTrue();
              }
@@ -106,8 +106,18 @@
          return set.booleanValue();
      }
  
-     public void addTicks(Holder<WorldClock> clock, int ticks) {
+-    public void addTicks(Holder<WorldClock> clock, int ticks) {
 -        this.modifyClock(clock, instance -> instance.totalTicks = Math.max(instance.totalTicks + ticks, 0L));
++    // Paper start - time skip event
++    public java.util.OptionalLong getTotalTicksToTimeMarker(final Holder<WorldClock> clock, final ResourceKey<ClockTimeMarker> timeMarkerId) {
++        final ServerClockManager.ClockInstance instance = this.getInstance(clock);
++        final ClockTimeMarker timeMarker = instance.timeMarkers.get(timeMarkerId);
++
++        return timeMarker != null ? java.util.OptionalLong.of(timeMarker.resolveTimeToMoveTo(instance.totalTicks)) : java.util.OptionalLong.empty();
++    }
++    // Paper end - time skip event
++
++    public void addTicks(final Holder<WorldClock> clock, final long ticks) { // Paper
 +        this.modifyClock(clock, instance -> instance.totalTicks = Math.max(instance.totalTicks + ticks, 0L), TimeSkipEvent.SkipReason.COMMAND); // CraftBukkit - always COMMAND
      }
  

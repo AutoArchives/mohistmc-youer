@@ -1,6 +1,6 @@
 --- a/net/minecraft/network/protocol/game/ClientboundSectionBlocksUpdatePacket.java
 +++ b/net/minecraft/network/protocol/game/ClientboundSectionBlocksUpdatePacket.java
-@@ -30,12 +_,20 @@
+@@ -30,12 +_,27 @@
  
          for (short packedPos : changes) {
              this.positions[i] = packedPos;
@@ -20,6 +20,13 @@
 +        this.states = states;
 +    }
 +    // CraftBukkit end
++    // Paper start - Multi Block Change API
++    public ClientboundSectionBlocksUpdatePacket(SectionPos sectionPos, it.unimi.dsi.fastutil.shorts.Short2ObjectMap<BlockState> blockChanges) {
++        this.sectionPos = sectionPos;
++        this.positions = blockChanges.keySet().toShortArray();
++        this.states = blockChanges.values().toArray(new BlockState[0]);
++    }
++    // Paper end - Multi Block Change API
  
      private ClientboundSectionBlocksUpdatePacket(FriendlyByteBuf input) {
          this.sectionPos = SectionPos.STREAM_CODEC.decode(input);

@@ -1,12 +1,20 @@
 --- a/net/minecraft/world/level/block/DropExperienceBlock.java
 +++ b/net/minecraft/world/level/block/DropExperienceBlock.java
-@@ -29,8 +_,13 @@
+@@ -29,8 +_,22 @@
      @Override
      protected void spawnAfterBreak(BlockState state, ServerLevel level, BlockPos pos, ItemStack tool, boolean dropExperience) {
          super.spawnAfterBreak(state, level, pos, tool, dropExperience);
--        if (dropExperience) {
++    }
++
++    @Override
++    public int getExpDrop(BlockState state, ServerLevel level, BlockPos pos, ItemStack tool, boolean dropExperience) {
+         if (dropExperience) {
 -            this.tryDropExperience(level, pos, tool, this.xpRange);
 -        }
++            return this.tryDropExperience(level, pos, tool, this.xpRange);
++         }
++
++        return 0;
 +    }
 +
 +    // Neo: Patch-in override for getExpDrop. Original vanilla logic passes this.xpRange to tryDropExperience.

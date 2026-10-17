@@ -1,5 +1,13 @@
 --- a/net/minecraft/core/cauldron/CauldronInteractions.java
 +++ b/net/minecraft/core/cauldron/CauldronInteractions.java
+@@ -3,6 +_,7 @@
+ import com.mojang.serialization.Codec;
+ import java.util.function.Predicate;
+ import net.minecraft.core.BlockPos;
++import net.minecraft.core.Direction;
+ import net.minecraft.core.component.DataComponents;
+ import net.minecraft.sounds.SoundEvent;
+ import net.minecraft.sounds.SoundEvents;
 @@ -29,6 +_,7 @@
  import net.minecraft.world.level.block.state.BlockState;
  import net.minecraft.world.level.gameevent.GameEvent;
@@ -28,7 +36,8 @@
 +
      public static void bootStrap() {
          addDefaultInteractions(EMPTY);
-         EMPTY.put(Items.POTION, (var0, level, pos, player, hand, itemInHand) -> {
+-        EMPTY.put(Items.POTION, (var0, level, pos, player, hand, itemInHand) -> {
++        EMPTY.put(Items.POTION, (var0, level, pos, player, hand, itemInHand, Direction hitDirection) -> {
              PotionContents potion = itemInHand.get(DataComponents.POTION_CONTENTS);
              if (potion != null && potion.is(Potions.WATER)) {
                  if (!level.isClientSide()) {
@@ -46,9 +55,21 @@
                      level.playSound(null, pos, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
                      level.gameEvent(null, GameEvent.FLUID_PLACE, pos);
                  }
-@@ -81,11 +_,16 @@
+@@ -67,7 +_,7 @@
+         addDefaultInteractions(WATER);
+         WATER.put(
+             Items.BUCKET,
+-            (state, level, pos, player, hand, itemInHand) -> fillBucket(
++            (state, level, pos, player, hand, itemInHand, Direction hitDirection) -> fillBucket(
+                 state,
+                 level,
+                 pos,
+@@ -79,30 +_,40 @@
+                 SoundEvents.BUCKET_FILL
+             )
          );
-         WATER.put(Items.GLASS_BOTTLE, (state, level, pos, player, hand, itemInHand) -> {
+-        WATER.put(Items.GLASS_BOTTLE, (state, level, pos, player, hand, itemInHand) -> {
++        WATER.put(Items.GLASS_BOTTLE, (state, level, pos, player, hand, itemInHand, Direction hitDirection) -> {
              if (!level.isClientSide()) {
 +                // CraftBukkit start
 +                if (!LayeredCauldronBlock.lowerFillLevel(state, level, pos, player, CauldronLevelChangeEvent.ChangeReason.BOTTLE_FILL)) {
@@ -64,7 +85,14 @@
                  level.playSound(null, pos, SoundEvents.BOTTLE_FILL, SoundSource.BLOCKS, 1.0F, 1.0F);
                  level.gameEvent(null, GameEvent.FLUID_PICKUP, pos);
              }
-@@ -99,10 +_,15 @@
+ 
+             return InteractionResult.SUCCESS;
+         });
+-        WATER.put(Items.POTION, (state, level, pos, player, hand, itemInHand) -> {
++        WATER.put(Items.POTION, (state, level, pos, player, hand, itemInHand, Direction hitDirection) -> {
+             if (state.getValue(LayeredCauldronBlock.LEVEL) == 3) {
+                 return InteractionResult.TRY_WITH_EMPTY_HAND;
+             } else {
                  PotionContents potion = itemInHand.get(DataComponents.POTION_CONTENTS);
                  if (potion != null && potion.is(Potions.WATER)) {
                      if (!level.isClientSide()) {
@@ -81,6 +109,23 @@
                          level.playSound(null, pos, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
                          level.gameEvent(null, GameEvent.FLUID_PLACE, pos);
                      }
+@@ -148,14 +_,14 @@
+         WATER.put(Items.YELLOW_SHULKER_BOX, CauldronInteractions::shulkerBoxInteraction);
+         LAVA.put(
+             Items.BUCKET,
+-            (state, level, pos, player, hand, itemInHand) -> fillBucket(
++            (state, level, pos, player, hand, itemInHand, Direction hitDirection) -> fillBucket(
+                 state, level, pos, player, hand, itemInHand, new ItemStack(Items.LAVA_BUCKET), var0x -> true, SoundEvents.BUCKET_FILL_LAVA
+             )
+         );
+         addDefaultInteractions(LAVA);
+         POWDER_SNOW.put(
+             Items.BUCKET,
+-            (state, level, pos, player, hand, itemInHand) -> fillBucket(
++            (state, level, pos, player, hand, itemInHand, Direction hitDirection) -> fillBucket(
+                 state,
+                 level,
+                 pos,
 @@ -191,11 +_,16 @@
              return InteractionResult.TRY_WITH_EMPTY_HAND;
          } else {
@@ -117,7 +162,40 @@
              level.playSound(null, pos, soundEvent, SoundSource.BLOCKS, 1.0F, 1.0F);
              level.gameEvent(null, GameEvent.FLUID_PLACE, pos);
          }
-@@ -258,10 +_,15 @@
+@@ -221,21 +_,21 @@
+     }
+ 
+     public static InteractionResult fillWaterInteraction(
+-        BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack itemInHand
++        BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack itemInHand, Direction hitDirection
+     ) {
+         return emptyBucket(
+             level, pos, player, hand, itemInHand, Blocks.WATER_CAULDRON.defaultBlockState().setValue(LayeredCauldronBlock.LEVEL, 3), SoundEvents.BUCKET_EMPTY
+         );
+     }
+ 
+-    public static InteractionResult fillLavaInteraction(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack itemInHand) {
++    public static InteractionResult fillLavaInteraction(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack itemInHand, Direction hitDirection) {
+         return (InteractionResult)(isUnderWater(level, pos)
+             ? InteractionResult.CONSUME
+             : emptyBucket(level, pos, player, hand, itemInHand, Blocks.LAVA_CAULDRON.defaultBlockState(), SoundEvents.BUCKET_EMPTY_LAVA));
+     }
+ 
+     public static InteractionResult fillPowderSnowInteraction(
+-        BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack itemInHand
++        BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack itemInHand, Direction hitDirection
+     ) {
+         return (InteractionResult)(isUnderWater(level, pos)
+             ? InteractionResult.CONSUME
+@@ -251,48 +_,63 @@
+     }
+ 
+     public static InteractionResult shulkerBoxInteraction(
+-        BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack itemInHand
++        BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack itemInHand, Direction hitDirection
+     ) {
+         Block block = Block.byItem(itemInHand.getItem());
+         if (!(block instanceof ShulkerBoxBlock)) {
              return InteractionResult.TRY_WITH_EMPTY_HAND;
          } else {
              if (!level.isClientSide()) {
@@ -134,7 +212,13 @@
              }
  
              return InteractionResult.SUCCESS;
-@@ -274,11 +_,16 @@
+         }
+     }
+ 
+-    public static InteractionResult bannerInteraction(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack itemInHand) {
++    public static InteractionResult bannerInteraction(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack itemInHand, Direction hitDirection) {
+         BannerPatternLayers patterns = itemInHand.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
+         if (patterns.layers().isEmpty()) {
              return InteractionResult.TRY_WITH_EMPTY_HAND;
          } else {
              if (!level.isClientSide()) {
@@ -152,7 +236,12 @@
              }
  
              return InteractionResult.SUCCESS;
-@@ -290,9 +_,14 @@
+         }
+     }
+ 
+-    public static InteractionResult dyedItemIteration(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack itemInHand) {
++    public static InteractionResult dyedItemIteration(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack itemInHand, Direction hitDirection) {
+         if (!itemInHand.has(DataComponents.DYED_COLOR)) {
              return InteractionResult.TRY_WITH_EMPTY_HAND;
          } else {
              if (!level.isClientSide()) {

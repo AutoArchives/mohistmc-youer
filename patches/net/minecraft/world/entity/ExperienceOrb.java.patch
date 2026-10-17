@@ -16,6 +16,76 @@
  import org.jspecify.annotations.Nullable;
  
  public class ExperienceOrb extends Entity {
+@@ -43,13 +_,58 @@
+     public int count = 1;
+     private @Nullable Player followingPlayer;
+     private final InterpolationHandler interpolation = new InterpolationHandler(this);
+-
++    // Paper start
++    public java.util.@Nullable UUID sourceEntityId;
++    public java.util.@Nullable UUID triggerEntityId;
++    public org.bukkit.entity.ExperienceOrb.SpawnReason spawnReason = org.bukkit.entity.ExperienceOrb.SpawnReason.UNKNOWN;
++
++    private void loadPaperNBT(ValueInput input) {
++        input.read("Paper.ExpData", net.minecraft.nbt.CompoundTag.CODEC).ifPresent(expData -> {
++            this.sourceEntityId = expData.read("source", net.minecraft.core.UUIDUtil.CODEC).orElse(null);
++            this.triggerEntityId = expData.read("trigger", net.minecraft.core.UUIDUtil.CODEC).orElse(null);
++            expData.getString("reason").ifPresent(reason -> {
++                try {
++                    this.spawnReason = org.bukkit.entity.ExperienceOrb.SpawnReason.valueOf(reason);
++                } catch (Exception e) {
++                    this.level().getCraftServer().getLogger().warning("Invalid spawnReason set for experience orb: " + e.getMessage() + " - " + reason);
++                }
++            });
++        });
++    }
++    private void savePaperNBT(ValueOutput output) {
++        net.minecraft.nbt.CompoundTag expData = new net.minecraft.nbt.CompoundTag();
++        expData.storeNullable("source", net.minecraft.core.UUIDUtil.CODEC, this.sourceEntityId);
++        expData.storeNullable("trigger", net.minecraft.core.UUIDUtil.CODEC, this.triggerEntityId);
++        if (this.spawnReason != org.bukkit.entity.ExperienceOrb.SpawnReason.UNKNOWN) {
++            expData.putString("reason", this.spawnReason.name());
++        }
++        output.store("Paper.ExpData", net.minecraft.nbt.CompoundTag.CODEC, expData);
++    }
++    // Paper end
++
++    @Deprecated @io.papermc.paper.annotation.DoNotUse // Paper - overload ctor
+     public ExperienceOrb(Level level, double x, double y, double z, int value) {
+-        this(level, new Vec3(x, y, z), Vec3.ZERO, value);
++    // Paper start - add reasons for orbs
++        this(level, x, y, z, value, null, null, null);
++    }
++    public ExperienceOrb(Level level, double x, double y, double z, int value, org.bukkit.entity.ExperienceOrb.@Nullable SpawnReason reason, final @Nullable Entity triggerId, final @Nullable Entity sourceId) {
++        this(level, new Vec3(x, y, z), Vec3.ZERO, value, reason, triggerId, sourceId);
++    // Paper end - add reasons for orbs
+     }
+ 
++    @Deprecated @io.papermc.paper.annotation.DoNotUse // Paper - overload ctor
+     public ExperienceOrb(Level level, Vec3 pos, Vec3 roughly, int value) {
++    // Paper start - add reasons for orbs
++        this(level, pos, roughly, value, null, null, null);
++    }
++    public ExperienceOrb(Level level, Vec3 pos, Vec3 roughly, int value, org.bukkit.entity.ExperienceOrb.@Nullable SpawnReason reason, final @Nullable Entity triggerId, final @Nullable Entity sourceId) {
++    // Paper end - add reasons for orbs
+         this(EntityType.EXPERIENCE_ORB, level);
++        // Paper start - add reasons for orbs
++        this.sourceEntityId = sourceId != null ? sourceId.getUUID() : null;
++        this.triggerEntityId = triggerId != null ? triggerId.getUUID() : null;
++        this.spawnReason = reason != null ? reason : org.bukkit.entity.ExperienceOrb.SpawnReason.UNKNOWN;
++        // Paper end - add reasons for orbs
+         this.setPos(pos);
+         if (!level.isClientSide()) {
+             this.setYRot(this.random.nextFloat() * 360.0F);
+@@ -106,7 +_,7 @@
+         } else {
+             super.tick();
+             boolean colliding = !this.level().noCollision(this.getBoundingBox());
+-            if (this.isEyeInFluid(FluidTags.WATER)) {
++            if (this.getFluidInteraction().isEyeInFluidMatching(this, (_, type, _) -> type.getIsWaterLike())) {
+                 this.setUnderwaterMovement();
+             } else if (!colliding) {
+                 this.applyGravity();
 @@ -136,7 +_,8 @@
              this.applyEffectsFromBlocks();
              float friction = 0.98F;
@@ -68,8 +138,47 @@
              Vec3 delta = new Vec3(
                  this.followingPlayer.getX() - this.getX(),
                  this.followingPlayer.getY() + this.followingPlayer.getEyeHeight() / 2.0 - this.getY(),
-@@ -225,7 +_,7 @@
+@@ -191,18 +_,24 @@
+     }
+ 
+     public static void awardWithDirection(ServerLevel level, Vec3 pos, Vec3 roughDirection, int amount) {
++    // Paper start - add reason to orbs
++        awardWithDirection(level, pos, roughDirection, amount, null, null, null);
++    }
++    public static void awardWithDirection(ServerLevel level, Vec3 pos, Vec3 roughDirection, int amount, org.bukkit.entity.ExperienceOrb.@Nullable SpawnReason reason, final @Nullable Entity triggerId, final @Nullable Entity sourceId) {
++    // Paper end - add reason to orbs
+         while (amount > 0) {
+             int newCount = getExperienceValue(amount);
+             amount -= newCount;
+             if (!tryMergeToExisting(level, pos, newCount)) {
+-                level.addFreshEntity(new ExperienceOrb(level, pos, roughDirection, newCount));
++                level.addFreshEntity(new ExperienceOrb(level, pos, roughDirection, newCount, reason, triggerId, sourceId)); // Paper - add reason to orbs
+             }
+         }
+     }
+ 
+     private static boolean tryMergeToExisting(ServerLevel level, Vec3 pos, int value) {
++        // Paper - TODO some other event for this kind of merge
+         AABB box = AABB.ofSize(pos, 1.0, 1.0, 1.0);
+-        int id = level.getRandom().nextInt(40);
++        int id = level.getRandom().nextInt(io.papermc.paper.configuration.GlobalConfiguration.get().misc.xpOrbGroupsPerArea.or(ORB_GROUPS_PER_AREA)); // Paper - Configure how many orb groups per area
+         List<ExperienceOrb> orbs = level.getEntities(EntityTypeTest.forClass(ExperienceOrb.class), box, orbx -> canMerge(orbx, id, value));
+         if (!orbs.isEmpty()) {
+             ExperienceOrb orb = orbs.get(0);
+@@ -219,13 +_,18 @@
+     }
+ 
+     private static boolean canMerge(ExperienceOrb orb, int id, int value) {
+-        return !orb.isRemoved() && (orb.getId() - id) % 40 == 0 && orb.getValue() == value;
++        return !orb.isRemoved() && (orb.getId() - id) % io.papermc.paper.configuration.GlobalConfiguration.get().misc.xpOrbGroupsPerArea.or(ORB_GROUPS_PER_AREA) == 0 && orb.getValue() == value; // Paper - Configure how many orbs will merge together
+     }
+ 
      private void merge(ExperienceOrb orb) {
++        // Paper start - call orb merge event
++        if (!new com.destroystokyo.paper.event.entity.ExperienceOrbMergeEvent((org.bukkit.entity.ExperienceOrb) this.getBukkitEntity(), (org.bukkit.entity.ExperienceOrb) orb.getBukkitEntity()).callEvent()) {
++            return;
++        }
++        // Paper end - call orb merge event
          this.count = this.count + orb.count;
          this.age = Math.min(this.age, orb.age);
 -        orb.discard();
@@ -86,7 +195,27 @@
              }
  
              return true;
-@@ -277,16 +_,17 @@
+@@ -261,32 +_,35 @@
+     protected void addAdditionalSaveData(ValueOutput output) {
+         output.putShort("Health", (short)this.health);
+         output.putShort("Age", (short)this.age);
+-        output.putShort("Value", (short)this.getValue());
++        output.putInt("Value", this.getValue()); // Paper - save as Integer
+         output.putInt("Count", this.count);
++        this.savePaperNBT(output); // Paper
+     }
+ 
+     @Override
+     protected void readAdditionalSaveData(ValueInput input) {
+         this.health = input.getShortOr("Health", (short)5);
+         this.age = input.getShortOr("Age", (short)0);
+-        this.setValue(input.getShortOr("Value", (short)0));
++        this.setValue(input.getIntOr("Value", 0)); // Paper - load as Integer
+         this.count = input.read("Count", ExtraCodecs.POSITIVE_INT).orElse(1);
++        this.loadPaperNBT(input); // Paper
+     }
+ 
+     @Override
      public void playerTouch(Player player) {
          if (player instanceof ServerPlayer serverPlayer) {
              if (player.takeXpDelay == 0) {
@@ -97,7 +226,7 @@
                  int remaining = this.repairPlayerItems(serverPlayer, this.getValue());
                  if (remaining > 0) {
 -                    player.giveExperiencePoints(remaining);
-+                    player.giveExperiencePoints(CraftEventFactory.callPlayerExpChangeEvent(serverPlayer, remaining).getAmount()); // CraftBukkit - this.value -> event.getAmount()
++                    player.giveExperiencePoints(org.bukkit.craftbukkit.event.CraftEventFactory.callPlayerExpChangeEvent(player, this, remaining).getAmount()); // CraftBukkit - remaining -> event.getAmount() // Paper - supply experience orb
                  }
  
                  this.count--;
@@ -107,7 +236,7 @@
                  }
              }
          }
-@@ -296,12 +_,20 @@
+@@ -296,12 +_,23 @@
          Optional<EnchantedItemInUse> selected = EnchantmentHelper.getRandomItemWith(EnchantmentEffectComponents.REPAIR_WITH_XP, player, ItemStack::isDamaged);
          if (selected.isPresent()) {
              ItemStack itemStack = selected.get().itemStack();
@@ -115,7 +244,10 @@
 +            int toRepairFromXpAmount = EnchantmentHelper.modifyDurabilityToRepairFromXp(player.level(), itemStack, (int) (amount * itemStack.getXpRepairRatio()));
              int repair = Math.min(toRepairFromXpAmount, itemStack.getDamageValue());
 +            // CraftBukkit start
-+            org.bukkit.event.player.PlayerItemMendEvent event = CraftEventFactory.callPlayerItemMendEvent(player, this, itemStack, selected.get().inSlot(), repair);
++            // Paper start - mending event
++            final int consumedExperience = repair > 0 ? repair * amount / toRepairFromXpAmount : 0;
++            org.bukkit.event.player.PlayerItemMendEvent event = CraftEventFactory.callPlayerItemMendEvent(player, this, itemStack, selected.get().inSlot(), repair, consumedExperience);
++            // Paper end - mending event
 +            repair = event.getRepairAmount();
 +            if (event.isCancelled()) {
 +                return amount;
@@ -123,7 +255,8 @@
 +            // CraftBukkit end
              itemStack.setDamageValue(itemStack.getDamageValue() - repair);
              if (repair > 0) {
-                 int remaining = amount - repair * amount / toRepairFromXpAmount;
+-                int remaining = amount - repair * amount / toRepairFromXpAmount;
++                int remaining = amount - repair * amount / toRepairFromXpAmount; // Paper - diff on change - expand PlayerMendEvents
                  if (remaining > 0) {
 +                    this.setValue(remaining); // CraftBukkit - update exp value of orb for PlayerItemMendEvent calls
                      return this.repairPlayerItems(player, remaining);

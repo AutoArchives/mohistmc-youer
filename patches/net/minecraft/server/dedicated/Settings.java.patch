@@ -1,5 +1,13 @@
 --- a/net/minecraft/server/dedicated/Settings.java
 +++ b/net/minecraft/server/dedicated/Settings.java
+@@ -6,7 +_,6 @@
+ import java.io.InputStream;
+ import java.io.InputStreamReader;
+ import java.io.Reader;
+-import java.io.Writer;
+ import java.nio.charset.CharacterCodingException;
+ import java.nio.charset.CharsetDecoder;
+ import java.nio.charset.CodingErrorAction;
 @@ -19,6 +_,7 @@
  import java.util.function.IntFunction;
  import java.util.function.Supplier;
@@ -8,10 +16,11 @@
  import net.minecraft.core.RegistryAccess;
  import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
-@@ -26,13 +_,31 @@
+@@ -26,13 +_,32 @@
  public abstract class Settings<T extends Settings<T>> {
      private static final Logger LOGGER = LogUtils.getLogger();
      public final Properties properties;
++    private static final boolean skipComments = Boolean.getBoolean("Paper.skipServerPropertiesComments"); // Paper - allow skipping server.properties comments
 +    // CraftBukkit start
 +    private OptionSet options = null;
  
@@ -41,17 +50,58 @@
              try {
                  Properties var13;
                  try (InputStream is = Files.newInputStream(file)) {
-@@ -65,8 +_,13 @@
+@@ -65,8 +_,53 @@
      }
  
      public void store(Path output) {
+-        try (Writer os = Files.newBufferedWriter(output, StandardCharsets.UTF_8)) {
+-            this.properties.store(os, "Minecraft server properties");
 +        // CraftBukkit start - Don't attempt writing to file if it's read only
 +        if (output.toFile().exists() && !output.toFile().canWrite()) {
++            Settings.LOGGER.warn("Can not write to file {}, skipping.", output); // Paper - log message file is read only
 +            return;
 +        }
 +        // CraftBukkit end
-         try (Writer os = Files.newBufferedWriter(output, StandardCharsets.UTF_8)) {
--            this.properties.store(os, "Minecraft server properties");
++        try /*(Writer os = Files.newBufferedWriter(output, StandardCharsets.UTF_8))*/ { // Paper
++            // Paper start - allow skipping server.properties comments
++            java.io.OutputStream outputstream = Files.newOutputStream(output);
++            java.io.BufferedOutputStream bufferedOutputStream = !skipComments ? new java.io.BufferedOutputStream(outputstream) : new java.io.BufferedOutputStream(outputstream) {
++                private boolean isRightAfterNewline = true; // If last written char was newline
++                private boolean isComment = false; // Are we writing comment currently?
++
++                @Override
++                public void write(byte[] b) throws IOException {
++                    this.write(b, 0, b.length);
++                }
++
++                @Override
++                public void write(byte[] bbuf, int off, int len) throws IOException {
++                    int latest_offset = off; // The latest offset, updated when comment ends
++                    for (int index = off; index < off + len; ++index) {
++                        byte c = bbuf[index];
++                        boolean isNewline = (c == '\n' || c == '\r');
++                        if (isNewline && this.isComment) {
++                            // Comment has ended
++                            this.isComment = false;
++                            latest_offset = index + 1;
++                        }
++                        if (c == '#' && this.isRightAfterNewline) {
++                            this.isComment = true;
++                            if (index != latest_offset) {
++                                // We got some non-comment data earlier
++                                super.write(bbuf, latest_offset, index - latest_offset);
++                            }
++                        }
++                        this.isRightAfterNewline = isNewline; // Store for next iteration
++                    }
++                    if (latest_offset < off + len && !this.isComment) {
++                        // We have some unwritten data, that isn't part of a comment
++                        super.write(bbuf, latest_offset, (off + len) - latest_offset);
++                    }
++                }
++            };
++            java.io.BufferedWriter os = new java.io.BufferedWriter(new java.io.OutputStreamWriter(bufferedOutputStream, java.nio.charset.StandardCharsets.UTF_8.newEncoder()));
++            // Paper end - allow skipping server.properties comments
 +            net.neoforged.neoforge.common.util.SortedProperties.store(this.properties, os, "Minecraft server properties");
          } catch (IOException var7) {
              LOGGER.error("Failed to store properties to file: {}", output);

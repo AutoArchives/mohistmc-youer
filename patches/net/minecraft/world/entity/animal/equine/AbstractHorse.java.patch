@@ -19,6 +19,15 @@
  
      protected AbstractHorse(EntityType<? extends AbstractHorse> type, Level level) {
          super(type, level);
+@@ -252,7 +_,7 @@
+     }
+ 
+     @Override
+-    public boolean isPushable() {
++    public boolean isCollidable(boolean ignoreClimbing) { // Paper - Climbing should not bypass cramming gamerule
+         return !this.isVehicle();
+     }
+ 
 @@ -299,7 +_,7 @@
  
      public void createInventory() {
@@ -49,7 +58,22 @@
      }
  
      @Override
-@@ -467,7 +_,7 @@
+@@ -454,7 +_,7 @@
+             temper = 5;
+             if (!this.level().isClientSide() && this.isTamed() && this.getAge() == 0 && !this.isInLove()) {
+                 itemUsed = true;
+-                this.setInLove(player);
++                this.setInLove(player, itemStack.copy()); // Paper - Fix EntityBreedEvent copying
+             }
+         } else if (itemStack.is(Items.GOLDEN_APPLE) || itemStack.is(Items.ENCHANTED_GOLDEN_APPLE)) {
+             heal = 10.0F;
+@@ -462,12 +_,12 @@
+             temper = 10;
+             if (!this.level().isClientSide() && this.isTamed() && this.getAge() == 0 && !this.isInLove()) {
+                 itemUsed = true;
+-                this.setInLove(player);
++                this.setInLove(player, itemStack.copy()); // Paper - Fix EntityBreedEvent copying
+             }
          }
  
          if (this.getHealth() < this.getMaxHealth() && heal > 0.0F) {
@@ -67,6 +91,23 @@
              }
  
              if (this.canEatGrass()) {
+@@ -673,6 +_,16 @@
+         }
+     }
+ 
++    // Paper start - Horse API
++    public void setMouthOpen(boolean open) {
++        this.setFlag(FLAG_OPEN_MOUTH, open);
++    }
++
++    public boolean isMouthOpen() {
++        return this.getFlag(FLAG_OPEN_MOUTH);
++    }
++    // Paper end - Horse API
++
+     public void setEating(boolean flag) {
+         this.setFlag(16, flag);
+     }
 @@ -772,6 +_,7 @@
          Vec3 movement = this.getDeltaMovement();
          this.setDeltaMovement(movement.x, impulse, movement.z);
@@ -88,7 +129,7 @@
          this.setTamed(input.getBooleanOr("Tame", false));
          this.owner = EntityReference.readWithOldOwnerConversion(input, "Owner", this.level());
 +        // CraftBukkit start
-+        this.maxDomestication = input.getIntOr("Bukkit.MaxDomestication", this.maxDomestication);
++        this.maxDomestication = input.getIntOr("Bukkit.MaxDomestication", this instanceof Llama ? 30 : 100); // Paper - max domestication
 +        // CraftBukkit end
      }
  

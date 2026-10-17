@@ -65,7 +65,7 @@
 +        }
 +    }
 +
-+    int MAX_STACK = 99;
++    int MAX_STACK = Item.ABSOLUTE_MAX_STACK_SIZE;
 +    // CraftBukkit end
  
      public static class ContainerIterator implements Iterator<ItemStack> {

@@ -1,11 +1,20 @@
 --- a/net/minecraft/world/level/block/entity/SculkCatalystBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/SculkCatalystBlockEntity.java
-@@ -32,10 +_,13 @@
+@@ -32,10 +_,21 @@
      public SculkCatalystBlockEntity(BlockPos worldPosition, BlockState blockState) {
          super(BlockEntityType.SCULK_CATALYST, worldPosition, blockState);
          this.catalystListener = new SculkCatalystBlockEntity.CatalystListener(blockState, new BlockPositionSource(worldPosition));
+-    }
 +        catalystListener.level = level; // CraftBukkit
-     }
++    }
++
++    // Paper start - Fix NPE in SculkBloomEvent world access
++    @Override
++    public void setLevel(Level level) {
++        super.setLevel(level);
++        this.catalystListener.sculkSpreader.level = level;
++    }
++    // Paper end - Fix NPE in SculkBloomEvent world access
  
      public static void serverTick(Level level, BlockPos pos, BlockState state, SculkCatalystBlockEntity entity) {
 +        org.bukkit.craftbukkit.event.CraftEventFactory.sourceBlockOverride = entity.getBlockPos(); // CraftBukkit - SPIGOT-7068: Add source block override

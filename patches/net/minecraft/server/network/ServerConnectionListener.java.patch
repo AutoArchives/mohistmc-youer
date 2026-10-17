@@ -8,15 +8,41 @@
      private final MinecraftServer server;
      public volatile boolean running;
      private final List<ChannelFuture> channels = Collections.synchronizedList(Lists.newArrayList());
-@@ -50,6 +_,8 @@
+@@ -49,9 +_,33 @@
+         this.running = true;
      }
  
++    // Paper start - prevent blocking on adding a new connection while the server is ticking
++    private final java.util.Queue<Connection> pending = new java.util.concurrent.ConcurrentLinkedQueue<>();
++
++    private final void addPending() {
++        Connection connection;
++        while ((connection = this.pending.poll()) != null) {
++            this.connections.add(connection);
++        }
++    }
++    // Paper end - prevent blocking on adding a new connection while the server is ticking
++
      public void startTcpServerListener(@Nullable InetAddress address, int port) throws IOException {
 +        if (address == null) address = new java.net.InetSocketAddress(port).getAddress();
 +        net.neoforged.neoforge.network.DualStackUtils.checkIPv6(address);
++        // Paper start - Unix domain socket support
++        this.startTcpServerListener(new java.net.InetSocketAddress(address, port));
++    }
++
++    public void startTcpServerListener(SocketAddress address) throws IOException {
++        // Paper end - Unix domain socket support
          synchronized (this.channels) {
-             EventLoopGroupHolder eventLoopGroupHolder = EventLoopGroupHolder.remote(this.server.useNativeTransport());
+-            EventLoopGroupHolder eventLoopGroupHolder = EventLoopGroupHolder.remote(this.server.useNativeTransport());
++            EventLoopGroupHolder eventLoopGroupHolder = EventLoopGroupHolder.remote(address, this.server.useNativeTransport()); // Paper - Unix domain socket support
++            // Paper start - Warn people with console access that HAProxy is in use.
++            if (io.papermc.paper.configuration.GlobalConfiguration.get().proxies.proxyProtocol) {
++                LOGGER.warn("Using HAProxy, please ensure the server port is adequately firewalled.");
++            }
++            // Paper end - Warn people with console access that HAProxy is in use.
              this.channels
+                 .add(
+                     new ServerBootstrap()
 @@ -69,7 +_,7 @@
                                      } catch (ChannelException var5) {
                                      }
@@ -26,13 +52,54 @@
                                      if (ServerConnectionListener.this.server.repliesToStatus()) {
                                          pipeline.addLast("legacy_query", new LegacyQueryHandler(ServerConnectionListener.this.getServer()));
                                      }
-@@ -87,14 +_,25 @@
+@@ -79,22 +_,64 @@
+                                     Connection connection = (Connection)(rateLimitPacketsPerSecond > 0
+                                         ? new RateKickingConnection(rateLimitPacketsPerSecond)
+                                         : new Connection(PacketFlow.SERVERBOUND));
+-                                    ServerConnectionListener.this.connections.add(connection);
++                                    // Paper start - Add support for Proxy Protocol
++                                    if (io.papermc.paper.configuration.GlobalConfiguration.get().proxies.proxyProtocol) {
++                                        channel.pipeline().addAfter(net.minecraft.network.HandlerNames.TIMEOUT, "haproxy-decoder", new io.netty.handler.codec.haproxy.HAProxyMessageDecoder());
++                                        channel.pipeline().addAfter("haproxy-decoder", "haproxy-handler", new ChannelInboundHandlerAdapter() {
++                                            @Override
++                                            public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
++                                                if (msg instanceof io.netty.handler.codec.haproxy.HAProxyMessage message) {
++                                                    if (message.command() == io.netty.handler.codec.haproxy.HAProxyCommand.PROXY) {
++                                                        String realAddress = message.sourceAddress();
++                                                        int realPort = message.sourcePort();
++
++                                                        SocketAddress socketAddr = new java.net.InetSocketAddress(realAddress, realPort);
++
++                                                        Connection connection = (Connection) channel.pipeline().get(net.minecraft.network.HandlerNames.PACKET_HANDLER);
++                                                        connection.address = socketAddr;
++                                                        // Paper start - Add API to get player's proxy address
++                                                        final String proxyAddress = message.destinationAddress();
++                                                        final int proxyPort = message.destinationPort();
++
++                                                        connection.haProxyAddress = new java.net.InetSocketAddress(proxyAddress, proxyPort);
++                                                        // Paper end - Add API to get player's proxy address
++                                                    }
++                                                } else {
++                                                    super.channelRead(ctx, msg);
++                                                }
++                                            }
++                                        });
++                                    }
++                                    // Paper end - Add support for proxy protocol
++                                    // ServerConnectionListener.this.connections.add(connection); // Paper - prevent blocking on adding a new connection while the server is ticking
++                                    ServerConnectionListener.this.pending.add(connection); // Paper - prevent blocking on adding a new connection while the server is ticking
+                                     connection.configurePacketHandler(pipeline);
+                                     connection.setListenerForServerboundHandshake(
+                                         new ServerHandshakePacketListenerImpl(ServerConnectionListener.this.server, connection)
+                                     );
++                                    io.papermc.paper.network.ChannelInitializeListenerHolder.callListeners(channel); // Paper - Add Channel initialization listeners
                                  }
                              }
                          )
 -                        .group(eventLoopGroupHolder.eventLoopGroup())
+-                        .localAddress(address, port)
 +                        .group(eventLoopGroupHolder.serverEventLoopGroup())
-                         .localAddress(address, port)
++                        .localAddress(address) // Paper - Unix domain socket support
 +                        .option(ChannelOption.AUTO_READ, false) // CraftBukkit
                          .bind()
                          .syncUninterruptibly()
@@ -62,7 +129,7 @@
                  .localAddress(LocalAddress.ANY)
                  .bind()
                  .syncUninterruptibly();
-@@ -150,6 +_,13 @@
+@@ -150,12 +_,27 @@
  
      public void tick() {
          synchronized (this.connections) {
@@ -73,9 +140,23 @@
 +                Collections.shuffle( this.connections );
 +            }
 +            // Spigot End
++            this.addPending(); // Paper - prevent blocking on adding a new connection while the server is ticking
              Iterator<Connection> iterator = this.connections.iterator();
  
              while (iterator.hasNext()) {
+                 Connection connection = iterator.next();
+                 if (!connection.isConnecting()) {
+                     if (connection.isConnected()) {
++                        // Paper start - Force kill connection ticking
++                        // also call this multiple times, doesnt matter
++                        // See MC-307764
++                        if (connection.handleConnectionDisconnectOnNextTick) {
++                            continue;
++                        }
++                        // Paper end - Force kill connection ticking
+                         try {
+                             connection.tick();
+                         } catch (Exception var7) {
 @@ -169,6 +_,10 @@
                              connection.setReadOnly();
                          }
@@ -87,3 +168,21 @@
                          iterator.remove();
                          connection.handleDisconnection();
                      }
+@@ -176,6 +_,17 @@
+             }
+         }
+     }
++
++    // Paper start
++    public void handleAllDisconnections() {
++        synchronized (this.connections) {
++            for (Connection connection : this.connections) {
++                connection.channel.close().awaitUninterruptibly();
++                connection.handleDisconnection();
++            }
++        }
++    }
++    // Paper end
+ 
+     public MinecraftServer getServer() {
+         return this.server;

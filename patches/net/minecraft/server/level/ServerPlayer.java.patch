@@ -103,7 +103,7 @@
              ServerPlayer.this.connection.send(new ClientboundContainerSetDataPacket(container.containerId, id, value));
          }
  
-@@ -375,10 +_,42 @@
+@@ -375,10 +_,43 @@
          public void sendSystemMessage(Component message) {
              ServerPlayer.this.sendSystemMessage(message);
          }
@@ -123,6 +123,7 @@
      private Set<DebugSubscription<?>> requestedDebugSubscriptions = Set.of();
      private int containerCounter;
      public boolean wonGame;
++    public int patrolSpawnDelay; // Paper - Pillager patrol spawn settings and per player options
 +    // Neo: Used to track partial TIME_SINCE_REST increases for dimensions in which clocks move at different speeds. No need to persist, at most Phantoms will spawn one tick too early for each save/load cycle.
 +    private float partialTimeSinceRestTick;
 +
@@ -141,7 +142,7 @@
 +    public boolean sentListPacket = false;
 +    public String kickLeaveMessage = null; // SPIGOT-3034: Forward leave message to PlayerQuitEvent
 +    // CraftBukkit end
-+    public PlayerSpawnChangeEvent.Cause respawnPositionCause = PlayerSpawnChangeEvent.Cause.UNKNOWN;
++    public org.bukkit.event.player.PlayerQuitEvent.QuitReason quitReason = org.bukkit.event.player.PlayerQuitEvent.QuitReason.DISCONNECTED; // Paper
 +    public boolean initialized = false;
  
      public ServerPlayer(MinecraftServer server, ServerLevel level, GameProfile gameProfile, ClientInformation clientInformation) {
@@ -814,6 +815,15 @@
              BedRule rule = this.level().environmentAttributes().getValue(EnvironmentAttributes.BED_RULE, pos);
              boolean canSleep = rule.canSleep(this.level());
              boolean canSetSpawn = rule.canSetSpawn(this.level());
+@@ -1203,7 +_,7 @@
+             } else {
+                 if (canSetSpawn) {
+                     this.setRespawnPosition(
+-                        new ServerPlayer.RespawnConfig(LevelData.RespawnData.of(this.level().dimension(), pos, this.getYRot(), this.getXRot()), false), true
++                        new ServerPlayer.RespawnConfig(LevelData.RespawnData.of(this.level().dimension(), pos, this.getYRot(), this.getXRot()), false), true, com.destroystokyo.paper.event.player.PlayerSetSpawnEvent.Cause.BED // Paper - Add PlayerSetSpawnEvent
+                     );
+                 }
+ 
 @@ -1232,6 +_,23 @@
                          }
                      }
@@ -965,7 +975,7 @@
                  return OptionalInt.of(this.containerCounter);
              }
          }
-@@ -1370,27 +_,49 @@
+@@ -1370,28 +_,51 @@
  
      @Override
      public void openHorseInventory(AbstractHorse horse, Container container) {
@@ -1023,8 +1033,10 @@
 -        this.containerMenu = new NautilusInventoryMenu(this.containerCounter, this.getInventory(), container, nautilus, inventoryColumns);
 +        this.containerMenu = abstractcontainermenu; // CraftBukkit
          this.initMenu(this.containerMenu);
++        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.player.PlayerContainerEvent.Open(this, this.containerMenu));
      }
  
+     @Override
 @@ -1412,6 +_,7 @@
  
      @Override
@@ -1100,15 +1112,62 @@
          if (success) {
              this.setYHeadRot(relatives.contains(Relative.Y_ROT) ? this.getYHeadRot() + newYRot : newYRot);
              this.connection.resetFlyingTicks();
-@@ -1739,6 +_,8 @@
+@@ -1738,28 +_,38 @@
+     }
  
      public boolean setGameMode(GameType mode) {
++        org.bukkit.event.player.PlayerGameModeChangeEvent event = this.setGameMode(mode, org.bukkit.event.player.PlayerGameModeChangeEvent.Cause.UNKNOWN, null); // Paper - Expand PlayerGameModeChangeEvent
++        return event != null && !event.isCancelled();
++    }
++
++    // Paper start - Expand PlayerGameModeChangeEvent
++    public @Nullable org.bukkit.event.player.PlayerGameModeChangeEvent setGameMode(GameType mode, org.bukkit.event.player.PlayerGameModeChangeEvent.Cause cause, @Nullable net.kyori.adventure.text.Component cancelMessage) {
          boolean wasSpectator = this.isSpectator();
+-        if (!this.gameMode.changeGameModeForPlayer(mode)) {
+-            return false;
 +        mode = net.neoforged.neoforge.common.CommonHooks.onChangeGameType(this, this.gameMode.getGameModeForPlayer(), mode);
-+        if (mode == null) return false;
-         if (!this.gameMode.changeGameModeForPlayer(mode)) {
-             return false;
++        if (mode == null) return null;
++        org.bukkit.event.player.PlayerGameModeChangeEvent event = this.gameMode.changeGameModeForPlayer(mode, cause, cancelMessage);
++        if (event == null || event.isCancelled()) {
++            return event;
++        }
++
++        this.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.CHANGE_GAME_MODE, mode.getId()));
++        if (mode == GameType.SPECTATOR) {
++            this.removeEntitiesOnShoulder();
++            this.stopRiding();
++            this.stopUsingItem();
++            EnchantmentHelper.stopLocationBasedEffects(this);
          } else {
+-            this.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.CHANGE_GAME_MODE, mode.getId()));
+-            if (mode == GameType.SPECTATOR) {
+-                this.removeEntitiesOnShoulder();
+-                this.stopRiding();
+-                this.stopUsingItem();
+-                EnchantmentHelper.stopLocationBasedEffects(this);
+-            } else {
+-                this.setCamera(this);
+-                if (wasSpectator) {
+-                    EnchantmentHelper.runLocationChangedEffects(this.level(), this);
+-                }
++            this.setCamera(this);
++            if (wasSpectator) {
++                EnchantmentHelper.runLocationChangedEffects(this.level(), this);
+             }
+-
+-            this.onUpdateAbilities();
+-            this.updateEffectVisibility();
+-            return true;
+         }
++
++        this.onUpdateAbilities();
++        this.updateEffectVisibility();
++        return event;
+     }
++    // Paper end - Expand PlayerGameModeChangeEvent
+ 
+     @Override
+     public GameType gameMode() {
 @@ -1838,6 +_,16 @@
      }
  
@@ -1158,48 +1217,72 @@
      }
  
      @Override
-@@ -1982,6 +_,29 @@
+@@ -1981,12 +_,62 @@
+         this.setRespawnPosition(player.respawnConfig, false);
      }
  
-     public void setRespawnPosition(ServerPlayer.@Nullable RespawnConfig respawnConfig, boolean showMessage) {
-+        if (net.neoforged.neoforge.event.EventHooks.onPlayerSpawnSet(this, respawnConfig)) return;
-+        Location newSpawn = null;
-+        boolean forced = false;
-+        if (respawnConfig != null) {
-+            LevelData.RespawnData respawnData = respawnConfig.respawnData();
-+            ServerLevel newWorld = this.server.getLevel(respawnData.dimension());
-+            newSpawn = CraftLocation.toBukkit(respawnData.pos(), newWorld.getWorld(), respawnData.yaw(), respawnData.pitch());
-+            forced = respawnConfig.forced();
-+        }
-+
-+        PlayerSpawnChangeEvent event = new PlayerSpawnChangeEvent(this.getBukkitEntity(), newSpawn, forced, respawnPositionCause);
-+        Bukkit.getServer().getPluginManager().callEvent(event);
-+        if (event.isCancelled()) {
-+            return;
-+        }
-+        newSpawn = event.getNewSpawn();
-+
-+        if (newSpawn != null) {
-+            respawnConfig = new ServerPlayer.RespawnConfig(LevelData.RespawnData.of(((CraftWorld) newSpawn.getWorld()).getHandle().dimension(), BlockPos.containing(newSpawn.getX(), newSpawn.getY(), newSpawn.getZ()), newSpawn.getYaw(), newSpawn.getPitch()), event.isForced());
-+        } else {
-+            respawnConfig = null;
-+        }
-+        // CraftBukkit end
-         if (showMessage && respawnConfig != null && !respawnConfig.isSamePosition(this.respawnConfig)) {
-             this.sendSystemMessage(SPAWN_SET_MESSAGE);
-         }
-@@ -1989,6 +_,11 @@
-         this.respawnConfig = respawnConfig;
-     }
- 
-+    public void setRespawnPosition(ServerPlayer.@Nullable RespawnConfig respawnConfig, boolean showMessage, PlayerSpawnChangeEvent.Cause cause) {
-+        this.respawnPositionCause = cause;
-+        this.setRespawnPosition(respawnConfig, showMessage);
+-    public void setRespawnPosition(ServerPlayer.@Nullable RespawnConfig respawnConfig, boolean showMessage) {
+-        if (showMessage && respawnConfig != null && !respawnConfig.isSamePosition(this.respawnConfig)) {
+-            this.sendSystemMessage(SPAWN_SET_MESSAGE);
++    public void setRespawnPosition(final ServerPlayer.@Nullable RespawnConfig respawnConfig, final boolean showMessage) {
++        // Paper start - Add PlayerSetSpawnEvent
++        this.setRespawnPosition(respawnConfig, showMessage, com.destroystokyo.paper.event.player.PlayerSetSpawnEvent.Cause.UNKNOWN);
 +    }
 +
-     public SectionPos getLastSectionPos() {
-         return this.lastSectionPos;
++    public boolean setRespawnPosition(ServerPlayer.@Nullable RespawnConfig respawnConfig, final boolean showMessage, com.destroystokyo.paper.event.player.PlayerSetSpawnEvent.Cause cause) {
++        if (net.neoforged.neoforge.event.EventHooks.onPlayerSpawnSet(this, respawnConfig)) return false; // NeoForge
++        org.bukkit.Location spawnLoc = null;
++        boolean actuallyDisplayInChat = false;
++        if (respawnConfig != null) {
++            actuallyDisplayInChat = showMessage && !respawnConfig.isSamePosition(this.respawnConfig);
++            spawnLoc = org.bukkit.craftbukkit.util.CraftLocation.toBukkit(respawnConfig.respawnData().pos(), this.server.getLevel(respawnConfig.respawnData().dimension()));
++            spawnLoc.setYaw(respawnConfig.respawnData().yaw());
++            spawnLoc.setPitch(respawnConfig.respawnData().pitch());
++        }
++        org.bukkit.event.player.PlayerSpawnChangeEvent dumbEvent = new org.bukkit.event.player.PlayerSpawnChangeEvent(
++            this.getBukkitEntity(),
++            spawnLoc,
++            respawnConfig != null && respawnConfig.forced(),
++            cause == com.destroystokyo.paper.event.player.PlayerSetSpawnEvent.Cause.PLAYER_RESPAWN
++                ? org.bukkit.event.player.PlayerSpawnChangeEvent.Cause.RESET
++                : org.bukkit.event.player.PlayerSpawnChangeEvent.Cause.valueOf(cause.name())
++        );
++        dumbEvent.callEvent();
++
++        com.destroystokyo.paper.event.player.PlayerSetSpawnEvent event = new com.destroystokyo.paper.event.player.PlayerSetSpawnEvent(
++            this.getBukkitEntity(),
++            cause,
++            dumbEvent.getNewSpawn(),
++            dumbEvent.isForced(),
++            actuallyDisplayInChat,
++            actuallyDisplayInChat ? io.papermc.paper.adventure.PaperAdventure.asAdventure(SPAWN_SET_MESSAGE) : null
++        );
++        event.setCancelled(dumbEvent.isCancelled());
++        if (!event.callEvent()) {
++            return false;
++        }
++
++        if (event.getLocation() != null) {
++            respawnConfig = new ServerPlayer.RespawnConfig(
++                LevelData.RespawnData.of(
++                    ((org.bukkit.craftbukkit.CraftWorld) event.getLocation().getWorld()).getHandle().dimension(),
++                    org.bukkit.craftbukkit.util.CraftLocation.toBlockPos(event.getLocation()),
++                    event.getLocation().getYaw(),
++                    event.getLocation().getPitch()
++                ),
++                event.isForced()
++            );
++            if (event.willNotifyPlayer() && event.getNotification() != null) {
++                this.sendSystemMessage(io.papermc.paper.adventure.PaperAdventure.asVanilla(event.getNotification()));
++            }
+         }
+ 
+         this.respawnConfig = respawnConfig;
++        return true;
++        // Paper end - Add PlayerSetSpawnEvent
      }
+ 
+     public SectionPos getLastSectionPos() {
 @@ -2006,8 +_,10 @@
      }
  

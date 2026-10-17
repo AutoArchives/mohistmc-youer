@@ -10,7 +10,7 @@
  
  public abstract class AbstractCow extends Animal {
      private static final EntityDimensions BABY_DIMENSIONS = EntityType.COW.getDimensions().scale(0.5F).withEyeHeight(0.665F);
-@@ -89,8 +_,16 @@
+@@ -89,8 +_,17 @@
      public InteractionResult mobInteract(Player player, InteractionHand hand) {
          ItemStack itemStack = player.getItemInHand(hand);
          if (itemStack.is(Items.BUCKET) && !this.isBaby()) {
@@ -18,6 +18,7 @@
 +            PlayerBucketFillEvent event = CraftEventFactory.callPlayerBucketFillEvent(player.level(), player, this.blockPosition(), this.blockPosition(), null, itemStack, Items.MILK_BUCKET, hand);
 +
 +            if (event.isCancelled()) {
++                player.containerMenu.sendAllDataToRemote(); // Paper - Fix inventory desync
 +                return InteractionResult.PASS;
 +            }
 +            // CraftBukkit end

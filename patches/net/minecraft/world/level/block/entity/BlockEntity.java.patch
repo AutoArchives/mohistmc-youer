@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/level/block/entity/BlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/BlockEntity.java
-@@ -36,18 +_,30 @@
+@@ -36,24 +_,37 @@
  import net.minecraft.world.level.storage.TagValueOutput;
  import net.minecraft.world.level.storage.ValueInput;
  import net.minecraft.world.level.storage.ValueOutput;
@@ -32,6 +32,13 @@
  
      public BlockEntity(BlockEntityType<?> type, BlockPos worldPosition, BlockState blockState) {
          this.type = type;
+         this.worldPosition = worldPosition.immutable();
+         this.validateBlockState(blockState);
+         this.blockState = blockState;
++        this.persistentDataContainer = new CraftPersistentDataContainer(DATA_TYPE_REGISTRY); // Paper - always init
+     }
+ 
+     private void validateBlockState(BlockState blockState) {
 @@ -63,7 +_,7 @@
      }
  
@@ -88,6 +95,18 @@
      }
  
      public final CompoundTag saveCustomOnly(HolderLookup.Provider registries) {
+@@ -158,6 +_,11 @@
+ 
+     public void saveCustomOnly(ValueOutput output) {
+         this.saveAdditional(output);
++        // Paper start - store PDC here as well
++        if (this.persistentDataContainer != null && !this.persistentDataContainer.isEmpty()) {
++            this.persistentDataContainer.store(output.child("PublicBukkitValues"));
++        }
++        // Paper end
+     }
+ 
+     public void saveId(ValueOutput output) {
 @@ -239,10 +_,14 @@
  
      public void setRemoved() {
@@ -195,7 +214,21 @@
      protected void collectImplicitComponents(DataComponentMap.Builder components) {
      }
  
-@@ -358,4 +_,13 @@
+@@ -352,10 +_,27 @@
+     public void registerDebugValues(ServerLevel level, DebugValueSource.Registration registration) {
+     }
+ 
++    // Paper start - Sanitize sent data
++    public CompoundTag sanitizeSentNbt(CompoundTag tag) {
++        tag.remove("PublicBukkitValues");
++
++        return tag;
++    }
++    // Paper end - Sanitize sent data
++
+     private record BlockEntityPathElement(BlockEntity blockEntity) implements ProblemReporter.PathElement {
+         @Override
+         public String get() {
              return this.blockEntity.getNameForReporting() + "@" + this.blockEntity.getBlockPos();
          }
      }

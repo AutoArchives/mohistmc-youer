@@ -193,7 +193,7 @@
          LOGGER.info("Default game type: {}", properties.gameMode.get());
          InetAddress localAddress = null;
          if (!this.getLocalIp().isEmpty()) {
-@@ -264,12 +_,24 @@
+@@ -264,33 +_,49 @@
              return false;
          }
  
@@ -221,7 +221,12 @@
              LOGGER.warn("To change this, set \"online-mode\" to \"true\" in the server.properties file.");
          }
  
-@@ -280,17 +_,20 @@
+         if (this.convertOldUsers()) {
+-            this.services.nameToIdCache().save();
++            this.services.nameToIdCache().save(false); // Paper - Perf: Async GameProfileCache saving
+         }
++        this.getPlayerList().loadAndSaveFiles(); // Must be after convertNames
+ 
          if (!OldUsersConverter.areOldUserlistsRemoved()) {
              return false;
          } else {

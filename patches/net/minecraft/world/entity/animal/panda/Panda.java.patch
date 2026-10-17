@@ -8,7 +8,31 @@
  import org.jspecify.annotations.Nullable;
  
  public class Panda extends Animal {
-@@ -528,13 +_,13 @@
+@@ -133,6 +_,7 @@
+     }
+ 
+     public void sit(boolean value) {
++        if (!new io.papermc.paper.event.entity.EntityToggleSitEvent(this.getBukkitEntity(), value).callEvent()) return; // Paper - Add EntityToggleSitEvent
+         this.setFlag(8, value);
+     }
+ 
+@@ -517,24 +_,28 @@
+ 
+         for (Panda panda : level.getEntitiesOfClass(Panda.class, this.getBoundingBox().inflate(10.0))) {
+             if (!panda.isBaby() && panda.onGround() && !panda.isInWater() && panda.canPerformAction()) {
+-                panda.jumpFromGround();
++                if (new com.destroystokyo.paper.event.entity.EntityJumpEvent(getBukkitLivingEntity()).callEvent()) { // Paper - Entity Jump API
++                    panda.jumpFromGround();
++                } else { this.setJumping(false); } // Paper - Entity Jump API; setJumping(false) stops a potential loop
+             }
+         }
+ 
+         if (this.level() instanceof ServerLevel serverLevel && serverLevel.getGameRules().get(GameRules.MOB_DROPS)) {
++            this.forceDrops = true; // Paper - Add missing forceDrop toggles
+             this.dropFromGiftLootTable(serverLevel, BuiltInLootTables.PANDA_SNEEZE, this::spawnAtLocation);
++            this.forceDrops = false; // Paper - Add missing forceDrop toggles
+         }
+     }
  
      @Override
      protected void pickUpItem(ServerLevel level, ItemEntity entity) {
@@ -24,3 +48,43 @@
          }
      }
  
+@@ -629,8 +_,9 @@
+                 }
+ 
+                 if (!this.level().isClientSide() && this.getAge() == 0 && this.canFallInLove()) {
++                    final ItemStack breedCopy = interactionItemStack.copy(); // Paper - Fix EntityBreedEvent copying
+                     this.usePlayerItem(player, hand, interactionItemStack);
+-                    this.setInLove(player);
++                    this.setInLove(player, breedCopy); // Paper - Fix EntityBreedEvent copying
+                 } else {
+                     if (!(this.level() instanceof ServerLevel level) || this.isSitting() || this.isInWater()) {
+                         return InteractionResult.PASS;
+@@ -640,7 +_,9 @@
+                     this.eat(true);
+                     ItemStack pandasCurrentItem = this.getItemBySlot(EquipmentSlot.MAINHAND);
+                     if (!pandasCurrentItem.isEmpty() && !player.hasInfiniteMaterials()) {
++                        this.forceDrops = true; // Paper - Add missing forceDrop toggles
+                         this.spawnAtLocation(level, pandasCurrentItem);
++                        this.forceDrops = false; // Paper - Add missing forceDrop toggles
+                     }
+ 
+                     this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(interactionItemStack.getItem(), 1));
+@@ -860,7 +_,7 @@
+         @Override
+         protected void alertOther(Mob other, LivingEntity hurtByMob) {
+             if (other instanceof Panda && other.isAggressive()) {
+-                other.setTarget(hurtByMob);
++                other.setTarget(hurtByMob, org.bukkit.event.entity.EntityTargetEvent.TargetReason.TARGET_ATTACKED_ENTITY); // CraftBukkit
+             }
+         }
+     }
+@@ -1097,7 +_,9 @@
+         public void stop() {
+             ItemStack itemStack = Panda.this.getItemBySlot(EquipmentSlot.MAINHAND);
+             if (!itemStack.isEmpty()) {
++                Panda.this.forceDrops = true; // Paper - Add missing forceDrop toggles
+                 Panda.this.spawnAtLocation(getServerLevel(Panda.this.level()), itemStack);
++                Panda.this.forceDrops = false; // Paper - Add missing forceDrop toggles
+                 Panda.this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+                 int waitSeconds = Panda.this.isLazy() ? Panda.this.random.nextInt(50) + 10 : Panda.this.random.nextInt(150) + 10;
+                 this.cooldown = Panda.this.tickCount + waitSeconds * 20;

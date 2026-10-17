@@ -36,7 +36,7 @@
      public ChunkMap(
          ServerLevel level,
          LevelStorageSource.LevelStorageAccess levelStorage,
-@@ -179,7 +_,13 @@
+@@ -179,13 +_,19 @@
          this.level = level;
          RegistryAccess registryAccess = level.registryAccess();
          long levelSeed = level.getSeed();
@@ -51,6 +51,13 @@
              this.randomState = RandomState.create(noiseGenerator.generatorSettings().value(), registryAccess.lookupOrThrow(Registries.NOISE), levelSeed);
          } else {
              this.randomState = RandomState.create(NoiseGeneratorSettings.dummy(), registryAccess.lookupOrThrow(Registries.NOISE), levelSeed);
+         }
+ 
+-        this.chunkGeneratorState = generator.createState(registryAccess.lookupOrThrow(Registries.STRUCTURE_SET), this.randomState, levelSeed);
++        this.chunkGeneratorState = generator.createState(registryAccess.lookupOrThrow(Registries.STRUCTURE_SET), this.randomState, levelSeed, level.spigotConfig); // Spigot
+         this.mainThreadExecutor = mainThreadExecutor;
+         ConsecutiveExecutor worldgen = new ConsecutiveExecutor(executor, "worldgen");
+         this.chunkStatusListener = chunkStatusListener;
 @@ -389,6 +_,7 @@
                  this.modified = true;
              }

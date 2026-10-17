@@ -9,7 +9,7 @@
 -            float growthSpeed = CropBlock.getGrowthSpeed(this, level, pos);
 -            if (random.nextInt((int)(25.0F / growthSpeed) + 1) == 0) {
 +            float f = CropBlock.getGrowthSpeed(state, level, pos);
-+            if (net.neoforged.neoforge.common.CommonHooks.canCropGrow(level, pos, state, random.nextInt((int)(25.0F / f) + 1) == 0)) {
++            if (net.neoforged.neoforge.common.CommonHooks.canCropGrow(level, pos, state, random.nextFloat() < ((this == Blocks.PUMPKIN_STEM ? level.spigotConfig.pumpkinModifier : level.spigotConfig.melonModifier) / (100.0F * (Math.floor((25.0F / f) + 1)))))  // Spigot - SPIGOT-7159: Better modifier resolution) {
                  int age = state.getValue(AGE);
                  if (age < 7) {
 -                    state = state.setValue(AGE, age + 1);

@@ -41,11 +41,15 @@
      }
  
      @Override
-@@ -170,10 +_,17 @@
+@@ -170,10 +_,21 @@
      }
  
      public void setInLove(@Nullable Player player) {
 -        this.inLove = 600;
++        this.setInLove(player, player == null ? null : player.getInventory().getSelectedItem()); // Paper - Fix EntityBreedEvent copying
++    }
++
++    public void setInLove(final @Nullable Player player, final @Nullable ItemStack itemStack) {
 +        // CraftBukkit start
 +        EntityEnterLoveModeEvent entityEnterLoveModeEvent = CraftEventFactory.callEntityEnterLoveModeEvent(player, this, 600);
 +        if (entityEnterLoveModeEvent.isCancelled()) {
@@ -56,7 +60,7 @@
          if (player instanceof ServerPlayer serverPlayer) {
              this.loveCause = EntityReference.of(serverPlayer);
          }
-+        this.breedItem = player.getInventory().getSelectedItem(); // CraftBukkit
++        this.breedItem = itemStack; // Paper - Fix EntityBreedEvent copying
  
          this.level().broadcastEntityEvent(this, (byte)18);
      }

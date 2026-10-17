@@ -1,15 +1,10 @@
 --- a/net/minecraft/world/level/block/EndPortalBlock.java
 +++ b/net/minecraft/world/level/block/EndPortalBlock.java
-@@ -29,6 +_,16 @@
+@@ -29,6 +_,11 @@
  import net.minecraft.world.phys.shapes.VoxelShape;
  import org.jspecify.annotations.Nullable;
  
 +// CraftBukkit start
-+import org.bukkit.Location;
-+import org.bukkit.craftbukkit.CraftWorld;
-+import org.bukkit.craftbukkit.event.CraftPortalEvent;
-+import org.bukkit.craftbukkit.util.CraftLocation;
-+import org.bukkit.event.entity.EntityPortalEnterEvent;
 +import org.bukkit.event.player.PlayerRespawnEvent;
 +import org.bukkit.event.player.PlayerTeleportEvent;
 +// CraftBukkit end
@@ -17,18 +12,29 @@
  public class EndPortalBlock extends BaseEntityBlock implements Portal {
      public static final MapCodec<EndPortalBlock> CODEC = simpleCodec(EndPortalBlock::new);
      private static final VoxelShape SHAPE = Block.column(16.0, 6.0, 12.0);
-@@ -60,6 +_,10 @@
+@@ -59,8 +_,14 @@
+ 
      @Override
      protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effectApplier, boolean isPrecise) {
++        if (!new io.papermc.paper.event.entity.EntityInsideBlockEvent(entity.getBukkitEntity(), org.bukkit.craftbukkit.block.CraftBlock.at(level, pos)).callEvent()) { return; } // Paper - Add EntityInsideBlockEvent
          if (entity.canUsePortal(false)) {
 +            // CraftBukkit start - Entity in portal
-+            org.bukkit.event.entity.EntityPortalEnterEvent event = new org.bukkit.event.entity.EntityPortalEnterEvent(entity.getBukkitEntity(), new org.bukkit.Location(level.getWorld(), pos.getX(), pos.getY(), pos.getZ()));
-+            level.getCraftServer().getPluginManager().callEvent(event);
++            org.bukkit.event.entity.EntityPortalEnterEvent event = new org.bukkit.event.entity.EntityPortalEnterEvent(entity.getBukkitEntity(), org.bukkit.craftbukkit.util.CraftLocation.toBukkit(pos, level), org.bukkit.PortalType.ENDER); // Paper - add portal type
++            if (!event.callEvent()) return; // Paper - make cancellable
 +            // CraftBukkit end
              if (!level.isClientSide() && level.dimension() == Level.END && entity instanceof ServerPlayer player && !player.seenCredits) {
++                if (level.paperConfig().misc.disableEndCredits) {player.seenCredits = true; return;} // Paper - Option to disable end credits
                  player.showEndCredits();
              } else {
-@@ -77,7 +_,7 @@
+                 entity.setAsInsidePortal(this, pos);
+@@ -71,20 +_,19 @@
+     @Override
+     public @Nullable TeleportTransition getPortalDestination(ServerLevel currentLevel, Entity entity, BlockPos portalEntryPos) {
+         LevelData.RespawnData respawnData = currentLevel.getRespawnData();
+-        ResourceKey<Level> currentDimension = currentLevel.dimension();
+-        boolean fromEnd = currentDimension == Level.END;
++        boolean fromEnd = currentLevel.getTypeKey() == net.minecraft.world.level.dimension.LevelStem.END; // CraftBukkit - SPIGOT-6152: send back to main overworld in custom ends
+         ResourceKey<Level> newDimension = fromEnd ? respawnData.dimension() : Level.END;
          BlockPos spawnBlockPos = fromEnd ? respawnData.pos() : ServerLevel.END_SPAWN_POINT;
          ServerLevel newLevel = currentLevel.getServer().getLevel(newDimension);
          if (newLevel == null) {
@@ -37,7 +43,15 @@
          } else {
              Vec3 spawnPos = spawnBlockPos.getBottomCenter();
              float yRot;
-@@ -96,14 +_,14 @@
+             float xRot;
+             Set<Relative> relatives;
+             if (!fromEnd) {
+-                EndPlatformFeature.createEndPlatform(newLevel, BlockPos.containing(spawnPos).below(), true);
++                EndPlatformFeature.createEndPlatform(newLevel, BlockPos.containing(spawnPos).below(), true, entity); // CraftBukkit
+                 yRot = Direction.WEST.toYRot();
+                 xRot = 0.0F;
+                 relatives = Relative.union(Relative.DELTA, Set.of(Relative.X_ROT));
+@@ -96,15 +_,26 @@
                  xRot = respawnData.pitch();
                  relatives = Relative.union(Relative.DELTA, Relative.ROTATION);
                  if (entity instanceof ServerPlayer serverPlayer) {
@@ -48,9 +62,21 @@
                  spawnPos = entity.adjustSpawnLocation(newLevel, spawnBlockPos).getBottomCenter();
              }
  
++            // CraftBukkit start
++            relatives.removeAll(Relative.ROTATION); // remove relative rotation flags to simplify event mutation
++            float absoluteYaw = !fromEnd ? yRot : entity.getYRot() + yRot;
++            float absolutePitch = entity.getXRot() + xRot;
++            org.bukkit.craftbukkit.event.PortalEventResult result = org.bukkit.craftbukkit.event.CraftEventFactory.handlePortalEvents(entity, org.bukkit.craftbukkit.util.CraftLocation.toBukkit(spawnPos, newLevel, absoluteYaw, absolutePitch), org.bukkit.PortalType.ENDER, 0, 0);
++            if (result == null) {
++                return null;
++            }
++            org.bukkit.Location to = result.to();
++
              return new TeleportTransition(
 -                newLevel, spawnPos, Vec3.ZERO, yRot, xRot, relatives, TeleportTransition.PLAY_PORTAL_SOUND.then(TeleportTransition.PLACE_PORTAL_TICKET)
-+                newLevel, spawnPos, Vec3.ZERO, yRot, xRot, relatives, TeleportTransition.PLAY_PORTAL_SOUND.then(TeleportTransition.PLACE_PORTAL_TICKET), PlayerTeleportEvent.TeleportCause.END_PORTAL
++                ((org.bukkit.craftbukkit.CraftWorld) to.getWorld()).getHandle(), org.bukkit.craftbukkit.util.CraftLocation.toVec3(to), Vec3.ZERO, to.getYaw(), to.getPitch(), relatives, TeleportTransition.PLAY_PORTAL_SOUND.then(TeleportTransition.PLACE_PORTAL_TICKET), org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.END_PORTAL
              );
++            // CraftBukkit end
          }
      }
+ 

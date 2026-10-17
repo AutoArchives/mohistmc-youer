@@ -53,6 +53,16 @@
      }
  
      @VisibleForDebug
+@@ -280,7 +_,9 @@
+     @Override
+     protected void finishConversion(ServerLevel level) {
+         PiglinAi.cancelAdmiring(level, this);
++        this.forceDrops = true; // Paper - Add missing forceDrop toggles
+         this.inventory.removeAllItems().forEach(itemStack -> this.spawnAtLocation(level, itemStack));
++        this.forceDrops = false; // Paper - Add missing forceDrop toggles
+         super.finishConversion(level);
+     }
+ 
 @@ -320,7 +_,7 @@
          } else if (this.isChargingCrossbow()) {
              return PiglinArmPose.CROSSBOW_CHARGE;
@@ -100,3 +110,12 @@
              if (newItemWanted && !currentItemWanted) {
                  return true;
              } else {
+@@ -394,7 +_,7 @@
+ 
+     @Override
+     protected void pickUpItem(ServerLevel level, ItemEntity entity) {
+-        this.onItemPickup(entity);
++        // this.onItemPickup(entity); // Paper - EntityPickupItemEvent fixes; call in PiglinAi#pickUpItem after EntityPickupItemEvent is fired
+         PiglinAi.pickUpItem(level, this, entity);
+     }
+ 

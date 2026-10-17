@@ -39,7 +39,7 @@
      }
  
      @Override
-@@ -195,4 +_,51 @@
+@@ -195,4 +_,60 @@
      public void stopOpen(ContainerUser containerUser) {
          this.level().gameEvent(GameEvent.CONTAINER_CLOSE, this.position(), GameEvent.Context.of(containerUser.getLivingEntity()));
      }
@@ -90,4 +90,13 @@
 +        return getBukkitEntity().getLocation();
 +    }
 +    // CraftBukkit end
++    // Paper start - LootTable API
++    private final com.destroystokyo.paper.loottable.PaperLootableInventoryData lootableData = new com.destroystokyo.paper.loottable.PaperLootableInventoryData();
++
++    @Override
++    public com.destroystokyo.paper.loottable.PaperLootableInventoryData lootableData() {
++        return this.lootableData;
++    }
++    // Paper end - LootTable API
++
  }

@@ -23,7 +23,15 @@
  
  public class LeadItem extends Item {
      public LeadItem(Item.Properties properties) {
-@@ -34,17 +_,40 @@
+@@ -27,24 +_,47 @@
+         if (state.is(BlockTags.FENCES)) {
+             Player player = context.getPlayer();
+             if (!level.isClientSide() && player != null) {
+-                return bindPlayerMobs(player, level, pos);
++                return bindPlayerMobs(player, level, pos, context.getHand()); // CraftBukkit - Pass hand
+             }
+         }
+ 
          return InteractionResult.PASS;
      }
  

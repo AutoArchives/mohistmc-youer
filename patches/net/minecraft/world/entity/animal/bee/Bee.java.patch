@@ -13,6 +13,34 @@
  public class Bee extends Animal implements FlyingAnimal, NeutralMob {
      public static final float FLAP_DEGREES_PER_TICK = 120.32113F;
      public static final int TICKS_PER_FLAP = Mth.ceil(1.4959966F);
+@@ -149,10 +_,26 @@
+     private Bee.BeeGoToHiveGoal goToHiveGoal;
+     private Bee.BeeGoToKnownFlowerGoal goToKnownFlowerGoal;
+     private int underWaterTicks;
++    public net.kyori.adventure.util.TriState rollingOverride = net.kyori.adventure.util.TriState.NOT_SET; // Paper - Rolling override
+ 
+     public Bee(EntityType<? extends Bee> type, Level level) {
+         super(type, level);
+-        this.moveControl = new FlyingMoveControl(this, 20, true);
++        // Paper start - Fix MC-167279
++        class BeeFlyingMoveControl extends FlyingMoveControl {
++            public BeeFlyingMoveControl(final Mob mob, final int maxTurn, final boolean hoversInPlace) {
++                super(mob, maxTurn, hoversInPlace);
++            }
++
++            @Override
++            public void tick() {
++                if (this.mob.getY() <= Bee.this.level().getMinY()) {
++                    this.mob.setNoGravity(false);
++                }
++                super.tick();
++            }
++        }
++        this.moveControl = new BeeFlyingMoveControl(this, 20, true);
++        // Paper end - Fix MC-167279
+         this.lookControl = new Bee.BeeLookControl(this);
+         this.setPathfindingMalus(PathType.FIRE_IN_NEIGHBOR, -1.0F);
+         this.setPathfindingMalus(PathType.WATER, -1.0F);
 @@ -199,9 +_,24 @@
  
      @Override
@@ -49,15 +77,38 @@
                  }
              }
  
-@@ -480,7 +_,7 @@
+@@ -480,7 +_,11 @@
          if (this.hivePos == null) {
              return null;
          } else {
 -            return this.isTooFarAway(this.hivePos) ? null : this.level().getBlockEntity(this.hivePos, BlockEntityType.BEEHIVE).orElse(null);
-+            return this.isTooFarAway(this.hivePos) ? null : this.level().getBlockEntity(this.hivePos) instanceof BeehiveBlockEntity hive ? hive : null;
++            // Paper start - move over logic to accommodate isTooFarAway with chunk load check
++            return this.isTooFarAway(this.hivePos) || this.level().getChunkIfLoaded(this.hivePos.getX() >> 4, this.hivePos.getZ() >> 4) == null
++                ? null
++                : this.level().getBlockEntity(this.hivePos) instanceof BeehiveBlockEntity hive ? hive : null;
++            // Paper end
          }
      }
  
+@@ -512,7 +_,8 @@
+         return this.getFlag(2);
+     }
+ 
+-    public void setRolling(boolean rolling) {
++    public void setRolling(boolean rolling) { // Paper - Rolling override
++        rolling = this.rollingOverride.toBooleanOrElse(rolling); // Paper - Rolling override
+         this.setFlag(2, rolling);
+     }
+ 
+@@ -573,7 +_,7 @@
+             if (effect != null) {
+                 this.usePlayerItem(player, hand, heldItem);
+                 if (!this.level().isClientSide()) {
+-                    this.addEffect(effect);
++                    this.addEffect(effect, org.bukkit.event.entity.EntityPotionEffectEvent.Cause.FOOD); // Paper - Add missing effect cause
+                 }
+ 
+                 return InteractionResult.SUCCESS;
 @@ -640,17 +_,33 @@
          if (this.isInvulnerableTo(level, source)) {
              return false;
@@ -111,3 +162,12 @@
              }
          }
      }
+@@ -1209,7 +_,7 @@
+                     Bee.this.dropFlower();
+                     this.pollinating = false;
+                     Bee.this.remainingCooldownBeforeLocatingNewFlower = 200;
+-                } else {
++                } else if (Bee.this.savedFlowerPos != null) { // Paper - add null check since API can manipulate this
+                     Vec3 flowerPos = Vec3.atBottomCenterOf(Bee.this.savedFlowerPos).add(0.0, 0.6F, 0.0);
+                     if (flowerPos.distanceTo(Bee.this.position()) > 1.0) {
+                         this.hoverPos = flowerPos;

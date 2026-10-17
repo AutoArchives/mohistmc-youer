@@ -1,6 +1,21 @@
 --- a/net/minecraft/world/level/storage/LevelStorageSource.java
 +++ b/net/minecraft/world/level/storage/LevelStorageSource.java
-@@ -169,6 +_,7 @@
+@@ -149,12 +_,13 @@
+         WorldDataConfiguration dataConfiguration,
+         Registry<LevelStem> datapackDimensions,
+         HolderLookup.Provider registryAccess
++        , final ResourceKey<Level> dimension // Paper - pass dimension
+     ) {
+         if (DataFixers.getFileFixer().requiresFileFixing(NbtUtils.getDataVersion(levelDataTag))) {
+             throw new IllegalStateException("Cannot get level data without file fixing first");
+         } else {
+             Dynamic<?> dataTag = RegistryOps.injectRegistryContext(levelDataTag, registryAccess);
+-            WorldGenSettings worldGenSettings = readExistingSavedData(worldAccess, registryAccess, WorldGenSettings.TYPE)
++            WorldGenSettings worldGenSettings = readExistingSavedData(worldAccess, dimension, registryAccess, WorldGenSettings.TYPE) // Paper - pass dimension
+                 .mapOrElse(
+                     Function.identity(),
+                     error -> {
+@@ -169,18 +_,19 @@
              WorldDimensions.Complete dimensions = worldGenSettings.dimensions().bake(datapackDimensions);
              Lifecycle lifecycle = dimensions.lifecycle().add(registryAccess.allRegistriesLifecycle());
              PrimaryLevelData worldData = PrimaryLevelData.parse(dataTag, settings, dimensions.specialWorldProperty(), lifecycle);
@@ -8,6 +23,21 @@
              return LevelDataAndDimensions.create(worldData, worldGenSettings, dimensions);
          }
      }
+ 
+     public static <T extends SavedData> DataResult<T> readExistingSavedData(
+-        LevelStorageSource.LevelStorageAccess access, HolderLookup.Provider registryAccess, SavedDataType<T> savedDataType
++        final LevelStorageSource.LevelStorageAccess access, final ResourceKey<Level> dimension, final HolderLookup.Provider registryAccess, final SavedDataType<T> savedDataType // Paper - pass dimension
+     ) {
+-        Path dataLocation = savedDataType.id().withSuffix(".dat").resolveAgainst(access.getLevelPath(LevelResource.DATA));
++        Path dataLocation = savedDataType.id().withSuffix(".dat").resolveAgainst(access.getDimensionPath(dimension).resolve(LevelResource.DATA.id())); // Paper - use dimension scoped data (we 'demote' some data from global and add our own dimension scoped data)
+ 
+         CompoundTag fileContents;
+         try {
+-            fileContents = NbtIo.readCompressed(dataLocation, NbtAccounter.defaultQuota());
++            fileContents = NbtIo.readCompressed(dataLocation, NbtAccounter.create(NbtAccounter.DEFAULT_NBT_QUOTA * 50L)); // Paper - raise quota to account for custom data
+         } catch (IOException var6) {
+             return DataResult.error(var6::getMessage);
+         }
 @@ -392,19 +_,34 @@
          return this.backupDir;
      }
@@ -27,7 +57,7 @@
 -        return new LevelStorageSource.LevelStorageAccess(levelId, levelPath);
 +    public LevelStorageSource.LevelStorageAccess validateAndCreateAccess(String levelId) throws IOException, ContentValidationException { // CraftBukkit
 +        Path levelPath = this.getLevelPath(levelId);
-+        List<ForbiddenSymlinkInfo> validationResults = this.worldDirValidator.validateDirectory(levelPath, true);
++        List<ForbiddenSymlinkInfo> validationResults = Boolean.getBoolean("paper.disableWorldSymlinkValidation") ? List.of() : this.worldDirValidator.validateDirectory(levelPath, true); // Paper - add skipping of symlinks scan
 +        if (!validationResults.isEmpty()) {
 +            throw new ContentValidationException(levelPath, validationResults);
 +        } else {
@@ -37,7 +67,7 @@
 +
 +    public LevelStorageSource.LevelStorageAccess validateAndCreateAccess(String levelId, ResourceKey<LevelStem> dimensionType) throws IOException, ContentValidationException { // CraftBukkit
 +        Path levelPath = this.getLevelPath(levelId);
-+        List<ForbiddenSymlinkInfo> validationResults = this.worldDirValidator.validateDirectory(levelPath, true);
++        List<ForbiddenSymlinkInfo> validationResults = Boolean.getBoolean("paper.disableWorldSymlinkValidation") ? List.of() : this.worldDirValidator.validateDirectory(levelPath, true); // Paper - add skipping of symlinks scan
 +        if (!validationResults.isEmpty()) {
 +            throw new ContentValidationException(levelPath, validationResults);
 +        } else {

@@ -1,0 +1,57 @@
+--- a/net/minecraft/world/level/StructureManager.java
++++ b/net/minecraft/world/level/StructureManager.java
+@@ -48,7 +_,13 @@
+     }
+ 
+     public List<StructureStart> startsForStructure(ChunkPos pos, Predicate<Structure> matcher) {
+-        Map<Structure, LongSet> allReferences = this.level.getChunk(pos.x(), pos.z(), ChunkStatus.STRUCTURE_REFERENCES).getAllReferences();
++        // Paper start - Fix swamp hut cat generation deadlock
++        return this.startsForStructure(pos, matcher, null);
++    }
++
++    public List<StructureStart> startsForStructure(ChunkPos pos, Predicate<Structure> matcher, @Nullable ServerLevelAccessor levelAccessor) {
++        Map<Structure, LongSet> allReferences = (levelAccessor == null ? this.level : levelAccessor).getChunk(pos.x(), pos.z(), ChunkStatus.STRUCTURE_REFERENCES).getAllReferences();
++        // Paper end - Fix swamp hut cat generation deadlock
+         Builder<StructureStart> result = ImmutableList.builder();
+ 
+         for (Entry<Structure, LongSet> entry : allReferences.entrySet()) {
+@@ -107,18 +_,36 @@
+     }
+ 
+     public StructureStart getStructureWithPieceAt(BlockPos blockPos, TagKey<Structure> structureTag) {
+-        return this.getStructureWithPieceAt(blockPos, structure -> structure.is(structureTag));
++        // Paper start - Fix swamp hut cat generation deadlock
++        return this.getStructureWithPieceAt(blockPos, structureTag, null);
++    }
++
++    public StructureStart getStructureWithPieceAt(BlockPos blockPos, TagKey<Structure> structureTag, @Nullable ServerLevelAccessor levelAccessor) {
++        return this.getStructureWithPieceAt(blockPos, structure -> structure.is(structureTag), levelAccessor);
++        // Paper end - Fix swamp hut cat generation deadlock
+     }
+ 
+     public StructureStart getStructureWithPieceAt(BlockPos blockPos, HolderSet<Structure> structures) {
+-        return this.getStructureWithPieceAt(blockPos, structures::contains);
++        // Paper start - Fix swamp hut cat generation deadlock
++        return this.getStructureWithPieceAt(blockPos, structures, null);
++    }
++
++    public StructureStart getStructureWithPieceAt(BlockPos blockPos, HolderSet<Structure> structures, @Nullable ServerLevelAccessor levelAccessor) {
++        return this.getStructureWithPieceAt(blockPos, structures::contains, levelAccessor);
++        // Paper end - Fix swamp hut cat generation deadlock
+     }
+ 
+     public StructureStart getStructureWithPieceAt(BlockPos blockPos, Predicate<Holder<Structure>> predicate) {
++        // Paper start - Fix swamp hut cat generation deadlock
++        return this.getStructureWithPieceAt(blockPos, predicate, null);
++    }
++
++    public StructureStart getStructureWithPieceAt(BlockPos blockPos, Predicate<Holder<Structure>> predicate, @Nullable ServerLevelAccessor levelAccessor) {
++        // Paper end - Fix swamp hut cat generation deadlock
+         Registry<Structure> structures = this.registryAccess().lookupOrThrow(Registries.STRUCTURE);
+ 
+         for (StructureStart structureStart : this.startsForStructure(
+-            ChunkPos.containing(blockPos), s -> structures.get(structures.getId(s)).map(predicate::test).orElse(false)
++            ChunkPos.containing(blockPos), s -> structures.get(structures.getId(s)).map(predicate::test).orElse(false), levelAccessor // Paper - Fix swamp hut cat generation deadlock
+         )) {
+             if (this.structureHasPieceAt(blockPos, structureStart)) {
+                 return structureStart;

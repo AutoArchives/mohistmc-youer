@@ -24,3 +24,13 @@
                  int itemsToUse = Math.min(Math.min(totalItemCount - 10, totalItemsToUse), stackSize);
                  if (itemsToUse > 0) {
                      totalItemsToUse -= itemsToUse;
+@@ -86,7 +_,9 @@
+                 inventory.removeItemType(Items.WHEAT, howMuchWheatToUse);
+                 ItemStack breadICantCarry = inventory.addItem(new ItemStack(Items.BREAD, howMuchBreadToMake));
+                 if (!breadICantCarry.isEmpty()) {
++                    body.forceDrops = true; // Paper - Add missing forceDrop toggles
+                     body.spawnAtLocation(level, breadICantCarry, 0.5F);
++                    body.forceDrops = false; // Paper - Add missing forceDrop toggles
+                 }
+             }
+         }

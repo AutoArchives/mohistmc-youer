@@ -23,16 +23,66 @@
                  this.shear(level, SoundSource.PLAYERS, itemStack);
                  this.gameEvent(GameEvent.SHEAR, player);
                  itemStack.hurtAndBreak(1, player, hand.asEquipmentSlot());
-@@ -160,7 +_,9 @@
-             tool,
-             (l, drop) -> {
-                 for (int i = 0; i < drop.getCount(); i++) {
-+                    this.forceDrops = true; // CraftBukkit
-                     ItemEntity entity = this.spawnAtLocation(l, drop.copyWithCount(1), 1.0F);
-+                    this.forceDrops = false; // CraftBukkit
-                     if (entity != null) {
-                         entity.setDeltaMovement(
-                             entity.getDeltaMovement()
+@@ -151,29 +_,40 @@
+         }
+     }
+ 
++    // Paper start - custom shear drops
+     @Override
+     public void shear(ServerLevel level, SoundSource soundSource, ItemStack tool) {
++        this.shear(level, soundSource, tool, this.generateDefaultDrops(level, tool));
++    }
++
++    @Override
++    public java.util.List<ItemStack> generateDefaultDrops(final ServerLevel level, final ItemStack tool) {
++        final java.util.List<ItemStack> drops = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>();
++        this.dropFromShearingLootTable(level, BuiltInLootTables.SHEAR_SHEEP, tool, (ignored, stack) -> {
++            for (int i = 0; i < stack.getCount(); ++i) drops.add(stack.copyWithCount(1));
++        });
++        return drops;
++    }
++
++    @Override
++    public void shear(final ServerLevel level, final SoundSource soundSource, final ItemStack tool, final java.util.List<ItemStack> drops) {
++        // Paper end - custom shear drops
+         level.playSound(null, this, SoundEvents.SHEEP_SHEAR, soundSource, 1.0F, 1.0F);
+-        this.dropFromShearingLootTable(
+-            level,
+-            BuiltInLootTables.SHEAR_SHEEP,
+-            tool,
+-            (l, drop) -> {
+-                for (int i = 0; i < drop.getCount(); i++) {
+-                    ItemEntity entity = this.spawnAtLocation(l, drop.copyWithCount(1), 1.0F);
+-                    if (entity != null) {
+-                        entity.setDeltaMovement(
+-                            entity.getDeltaMovement()
+-                                .add(
+-                                    (this.random.nextFloat() - this.random.nextFloat()) * 0.1F,
+-                                    this.random.nextFloat() * 0.05F,
+-                                    (this.random.nextFloat() - this.random.nextFloat()) * 0.1F
+-                                )
+-                        );
+-                    }
+-                }
++        drops.forEach(itemStack -> { // Paper - custom drops - loop in generated default drops
++            this.forceDrops = true; // CraftBukkit
++            ItemEntity entity = this.spawnAtLocation(level, itemStack, 1.0F); // Paper - custom drops - copy already done above
++            this.forceDrops = false; // CraftBukkit
++            if (entity != null) {
++                entity.setDeltaMovement(
++                    entity.getDeltaMovement()
++                        .add(
++                            (this.random.nextFloat() - this.random.nextFloat()) * 0.1F,
++                            this.random.nextFloat() * 0.05F,
++                            (this.random.nextFloat() - this.random.nextFloat()) * 0.1F
++                        )
++                );
+             }
+-        );
++        });
+         this.setSheared(true);
+     }
+ 
 @@ -277,6 +_,12 @@
  
      @Override

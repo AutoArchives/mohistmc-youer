@@ -8,6 +8,15 @@
  import org.jspecify.annotations.Nullable;
  
  public class Silverfish extends Monster {
+@@ -117,7 +_,7 @@
+         } else if (EntitySpawnReason.isSpawner(spawnReason)) {
+             return true;
+         } else {
+-            Player nearestPlayer = level.getNearestPlayer(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 5.0, true);
++            Player nearestPlayer = level.getNearestPlayerThatAffectsSpawning(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 5.0, true); // Paper - Affects Spawning API
+             return nearestPlayer == null;
+         }
+     }
 @@ -139,7 +_,7 @@
                  return false;
              } else {
@@ -33,17 +42,19 @@
                  }
              }
          }
-@@ -210,7 +_,12 @@
+@@ -210,7 +_,14 @@
                              BlockState blockState = level.getBlockState(testPos);
                              Block block = blockState.getBlock();
                              if (block instanceof InfestedBlock) {
 -                                if (getServerLevel(level).getGameRules().get(GameRules.MOB_GRIEFING)) {
 +                                // CraftBukkit start
-+                                if (!org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(this.silverfish, testPos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())) {
++                                final boolean canGrief = net.neoforged.neoforge.event.EventHooks.canEntityGrief(getServerLevel(level), this.silverfish);
++                                BlockState afterState = canGrief ? blockState.getFluidState().createLegacyBlock() : ((InfestedBlock) block).hostStateByInfested(level.getBlockState(testPos)); // Paper - fix wrong block state
++                                if (!org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(this.silverfish, testPos, afterState)) { // Paper - fix wrong block state
 +                                    continue;
 +                                }
 +                                // CraftBukkit end
-+                                if (net.neoforged.neoforge.event.EventHooks.canEntityGrief(getServerLevel(level), this.silverfish)) {
++                                if (canGrief) {
                                      level.destroyBlock(testPos, true, this.silverfish);
                                  } else {
                                      level.setBlock(testPos, ((InfestedBlock)block).hostStateByInfested(level.getBlockState(testPos)), 3);

@@ -27,9 +27,15 @@
          this.access = access;
          this.player = inventory.player;
          this.addResultSlot(this.player, 124, 35);
-@@ -56,6 +_,7 @@
+@@ -55,7 +_,13 @@
+         CraftingInput input = container.asCraftInput();
          ServerPlayer serverPlayer = (ServerPlayer)player;
          ItemStack result = ItemStack.EMPTY;
++        // Paper start - Perf: Improve mass crafting; check last recipe used first
++        if (recipeHint == null && container.getCurrentRecipe() instanceof RecipeHolder<CraftingRecipe> currentRecipe) {
++            recipeHint = currentRecipe;
++        }
++        // Paper end - Perf: Improve mass crafting; check last recipe used first
          Optional<RecipeHolder<CraftingRecipe>> maybeRecipe = level.getServer().getRecipeManager().getRecipeFor(RecipeType.CRAFTING, input, level, recipeHint);
 +        container.setCurrentRecipe(maybeRecipe.orElse(null)); // CraftBukkit
          if (maybeRecipe.isPresent()) {

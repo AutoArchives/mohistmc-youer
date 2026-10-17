@@ -124,10 +124,40 @@
      protected AbstractContainerMenu(@Nullable MenuType<?> menuType, int containerId) {
          this.menuType = menuType;
          this.containerId = containerId;
-@@ -178,6 +_,16 @@
-         }
-     }
+@@ -175,8 +_,43 @@
  
+         if (this.synchronizer != null) {
+             this.synchronizer.sendInitialData(this, itemsToSend, carried.copy(), this.remoteDataSlots.toIntArray());
+-        }
+-    }
++            this.synchronizer.sendOffHandSlotChange(); // Paper - Sync offhand slot in menus; update player's offhand since the offhand slot is not added to the slots for menus but can be changed by swapping from a menu slot
++        }
++    }
++
++    // Paper start
++    public void forceHeldSlot(final net.minecraft.world.InteractionHand hand) {
++        this.sendAllDataToRemote();
++    }
++
++    public void forceHeldSlotAndArmor(final net.minecraft.world.InteractionHand hand) {
++        this.sendAllDataToRemote();
++    }
++
++    public void forceSlot(final Container container, final int slot) {
++        final int slotsIndex = this.findSlot(container, slot).orElse(-1);
++        if (slotsIndex == -1) {
++            return;
++        }
++
++        final ItemStack item = this.slots.get(slotsIndex).getItem();
++        this.remoteSlots.get(slotsIndex).force(item);
++
++        if (this.synchronizer != null) {
++            this.synchronizer.sendSlotChange(this, slotsIndex, item.copy());
++        }
++    }
++    // Paper end
++
 +    // CraftBukkit start
 +    public void broadcastCarriedItem() {
 +        ItemStack itemstack = this.getCarried().copy();
@@ -137,9 +167,17 @@
 +        }
 +    }
 +    // CraftBukkit end
-+
+ 
      public void removeSlotListener(ContainerListener listener) {
          this.containerListeners.remove(listener);
+@@ -242,7 +_,7 @@
+             this.lastSlots.set(i, newItem);
+ 
+             for (ContainerListener containerListener : this.containerListeners) {
+-                containerListener.slotChanged(this, i, newItem);
++                containerListener.slotChanged(this, i, localExpected, newItem); // Paper - Add PlayerInventorySlotChangeEvent
+             }
+         }
      }
 @@ -360,7 +_,7 @@
                  }
@@ -269,7 +307,7 @@
          FeatureFlagSet enabledFeatures = player.level().enabledFeatures();
          return carried.isItemEnabled(enabledFeatures) && carried.overrideStackedOnOther(slot, clickAction, player)
              ? true
-@@ -593,8 +_,9 @@
+@@ -593,14 +_,15 @@
          if (player instanceof ServerPlayer) {
              ItemStack carried = this.getCarried();
              if (!carried.isEmpty()) {
@@ -280,6 +318,78 @@
              }
          }
      }
+ 
+     private static void dropOrPlaceInInventory(Player player, ItemStack carried) {
+-        boolean playerRemovedNotChangingDimension = player.isRemoved() && player.getRemovalReason() != Entity.RemovalReason.CHANGED_DIMENSION;
++        boolean playerRemovedNotChangingDimension = !player.isAlive() && player.getRemovalReason() != Entity.RemovalReason.CHANGED_DIMENSION; // Paper - Make sure player is dead (https://github.com/PaperMC/Paper/pull/13002)
+         boolean serverPlayerHasDisconnected = player instanceof ServerPlayer serverPlayer && serverPlayer.hasDisconnected();
+         if (playerRemovedNotChangingDimension || serverPlayerHasDisconnected) {
+             player.drop(carried, false);
+@@ -640,6 +_,14 @@
+     public abstract boolean stillValid(Player player);
+ 
+     protected boolean moveItemStackTo(ItemStack itemStack, int startSlot, int endSlot, boolean backwards) {
++        // Paper start - Add PlayerTradeEvent and PlayerPurchaseEvent
++        return this.moveItemStackTo(itemStack, startSlot, endSlot, backwards, false);
++    }
++    protected boolean moveItemStackTo(ItemStack itemStack, final int startSlot, final int endSlot, final boolean backwards, final boolean isCheck) { // Paper - Add PlayerTradeEvent and PlayerPurchaseEvent - non-final itemStack
++        if (isCheck) {
++            itemStack = itemStack.copy();
++        }
++        // Paper end - Add PlayerTradeEvent and PlayerPurchaseEvent
+         boolean anythingChanged = false;
+         int destSlot = startSlot;
+         if (backwards) {
+@@ -650,18 +_,27 @@
+             while (!itemStack.isEmpty() && (backwards ? destSlot >= startSlot : destSlot < endSlot)) {
+                 Slot slot = this.slots.get(destSlot);
+                 ItemStack target = slot.getItem();
++                // Paper start - Add PlayerTradeEvent and PlayerPurchaseEvent; clone if only a check
++                if (isCheck) {
++                    target = target.copy();
++                }
++                // Paper end - Add PlayerTradeEvent and PlayerPurchaseEvent
+                 if (!target.isEmpty() && ItemStack.isSameItemSameComponents(itemStack, target)) {
+                     int totalStack = target.getCount() + itemStack.getCount();
+                     int maxStackSize = slot.getMaxStackSize(target);
+                     if (totalStack <= maxStackSize) {
+                         itemStack.setCount(0);
+                         target.setCount(totalStack);
++                        if (!isCheck) { // Paper - Add PlayerTradeEvent and PlayerPurchaseEvent
+                         slot.setChanged();
++                        } // Paper - Add PlayerTradeEvent and PlayerPurchaseEvent
+                         anythingChanged = true;
+                     } else if (target.getCount() < maxStackSize) {
+                         itemStack.shrink(maxStackSize - target.getCount());
+                         target.setCount(maxStackSize);
++                        if (!isCheck) { // Paper - Add PlayerTradeEvent and PlayerPurchaseEvent
+                         slot.setChanged();
++                        } // Paper - Add PlayerTradeEvent and PlayerPurchaseEvent
+                         anythingChanged = true;
+                     }
+                 }
+@@ -684,10 +_,21 @@
+             while (backwards ? destSlot >= startSlot : destSlot < endSlot) {
+                 Slot slotx = this.slots.get(destSlot);
+                 ItemStack targetx = slotx.getItem();
++                // Paper start - Add PlayerTradeEvent and PlayerPurchaseEvent
++                if (isCheck) {
++                    targetx = targetx.copy();
++                }
++                // Paper end - Add PlayerTradeEvent and PlayerPurchaseEvent
+                 if (targetx.isEmpty() && slotx.mayPlace(itemStack)) {
+                     int maxStackSize = slotx.getMaxStackSize(itemStack);
++                    // Paper start - Add PlayerTradeEvent and PlayerPurchaseEvent
++                    if (isCheck) {
++                        itemStack.shrink(Math.min(itemStack.getCount(), maxStackSize));
++                    } else {
++                    // Paper end - Add PlayerTradeEvent and PlayerPurchaseEvent
+                     slotx.setByPlayer(itemStack.split(Math.min(itemStack.getCount(), maxStackSize)));
+                     slotx.setChanged();
++                    } // Paper - Add PlayerTradeEvent and PlayerPurchaseEvent
+                     anythingChanged = true;
+                     break;
+                 }
 @@ -775,6 +_,11 @@
      }
  
@@ -292,3 +402,19 @@
          return this.carried;
      }
  
+@@ -828,4 +_,15 @@
+         this.stateId = this.stateId + 1 & 32767;
+         return this.stateId;
+     }
++
++    // Paper start - Add missing InventoryHolders
++    // The reason this is a supplier, is that the createHolder method uses the bukkit InventoryView#getTopInventory to get the inventory in question
++    // and that can't be obtained safely until the AbstractContainerMenu has been fully constructed. Using a supplier lazily
++    // initializes the InventoryHolder safely.
++    protected final java.util.function.Supplier<org.bukkit.inventory.BlockInventoryHolder> createBlockHolder(final ContainerLevelAccess context) {
++        //noinspection ConstantValue
++        com.google.common.base.Preconditions.checkArgument(context != null, "context was null");
++        return () -> context.createBlockHolder(this);
++    }
++    // Paper end - Add missing InventoryHolders
+ }

@@ -29,7 +29,7 @@
  import net.minecraft.world.item.component.DeathProtection;
  import net.minecraft.world.item.component.KineticWeapon;
  import net.minecraft.world.item.component.Weapon;
-@@ -135,6 +_,15 @@
+@@ -135,11 +_,24 @@
  import net.minecraft.world.scores.Scoreboard;
  import net.minecraft.world.waypoints.Waypoint;
  import net.minecraft.world.waypoints.WaypointTransmitter;
@@ -45,6 +45,15 @@
  import org.jetbrains.annotations.Contract;
  import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
+ 
+ public abstract class LivingEntity extends Entity implements Attackable, WaypointTransmitter, net.neoforged.neoforge.common.extensions.ILivingEntityExtension {
++    public org.bukkit.entity.LivingEntity getBukkitLivingEntity() {
++        return (org.bukkit.entity.LivingEntity) this.getBukkitEntity();
++    }
++
+     private static final Logger LOGGER = LogUtils.getLogger();
+     private static final String TAG_ACTIVE_EFFECTS = "active_effects";
+     public static final String TAG_ATTRIBUTES = "attributes";
 @@ -194,14 +_,20 @@
      private static final int CURRENT_IMPULSE_CONTEXT_RESET_GRACE_TIME_TICKS = 40;
      private static final int DEFAULT_CURRENT_IMPULSE_CONTEXT_RESET_GRACE_TIME = 0;
@@ -108,7 +117,7 @@
          this.setHealth(this.getMaxHealth());
          this.equipment = this.createEquipment();
          this.blocksBuilding = true;
-@@ -337,13 +_,15 @@
+@@ -337,7 +_,9 @@
              .add(Attributes.MOVEMENT_EFFICIENCY)
              .add(Attributes.ATTACK_KNOCKBACK)
              .add(Attributes.CAMERA_DISTANCE)
@@ -119,13 +128,6 @@
      }
  
      @Override
-     protected void checkFallDamage(double ya, boolean onGround, BlockState onState, BlockPos pos) {
-         if (!this.isInWater()) {
--            this.updateFluidInteraction();
-+            this.updateFluidInteraction(); // TODO: prior to 26.1-snapshot-8 we called our patched in method 'this.updateInWaterStateAndDoWaterCurrentPushing(false)'
-         }
- 
-         if (this.level() instanceof ServerLevel level && onGround && this.fallDistance > 0.0) {
 @@ -364,7 +_,15 @@
  
                  double scale = Math.min(0.2F + power / 15.0, 2.5);
@@ -151,6 +153,16 @@
      public boolean canBreatheUnderwater() {
          return this.is(EntityTypeTags.CAN_BREATHE_UNDER_WATER);
      }
+@@ -414,6 +_,9 @@
+                 }
+             }
+ 
++            int airSupply = this.getAirSupply();
++            net.neoforged.neoforge.common.CommonHooks.onLivingBreathe(this, level, airSupply - decreaseAirSupply(airSupply), increaseAirSupply(airSupply) - airSupply);
++            if (false) // Neo: Handled in CommonHooks#onLivingBreathe(LivingEntity, int, int)
+             if (this.isEyeInFluid(FluidTags.WATER)
+                 && !level.getBlockState(BlockPos.containing(this.getX(), this.getEyeY(), this.getZ())).is(Blocks.BUBBLE_COLUMN)) {
+                 boolean canDrownInWater = !this.canBreatheUnderwater()
 @@ -549,6 +_,7 @@
          this.deathTime++;
          if (this.deathTime >= 20 && !this.level().isClientSide() && !this.isRemoved()) {
@@ -926,15 +938,15 @@
      }
  
      protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
-@@ -1588,7 +_,22 @@
+@@ -1588,9 +_,23 @@
      }
  
      public void knockback(double power, double xd, double zd) {
 +        // CraftBukkit start - EntityKnockbackEvent
-+        knockback(power, xd, zd, null, org.bukkit.event.entity.EntityKnockbackEvent.KnockbackCause.UNKNOWN);
++        this.knockback(power, xd, zd, null, io.papermc.paper.event.entity.EntityKnockbackEvent.Cause.UNKNOWN); // Paper - knockback events
 +    }
 +
-+    public void knockback(double power, double xd, double zd, Entity attacker, org.bukkit.event.entity.EntityKnockbackEvent.KnockbackCause cause) {
++    public void knockback(double power, double xd, double zd, @Nullable Entity attacker, io.papermc.paper.event.entity.EntityKnockbackEvent.Cause eventCause) { // Paper - knockback events
 +        // CraftBukkit end
 +        net.neoforged.neoforge.event.entity.living.LivingKnockBackEvent event = net.neoforged.neoforge.common.CommonHooks.onLivingKnockBack(this, (float) power, xd, zd);
 +        if(event.isCanceled()) return;
@@ -947,26 +959,31 @@
 +            //this.needsSync = true; // CraftBukkit - Move down
 +        // CraftBukkit end
          if (!(power <= 0.0)) {
-             this.needsSync = true;
+-            this.needsSync = true;
              Vec3 deltaMovement = this.getDeltaMovement();
-@@ -1599,12 +_,19 @@
+ 
+             while (xd * xd + zd * zd < 1.0E-5F) {
+@@ -1599,12 +_,26 @@
              }
  
              Vec3 deltaVector = new Vec3(xd, 0.0, zd).normalize().scale(power);
 -            this.setDeltaMovement(
--                deltaMovement.x / 2.0 - deltaVector.x,
--                this.onGround() ? Math.min(0.4, deltaMovement.y / 2.0 + power) : deltaMovement.y,
--                deltaMovement.z / 2.0 - deltaVector.z
--            );
++            // Paper start - knockback events
++            Vec3 finalVelocity = new Vec3(
+                 deltaMovement.x / 2.0 - deltaVector.x,
+                 this.onGround() ? Math.min(0.4, deltaMovement.y / 2.0 + power) : deltaMovement.y,
+                 deltaMovement.z / 2.0 - deltaVector.z
+             );
 -        }
-+            // CraftBukkit start
-+            org.bukkit.event.entity.EntityKnockbackEvent cbEvent = CraftEventFactory.callEntityKnockbackEvent((org.bukkit.craftbukkit.entity.CraftLivingEntity) this.getBukkitEntity(), attacker, cause, power, deltaVector, deltaMovement.x / 2.0 - deltaVector.x, this.onGround() ? Math.min(0.4, deltaMovement.y / 2.0 + power) : deltaMovement.y, deltaMovement.z / 2.0 - deltaVector.z);
-+            if (cbEvent.isCancelled()) {
++            Vec3 diff = finalVelocity.subtract(deltaMovement);
++            io.papermc.paper.event.entity.EntityKnockbackEvent knockbackEvent = CraftEventFactory.callEntityKnockbackEvent((org.bukkit.craftbukkit.entity.CraftLivingEntity) this.getBukkitEntity(), attacker, attacker, eventCause, power, diff);
++            // Paper end - knockback events
++            if (knockbackEvent.isCancelled()) {
 +                return;
 +            }
 +
 +            this.needsSync = true;
-+            this.setDeltaMovement(cbEvent.getFinalKnockback().getX(), cbEvent.getFinalKnockback().getY(), cbEvent.getFinalKnockback().getZ());
++            this.setDeltaMovement(deltaMovement.add(knockbackEvent.getKnockback().getX(), knockbackEvent.getKnockback().getY(), knockbackEvent.getKnockback().getZ())); // Paper - knockback events
 +            // CraftBukkit end
 +        }
 +        // CraftBukkit start
@@ -1398,6 +1415,15 @@
      }
  
      protected float getWaterSlowDown() {
+@@ -2372,7 +_,7 @@
+     }
+ 
+     protected boolean shouldTravelInFluid(FluidState fluidState) {
+-        return (this.isInWater() || this.isInLava()) && this.isAffectedByFluids() && !this.canStandOnFluid(fluidState);
++        return (this.isInWater() || this.isInLava() || this.isInFluidType(fluidState)) && this.isAffectedByFluids() && !this.canStandOnFluid(fluidState);
+     }
+ 
+     protected void travelFlying(Vec3 input, float speed) {
 @@ -2397,7 +_,7 @@
  
      private void travelInAir(Vec3 input) {
@@ -1407,22 +1433,21 @@
          float friction = blockFriction * 0.91F;
          Vec3 movement = this.handleRelativeFrictionAndCalculateMovement(input, blockFriction);
          double movementY = movement.y;
-@@ -2420,7 +_,15 @@
-         }
-     }
- 
-+    /**
-+     * @deprecated Neo: use {@link #travelInFluid(Vec3, FluidState)} instead
-+     */
-+    @Deprecated
-     private void travelInFluid(Vec3 input) {
-+        travelInFluid(input, net.minecraft.world.level.material.Fluids.EMPTY.defaultFluidState());
-+    }
-+
-+    private void travelInFluid(Vec3 input, FluidState fluidState) {
+@@ -2424,10 +_,13 @@
          boolean isFalling = this.getDeltaMovement().y <= 0.0;
          double oldY = this.getY();
          double baseGravity = this.getEffectiveGravity();
++        if (this.getFluidInteraction().isInFluidMatching(this, (entity, type, _) -> !type.isVanilla() && entity.moveInFluid(type, input, baseGravity))) {
++            return;
++        }
+         if (this.isInWater()) {
+             this.travelInWater(input, baseGravity, isFalling, oldY);
+             this.floatInWaterWhileRidden();
+-        } else {
++        } else if (this.isInLava()) { // Neo: only apply lava movement if the player is actually in lava and not another fluid
+             this.travelInLava(input, baseGravity, isFalling, oldY);
+         }
+     }
 @@ -2449,6 +_,7 @@
              slowDown = 0.96F;
          }
@@ -1431,6 +1456,15 @@
          this.moveRelative(speed, input);
          this.move(MoverType.SELF, this.getDeltaMovement());
          Vec3 ladderMovement = this.getDeltaMovement();
+@@ -2488,7 +_,7 @@
+ 
+     private void floatInWaterWhileRidden() {
+         boolean canEntityFloatInWater = this.is(EntityTypeTags.CAN_FLOAT_WHILE_RIDDEN);
+-        if (canEntityFloatInWater && this.isVehicle() && this.getFluidHeight(FluidTags.WATER) > this.getFluidJumpThreshold()) {
++        if (canEntityFloatInWater && this.isVehicle() && this.getFluidInteraction().getMaxFluidHeightMatching(this, (_, type, _) -> type.getIsWaterLike()) > this.getFluidJumpThreshold()) {
+             this.setDeltaMovement(this.getDeltaMovement().add(0.0, 0.04F, 0.0));
+         }
+     }
 @@ -2510,6 +_,11 @@
      }
  
@@ -1480,9 +1514,27 @@
                  if (changedItems == null) {
                      changedItems = Maps.newEnumMap(EquipmentSlot.class);
                  }
-@@ -3006,10 +_,10 @@
+@@ -2991,6 +_,10 @@
+         profiler.push("jump");
+         if (this.jumping && this.isAffectedByFluids()) {
+             double fluidHeight;
++            net.neoforged.neoforge.fluids.FluidType fluidType = this.getFluidInteraction().getMaxHeightFluidType();
++            if (!fluidType.isAir()) {
++                fluidHeight = this.getFluidTypeHeight(fluidType);
++            } else
+             if (this.isInLava()) {
+                 fluidHeight = this.getFluidHeight(FluidTags.LAVA);
+             } else {
+@@ -3001,15 +_,17 @@
+             double fluidJumpThreshold = this.getFluidJumpThreshold();
+             if (!inWaterAndHasFluidHeight || this.onGround() && !(fluidHeight > fluidJumpThreshold)) {
+                 if (!this.isInLava() || this.onGround() && !(fluidHeight > fluidJumpThreshold)) {
++                    if (fluidType.isAir() || this.onGround() && !(fluidHeight > fluidJumpThreshold)) {
+                     if ((this.onGround() || inWaterAndHasFluidHeight && fluidHeight <= fluidJumpThreshold) && this.noJumpDelay == 0) {
+                         this.jumpFromGround();
                          this.noJumpDelay = 10;
                      }
++                    } else this.jumpInFluid(fluidType);
                  } else {
 -                    this.jumpInLiquid(FluidTags.LAVA);
 +                    this.jumpInFluid(net.neoforged.neoforge.common.NeoForgeMod.LAVA_TYPE.value());
@@ -1501,7 +1553,7 @@
                  this.setSharedFlag(7, false);
                  return;
              }
-@@ -3261,13 +_,20 @@
+@@ -3261,13 +_,28 @@
  
      @Override
      public boolean isPickable() {
@@ -1509,11 +1561,19 @@
 +        return !this.isRemoved() && this.collides; // CraftBukkit
      }
  
++    @Override
++    // Paper start - Climbing should not bypass cramming gamerule
      @Override
      public boolean isPushable() {
 -        return this.isAlive() && !this.isSpectator() && !this.onClimbable();
 -    }
-+        return this.isAlive() && !this.isSpectator() && !this.onClimbable() && this.collides; // CraftBukkit
++        return this.isCollidable(this.level().paperConfig().collisions.fixClimbingBypassingCrammingRule);
++    }
++
++    @Override
++    public boolean isCollidable(boolean ignoreClimbing) {
++        return this.isAlive() && !this.isSpectator() && (ignoreClimbing || !this.onClimbable()) && this.collides; // CraftBukkit
++        // Paper end - Climbing should not bypass cramming gamerule
 +    }
 +
 +    // CraftBukkit start - collidable API
@@ -1618,28 +1678,29 @@
          if (!this.level().isClientSide()) {
              boolean wasUsingItem = this.isUsingItem();
              this.recentKineticEnemies = null;
-@@ -3566,6 +_,11 @@
+@@ -3566,6 +_,21 @@
      }
  
      public boolean randomTeleport(double xx, double yy, double zz, boolean showParticles) {
-+        return randomTeleport(xx, yy, zz, showParticles, ItemStack.EMPTY);
++        // CraftBukkit start
++        return this.randomTeleport(xx, yy, zz, showParticles, org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.UNKNOWN).orElse(false);
 +    }
 +
 +    // Neo: Add overload with the consumed item causing the random teleport
 +    public boolean randomTeleport(double xx, double yy, double zz, boolean showParticles, ItemStack consumedStack) {
++        return this.randomTeleport(xx, yy, zz, showParticles, consumedStack, org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.UNKNOWN).orElse(false);
++    }
++
++    public java.util.Optional<Boolean> randomTeleport(double xx, double yy, double zz, boolean showParticles, org.bukkit.event.player.PlayerTeleportEvent.TeleportCause cause) {
++        return this.randomTeleport(xx, yy, zz, showParticles, ItemStack.EMPTY, cause);
++    }
++
++    public java.util.Optional<Boolean> randomTeleport(double xx, double yy, double zz, boolean showParticles, ItemStack consumedStack, org.bukkit.event.player.PlayerTeleportEvent.TeleportCause cause) {
++        // CraftBukkit end
          double xo = this.getX();
          double yo = this.getY();
          double zo = this.getZ();
-@@ -3573,6 +_,8 @@
-         boolean ok = false;
-         BlockPos pos = BlockPos.containing(xx, yy, zz);
-         Level level = this.level();
-+        // Neo: Store whether we actually did a teleport to the target, to avoid teleporting the entity back to its original position if it didn't teleport away
-+        boolean teleported = false;
-         if (level.hasChunkAt(pos)) {
-             boolean landed = false;
- 
-@@ -3588,15 +_,32 @@
+@@ -3588,16 +_,53 @@
              }
  
              if (landed) {
@@ -1659,23 +1720,54 @@
 +                    zz = event.getTargetZ();
 +                }
 +                if (event == null || !event.isCanceled()) {
-+                    teleported = true;
-+                    this.teleportTo(xx, y, zz);
++                    // CraftBukkit start - Teleport event
++                    // first set position, to check if the place to teleport is valid
++                    this.setPos(xx, y, zz);
 +                    if (level.noCollision(this) && !level.containsAnyLiquid(this.getBoundingBox())) {
 +                        ok = true;
 +                    }
++                    // now revert and call event if the teleport place is valid
++                    this.setPos(xo, yo, zo);
++
++                    if (ok) {
++                        if (!(this instanceof net.minecraft.server.level.ServerPlayer serverPlayer)) {
++                            org.bukkit.event.entity.EntityTeleportEvent teleport = new org.bukkit.event.entity.EntityTeleportEvent(this.getBukkitEntity(), new org.bukkit.Location(this.level().getWorld(), xo, yo, zo), new org.bukkit.Location(this.level().getWorld(), xx, y, zz));
++                            this.level().getCraftServer().getPluginManager().callEvent(teleport);
++                            if (!teleport.isCancelled() && teleport.getTo() != null) { // Paper
++                                org.bukkit.Location to = teleport.getTo();
++                                this.teleportTo(to.getX(), to.getY(), to.getZ());
++                            } else {
++                                return java.util.Optional.empty();
++                            }
++                        } else {
++                            // player teleport event is called in the underlining code
++                            if (!serverPlayer.connection.teleport(xx, y, zz, this.getYRot(), this.getXRot(), cause)) {
++                                return java.util.Optional.empty();
++                            }
++                        }
++                    }
++                    // CraftBukkit end
                  }
              }
          }
  
          if (!ok) {
 -            this.teleportTo(xo, yo, zo);
-+            if (teleported) { // Neo: Teleport back to original only if we teleported away and need to revert
-+                this.teleportTo(xo, yo, zo);
-+            }
-             return false;
+-            return false;
++            // this.teleportTo(xo, yo, zo); // CraftBukkit - already set the location back
++            return java.util.Optional.of(false); // CraftBukkit
          } else {
              if (showParticles) {
+                 level.broadcastEntityEvent(this, (byte)46);
+@@ -3607,7 +_,7 @@
+                 pathfinderMob.getNavigation().stop();
+             }
+ 
+-            return true;
++            return java.util.Optional.of(true); // CraftBukkit
+         }
+     }
+ 
 @@ -3676,8 +_,8 @@
          }
  

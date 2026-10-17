@@ -44,7 +44,7 @@
 +            dispensed.grow(1);
 +            // Chain to handler for new item
 +            ItemStack eventStack = CraftItemStack.asNMSCopy(event.getItem());
-+            DispenseItemBehavior dispenseitembehavior = (DispenseItemBehavior) DispenserBlock.DISPENSER_REGISTRY.get(eventStack.getItem());
++            DispenseItemBehavior dispenseitembehavior = DispenserBlock.getDispenseBehavior(source, eventStack); // Paper - Fix NPE with equippable and items without behavior
 +            if (dispenseitembehavior != DispenseItemBehavior.NOOP && dispenseitembehavior != this) {
 +                dispenseitembehavior.dispense(source, eventStack);
 +                return dispensed;

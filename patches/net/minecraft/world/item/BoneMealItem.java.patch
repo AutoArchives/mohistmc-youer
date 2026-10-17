@@ -1,53 +1,53 @@
 --- a/net/minecraft/world/item/BoneMealItem.java
 +++ b/net/minecraft/world/item/BoneMealItem.java
-@@ -37,9 +_,9 @@
-         BlockPos pos = context.getClickedPos();
-         BlockPos relative = pos.relative(context.getClickedFace());
-         ItemStack boneMealStack = context.getItemInHand();
--        if (growCrop(boneMealStack, level, pos)) {
-+        if (applyBonemeal(boneMealStack, level, pos, context.getPlayer())) {
-             if (!level.isClientSide()) {
--                boneMealStack.causeUseVibration(context.getPlayer(), GameEvent.ITEM_INTERACT_FINISH);
-+                if (context.getPlayer() != null) boneMealStack.causeUseVibration(context.getPlayer(), GameEvent.ITEM_INTERACT_FINISH); // CraftBukkit - SPIGOT-7518
-                 level.levelEvent(1505, pos, 15);
-                 return InteractionResult.SUCCESS_SERVER;
-             } else {
-@@ -61,8 +_,49 @@
-         }
-     }
+@@ -33,25 +_,32 @@
  
+     @Override
+     public InteractionResult useOn(UseOnContext context) {
++        // CraftBukkit start - extract bonemeal application logic to separate, static method
++        return BoneMealItem.applyBonemeal(context);
++    }
 +    public static InteractionResult applyBonemeal(UseOnContext context) {
 +        // CraftBukkit end
-+        Level level = context.getLevel();
+         Level level = context.getLevel();
+-        BlockPos pos = context.getClickedPos();
+-        BlockPos relative = pos.relative(context.getClickedFace());
+-        ItemStack boneMealStack = context.getItemInHand();
+-        if (growCrop(boneMealStack, level, pos)) {
 +        BlockPos blockpos = context.getClickedPos();
 +        BlockPos blockpos1 = blockpos.relative(context.getClickedFace());
 +        ItemStack itemstack = context.getItemInHand();
 +
 +        if (growCrop(itemstack, level, blockpos)) {
-+            if (!level.isClientSide()) {
+             if (!level.isClientSide()) {
+-                boneMealStack.causeUseVibration(context.getPlayer(), GameEvent.ITEM_INTERACT_FINISH);
+-                level.levelEvent(1505, pos, 15);
 +                if (context.getPlayer() != null) itemstack.causeUseVibration(context.getPlayer(), GameEvent.ITEM_INTERACT_FINISH); // CraftBukkit - SPIGOT-7518
 +                level.levelEvent(1505, blockpos, 15);
-+                return InteractionResult.SUCCESS_SERVER;
-+            } else {
-+                return InteractionResult.PASS;
-+            }
-+        } else {
+                 return InteractionResult.SUCCESS_SERVER;
+             } else {
+                 return InteractionResult.PASS;
+             }
+         } else {
+-            BlockState clickedState = level.getBlockState(pos);
+-            boolean solidBlockFace = clickedState.isFaceSturdy(level, pos, context.getClickedFace());
+-            if (solidBlockFace && growWaterPlant(boneMealStack, level, relative, context.getClickedFace())) {
 +            BlockState blockstate = level.getBlockState(blockpos);
 +            boolean flag = blockstate.isFaceSturdy(level, blockpos, context.getClickedFace());
 +
 +            if (flag && growWaterPlant(itemstack, level, blockpos1, context.getClickedFace())) {
-+                if (!level.isClientSide()) {
+                 if (!level.isClientSide()) {
+-                    boneMealStack.causeUseVibration(context.getPlayer(), GameEvent.ITEM_INTERACT_FINISH);
+-                    level.levelEvent(1505, relative, 15);
 +                    if (context.getPlayer() != null) itemstack.causeUseVibration(context.getPlayer(), GameEvent.ITEM_INTERACT_FINISH); // CraftBukkit - SPIGOT-7518
 +                    level.levelEvent(1505, blockpos1, 15);
-+                }
-+
-+                return InteractionResult.SUCCESS;
-+            } else {
-+                return InteractionResult.PASS;
-+            }
-+        }
-+    }
-+
+                 }
+ 
+                 return InteractionResult.SUCCESS;
+@@ -61,8 +_,17 @@
+         }
+     }
+ 
 +    @Deprecated //Forge: Use Player/Hand version
      public static boolean growCrop(ItemStack itemStack, Level level, BlockPos pos) {
 +        if (level instanceof net.minecraft.server.level.ServerLevel)

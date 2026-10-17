@@ -1,16 +1,25 @@
 --- a/net/minecraft/server/commands/DifficultyCommand.java
 +++ b/net/minecraft/server/commands/DifficultyCommand.java
-@@ -31,10 +_,11 @@
+@@ -7,7 +_,6 @@
+ import net.minecraft.commands.CommandSourceStack;
+ import net.minecraft.commands.Commands;
+ import net.minecraft.network.chat.Component;
+-import net.minecraft.server.MinecraftServer;
+ import net.minecraft.world.Difficulty;
+ 
+ public class DifficultyCommand {
+@@ -30,11 +_,11 @@
+     }
  
      public static int setDifficulty(CommandSourceStack source, Difficulty difficulty) throws CommandSyntaxException {
-         MinecraftServer server = source.getServer();
+-        MinecraftServer server = source.getServer();
 -        if (server.getWorldData().getDifficulty() == difficulty) {
 +        net.minecraft.server.level.ServerLevel worldServer = source.getLevel(); // CraftBukkit
 +        if (worldServer.getDifficulty() == difficulty) { // CraftBukkit
              throw ERROR_ALREADY_SAME_DIFFICULTY.create(difficulty.getSerializedName());
          } else {
 -            server.setDifficulty(difficulty, true);
-+            worldServer.serverLevelData.setDifficulty(difficulty); // CraftBukkit
++            source.getServer().setDifficulty(worldServer, difficulty, source, true); // Paper - per level difficulty; don't skip other difficulty-changing logic; WorldDifficultyChangeEvent
              source.sendSuccess(() -> Component.translatable("commands.difficulty.success", difficulty.getDisplayName()), true);
              return 0;
          }

@@ -8,6 +8,14 @@
  import org.jspecify.annotations.Nullable;
  
  public class WitherSkullBlock extends SkullBlock {
+@@ -49,6 +_,7 @@
+     }
+ 
+     public static void checkSpawn(Level level, BlockPos pos, SkullBlockEntity placedSkull) {
++        if (level.captureBlockStates) return; // CraftBukkit
+         if (!level.isClientSide()) {
+             BlockState blockState = placedSkull.getBlockState();
+             boolean correctBlock = blockState.is(Blocks.WITHER_SKELETON_SKULL) || blockState.is(Blocks.WITHER_SKELETON_WALL_SKULL);
 @@ -57,7 +_,7 @@
                  if (match != null) {
                      WitherBoss witherBoss = EntityType.WITHER.create(level, EntitySpawnReason.TRIGGERED);

@@ -99,7 +99,7 @@
  import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
-@@ -194,7 +_,7 @@
+@@ -194,13 +_,14 @@
      private final List<ServerPlayer> players = Lists.newArrayList();
      public final ServerChunkCache chunkSource;
      private final MinecraftServer server;
@@ -108,7 +108,14 @@
      private final EntityTickList entityTickList = new EntityTickList();
      private final ServerWaypointManager waypointManager;
      private EnvironmentAttributeSystem environmentAttributes;
-@@ -215,30 +_,127 @@
+     public final PersistentEntitySectionManager<Entity> entityManager;
+     private final GameEventDispatcher gameEventDispatcher;
+     public boolean noSave;
++    public boolean hasPhysicsEvent = true; // Paper - BlockPhysicsEvent
+     private final SleepStatus sleepStatus;
+     private int emptyTime;
+     private final PortalForcer portalForcer;
+@@ -215,30 +_,128 @@
      private boolean handlingTick;
      private final List<CustomSpawner> customSpawners;
      private @Nullable EnderDragonFight dragonFight;
@@ -128,6 +135,7 @@
 +    // CraftBukkit start
 +    public final LevelStorageSource.LevelStorageAccess storageSource;
 +    public final UUID uuid;
++    public java.util.ArrayDeque<net.minecraft.world.level.block.RedstoneTorchBlock.Toggle> redstoneUpdateInfos; // Paper - Faster redstone torch rapid clock removal
 +    // Moved from MinecraftServer start
 +    private final SavedDataStorage savedDataStorage;
 +    private final GameRules gameRules;
@@ -280,8 +288,12 @@
              generator,
              this.chunkSource.randomState(),
              this,
-@@ -303,6 +_,11 @@
-         this.waypointManager = new ServerWaypointManager();
+@@ -300,9 +_,14 @@
+ 
+         this.sleepStatus = new SleepStatus();
+         this.gameEventDispatcher = new GameEventDispatcher(this);
+-        this.waypointManager = new ServerWaypointManager();
++        this.waypointManager = new ServerWaypointManager(this); // Paper - optimize ServerWaypointManager with locator bar disabled
          this.environmentAttributes = EnvironmentAttributeSystem.builder().addDefaultLayers(this).build();
          this.updateSkyBrightness();
 +        net.neoforged.neoforge.attachment.LevelAttachmentsSavedData.init(this);
@@ -841,6 +853,14 @@
              return null;
          } else {
              Optional<HolderSet.Named<Structure>> tag = this.registryAccess().lookupOrThrow(Registries.STRUCTURE).get(structureTag);
+@@ -1413,6 +_,7 @@
+     @Override
+     public WorldBorder getWorldBorder() {
+         WorldBorder worldBorder = this.getDataStorage().computeIfAbsent(WorldBorder.TYPE);
++        worldBorder.world = this; // CraftBukkit
+         worldBorder.applyInitialSettings(this.levelData.getGameTime());
+         return worldBorder;
+     }
 @@ -1431,16 +_,33 @@
          return this.noSave;
      }
@@ -942,7 +962,7 @@
      }
  
      public boolean isPvpAllowed() {
-@@ -1906,16 +_,47 @@
+@@ -1906,16 +_,57 @@
                  ServerLevel.this.navigatingMobs.add(mob);
              }
  
@@ -956,6 +976,16 @@
  
              entity.updateDynamicGameEventListener(DynamicGameEventListener::add);
 +            entity.valid = true; // CraftBukkit
++            // Paper start - Entity origin API
++            if (entity.origin == null) {
++                entity.origin = entity.position();
++            }
++            // Default to current world if unknown, gross assumption but entities rarely change world
++            if (entity.originWorld == null) {
++                entity.originWorld = ServerLevel.this.getWorld().getUID();
++            }
++            // Paper end - Entity origin API
++            new com.destroystokyo.paper.event.entity.EntityAddToWorldEvent(entity.getBukkitEntity(), ServerLevel.this.getWorld()).callEvent(); // Paper - fire while valid
          }
  
          public void onTrackingEnd(Entity entity) {

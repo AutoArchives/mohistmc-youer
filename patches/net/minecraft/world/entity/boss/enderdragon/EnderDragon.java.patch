@@ -22,7 +22,14 @@
  public class EnderDragon extends Mob implements Enemy {
      private static final Logger LOGGER = LogUtils.getLogger();
      public static final EntityDataAccessor<Integer> DATA_PHASE = SynchedEntityData.defineId(EnderDragon.class, EntityDataSerializers.INT);
-@@ -85,6 +_,7 @@
+@@ -79,12 +_,14 @@
+     public @Nullable EndCrystal nearestCrystal;
+     private @Nullable EnderDragonFight dragonFight;
+     private BlockPos fightOrigin = BlockPos.ZERO;
++    private @Nullable BlockPos podium; // Paper - Allow changing the EnderDragon podium
+     private final EnderDragonPhaseManager phaseManager;
+     private int growlTime = 100;
+     private float sittingDamageReceived;
      private final Node[] nodes = new Node[24];
      private final int[] nodeAdjacency = new int[24];
      private final BinaryHeap openSet = new BinaryHeap();
@@ -46,6 +53,26 @@
      }
  
      public void setDragonFight(EnderDragonFight fight) {
+@@ -118,6 +_,19 @@
+         return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 200.0).add(Attributes.CAMERA_DISTANCE, 16.0);
+     }
+ 
++    // Paper start - Allow changing the EnderDragon podium
++    public BlockPos getPodium() {
++        if (this.podium == null) {
++            return EndPodiumFeature.getLocation(this.getFightOrigin());
++        }
++        return this.podium;
++    }
++
++    public void setPodium(@Nullable BlockPos blockPos) {
++        this.podium = blockPos;
++    }
++    // Paper end - Allow changing the EnderDragon podium
++
+     @Override
+     public boolean isFlapping() {
+         float flap = Mth.cos(this.flapTime * (float) (Math.PI * 2));
 @@ -148,8 +_,19 @@
          entityData.define(DATA_PHASE, EnderDragonPhase.HOVERING.getId());
      }
@@ -252,6 +279,15 @@
      }
  
      @Override
+@@ -790,7 +_,7 @@
+         EnderDragonPhase<? extends DragonPhaseInstance> phase = phaseInstance.getPhase();
+         Vec3 result;
+         if (phase == EnderDragonPhase.LANDING || phase == EnderDragonPhase.TAKEOFF) {
+-            BlockPos egg = this.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EndPodiumFeature.getLocation(this.fightOrigin));
++            BlockPos egg = this.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, this.getPodium()); // Paper - Allow changing the EnderDragon podium
+             float dist = Math.max((float)Math.sqrt(egg.distToCenterSqr(this.position())) / 4.0F, 1.0F);
+             float yOffset = 6.0F / dist;
+             float xRotOld = this.getXRot();
 @@ -859,8 +_,19 @@
      }
  

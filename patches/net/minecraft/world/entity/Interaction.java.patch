@@ -14,7 +14,7 @@
      public boolean skipAttackInteraction(Entity source) {
          if (source instanceof Player player) {
 +            // CraftBukkit start
-+            DamageSource damageSource = player.damageSources().playerAttack(player);
++            DamageSource damageSource = player.damageSources().generic().eventEntityDamager(source);
 +            EntityDamageEvent event = CraftEventFactory.callNonLivingEntityDamageEvent(this, damageSource, 1.0F, false);
 +            if (event.isCancelled()) {
 +                return true;
@@ -23,7 +23,7 @@
              this.attack = new Interaction.PlayerAction(player.getUUID(), this.level().getGameTime());
              if (player instanceof ServerPlayer serverPlayer) {
 -                CriteriaTriggers.PLAYER_HURT_ENTITY.trigger(serverPlayer, this, player.damageSources().generic(), 1.0F, 1.0F, false);
-+                CriteriaTriggers.PLAYER_HURT_ENTITY.trigger(serverPlayer, this, damageSource, (float) event.getFinalDamage(), 1.0F, false);
++                CriteriaTriggers.PLAYER_HURT_ENTITY.trigger(serverPlayer, this, damageSource, 1.0F, (float) event.getFinalDamage(), false); // CraftBukkit
              }
  
              return !this.getResponse();

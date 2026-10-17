@@ -87,7 +87,7 @@
 +            if (this.tickTimer >= this.unsaturatedRegenRate) { // CraftBukkit - add regen rate manipulation
 +                player.pushHealReason(EntityRegainHealthEvent.RegainReason.SATIATED);
                  player.heal(1.0F);
-+                player.causeFoodExhaustion(6.0F, EntityExhaustionEvent.ExhaustionReason.REGEN); // CraftBukkit - EntityExhaustionEvent
++                player.causeFoodExhaustion(player.level().spigotConfig.regenExhaustion, EntityExhaustionEvent.ExhaustionReason.REGEN); // CraftBukkit - EntityExhaustionEvent // Spigot - Change to use configurable value
 +                fakeaddExhaustion.set(true);
                  this.addExhaustion(6.0F);
                  this.tickTimer = 0;

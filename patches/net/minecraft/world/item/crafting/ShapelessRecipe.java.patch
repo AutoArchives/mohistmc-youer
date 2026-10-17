@@ -44,7 +44,7 @@
 +        recipe.setCategory(CraftRecipe.getCategory(this.category()));
 +
 +        for (Ingredient list : this.ingredients) {
-+            recipe.addIngredient(CraftRecipe.toBukkit(list));
++            recipe.addIngredient(CraftRecipe.toChoice(list));
 +        }
 +        return recipe;
 +    }

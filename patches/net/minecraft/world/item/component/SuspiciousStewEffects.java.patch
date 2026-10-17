@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/item/component/SuspiciousStewEffects.java
 +++ b/net/minecraft/world/item/component/SuspiciousStewEffects.java
-@@ -42,6 +_,15 @@
+@@ -42,6 +_,24 @@
          }
      }
  
@@ -9,6 +9,15 @@
 +    public void cancelUsingItem(net.minecraft.server.level.ServerPlayer serverplayer, ItemStack itemstack) {
 +        for (SuspiciousStewEffects.Entry suspicioussteweffects_a : this.effects) {
 +            serverplayer.connection.send(new net.minecraft.network.protocol.game.ClientboundRemoveMobEffectPacket(serverplayer.getId(), suspicioussteweffects_a.effect()));
++        }
++    }
++    // CraftBukkit end
++
++    // CraftBukkit start
++    @Override
++    public void cancelUsingItem(net.minecraft.server.level.ServerPlayer player, ItemStack stack, List<net.minecraft.network.protocol.Packet<? super net.minecraft.network.protocol.game.ClientGamePacketListener>> collectedPackets) { // Paper - properly resend entities - collect packets for bundle
++        for (SuspiciousStewEffects.Entry entry : this.effects) {
++            collectedPackets.add(new net.minecraft.network.protocol.game.ClientboundRemoveMobEffectPacket(player.getId(), entry.effect())); // Paper - bundlize packets
 +        }
 +    }
 +    // CraftBukkit end

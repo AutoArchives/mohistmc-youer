@@ -8,21 +8,41 @@
  import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
-@@ -56,6 +_,13 @@
+@@ -53,9 +_,22 @@
+     }
+ 
+     public boolean changeGameModeForPlayer(GameType gameModeForPlayer) {
++        org.bukkit.event.player.PlayerGameModeChangeEvent event = this.changeGameModeForPlayer(gameModeForPlayer, org.bukkit.event.player.PlayerGameModeChangeEvent.Cause.UNKNOWN, null); // Paper - Expand PlayerGameModeChangeEvent
++        return event != null && !event.isCancelled();
++    }
++
++    // Paper start - Expand PlayerGameModeChangeEvent
++    public @Nullable PlayerGameModeChangeEvent changeGameModeForPlayer(GameType gameModeForPlayer, PlayerGameModeChangeEvent.Cause cause, @Nullable net.kyori.adventure.text.Component cancelMessage) {
          if (gameModeForPlayer == this.gameModeForPlayer) {
-             return false;
+-            return false;
++            return null;
          } else {
 +            // CraftBukkit start
-+            PlayerGameModeChangeEvent event = new PlayerGameModeChangeEvent(player.getBukkitEntity(), org.bukkit.GameMode.getByValue(gameModeForPlayer.getId()));
++            PlayerGameModeChangeEvent event = new PlayerGameModeChangeEvent(this.player.getBukkitEntity(), org.bukkit.GameMode.getByValue(gameModeForPlayer.getId()), cause, cancelMessage);
 +            org.bukkit.Bukkit.getPluginManager().callEvent(event);
 +            if (event.isCancelled()) {
-+                return false;
++                return event;
 +            }
 +            // CraftBukkit end
              Abilities abilities = this.player.getAbilities();
              this.setGameModeForPlayer(gameModeForPlayer, this.gameModeForPlayer);
              if (abilities.flying && gameModeForPlayer != GameType.SPECTATOR && this.isInRangeOfGround()) {
-@@ -80,7 +_,10 @@
+@@ -72,15 +_,19 @@
+                 this.player.resetCurrentImpulseContext();
+             }
+ 
+-            return true;
++            return event;
+         }
+     }
++    // Paper end - Expand PlayerGameModeChangeEvent
+ 
+     protected void setGameModeForPlayer(GameType gameModeForPlayer, @Nullable GameType previousGameModeForPlayer) {
          this.previousGameModeForPlayer = previousGameModeForPlayer;
          this.gameModeForPlayer = gameModeForPlayer;
          Abilities abilities = this.player.getAbilities();

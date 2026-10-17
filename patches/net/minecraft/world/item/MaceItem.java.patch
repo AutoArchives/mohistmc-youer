@@ -8,7 +8,22 @@
  import org.jspecify.annotations.Nullable;
  
  public class MaceItem extends Item {
-@@ -123,7 +_,14 @@
+@@ -53,7 +_,13 @@
+ 
+     @Override
+     public void hurtEnemy(ItemStack itemStack, LivingEntity mob, LivingEntity attacker) {
+-        if (canSmashAttack(attacker)) {
++        // Paper start - Add EntityAttemptSmashAttackEvent
++        final boolean canSmashAttack = canSmashAttack(attacker);
++        io.papermc.paper.event.entity.EntityAttemptSmashAttackEvent event = new io.papermc.paper.event.entity.EntityAttemptSmashAttackEvent((org.bukkit.entity.LivingEntity) attacker.getBukkitEntity(), (org.bukkit.entity.LivingEntity) mob.getBukkitEntity(), itemStack.asBukkitCopy(), canSmashAttack);
++        event.callEvent();
++        final org.bukkit.event.Event.Result result = event.getResult();
++        if (result == org.bukkit.event.Event.Result.ALLOW || (canSmashAttack && result == org.bukkit.event.Event.Result.DEFAULT)) {
++        // Paper end - Add EntityAttemptSmashAttackEvent
+             ServerLevel level = (ServerLevel)attacker.level();
+             attacker.setDeltaMovement(attacker.getDeltaMovement().with(Direction.Axis.Y, 0.01F));
+             attacker.setIgnoreFallDamageFromCurrentImpulse(true, this.calculateImpactPosition(attacker));
+@@ -123,7 +_,15 @@
              double knockbackPower = getKnockbackPower(attacker, nearby, direction);
              Vec3 knockbackVector = direction.normalize().scale(knockbackPower);
              if (knockbackPower > 0.0) {
@@ -18,7 +33,8 @@
 +                Vec3 result = attacker.getDeltaMovement().add(vec3Push);
 +                org.bukkit.event.entity.EntityKnockbackEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityKnockbackEvent((org.bukkit.craftbukkit.entity.CraftLivingEntity) nearby.getBukkitEntity(), attacker, org.bukkit.event.entity.EntityKnockbackEvent.KnockbackCause.ENTITY_ATTACK, knockbackPower, result, vec3Push.x, vec3Push.y, vec3Push.z);
 +                if (!event.isCancelled()) {
-+                    nearby.push(CraftVector.toNMS(event.getFinalKnockback()));
++                    Vec3 finalKnockback = CraftVector.toNMS(event.getFinalKnockback());
++                    nearby.push(finalKnockback.x, finalKnockback.y, finalKnockback.z, attacker); // Paper - Add EntityKnockbackByEntityEvent and EntityPushedByEntityAttackEvent
 +                }
 +                // CraftBukkit end
                  if (nearby instanceof ServerPlayer otherPlayer) {

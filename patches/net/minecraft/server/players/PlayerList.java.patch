@@ -79,6 +79,15 @@
          this.server = server;
          this.registries = registries;
          this.playerIo = playerIo;
+@@ -140,6 +_,8 @@
+         this.ipBans = new IpBanList(IPBANLIST_FILE, notificationService);
+     }
+ 
++    abstract public void loadAndSaveFiles(); // Paper - fix converting txt to json file; moved from DedicatedPlayerList constructor
++
+     public void placeNewPlayer(Connection connection, ServerPlayer player, CommonListenerCookie cookie) {
+         NameAndId gameProfile = player.nameAndId();
+         UserNameToIdResolver profileCache = this.server.services().nameToIdCache();
 @@ -160,7 +_,7 @@
          LevelData levelData = level.getLevelData();
          ServerGamePacketListenerImpl playerConnection = new ServerGamePacketListenerImpl(this.server, connection, player, cookie);

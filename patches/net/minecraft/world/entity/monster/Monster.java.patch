@@ -1,5 +1,14 @@
 --- a/net/minecraft/world/entity/monster/Monster.java
 +++ b/net/minecraft/world/entity/monster/Monster.java
+@@ -88,7 +_,7 @@
+             return false;
+         } else {
+             DimensionType dimensionType = level.dimensionType();
+-            int blockLightLimit = dimensionType.monsterSpawnBlockLightLimit();
++            int blockLightLimit = level.getLevel().paperConfig().entities.spawning.monsterSpawnMaxLightLevel.or(dimensionType.monsterSpawnBlockLightLimit()); // Paper - Configurable max block light for monster spawning
+             if (blockLightLimit < 15 && level.getBrightness(LightLayer.BLOCK, pos) > blockLightLimit) {
+                 return false;
+             } else {
 @@ -139,11 +_,11 @@
      @Override
      public ItemStack getProjectile(ItemStack heldWeapon) {

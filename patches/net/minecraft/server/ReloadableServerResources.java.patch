@@ -12,14 +12,20 @@
  
      private ReloadableServerResources(
          LayeredRegistryAccess<RegistryLayer> fullLayers,
-@@ -47,6 +_,10 @@
-         this.commands = new Commands(commandSelection, CommandBuildContext.simple(loadingContext, enabledFeatures));
+@@ -44,9 +_,15 @@
+         this.postponedTags = postponedTags;
+         this.newComponents = newComponents;
+         this.recipes = new RecipeManager(loadingContext);
+-        this.commands = new Commands(commandSelection, CommandBuildContext.simple(loadingContext, enabledFeatures));
++        this.commands = new Commands(commandSelection, CommandBuildContext.simple(loadingContext, enabledFeatures)); // Paper - Brigadier Command API
++        io.papermc.paper.command.brigadier.PaperCommands.INSTANCE.setDispatcher(this.commands, CommandBuildContext.simple(loadingContext, enabledFeatures)); // Paper - Brigadier Command API
++        io.papermc.paper.command.PaperCommands.registerCommands(); // Paper
          this.advancements = new ServerAdvancementManager(loadingContext);
          this.functionLibrary = new ServerFunctionLibrary(functionCompilationPermissions, this.commands.getDispatcher());
 +        // Neo: Store registries and create context object
 +        this.registryAccess = fullLayers.compositeAccess();
 +        this.loadingContext = loadingContext;
-+        this.context = new net.neoforged.neoforge.common.conditions.ConditionContext(this.postponedTags, registryAccess, enabledFeatures);
++        this.context = new net.neoforged.neoforge.common.conditions.ConditionContext(this.postponedTags, this.registryAccess, this.loadingContext, enabledFeatures);
      }
  
      public ServerFunctionLibrary getFunctionLibrary() {
@@ -56,7 +62,7 @@
      public static CompletableFuture<ReloadableServerResources> loadResources(
          ResourceManager resourceManager,
          LayeredRegistryAccess<RegistryLayer> contextLayers,
-@@ -99,15 +_,35 @@
+@@ -99,15 +_,43 @@
                                  functionCompilationPermissions,
                                  (List<DataComponentInitializers.PendingComponents<?>>)pendingComponents
                              );
@@ -71,6 +77,14 @@
 +                                }
 +                            }
 +
++                            // Paper start - call commands event for bootstraps
++                            //noinspection ConstantValue
++                            io.papermc.paper.plugin.lifecycle.event.LifecycleEventRunner.INSTANCE.callReloadableRegistrarEvent(
++                                io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents.COMMANDS,
++                                io.papermc.paper.command.brigadier.PaperCommands.INSTANCE,
++                                io.papermc.paper.plugin.bootstrap.BootstrapContext.class,
++                                MinecraftServer.getServer() == null ? io.papermc.paper.plugin.lifecycle.event.registrar.ReloadableRegistrarEvent.Cause.INITIAL : io.papermc.paper.plugin.lifecycle.event.registrar.ReloadableRegistrarEvent.Cause.RELOAD);
++                            // Paper end - call commands event
                              return SimpleReloadInstance.create(
                                      resourceManager,
 -                                    result.listeners(),

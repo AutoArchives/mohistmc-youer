@@ -8,6 +8,14 @@
  import org.jspecify.annotations.Nullable;
  
  public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
+@@ -87,6 +_,7 @@
+             CopperGolem copperGolem = EntityType.COPPER_GOLEM.create(level, EntitySpawnReason.TRIGGERED);
+             if (copperGolem != null) {
+                 spawnGolemInWorld(level, copperGolemMatch, copperGolem, copperGolemMatch.getBlock(0, 0, 0).getPos());
++                if (!copperGolem.valid) return; // Paper - entityspawnevent - entity was not added to the world so prevent world mutation
+                 this.replaceCopperBlockWithChest(level, copperGolemMatch);
+                 copperGolem.spawn(this.getWeatherStateFromPattern(copperGolemMatch));
+             }
 @@ -104,16 +_,22 @@
                  .getAge();
      }

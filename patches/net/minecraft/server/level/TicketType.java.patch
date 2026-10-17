@@ -13,10 +13,13 @@
      public static final long NO_TIMEOUT = 0L;
      public static final int FLAG_PERSIST = 1;
      public static final int FLAG_LOADING = 2;
-@@ -23,6 +_,16 @@
+@@ -23,6 +_,19 @@
      public static final TicketType PORTAL = register("portal", 300L, 15);
      public static final TicketType ENDER_PEARL = register("ender_pearl", 40L, 14);
      public static final TicketType UNKNOWN = register("unknown", 1L, 18);
++    public static final TicketType POST_TELEPORT = register("post_teleport", 5L, FLAG_LOADING | FLAG_SIMULATION); // Paper
++    public static final TicketType FUTURE_AWAIT = register("future_await", 0L, FLAG_LOADING | FLAG_SIMULATION); // Paper
++    public static final TicketType CHUNK_LOAD = register("chunk_load", 0L, FLAG_LOADING); // Paper - moonrise
 +    // CraftBukkit start
 +    public static long pluginTimeout = 0L;
 +    public static final TicketType PLUGIN = register("plugin", 0L, 14);

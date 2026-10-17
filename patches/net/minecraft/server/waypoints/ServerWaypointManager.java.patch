@@ -1,0 +1,71 @@
+--- a/net/minecraft/server/waypoints/ServerWaypointManager.java
++++ b/net/minecraft/server/waypoints/ServerWaypointManager.java
+@@ -19,16 +_,25 @@
+     private final Set<WaypointTransmitter> waypoints = new HashSet<>();
+     private final Set<ServerPlayer> players = new HashSet<>();
+     private final Table<ServerPlayer, WaypointTransmitter, WaypointTransmitter.Connection> connections = HashBasedTable.create();
++    // Paper start - optimize ServerWaypointManager with locator bar disabled
++    public boolean locatorBarEnabled; // Avoid a gamerule lookup for each player
++
++    public ServerWaypointManager(net.minecraft.server.level.ServerLevel serverLevel) {
++        this.locatorBarEnabled = serverLevel.getGameRules().get(GameRules.LOCATOR_BAR);
++    }
++    // Paper end - optimize ServerWaypointManager with locator bar disabled
+ 
+     public void trackWaypoint(WaypointTransmitter waypoint) {
+         this.waypoints.add(waypoint);
+ 
++        if (!this.locatorBarEnabled) return; // Paper - optimize ServerWaypointManager with locator bar disabled
+         for (ServerPlayer player : this.players) {
+             this.createConnection(player, waypoint);
+         }
+     }
+ 
+     public void updateWaypoint(WaypointTransmitter waypoint) {
++        if (!this.locatorBarEnabled) return; // Paper - optimize ServerWaypointManager with locator bar disabled
+         if (this.waypoints.contains(waypoint)) {
+             Map<ServerPlayer, WaypointTransmitter.Connection> playerConnection = Tables.transpose(this.connections).row(waypoint);
+             SetView<ServerPlayer> potentialPlayers = Sets.difference(this.players, playerConnection.keySet());
+@@ -52,9 +_,11 @@
+     public void addPlayer(ServerPlayer player) {
+         this.players.add(player);
+ 
++        if (this.locatorBarEnabled) { // Paper - optimize ServerWaypointManager with locator bar disabled
+         for (WaypointTransmitter waypoint : this.waypoints) {
+             this.createConnection(player, waypoint);
+         }
++        } // Paper - optimize ServerWaypointManager with locator bar disabled
+ 
+         if (player.isTransmittingWaypoint()) {
+             this.trackWaypoint((WaypointTransmitter)player);
+@@ -62,6 +_,7 @@
+     }
+ 
+     public void updatePlayer(ServerPlayer player) {
++        if (!this.locatorBarEnabled) return; // Paper - optimize ServerWaypointManager with locator bar disabled
+         Map<WaypointTransmitter, WaypointTransmitter.Connection> waypointConnections = this.connections.row(player);
+         SetView<WaypointTransmitter> potentialWaypoints = Sets.difference(this.waypoints, waypointConnections.keySet());
+ 
+@@ -89,6 +_,7 @@
+     }
+ 
+     public void remakeConnections(WaypointTransmitter waypoint) {
++        if (!this.locatorBarEnabled) return; // Paper - optimize ServerWaypointManager with locator bar disabled
+         for (ServerPlayer player : this.players) {
+             this.createConnection(player, waypoint);
+         }
+@@ -98,9 +_,12 @@
+         return this.waypoints;
+     }
+ 
+-    private static boolean isLocatorBarEnabledFor(ServerPlayer player) {
+-        return player.level().getGameRules().get(GameRules.LOCATOR_BAR);
++    // Paper start - optimize ServerWaypointManager with locator bar disabled
++    // Avoid a gamerule lookup for each player
++    private boolean isLocatorBarEnabledFor(ServerPlayer player) {
++        return this.locatorBarEnabled;
+     }
++    // Paper end - optimize ServerWaypointManager with locator bar disabled
+ 
+     private void createConnection(ServerPlayer player, WaypointTransmitter waypoint) {
+         if (player != waypoint) {

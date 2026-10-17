@@ -63,6 +63,15 @@
          return this.jukeboxPos == null
              || !this.jukeboxPos.closerToCenterThan(this.position(), GameEvent.JUKEBOX_PLAY.value().notificationRadius())
              || !this.level().getBlockState(this.jukeboxPos).is(Blocks.JUKEBOX);
+@@ -432,7 +_,7 @@
+         super.readAdditionalSaveData(input);
+         this.readInventoryFromTag(input);
+         this.vibrationData = input.read("listener", VibrationSystem.Data.CODEC).orElseGet(VibrationSystem.Data::new);
+-        this.setDuplicationCooldown(input.getIntOr("DuplicationCooldown", 0));
++        this.setDuplicationCooldown(input.getLongOr("DuplicationCooldown", 0)); // Paper - Load as long
+     }
+ 
+     @Override
 @@ -458,8 +_,17 @@
              allay.setPersistenceRequired();
              allay.resetDuplicationCooldown();

@@ -32,10 +32,11 @@
  import org.jspecify.annotations.Nullable;
  
  public abstract class Mob extends LivingEntity implements Targeting, EquipmentUser, Leashable {
-@@ -139,6 +_,13 @@
+@@ -139,6 +_,14 @@
      private Leashable.@Nullable LeashData leashData;
      private BlockPos homePosition = BlockPos.ZERO;
      private int homeRadius = -1;
++    public net.kyori.adventure.util.TriState despawnInPeacefulOverride = net.kyori.adventure.util.TriState.NOT_SET; // Paper - allow changing despawnInPeaceful
 +    @Nullable
 +    private EntitySpawnReason spawnType;
 +    private boolean spawnCancelled = false;
@@ -46,7 +47,7 @@
  
      protected Mob(EntityType<? extends Mob> type, Level level) {
          super(type, level);
-@@ -243,9 +_,35 @@
+@@ -243,9 +_,39 @@
          return this.asValidTarget(this.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null));
      }
  
@@ -80,6 +81,10 @@
 +    public boolean setTarget(@Nullable LivingEntity target, org.bukkit.event.entity.EntityTargetEvent.TargetReason reason, boolean fireEvent) {
 +        return setTargetCB(target, reason, fireEvent);
 +    }
++
++    public boolean setTarget(@Nullable LivingEntity target, org.bukkit.event.entity.EntityTargetEvent.TargetReason reason) {
++        return this.setTargetCB(target, reason, true);
++    }
 +    // CraftBukkit end
  
      @Override
@@ -110,11 +115,16 @@
      @Override
      protected void addAdditionalSaveData(ValueOutput output) {
          super.addAdditionalSaveData(output);
-@@ -383,13 +_,26 @@
+@@ -383,13 +_,31 @@
          if (this.isNoAi()) {
              output.putBoolean("NoAI", this.isNoAi());
          }
 +        output.putBoolean("Bukkit.Aware", this.aware); // CraftBukkit
++        // Paper start - allow changing despawnInPeaceful
++        if (this.despawnInPeacefulOverride != net.kyori.adventure.util.TriState.NOT_SET) {
++            output.putString("Paper.DespawnInPeacefulOverride", this.despawnInPeacefulOverride.name());
++        }
++        // Paper end - allow changing despawnInPeaceful
 +        if (this.spawnType != null) {
 +            output.putString("neoforge:spawn_type", this.spawnType.name());
 +        }
@@ -139,13 +149,16 @@
          this.dropChances = input.read("drop_chances", DropChances.CODEC).orElse(DropChances.DEFAULT);
          this.readLeashData(input);
          this.homeRadius = input.getIntOr("home_radius", -1);
-@@ -401,6 +_,17 @@
+@@ -401,6 +_,24 @@
          this.lootTable = input.read("DeathLootTable", LootTable.KEY_CODEC);
          this.lootTableSeed = input.getLongOr("DeathLootTableSeed", 0L);
          this.setNoAi(input.getBooleanOr("NoAI", false));
 +        // CraftBukkit start
 +        this.aware = input.getBooleanOr("Bukkit.Aware", this.aware);
 +        // CraftBukkit end
++        // Paper start - allow changing despawnInPeaceful
++        this.despawnInPeacefulOverride = readDespawnInPeacefulOverride(input);
++        // Paper end - allow changing despawnInPeaceful
 +
 +        input.getString("neoforge:spawn_type")
 +                .ifPresent(spawnType -> {
@@ -154,6 +167,10 @@
 +                    } catch (Exception ignored) {
 +                    }
 +                });
++    }
++
++    public static net.kyori.adventure.util.TriState readDespawnInPeacefulOverride(ValueInput input) { // Paper - allow changing despawnInPeaceful
++        return input.read("Paper.DespawnInPeacefulOverride", io.papermc.paper.util.PaperCodecs.TRI_STATE_CODEC).orElse(net.kyori.adventure.util.TriState.NOT_SET);
      }
  
      @Override
@@ -222,13 +239,22 @@
          return attributeModifiers.compute(attribute, baseValue, slot);
      }
  
-@@ -653,8 +_,9 @@
+@@ -651,10 +_,17 @@
+         return this.isPassenger() || this.isLeashed();
+     }
  
++    // Paper start - allow changing despawnInPeaceful
++    public final boolean shouldDespawnInPeaceful() {
++        return this.despawnInPeacefulOverride.toBooleanOrElse(!this.getType().isTypeAllowedInPeaceful());
++    }
++    // Paper end - allow changing despawnInPeaceful
++
      @Override
      public void checkDespawn() {
-+        if (net.neoforged.neoforge.event.EventHooks.checkMobDespawn(this)) return;
-         if (this.level().getDifficulty() == Difficulty.PEACEFUL && !this.getType().isAllowedInPeaceful()) {
+-        if (this.level().getDifficulty() == Difficulty.PEACEFUL && !this.getType().isAllowedInPeaceful()) {
 -            this.discard();
++        if (net.neoforged.neoforge.event.EventHooks.checkMobDespawn(this)) return;
++        if (this.level().getDifficulty() == Difficulty.PEACEFUL && this.shouldDespawnInPeaceful()) { // Paper - allow changing despawnInPeaceful
 +            this.discard(EntityRemoveEvent.Cause.DESPAWN); // CraftBukkit - add Bukkit remove cause
          } else if (!this.isPersistenceRequired() && !this.requiresCustomPersistence()) {
              Entity player = this.level().getNearestPlayer(this, -1.0);
@@ -309,6 +335,16 @@
          };
      }
  
+@@ -872,7 +_,8 @@
+             if (dropChance != 0.0F) {
+                 boolean preserve = this.dropChances.isPreserved(slot);
+                 if (source.getEntity() instanceof LivingEntity livingSource && this.level() instanceof ServerLevel serverLevel) {
+-                    dropChance = EnchantmentHelper.processEquipmentDropChance(serverLevel, livingSource, source, dropChance);
++                    // Neo: pass in slot context for GetEquipmentDropChanceEvent
++                    dropChance = EnchantmentHelper.processEquipmentDropChance(serverLevel, livingSource, source, dropChance, slot);
+                 }
+ 
+                 if (!itemStack.isEmpty()
 @@ -1054,6 +_,11 @@
          }
      }
@@ -370,7 +406,7 @@
                  }
  
                  return newMob;
-@@ -1226,7 +_,13 @@
+@@ -1226,7 +_,59 @@
      }
  
      public <T extends Mob> @Nullable T convertTo(EntityType<T> entityType, ConversionParams params, ConversionParams.AfterConversion<T> afterConversion) {
@@ -382,6 +418,52 @@
 +    public <T extends Mob> @Nullable T convertTo(EntityType<T> entityType, ConversionParams params, ConversionParams.AfterConversion<T> afterConversion, EntityTransformEvent.TransformReason transformReason, CreatureSpawnEvent.SpawnReason spawnReason) {
 +        return (T) this.convertTo(entityType, params, EntitySpawnReason.CONVERSION, afterConversion, transformReason, spawnReason);
 +        // CraftBukkit end
++    }
++
++    // Paper start - entity zap event - allow cancellation of conversion post creation
++    @Nullable
++    public <T extends Mob> T convertTo(
++        EntityType<T> entityType, ConversionParams params, EntitySpawnReason spawnReason, ConversionParams.CancellingAfterConversion<T> afterConversion, EntityTransformEvent.@Nullable TransformReason transformReason, CreatureSpawnEvent.@Nullable SpawnReason creatureSpawnReason
++    ) {
++        // Paper end - entity zap event - allow cancellation of conversion post creation
++        if (this.isRemoved()) {
++            return null;
++        } else {
++            T newMob = (T)entityType.create(this.level(), spawnReason);
++            if (newMob == null) {
++                return null;
++            } else {
++                params.type().convert(this, newMob, params);
++                if (!afterConversion.finalizeConversionOrCancel(newMob)) return null; // Paper - entity zap event - return null if conversion was cancelled
++                // CraftBukkit start
++                if (transformReason == null) {
++                    // Special handling for slime split and pig lightning
++                    return newMob;
++                }
++
++                if (CraftEventFactory.callEntityTransformEvent(this, newMob, transformReason).isCancelled()) {
++                    return null;
++                }
++
++                params.type().postConvert(this, newMob, params);
++                // CraftBukkit end
++                if (!preventConversionSpawns)
++                if (this.level() instanceof ServerLevel serverLevel) {
++                    serverLevel.addFreshEntity(newMob, creatureSpawnReason); // CraftBukkit
++                }
++
++                if (params.type().shouldDiscardAfterConversion()) {
++                    this.discard(EntityRemoveEvent.Cause.TRANSFORMATION); // CraftBukkit - add Bukkit remove cause
++                }
++
++                return newMob;
++            }
++        }
++    }
++
++    public <T extends Mob> @Nullable T convertTo(EntityType<T> entityType, ConversionParams params, ConversionParams.CancellingAfterConversion<T> afterConversion, EntityTransformEvent.@Nullable TransformReason transformReason, CreatureSpawnEvent.@Nullable SpawnReason creatureSpawnReason) {
++        return this.convertTo(entityType, params, EntitySpawnReason.CONVERSION, afterConversion, transformReason, creatureSpawnReason);
++        // Paper end - entity zap event - allow cancellation of conversion post creation
      }
  
      @Override

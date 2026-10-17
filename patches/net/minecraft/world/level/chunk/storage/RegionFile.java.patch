@@ -29,3 +29,11 @@
              int sectorsLength = numSectors * 4096;
              ByteBuffer buffer = ByteBuffer.allocate(sectorsLength);
              this.file.read(buffer, sectorNumber * 4096);
+@@ -258,6 +_,7 @@
+                     return true;
+                 }
+             } catch (IOException var9) {
++                com.destroystokyo.paper.exception.ServerInternalException.reportInternalException(var9); // Paper - ServerExceptionEvent
+                 return false;
+             }
+         }

@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/inventory/PlayerEnderChestContainer.java
 +++ b/net/minecraft/world/inventory/PlayerEnderChestContainer.java
-@@ -8,10 +_,39 @@
+@@ -8,10 +_,40 @@
  import net.minecraft.world.level.block.entity.EnderChestBlockEntity;
  import net.minecraft.world.level.storage.ValueInput;
  import net.minecraft.world.level.storage.ValueOutput;
@@ -14,7 +14,8 @@
 +    // CraftBukkit start
 +    private Player owner;
 +
-+    public InventoryHolder getBukkitOwner() {
++    @Override
++    public InventoryHolder getOwner() {
 +        return owner.getBukkitEntity();
 +    }
 +

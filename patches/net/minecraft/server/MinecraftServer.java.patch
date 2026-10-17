@@ -438,7 +438,7 @@
 +            WorldLoader.DataLoadContext dataloadcontext = this.worldLoader;
 +            Registry<LevelStem> registry = dataloadcontext.datapackDimensions().lookupOrThrow(Registries.LEVEL_STEM);
 +            if (dynamic != null) {
-+                LevelDataAndDimensions leveldataanddimensions = LevelStorageSource.getLevelDataAndDimensions(worldSession, dynamic, dataloadcontext.dataConfiguration(), registry, dataloadcontext.datapackWorldgen());
++                LevelDataAndDimensions leveldataanddimensions = LevelStorageSource.getLevelDataAndDimensions(worldSession, dynamic, dataloadcontext.dataConfiguration(), registry, dataloadcontext.datapackWorldgen(), Level.OVERWORLD); // Paper - pass dimension
 +
 +                dataAndSettings = leveldataanddimensions.worldDataAndGenSettings();
 +            } else {
@@ -1019,6 +1019,23 @@
          systemReport.setDetail("Suppressed Exceptions", this.suppressedExceptions::dump);
          if (this.serverId != null) {
              systemReport.setDetail("Server Id", () -> this.serverId);
+@@ -1307,6 +_,16 @@
+         }
+     }
+ 
++    // Paper start - per level difficulty
++    public void setDifficulty(ServerLevel level, Difficulty difficulty, org.jspecify.annotations.@Nullable net.minecraft.commands.CommandSourceStack source, boolean ignoreLock) {
++        if (ignoreLock || !level.serverLevelData.isDifficultyLocked()) {
++            level.serverLevelData.setDifficulty(level.serverLevelData.isHardcore() ? Difficulty.HARD : difficulty);
++            level.setSpawnSettings(level.isSpawningMonsters());
++            new io.papermc.paper.event.world.WorldDifficultyChangeEvent(level.getWorld(), source, org.bukkit.craftbukkit.util.CraftDifficulty.toBukkit(difficulty)).callEvent();
++        }
++    }
++    // Paper end - per level difficulty
++
+     public int getScaledTrackingDistance(int baseRange) {
+         return baseRange;
+     }
 @@ -1417,7 +_,7 @@
      }
  
@@ -1028,9 +1045,20 @@
      }
  
      public boolean isReady() {
-@@ -1517,9 +_,9 @@
+@@ -1515,11 +_,20 @@
+         return this.functionManager;
+     }
  
++    // Paper start - Add ServerResourcesReloadedEvent
++    @Deprecated @io.papermc.paper.annotation.DoNotUse
      public CompletableFuture<Void> reloadResources(Collection<String> packsToEnable) {
++        return this.reloadResources(packsToEnable, io.papermc.paper.event.server.ServerResourcesReloadedEvent.Cause.PLUGIN);
++    }
++
++    public CompletableFuture<Void> reloadResources(
++        final Collection<String> packsToEnable, final io.papermc.paper.event.server.ServerResourcesReloadedEvent.Cause cause
++    ) {
++        // Paper end - Add ServerResourcesReloadedEvent
          CompletableFuture<Void> result = CompletableFuture.<ImmutableList>supplyAsync(
 -                () -> packsToEnable.stream()
 -                    .map(this.packRepository::getPack)
@@ -1041,13 +1069,14 @@
                      .map(Pack::open)
                      .collect(ImmutableList.toImmutableList()),
                  this
-@@ -1558,7 +_,8 @@
+@@ -1558,7 +_,9 @@
                  this.getPlayerList().reloadResources();
                  this.functionManager.replaceLibrary(this.resources.managers.getFunctionLibrary());
                  this.structureTemplateManager.onResourceManagerReload(this.resources.resourceManager);
 -                this.fuelValues = FuelValues.vanillaBurnTimes(this.registries.compositeAccess(), this.worldData.enabledFeatures());
 +                this.fuelValues = net.neoforged.neoforge.common.DataMapHooks.populateFuelValues(this.registries.compositeAccess(), this.worldData.enabledFeatures());
 +                this.getPlayerList().getPlayers().forEach(this.getPlayerList()::sendPlayerPermissionLevel); //Forge: Fix newly added/modified commands not being sent to the client when commands reload.
++                new io.papermc.paper.event.server.ServerResourcesReloadedEvent(cause).callEvent(); // Paper - Add ServerResourcesReloadedEvent; fire after everything has been reloaded
              }, this);
          if (this.isSameThread()) {
              this.managedBlock(result::isDone);
@@ -1121,9 +1150,21 @@
      }
  
      public void setWeatherParameters(int clearTime, int rainTime, boolean raining, boolean thundering) {
-@@ -1791,7 +_,7 @@
+@@ -1790,8 +_,19 @@
+         weatherData.setThundering(thundering);
      }
  
++    // Paper start - per-level WeatherData
++    public void setWeatherParameters(final ServerLevel level, final int clearTime, final int rainTime, final boolean raining, final boolean thundering) {
++        WeatherData weatherData = level.getWeatherData();
++        // Paper end - per-level WeatherData
++        weatherData.setClearWeatherTime(clearTime);
++        weatherData.setRainTime(rainTime);
++        weatherData.setThunderTime(rainTime);
++        weatherData.setRaining(raining);
++        weatherData.setThundering(thundering);
++    }
++
      public WeatherData getWeatherData() {
 -        return this.weatherData;
 +        return this.overworld().getWeatherData(); // CraftBukkit
@@ -1196,7 +1237,7 @@
      public RegistryAccess.Frozen registryAccess() {
          return this.registries.compositeAccess();
      }
-@@ -2072,6 +_,11 @@
+@@ -2072,14 +_,30 @@
          }
      }
  
@@ -1205,10 +1246,14 @@
 +            new com.google.common.util.concurrent.ThreadFactoryBuilder().setDaemon(true).setNameFormat("Async Chat Thread - #%d").build());
 +    // CraftBukkit end
 +
++    public final ChatDecorator improvedChatDecorator = new io.papermc.paper.adventure.ImprovedChatDecorator(this); // Paper - adventure
++
      public ChatDecorator getChatDecorator() {
-         return ChatDecorator.PLAIN;
+-        return ChatDecorator.PLAIN;
++        return this.improvedChatDecorator; // Paper - support async chat decoration events
      }
-@@ -2080,6 +_,15 @@
+ 
+     public boolean logIPs() {
          return true;
      }
  
@@ -1240,7 +1285,7 @@
                  player.connection.send(new ClientboundEntityEventPacket(player, event));
              }
          } else if (rule == GameRules.LIMITED_CRAFTING || rule == GameRules.IMMEDIATE_RESPAWN) {
-@@ -2124,21 +_,23 @@
+@@ -2124,21 +_,24 @@
                  ? ClientboundGameEventPacket.LIMITED_CRAFTING
                  : ClientboundGameEventPacket.IMMEDIATE_RESPAWN;
              ClientboundGameEventPacket packet = new ClientboundGameEventPacket(eventType, (Boolean)value ? 1.0F : 0.0F);
@@ -1256,6 +1301,7 @@
 -                }
 -            });
 +            ServerWaypointManager serverwaypointmanager = serverlevel.getWaypointManager();
++            serverwaypointmanager.locatorBarEnabled = (Boolean) value; // Paper - optimize ServerWaypointManager with locator bar disabled
 +
 +            if ((Boolean) value) {
 +                serverlevel.players().forEach(serverwaypointmanager::updatePlayer);

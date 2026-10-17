@@ -8,13 +8,21 @@
                  serverLevel.getBlockEntity(pos, BlockEntityType.SCULK_SHRIEKER).ifPresent(shrieker -> shrieker.tryShriek(serverLevel, player));
              }
          }
-@@ -126,9 +_,14 @@
+@@ -126,9 +_,24 @@
      @Override
      protected void spawnAfterBreak(BlockState state, ServerLevel level, BlockPos pos, ItemStack tool, boolean dropExperience) {
          super.spawnAfterBreak(state, level, pos, tool, dropExperience);
--        if (dropExperience) {
++        // CraftBukkit start - Delegate to getExpDrop
++    }
++
++    @Override
++    public int getExpDrop(BlockState state, ServerLevel level, BlockPos pos, ItemStack tool, boolean dropExperience) {
+         if (dropExperience) {
 -            this.tryDropExperience(level, pos, tool, ConstantInt.of(5));
--        }
++            return this.tryDropExperience(level, pos, tool, ConstantInt.of(5));
+         }
++        return 0;
++        // CraftBukkit end
 +    }
 +
 +    // Neo: Patch-in override for getExpDrop. Original vanilla logic passes ConstantInt.of(5) to tryDropExperience.

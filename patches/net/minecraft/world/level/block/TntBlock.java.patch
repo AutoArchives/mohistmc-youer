@@ -74,7 +74,7 @@
              if (projectile.isOnFire()
                  && projectile.mayInteract(serverLevel, pos)
 -                && prime(level, pos, owner instanceof LivingEntity ? (LivingEntity)owner : null)) {
-+                && org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(projectile, pos, Blocks.AIR.defaultBlockState())
++                && org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(projectile, pos, state.getFluidState().createLegacyBlock()) // Paper - fix wrong block state
 +                && CraftEventFactory.callTNTPrimeEvent(level, pos, PrimeCause.PROJECTILE, projectile, null) // CraftBukkit - TNTPrimeEvent
 +                && onCaughtFire(state, level, pos, null, owner instanceof LivingEntity ? (LivingEntity)owner : null)) {
                  level.removeBlock(pos, false);

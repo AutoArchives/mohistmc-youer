@@ -49,6 +49,35 @@
      }
  
      public void setUnsavedListener(LevelChunk.UnsavedListener unsavedListener) {
+@@ -205,8 +_,28 @@
+             : super.getListenerRegistry(section);
+     }
+ 
++    // Paper start - Perf: Reduce instructions and provide final method
++    @Override
++    public BlockState getBlockState(final int x, final int y, final int z) {
++        return this.getBlockStateFinal(x, y, z);
++    }
++
++    public BlockState getBlockStateFinal(final int x, final int y, final int z) {
++        // Copied and modified from below
++        final int sectionIndex = this.getSectionIndex(y);
++        if (sectionIndex < 0 || sectionIndex >= this.sections.length
++            || this.sections[sectionIndex].nonEmptyBlockCount == 0) {
++            return Blocks.AIR.defaultBlockState();
++        }
++        return this.sections[sectionIndex].states.get((y & 15) << 8 | (z & 15) << 4 | x & 15);
++    }
++
+     @Override
+     public BlockState getBlockState(BlockPos pos) {
++        if (true) {
++            return this.getBlockStateFinal(pos.getX(), pos.getY(), pos.getZ());
++        }
++        // Paper end - Perf: Reduce instructions and provide final method
+         int x = pos.getX();
+         int y = pos.getY();
+         int z = pos.getZ();
 @@ -291,7 +_,7 @@
                      this.level.getChunkSource().onSectionEmptinessChanged(this.chunkPos.x(), SectionPos.blockToSectionCoord(y), this.chunkPos.z(), isEmpty);
                  }
@@ -127,13 +156,17 @@
              }
          }
  
-@@ -516,6 +_,57 @@
+@@ -516,6 +_,61 @@
          }
      }
  
 +    // CraftBukkit start
 +    public void loadCallback() {
++        // Paper start
++        this.loadedTicketLevel = true;
++        // Paper end
 +        org.bukkit.Server server = this.level.getCraftServer();
++        this.level.getChunkSource().addLoadedChunk(this); // Paper
 +        if (server != null) {
 +            /*
 +             * If it's a new world, the first few chunks are generated inside
