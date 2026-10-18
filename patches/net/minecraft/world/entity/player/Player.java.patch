@@ -34,10 +34,12 @@
      public final InventoryMenu inventoryMenu;
      public AbstractContainerMenu containerMenu;
      protected FoodData foodData = new FoodData();
-@@ -171,11 +_,26 @@
+@@ -171,11 +_,28 @@
      private Optional<GlobalPos> lastDeathLocation = Optional.empty();
      public @Nullable FishingHook fishing;
      public float hurtDir;
++    public boolean affectsSpawning = true; // Paper - Affects Spawning API
++    public net.kyori.adventure.util.TriState flyingFallDamage = net.kyori.adventure.util.TriState.NOT_SET; // Paper - flying fall damage
 +    private final java.util.Collection<MutableComponent> prefixes = new java.util.LinkedList<>();
 +    private final java.util.Collection<MutableComponent> suffixes = new java.util.LinkedList<>();
 +    @Nullable
@@ -131,6 +133,24 @@
          if (this.canPlayerFitWithinBlocksAndEntitiesWhen(Pose.SWIMMING)) {
              Pose desiredPose = this.getDesiredPose();
              Pose actualPose;
+@@ -418,6 +_,17 @@
+         }
+     }
+ 
++    // Paper start - Inventory close reason
++    public void closeContainer(org.bukkit.event.inventory.InventoryCloseEvent.Reason reason) {
++        this.closeContainer();
++    }
++    // Paper end - Inventory close reason
++    // Paper start - special close for unloaded inventory
++    public void closeUnloadedInventory(org.bukkit.event.inventory.InventoryCloseEvent.Reason reason) {
++        this.containerMenu = this.inventoryMenu;
++    }
++    // Paper end - special close for unloaded inventory
++
+     public void closeContainer() {
+         this.containerMenu = this.inventoryMenu;
+     }
 @@ -429,8 +_,14 @@
      public void rideTick() {
          if (!this.level().isClientSide() && this.wantsToStopRiding() && this.isPassenger()) {
@@ -339,6 +359,27 @@
                              this.setItemInHand(hand, ItemStack.EMPTY);
                          }
  
+@@ -847,15 +_,16 @@
+         }
+     }
+ 
+-    @Override
+-    public void removeVehicle() {
+-        super.removeVehicle();
++    // Paper start - Force entity dismount during teleportation
++    public void removeVehicle(boolean suppressCancellation) {
++        super.removeVehicle(suppressCancellation);
++        // Paper end - Force entity dismount during teleportation
+         this.boardingCooldown = 0;
+     }
+ 
+     @Override
+     protected boolean isImmobile() {
+-        return super.isImmobile() || this.isSleeping();
++        return super.isImmobile() || this.isSleeping() || this.isRemoved(); // Paper - players who are dead or not in a world shouldn't move...
+     }
+ 
+     @Override
 @@ -864,6 +_,7 @@
      }
  
@@ -406,7 +447,7 @@
                          }
  
                          this.attackVisualEffects(entity, criticalAttack, sweepAttack, fullStrengthAttack, false, magicBoost);
-@@ -986,6 +_,8 @@
+@@ -986,11 +_,13 @@
  
                  this.postPiercingAttack();
              }
@@ -415,6 +456,12 @@
          }
      }
  
+     private void playServerSideSound(SoundEvent sound) {
+-        this.level().playSound(null, this.getX(), this.getY(), this.getZ(), sound, this.getSoundSource(), 1.0F, 1.0F);
++        Player.sendSoundEffect(this, this.getX(), this.getY(), this.getZ(), sound, this.getSoundSource(), 1.0F, 1.0F); // Paper - send while respecting visibility
+     }
+ 
+     private DamageSource createAttackSource(ItemStack attackingItemStack) {
 @@ -1028,7 +_,8 @@
              double approximateSpeedSq = this.getKnownMovement().horizontalDistanceSqr();
              double maxSpeedForSweepAttack = this.getSpeed() * 2.5;
@@ -523,7 +570,7 @@
      @Override
      public boolean causeFallDamage(double fallDistance, float damageModifier, DamageSource damageSource) {
 -        if (this.abilities.mayfly) {
-+        if (this.mayFly()) {
++        if (this.mayFly() && !this.flyingFallDamage.toBooleanOrElse(false)) {
 +            net.neoforged.neoforge.event.EventHooks.onPlayerFall(this, damageModifier, damageModifier);
              return false;
          } else {
@@ -592,7 +639,28 @@
          this.experienceLevel = IntMath.saturatedAdd(this.experienceLevel, amount);
          if (this.experienceLevel < 0) {
              this.experienceLevel = 0;
-@@ -1541,13 +_,31 @@
+@@ -1525,7 +_,7 @@
+ 
+         if (amount > 0 && this.experienceLevel % 5 == 0 && this.lastLevelUpTime < this.tickCount - 100.0F) {
+             float vol = this.experienceLevel > 30 ? 1.0F : this.experienceLevel / 30.0F;
+-            this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_LEVELUP, this.getSoundSource(), vol * 0.75F, 1.0F);
++            Player.sendSoundEffect(this, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_LEVELUP, this.getSoundSource(), vol * 0.75F, 1.0F); // Paper - send while respecting visibility
+             this.lastLevelUpTime = this.tickCount;
+         }
+     }
+@@ -1538,16 +_,43 @@
+         }
+     }
+ 
++    // Paper start - send while respecting visibility
++    private static void sendSoundEffect(Player fromEntity, double x, double y, double z, SoundEvent soundEffect, SoundSource soundCategory, float volume, float pitch) {
++        fromEntity.level().playSound(fromEntity, x, y, z, soundEffect, soundCategory, volume, pitch); // This will not send the effect to the entity itself
++        if (fromEntity instanceof ServerPlayer serverPlayer) {
++            serverPlayer.connection.send(new net.minecraft.network.protocol.game.ClientboundSoundPacket(net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder(soundEffect), soundCategory, x, y, z, volume, pitch, fromEntity.random.nextLong()));
++        }
++    }
++    // Paper end - send while respecting visibility
++
      public void causeFoodExhaustion(float amount) {
          if (!this.abilities.invulnerable) {
              if (!this.level().isClientSide()) {
@@ -675,7 +743,7 @@
      }
  
      @Override
-@@ -2015,10 +_,52 @@
+@@ -2015,10 +_,53 @@
          return ResolvableProfile.createResolved(this.gameProfile);
      }
  
@@ -694,6 +762,7 @@
 +        public static final Player.BedSleepingProblem OBSTRUCTED = new Player.BedSleepingProblem(Component.translatable("block.minecraft.bed.obstructed"), PlayerBedEnterEvent.BedEnterResult.OTHER_PROBLEM);
 +        public static final Player.BedSleepingProblem OTHER_PROBLEM = new Player.BedSleepingProblem((Component) null, PlayerBedEnterEvent.BedEnterResult.OTHER_PROBLEM);
 +        public static final Player.BedSleepingProblem NOT_SAFE = new Player.BedSleepingProblem(Component.translatable("block.minecraft.bed.not_safe"), PlayerBedEnterEvent.BedEnterResult.NOT_SAFE);
++        public static final Player.BedSleepingProblem EXPLOSION = new Player.BedSleepingProblem((Component) null); // Paper - Added to properly handle explosions in bed events
 +        // CraftBukkit end
 +    }
 +

@@ -8,9 +8,11 @@
  import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
-@@ -53,9 +_,22 @@
+@@ -52,10 +_,24 @@
+         this.level = player.level();
      }
  
++    @Deprecated @io.papermc.paper.annotation.DoNotUse // Paper
      public boolean changeGameModeForPlayer(GameType gameModeForPlayer) {
 +        org.bukkit.event.player.PlayerGameModeChangeEvent event = this.changeGameModeForPlayer(gameModeForPlayer, org.bukkit.event.player.PlayerGameModeChangeEvent.Cause.UNKNOWN, null); // Paper - Expand PlayerGameModeChangeEvent
 +        return event != null && !event.isCancelled();
@@ -32,7 +34,14 @@
              Abilities abilities = this.player.getAbilities();
              this.setGameModeForPlayer(gameModeForPlayer, this.gameModeForPlayer);
              if (abilities.flying && gameModeForPlayer != GameType.SPECTATOR && this.isInRangeOfGround()) {
-@@ -72,15 +_,19 @@
+@@ -66,21 +_,25 @@
+             this.level
+                 .getServer()
+                 .getPlayerList()
+-                .broadcastAll(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_GAME_MODE, this.player));
++                .broadcastAll(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_GAME_MODE, this.player), this.player); // CraftBukkit
+             this.level.updateSleepingPlayerList();
+             if (gameModeForPlayer == GameType.CREATIVE) {
                  this.player.resetCurrentImpulseContext();
              }
  
@@ -53,16 +62,36 @@
      }
  
      private boolean isInRangeOfGround() {
-@@ -105,7 +_,7 @@
+@@ -105,10 +_,10 @@
      }
  
      public void tick() {
 -        this.gameTicks++;
 +        this.gameTicks = net.minecraft.server.MinecraftServer.currentTick; // CraftBukkit
          if (this.hasDelayedDestroy) {
-             BlockState blockState = this.level.getBlockState(this.delayedDestroyPos);
+-            BlockState blockState = this.level.getBlockState(this.delayedDestroyPos);
+-            if (blockState.isAir()) {
++            BlockState blockState = this.level.getBlockStateIfLoaded(this.delayedDestroyPos); // Paper - Don't allow digging into unloaded chunks
++            if (blockState == null || blockState.isAir()) { // Paper - Don't allow digging into unloaded chunks
+                 this.hasDelayedDestroy = false;
+             } else {
+                 float destroyProgress = this.incrementDestroyProgress(blockState, this.delayedDestroyPos, this.delayedTickStart);
+@@ -118,7 +_,13 @@
+                 }
+             }
+         } else if (this.isDestroyingBlock) {
+-            BlockState blockState = this.level.getBlockState(this.destroyPos);
++            // Paper start - Don't allow digging into unloaded chunks; don't want to do same logic as above, return instead
++            BlockState blockState = this.level.getBlockStateIfLoaded(this.destroyPos);
++            if (blockState == null) {
++                this.isDestroyingBlock = false;
++                return;
++            }
++            // Paper end - Don't allow digging into unloaded chunks
              if (blockState.isAir()) {
-@@ -148,6 +_,10 @@
+                 this.level.destroyBlockProgress(this.player.getId(), this.destroyPos, -1);
+                 this.lastSentState = -1;
+@@ -148,7 +_,12 @@
      }
  
      public void handleBlockBreakAction(BlockPos pos, ServerboundPlayerActionPacket.Action action, Direction direction, int maxY, int sequence) {
@@ -71,8 +100,10 @@
 +            return;
 +        }
          if (!this.player.isWithinBlockInteractionRange(pos, 1.0)) {
++            if (true) return; // Paper - Don't allow digging into unloaded chunks; Don't notify if unreasonably far away
              this.debugLogging(pos, false, sequence, "too far");
          } else if (pos.getY() > maxY) {
+             this.player.connection.send(new ClientboundBlockUpdatePacket(pos, this.level.getBlockState(pos)));
 @@ -172,6 +_,14 @@
                      return;
                  }
@@ -96,6 +127,25 @@
                      blockState.attack(this.level, pos, this.player);
                      progress = blockState.getDestroyProgress(this.player, this.player.level(), pos);
                  }
+@@ -236,10 +_,16 @@
+                 this.debugLogging(pos, true, sequence, "stopped destroying");
+             } else if (action == ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK) {
+                 this.isDestroyingBlock = false;
+-                if (!Objects.equals(this.destroyPos, pos)) {
+-                    LOGGER.warn("Mismatch in destroy block pos: {} {}", this.destroyPos, pos);
++                // Paper start - Don't allow digging into unloaded chunks
++                if (!Objects.equals(this.destroyPos, pos) && !BlockPos.ZERO.equals(this.destroyPos)) { // Paper
++                    ServerPlayerGameMode.LOGGER.debug("Mismatch in destroy block pos: {} {}", this.destroyPos, pos); // CraftBukkit - SPIGOT-5457 sent by client when interact event cancelled
++                    BlockState destroyState = this.level.getBlockStateIfLoaded(this.destroyPos); // Don't load unloaded chunks for stale records here
++                    if (destroyState != null) {
+                     this.level.destroyBlockProgress(this.player.getId(), this.destroyPos, -1);
+                     this.debugLogging(pos, true, sequence, "aborted mismatched destroying");
++                    }
++                    this.destroyPos = BlockPos.ZERO;
++                    // Paper end - Don't allow digging into unloaded chunks
+                 }
+ 
+                 this.level.destroyBlockProgress(this.player.getId(), pos, -1);
 @@ -258,8 +_,10 @@
      }
  

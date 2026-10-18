@@ -17,7 +17,7 @@
          this.newComponents = newComponents;
          this.recipes = new RecipeManager(loadingContext);
 -        this.commands = new Commands(commandSelection, CommandBuildContext.simple(loadingContext, enabledFeatures));
-+        this.commands = new Commands(commandSelection, CommandBuildContext.simple(loadingContext, enabledFeatures)); // Paper - Brigadier Command API
++        this.commands = new Commands(commandSelection, CommandBuildContext.simple(loadingContext, enabledFeatures), true); // Paper - Brigadier Command API - use modern alias registration
 +        io.papermc.paper.command.brigadier.PaperCommands.INSTANCE.setDispatcher(this.commands, CommandBuildContext.simple(loadingContext, enabledFeatures)); // Paper - Brigadier Command API
 +        io.papermc.paper.command.PaperCommands.registerCommands(); // Paper
          this.advancements = new ServerAdvancementManager(loadingContext);

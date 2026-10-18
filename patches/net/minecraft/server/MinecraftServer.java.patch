@@ -133,6 +133,14 @@
      private MetricsRecorder metricsRecorder = InactiveMetricsRecorder.INSTANCE;
      private Consumer<ProfileResults> onMetricsRecordingStopped = results -> this.stopRecordingMetrics();
      private Consumer<Path> onMetricsRecordingFinished = ignored -> {};
+@@ -254,6 +_,7 @@
+     private volatile boolean isReady;
+     private long lastOverloadWarningNanos;
+     protected final Services services;
++    public final io.papermc.paper.configuration.PaperConfigurations paperConfigurations; // Paper - add paper configuration files
+     private final NotificationManager notificationManager;
+     private final ServerActivityMonitor serverActivityMonitor;
+     private long lastServerStatus;
 @@ -266,13 +_,13 @@
      private long delayedTasksMaxNextTickTimeNanos;
      private boolean mayHaveDelayedTasks;
@@ -151,7 +159,7 @@
      private final ServerFunctionManager functionManager;
      private boolean enforceWhitelist;
      private boolean usingWhitelist;
-@@ -292,12 +_,31 @@
+@@ -292,12 +_,34 @@
      private final SuppressedExceptionCollector suppressedExceptions = new SuppressedExceptionCollector();
      private final DiscontinuousFrame tickFrame;
      private final PacketProcessor packetProcessor;
@@ -173,6 +181,9 @@
 +    private boolean forceTicks;
 +    // CraftBukkit end
 +    // Spigot start
++
++    public volatile boolean hasFullyShutdown; // Paper - Improved watchdog support
++    public volatile boolean abnormalExit; // Paper - Improved watchdog support
 +    public static final int TPS = 20;
 +    public static final int TICK_TIME = 1000000000 / TPS;
 +    private static final int SAMPLE_INTERVAL = 100;
@@ -226,7 +237,7 @@
              this.fixerUpper = fixerUpper;
              this.functionManager = new ServerFunctionManager(this, this.resources.managers.getFunctionLibrary());
              HolderGetter<Block> blockLookup = this.registries
-@@ -352,18 +_,46 @@
+@@ -352,18 +_,47 @@
              this.structureTemplateManager = new StructureTemplateManager(worldStem.resourceManager(), storageSource, fixerUpper, blockLookup);
              this.serverThread = serverThread;
              this.executor = Util.backgroundExecutor();
@@ -273,6 +284,7 @@
 +        }
 +        Runtime.getRuntime().addShutdownHook(new org.bukkit.craftbukkit.util.ServerShutdownThread(this));
 +        // CraftBukkit end
++        this.paperConfigurations = services.paper().configurations(); // Paper - add paper configuration files
      }
  
      protected abstract boolean initServer() throws IOException;
@@ -303,7 +315,7 @@
          if (profiledDuration != null) {
              profiledDuration.finish(true);
          }
-@@ -425,65 +_,244 @@
+@@ -425,65 +_,261 @@
      protected void forceDifficulty() {
      }
  
@@ -521,6 +533,23 @@
 +        this.connection.acceptConnections();
 +    }
 +
++    // Paper start - rework world loading process
++    protected void initPostWorld() {
++        // Paper start - Configurable player collision; Handle collideRule team for player collision toggle
++        final ServerScoreboard scoreboard = this.getScoreboard();
++        final java.util.Collection<String> toRemove = scoreboard.getPlayerTeams().stream().filter(team -> team.getName().startsWith("collideRule_")).map(net.minecraft.world.scores.PlayerTeam::getName).collect(java.util.stream.Collectors.toList());
++        for (String teamName : toRemove) {
++            scoreboard.removePlayerTeam(scoreboard.getPlayerTeam(teamName)); // Clean up after ourselves
++        }
++
++        if (!io.papermc.paper.configuration.GlobalConfiguration.get().collisions.enablePlayerCollisions) {
++            this.getPlayerList().collideRuleTeamName = org.apache.commons.lang3.StringUtils.left("collideRule_" + java.util.concurrent.ThreadLocalRandom.current().nextInt(), 16);
++            net.minecraft.world.scores.PlayerTeam collideTeam = scoreboard.addPlayerTeam(this.getPlayerList().collideRuleTeamName);
++            collideTeam.setSeeFriendlyInvisibles(false); // Because we want to mimic them not being on a team at all
++        }
++        // Paper end - Configurable player collision; Handle collideRule team for player collision toggle
++    }
++    // Paper end - rework world loading process
 +    public void initWorld(ServerLevel serverlevel, ServerLevelData serverleveldata, WorldData saveData, WorldOptions worldoptions) {
 +        boolean flag = saveData.isDebugWorld();
 +        // CraftBukkit start

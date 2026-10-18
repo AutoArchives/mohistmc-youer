@@ -1,0 +1,15 @@
+--- a/net/minecraft/network/chat/OutgoingChatMessage.java
++++ b/net/minecraft/network/chat/OutgoingChatMessage.java
+@@ -7,6 +_,12 @@
+ 
+     void sendToPlayer(ServerPlayer player, boolean filtered, ChatType.Bound chatType);
+ 
++    // Paper start
++    default void sendToPlayer(ServerPlayer player, boolean filtered, ChatType.Bound chatType, @org.jspecify.annotations.Nullable Component unsigned) {
++        this.sendToPlayer(player, filtered, chatType);
++    }
++    // Paper end
++
+     static OutgoingChatMessage create(PlayerChatMessage message) {
+         return (OutgoingChatMessage)(message.isSystem()
+             ? new OutgoingChatMessage.Disguised(message.decoratedContent())

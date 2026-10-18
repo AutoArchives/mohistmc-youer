@@ -1394,7 +1394,31 @@
      }
  
      public float getArmorCoverPercentage() {
-@@ -2328,15 +_,18 @@
+@@ -2317,26 +_,41 @@
+     }
+ 
+     @VisibleForTesting
++
++    protected long lastJumpTime = 0L; // Paper - Prevent excessive velocity through repeated crits
+     public void jumpFromGround() {
+         float jumpPower = this.getJumpPower();
+         if (!(jumpPower <= 1.0E-5F)) {
+             Vec3 movement = this.getDeltaMovement();
++            long time = System.nanoTime();
++            boolean canCrit = true;
++            if (this instanceof net.minecraft.world.entity.player.Player) {
++                canCrit = false;
++                if (time - this.lastJumpTime > (long)(0.250e9)) {
++                    this.lastJumpTime = time;
++                    canCrit = true;
++                }
++            }
+             this.setDeltaMovement(movement.x, Math.max((double)jumpPower, movement.y), movement.z);
+             if (this.isSprinting()) {
+                 float angle = this.getYRot() * (float) (Math.PI / 180.0);
+-                this.addDeltaMovement(new Vec3(-Mth.sin(angle) * 0.2, 0.0, Mth.cos(angle) * 0.2));
++                if (canCrit) // Paper - Prevent excessive velocity through repeated crits
++                    this.addDeltaMovement(new Vec3(-Mth.sin(angle) * 0.2, 0.0, Mth.cos(angle) * 0.2));
              }
  
              this.needsSync = true;
@@ -1585,8 +1609,16 @@
  
      @Override
      public float getYHeadRot() {
-@@ -3327,8 +_,11 @@
+@@ -3325,10 +_,19 @@
+         return (this.entityData.get(DATA_LIVING_ENTITY_FLAGS) & 2) > 0 ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
+     }
  
++
++    // Paper start - Properly cancel usable items
++    public void resyncUsingItem(ServerPlayer serverPlayer) {
++        this.resendPossiblyDesyncedDataValues(java.util.List.of(DATA_LIVING_ENTITY_FLAGS), serverPlayer);
++    }
++    // Paper end - Properly cancel usable items
      private void updatingUsingItem() {
          if (this.isUsingItem()) {
 -            if (ItemStack.isSameItem(this.getItemInHand(this.getUsedItemHand()), this.useItem)) {
@@ -1678,6 +1710,60 @@
          if (!this.level().isClientSide()) {
              boolean wasUsingItem = this.isUsingItem();
              this.recentKineticEnemies = null;
+@@ -3548,6 +_,53 @@
+         }
+     }
+ 
++
++    // Paper start
++    public HitResult getRayTrace(int maxDistance, ClipContext.Fluid fluidCollisionOption) {
++        if (maxDistance < 1 || maxDistance > 120) {
++            throw new IllegalArgumentException("maxDistance must be between 1-120");
++        }
++
++        Vec3 start = new Vec3(getX(), getY() + getEyeHeight(), getZ());
++        org.bukkit.util.Vector dir = getBukkitEntity().getLocation().getDirection().multiply(maxDistance);
++        Vec3 end = new Vec3(start.x + dir.getX(), start.y + dir.getY(), start.z + dir.getZ());
++        ClipContext raytrace = new ClipContext(start, end, ClipContext.Block.OUTLINE, fluidCollisionOption, this);
++
++        return this.level().clip(raytrace);
++    }
++
++    public net.minecraft.world.phys.@Nullable EntityHitResult getTargetEntity(int maxDistance) {
++        if (maxDistance < 1 || maxDistance > 120) {
++            throw new IllegalArgumentException("maxDistance must be between 1-120");
++        }
++
++        Vec3 start = this.getEyePosition(1.0F);
++        Vec3 direction = this.getLookAngle();
++        Vec3 end = start.add(direction.x * maxDistance, direction.y * maxDistance, direction.z * maxDistance);
++
++        List<Entity> entityList = this.level().getEntities(this, getBoundingBox().expandTowards(direction.x * maxDistance, direction.y * maxDistance, direction.z * maxDistance).inflate(1.0), EntitySelector.NO_SPECTATORS.and(Entity::isPickable));
++
++        double distance = 0.0;
++        net.minecraft.world.phys.EntityHitResult result = null;
++
++        for (Entity entity : entityList) {
++            final double inflationAmount = entity.getPickRadius();
++            AABB aabb = entity.getBoundingBox().inflate(inflationAmount, inflationAmount, inflationAmount);
++            Optional<Vec3> rayTraceResult = aabb.clip(start, end);
++
++            if (rayTraceResult.isPresent()) {
++                Vec3 rayTrace = rayTraceResult.get();
++                double distanceTo = start.distanceToSqr(rayTrace);
++                if (distanceTo < distance || distance == 0.0) {
++                    result = new net.minecraft.world.phys.EntityHitResult(entity, rayTrace);
++                    distance = distanceTo;
++                }
++            }
++        }
++
++        return result;
++    }
++    // Paper end
+     public boolean isSuppressingSlidingDownLadder() {
+         return this.isShiftKeyDown();
+     }
 @@ -3566,6 +_,21 @@
      }
  

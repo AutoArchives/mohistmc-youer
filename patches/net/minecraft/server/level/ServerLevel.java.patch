@@ -115,7 +115,7 @@
      private final SleepStatus sleepStatus;
      private int emptyTime;
      private final PortalForcer portalForcer;
-@@ -215,30 +_,128 @@
+@@ -215,30 +_,131 @@
      private boolean handlingTick;
      private final List<CustomSpawner> customSpawners;
      private @Nullable EnderDragonFight dragonFight;
@@ -177,8 +177,9 @@
 +    }
 +    // Moved from MinecraftServer end
 +
++    @Override
 +    public LevelChunk getChunkIfLoaded(int x, int z) {
-+        return this.chunkSource.getChunk(x, z, false);
++        return this.chunkSource.getChunkAtIfLoadedImmediately(x, z); // Paper - Use getChunkAtIfLoadedImmediately
 +    }
 +
 +    @Override
@@ -204,7 +205,9 @@
 +        // NeoForge: set seed override asap because things like the chunk cache constructor check level.getSeed()
 +        this.seedOverride = levelStem.seedOverride();
 +        biomeZoomSeed = net.minecraft.util.ExtraCodecs.fromOptionalLong.apply(levelStem.seedOverride()).map(net.minecraft.world.level.biome.BiomeManager::obfuscateSeed).orElse(biomeZoomSeed);
-+        super(levelData, dimension, server.registryAccess(), levelStem.type(), false, isDebug, biomeZoomSeed, server.getMaxChainedNeighborUpdates(), gen, biomeProvider, env);
++        final GameRules gameRules = new GameRules(server.getWorldData().enabledFeatures(), (GameRuleMap) savedDataStorage.computeIfAbsent(GameRuleMap.TYPE)); // Paper - create paper world config
++        super(levelData, dimension, server.registryAccess(), levelStem.type(), false, isDebug, biomeZoomSeed, server.getMaxChainedNeighborUpdates(), gen, biomeProvider, env,
++            spigotConfig -> server.paperConfigurations.createWorldConfig(io.papermc.paper.configuration.PaperConfigurations.createWorldContextMap(server.storageSource.getDimensionPath(dimension), dimension.identifier(), spigotConfig, server.registryAccess(), gameRules))); // Paper - create paper world configs
 +        storageSource = levelStorage;
 +        uuid = WorldUUID.getUUID(levelStorage.levelDirectory.path().toFile());
 +        // CraftBukkit end
@@ -224,7 +227,7 @@
 +
 +        this.randomSequences = (RandomSequences) this.savedDataStorage.computeIfAbsent(RandomSequences.TYPE);
 +        this.weatherData = (WeatherData) this.savedDataStorage.computeIfAbsent(WeatherData.TYPE);
-+        this.gameRules = new GameRules(this.serverLevelData.enabledFeatures(), (GameRuleMap) this.savedDataStorage.computeIfAbsent(GameRuleMap.TYPE));
++        this.gameRules = gameRules; // Paper - create paper world config
 +
 +        this.clockManager = (ServerClockManager) this.savedDataStorage.computeIfAbsent(ServerClockManager.TYPE);
 +        this.clockManager.init(this);
@@ -249,7 +252,7 @@
          boolean syncWrites = server.forceSynchronousWrites();
          DataFixer fixerUpper = server.getFixerUpper();
          EntityPersistentStorage<Entity> entityStorage = new EntityStorage(
-@@ -260,8 +_,8 @@
+@@ -260,16 +_,17 @@
              server.getStructureManager(),
              executor,
              generator,
@@ -260,7 +263,8 @@
              syncWrites,
              this.entityManager::updateChunkStatus,
              () -> server.overworld().getDataStorage()
-@@ -269,7 +_,7 @@
++            , this.savedDataStorage // Paper - initialize SavedDataStorage earlier
+         );
          this.chunkSource.getGeneratorState().ensureStructuresGenerated();
          this.portalForcer = new PortalForcer(this);
          if (this.canHaveWeather()) {
@@ -405,6 +409,54 @@
                  }
              }
  
+@@ -610,16 +_,23 @@
+     }
+ 
+     protected BlockPos findLightningTargetAround(BlockPos pos) {
++        // Paper start - Add methods to find targets for lightning strikes
++        return this.findLightningTargetAround(pos, false);
++    }
++
++    public @Nullable BlockPos findLightningTargetAround(final BlockPos pos, boolean returnNullWhenNoTarget) {
++        // Paper end - Add methods to find targets for lightning strikes
+         BlockPos center = this.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, pos);
+         Optional<BlockPos> lightningRodTarget = this.findLightningRod(center);
+         if (lightningRodTarget.isPresent()) {
+             return lightningRodTarget.get();
+         } else {
+             AABB search = AABB.encapsulatingFullBlocks(center, center.atY(this.getMaxY() + 1)).inflate(3.0);
+-            List<LivingEntity> entities = this.getEntitiesOfClass(LivingEntity.class, search, input -> input.isAlive() && this.canSeeSky(input.blockPosition()));
++            List<LivingEntity> entities = this.getEntitiesOfClass(LivingEntity.class, search, input -> input.isAlive() && this.canSeeSky(input.blockPosition()) && !input.isSpectator()); // Paper - Fix lightning being able to hit spectators (MC-262422)
+             if (!entities.isEmpty()) {
+                 return entities.get(this.random.nextInt(entities.size())).blockPosition();
+             } else {
++                if (returnNullWhenNoTarget) return null; // Paper - Add methods to find targets for lightning strikes
+                 if (center.getY() == this.getMinY() - 1) {
+                     center = center.above(2);
+                 }
+@@ -629,6 +_,22 @@
+         }
+     }
+ 
++    // Paper start
++    @Override
++    public boolean hasChunk(int chunkX, int chunkZ) {
++        return this.getChunkIfLoadedImmediately(chunkX, chunkZ) != null;
++    }
++    // Paper end
++
++    // Paper start - optimise getPlayerByUUID
++    @Nullable
++    @Override
++    public Player getPlayerByUUID(UUID uuid) {
++        final Player player = this.getServer().getPlayerList().getPlayer(uuid);
++        return player != null && player.level() == this ? player : null;
++    }
++    // Paper end - optimise getPlayerByUUID
++
+     public boolean isHandlingTick() {
+         return this.handlingTick;
+     }
 @@ -688,6 +_,12 @@
      }
  
@@ -720,10 +772,15 @@
          this.server
              .getPlayerList()
              .broadcast(
-@@ -1100,6 +_,7 @@
+@@ -1100,6 +_,12 @@
  
      @Override
      public void gameEvent(Holder<GameEvent> gameEvent, Vec3 position, GameEvent.Context context) {
++        // Paper start - Prevent GameEvents being fired from unloaded chunks
++        if (this.getChunkIfLoadedImmediately((Mth.floor(position.x) >> 4), (Mth.floor(position.z) >> 4)) == null) {
++            return;
++        }
++        // Paper end - Prevent GameEvents being fired from unloaded chunks
 +        if (!net.neoforged.neoforge.common.CommonHooks.onVanillaGameEvent(this, gameEvent, position, context)) return;
          this.gameEventDispatcher.post(gameEvent, position, context);
      }

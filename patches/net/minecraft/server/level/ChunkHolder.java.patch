@@ -8,6 +8,19 @@
  import net.minecraft.util.Util;
  import net.minecraft.world.level.ChunkPos;
  import net.minecraft.world.level.Level;
+@@ -33,9 +_,9 @@
+     public static final ChunkResult<LevelChunk> UNLOADED_LEVEL_CHUNK = ChunkResult.error("Unloaded level chunk");
+     private static final CompletableFuture<ChunkResult<LevelChunk>> UNLOADED_LEVEL_CHUNK_FUTURE = CompletableFuture.completedFuture(UNLOADED_LEVEL_CHUNK);
+     private final LevelHeightAccessor levelHeightAccessor;
+-    private volatile CompletableFuture<ChunkResult<LevelChunk>> fullChunkFuture = UNLOADED_LEVEL_CHUNK_FUTURE;
+-    private volatile CompletableFuture<ChunkResult<LevelChunk>> tickingChunkFuture = UNLOADED_LEVEL_CHUNK_FUTURE;
+-    private volatile CompletableFuture<ChunkResult<LevelChunk>> entityTickingChunkFuture = UNLOADED_LEVEL_CHUNK_FUTURE;
++    private volatile CompletableFuture<ChunkResult<LevelChunk>> fullChunkFuture = UNLOADED_LEVEL_CHUNK_FUTURE; private int fullChunkCreateCount; private volatile boolean isFullChunkReady; // Paper - cache chunk ticking stage
++    private volatile CompletableFuture<ChunkResult<LevelChunk>> tickingChunkFuture = UNLOADED_LEVEL_CHUNK_FUTURE; private volatile boolean isTickingReady; // Paper - cache chunk ticking stage
++    private volatile CompletableFuture<ChunkResult<LevelChunk>> entityTickingChunkFuture = UNLOADED_LEVEL_CHUNK_FUTURE; private volatile boolean isEntityTickingReady; // Paper - cache chunk ticking stage
+     public int oldTicketLevel;
+     private int ticketLevel;
+     private int queueLevel;
 @@ -71,6 +_,18 @@
          this.changedBlocksPerSection = new ShortSet[levelHeightAccessor.getSectionsCount()];
      }
@@ -27,6 +40,15 @@
      public CompletableFuture<ChunkResult<LevelChunk>> getTickingChunkFuture() {
          return this.tickingChunkFuture;
      }
+@@ -83,7 +_,7 @@
+         return this.fullChunkFuture;
+     }
+ 
+-    public @Nullable LevelChunk getTickingChunk() {
++    public final @Nullable LevelChunk getTickingChunk() { // Paper - final for inline
+         return this.getTickingChunkFuture().getNow(UNLOADED_LEVEL_CHUNK).orElse(null);
+     }
+ 
 @@ -127,6 +_,7 @@
          } else {
              boolean hadChangedSections = this.hasChangedSections;
@@ -82,6 +104,88 @@
      protected void updateFutures(ChunkMap scheduler, Executor mainThreadExecutor) {
          FullChunkStatus oldFullStatus = ChunkLevel.fullStatus(this.oldTicketLevel);
          FullChunkStatus newFullStatus = ChunkLevel.fullStatus(this.ticketLevel);
+@@ -277,12 +_,28 @@
+         boolean isAccessible = newFullStatus.isOrAfter(FullChunkStatus.FULL);
+         this.wasAccessibleSinceLastSave |= isAccessible;
+         if (!wasAccessible && isAccessible) {
++            int expectCreateCount = ++this.fullChunkCreateCount; // Paper
+             this.fullChunkFuture = scheduler.prepareAccessibleChunk(this);
+             this.scheduleFullChunkPromotion(scheduler, this.fullChunkFuture, mainThreadExecutor, FullChunkStatus.FULL);
++            // Paper start - cache ticking ready status
++            this.fullChunkFuture.thenAccept(chunkResult -> {
++                chunkResult.ifSuccess(chunk -> {
++                    if (ChunkHolder.this.fullChunkCreateCount == expectCreateCount) {
++                        ChunkHolder.this.isFullChunkReady = true;
++                        ca.spottedleaf.moonrise.common.PlatformHooks.get().onChunkBorder(chunk, this);
++                    }
++                });
++            });
++            // Paper end - cache ticking ready status
+             this.addSaveDependency(this.fullChunkFuture);
+         }
+ 
+         if (wasAccessible && !isAccessible) {
++            // Paper start
++            if (this.isFullChunkReady) {
++                ca.spottedleaf.moonrise.common.PlatformHooks.get().onChunkNotBorder(this.fullChunkFuture.join().orElseThrow(IllegalStateException::new), this); // Paper
++            }
++            // Paper end
+             this.fullChunkFuture.complete(UNLOADED_LEVEL_CHUNK);
+             this.fullChunkFuture = UNLOADED_LEVEL_CHUNK_FUTURE;
+         }
+@@ -292,11 +_,25 @@
+         if (!wasTicking && isTicking) {
+             this.tickingChunkFuture = scheduler.prepareTickingChunk(this);
+             this.scheduleFullChunkPromotion(scheduler, this.tickingChunkFuture, mainThreadExecutor, FullChunkStatus.BLOCK_TICKING);
++            // Paper start - cache ticking ready status
++            this.tickingChunkFuture.thenAccept(chunkResult -> {
++                chunkResult.ifSuccess(chunk -> {
++                    // note: Here is a very good place to add callbacks to logic waiting on this.
++                    ChunkHolder.this.isTickingReady = true;
++                    ca.spottedleaf.moonrise.common.PlatformHooks.get().onChunkTicking(chunk, this);
++                });
++            });
++            // Paper end - cache ticking ready status
+             this.addSaveDependency(this.tickingChunkFuture);
+         }
+ 
+         if (wasTicking && !isTicking) {
+-            this.tickingChunkFuture.complete(UNLOADED_LEVEL_CHUNK);
++            // Paper start
++            if (this.isTickingReady) {
++                ca.spottedleaf.moonrise.common.PlatformHooks.get().onChunkNotTicking(this.tickingChunkFuture.join().orElseThrow(IllegalStateException::new), this); // Paper
++            }
++            // Paper end
++            this.tickingChunkFuture.complete(ChunkHolder.UNLOADED_LEVEL_CHUNK); this.isTickingReady = false; // Paper - cache chunk ticking stage
+             this.tickingChunkFuture = UNLOADED_LEVEL_CHUNK_FUTURE;
+         }
+ 
+@@ -309,11 +_,24 @@
+ 
+             this.entityTickingChunkFuture = scheduler.prepareEntityTickingChunk(this);
+             this.scheduleFullChunkPromotion(scheduler, this.entityTickingChunkFuture, mainThreadExecutor, FullChunkStatus.ENTITY_TICKING);
++            // Paper start - cache ticking ready status
++            this.entityTickingChunkFuture.thenAccept(chunkResult -> {
++                chunkResult.ifSuccess(chunk -> {
++                    ChunkHolder.this.isEntityTickingReady = true;
++                    ca.spottedleaf.moonrise.common.PlatformHooks.get().onChunkEntityTicking(chunk, this);
++                });
++            });
++            // Paper end
+             this.addSaveDependency(this.entityTickingChunkFuture);
+         }
+ 
+         if (wasEntityTicking && !isEntityTicking) {
+-            this.entityTickingChunkFuture.complete(UNLOADED_LEVEL_CHUNK);
++            // Paper start
++            if (this.isEntityTickingReady) {
++                ca.spottedleaf.moonrise.common.PlatformHooks.get().onChunkNotEntityTicking(this.entityTickingChunkFuture.join().orElseThrow(IllegalStateException::new), this);
++            }
++            // Paper end
++            this.entityTickingChunkFuture.complete(ChunkHolder.UNLOADED_LEVEL_CHUNK); this.isEntityTickingReady = false; // Paper - cache chunk ticking stage
+             this.entityTickingChunkFuture = UNLOADED_LEVEL_CHUNK_FUTURE;
+         }
+ 
 @@ -323,6 +_,26 @@
  
          this.onLevelChange.onLevelChange(this.pos, this::getQueueLevel, this.ticketLevel, this::setQueueLevel);

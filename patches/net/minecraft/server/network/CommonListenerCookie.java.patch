@@ -5,21 +5,21 @@
  import net.minecraft.server.level.ClientInformation;
  
 -public record CommonListenerCookie(GameProfile gameProfile, int latency, ClientInformation clientInformation, boolean transferred) {
-+public record CommonListenerCookie(GameProfile gameProfile, int latency, ClientInformation clientInformation, boolean transferred, net.neoforged.neoforge.network.connection.ConnectionType connectionType, @org.jspecify.annotations.Nullable String brandName, java.util.Set<String> channels) { // Paper
++public record CommonListenerCookie(GameProfile gameProfile, int latency, ClientInformation clientInformation, boolean transferred, net.neoforged.neoforge.network.connection.ConnectionType connectionType, @org.jspecify.annotations.Nullable String brandName, java.util.Set<String> channels, io.papermc.paper.util.KeepAlive keepAlive) { // Paper
 +    /**
 +     * @deprecated Use {@link #CommonListenerCookie(GameProfile, int, ClientInformation, boolean, net.neoforged.neoforge.network.connection.ConnectionType)} instead, to indicate whether the connection is modded.
 +     */
 +    @Deprecated
 +    public CommonListenerCookie(GameProfile gameProfile, int latency, ClientInformation clientInformation, boolean transferred) {
-+        this(gameProfile, latency, clientInformation, transferred, net.neoforged.neoforge.network.connection.ConnectionType.OTHER, null, new java.util.HashSet<>());
++        this(gameProfile, latency, clientInformation, transferred, net.neoforged.neoforge.network.connection.ConnectionType.OTHER, null, new java.util.HashSet<>(), new io.papermc.paper.util.KeepAlive());
 +    }
 +
 +    public CommonListenerCookie(GameProfile gameProfile, int latency, ClientInformation clientInformation, boolean transferred, net.neoforged.neoforge.network.connection.ConnectionType connectionType) {
-+        this(gameProfile, latency, clientInformation, transferred, connectionType, null, new java.util.HashSet<>());
++        this(gameProfile, latency, clientInformation, transferred, connectionType, null, new java.util.HashSet<>(), new io.papermc.paper.util.KeepAlive());
 +    }
 +
-+    public CommonListenerCookie(GameProfile gameProfile, int latency, ClientInformation clientInformation, boolean transferred, @org.jspecify.annotations.Nullable String brandName, java.util.Set<String> channels) { // Paper
-+        this(gameProfile, latency, clientInformation, transferred, net.neoforged.neoforge.network.connection.ConnectionType.OTHER, brandName, channels);
++    public CommonListenerCookie(GameProfile gameProfile, int latency, ClientInformation clientInformation, boolean transferred, @org.jspecify.annotations.Nullable String brandName, java.util.Set<String> channels, io.papermc.paper.util.KeepAlive keepAlive) { // Paper
++        this(gameProfile, latency, clientInformation, transferred, net.neoforged.neoforge.network.connection.ConnectionType.OTHER, brandName, channels, keepAlive);
 +    }
 +
      public static CommonListenerCookie createInitial(GameProfile gameProfile, boolean transferred) {

@@ -82,7 +82,7 @@
      implements Nameable,
      EntityAccess,
      ScoreHolder,
-@@ -168,6 +_,29 @@
+@@ -168,6 +_,41 @@
      SlotProvider,
      DebugValueSource,
      TypedInstance<EntityType<?>>, net.neoforged.neoforge.common.extensions.IEntityExtension {
@@ -103,10 +103,22 @@
 +        return bukkitEntity;
 +    }
 +
++    // Paper start
++    public @Nullable CraftEntity getBukkitEntityRaw() {
++        return this.bukkitEntity;
++    }
++    // Paper end
++
 +    // CraftBukkit - SPIGOT-6907: re-implement LivingEntity#setMaximumAir()
 +    public int getDefaultMaxAirSupply() {
 +        return TOTAL_AIR_SUPPLY;
 +    }
++
++    // Paper start
++    public final AABB getBoundingBoxAt(double x, double y, double z) {
++        return this.dimensions.makeBoundingBox(x, y, z);
++    }
++    // Paper end
 +    // CraftBukkit end
 +
      private static final Logger LOGGER = LogUtils.getLogger();
@@ -120,7 +132,7 @@
      private final EntityType<?> type;
      private boolean requiresPrecisePosition;
      private int id = ENTITY_COUNTER.incrementAndGet();
-@@ -299,6 +_,53 @@
+@@ -299,6 +_,54 @@
      private final LongSet visitedBlocks = new LongOpenHashSet();
      private final InsideBlockEffectApplier.StepBasedCollector insideEffectCollector = new InsideBlockEffectApplier.StepBasedCollector();
      private CustomData customData = CustomData.EMPTY;
@@ -155,6 +167,7 @@
 +    public @Nullable UUID originWorld;
 +    // Paper end - Entity origin API
 +    public boolean freezeLocked = false; // Paper - Freeze Tick Lock API
++    public boolean fixedPose = false; // Paper - Expand Pose API
 +    public EntityRemoveEvent.@Nullable Cause removeReason;  // Youer - EntityRemoveEvent
 +    public void spawnReason(CreatureSpawnEvent.@Nullable SpawnReason spawnReason) {
 +        this.spawnReason = spawnReason;
@@ -199,7 +212,7 @@
      }
  
      public boolean isColliding(BlockPos pos, BlockState state) {
-@@ -397,20 +_,55 @@
+@@ -397,20 +_,73 @@
      }
  
      public void kill(ServerLevel level) {
@@ -237,6 +250,24 @@
 +    }
 +    // CraftBukkit end
 +
++    // Paper start
++    // This method should only be used if the data of an entity could have become desynced
++    // due to interactions on the client.
++    public void resendPossiblyDesyncedEntityData(ServerPlayer player) {
++        if (player.getBukkitEntity().canSee(this.getBukkitEntity())) {
++            ServerLevel level = (ServerLevel) this.level();
++            net.minecraft.server.level.ChunkMap.TrackedEntity tracker = level == null ? null : level.getChunkSource().chunkMap.entityMap.get(this.getId());
++            if (tracker == null) {
++                return;
++            }
++            final ServerEntity serverEntity = tracker.serverEntity;
++            final List<Packet<? super ClientGamePacketListener>> list = new ArrayList<>();
++            serverEntity.sendPairingData(player, list::add);
++            player.connection.send(new net.minecraft.network.protocol.game.ClientboundBundlePacket(list));
++        }
++    }
++    // Paper end
++
 +    // This method allows you to specifically resend certain data accessors to the client
 +    public void resendPossiblyDesyncedDataValues(List<EntityDataAccessor<?>> accessors, ServerPlayer to) {
 +        if (!to.getBukkitEntity().canSee(this.getBukkitEntity())) {
@@ -267,10 +298,11 @@
      public void onClientRemoval() {
      }
  
-@@ -432,6 +_,12 @@
+@@ -432,6 +_,13 @@
      }
  
      public void setPose(Pose pose) {
++        if (this.fixedPose) return; // Paper - Expand Pose API
 +        // CraftBukkit start
 +        if (pose == this.getPose()) {
 +            return;
@@ -1346,7 +1378,7 @@
 +            }
 +            if (!to.equals(teleEvent.getTo())) {
 +                to = teleEvent.getTo();
-+                transition = new TeleportTransition(((CraftWorld) to.getWorld()).getHandle(), CraftLocation.toVec3D(to), Vec3.ZERO, to.getYaw(), to.getPitch(), transition.missingRespawnBlock(), transition.asPassenger(), Set.of(), transition.postTeleportTransition(), transition.cause());
++                transition = new TeleportTransition(((CraftWorld) to.getWorld()).getHandle(), CraftLocation.toVec3(to), Vec3.ZERO, to.getYaw(), to.getPitch(), transition.missingRespawnBlock(), transition.asPassenger(), Set.of(), transition.postTeleportTransition(), transition.cause());
 +            }
 +            // CraftBukkit end
              ServerLevel newLevel = transition.newLevel();

@@ -1,11 +1,10 @@
 --- a/net/minecraft/util/parsing/packrat/Scope.java
 +++ b/net/minecraft/util/parsing/packrat/Scope.java
-@@ -277,6 +_,30 @@
-             }
-         }
+@@ -279,4 +_,31 @@
  
--        return true;
--    }
+         return true;
+     }
++
 +    // Paper start - track depth
 +    private int depth;
 +

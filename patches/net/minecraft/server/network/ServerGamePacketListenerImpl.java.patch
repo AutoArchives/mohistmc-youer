@@ -148,21 +148,56 @@
  import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
-@@ -276,15 +_,31 @@
+@@ -242,6 +_,8 @@
+     private int ackBlockChangesUpTo = -1;
+     private final TickThrottler chatSpamThrottler = new TickThrottler(20, 200);
+     private final TickThrottler dropSpamThrottler = new TickThrottler(20, 1480);
++    private final TickThrottler tabSpamThrottler = new TickThrottler(io.papermc.paper.configuration.GlobalConfiguration.get().spamLimiter.tabSpamIncrement, io.papermc.paper.configuration.GlobalConfiguration.get().spamLimiter.tabSpamLimit); // Paper - configurable tab spam limits
++    private final TickThrottler recipeSpamPackets = new TickThrottler(io.papermc.paper.configuration.GlobalConfiguration.get().spamLimiter.recipeSpamIncrement, io.papermc.paper.configuration.GlobalConfiguration.get().spamLimiter.recipeSpamLimit);
+     private double firstGoodX;
+     private double firstGoodY;
+     private double firstGoodZ;
+@@ -266,6 +_,7 @@
+     private int knownMovePacketCount;
+     private boolean receivedMovementThisTick;
+     private @Nullable RemoteChatSession chatSession;
++    private boolean hasLoggedExpiry = false; // Paper - Prevent causing expired keys from impacting new joins
+     private SignedMessageChain.Decoder signedMessageDecoder;
+     private final LastSeenMessagesValidator lastSeenMessages = new LastSeenMessagesValidator(20);
+     private int nextChatIndex;
+@@ -275,6 +_,10 @@
+     private boolean waitingForRespawn;
      private int clientLoadedTimeoutTimer;
  
++    private static final int MAX_SIGN_LINE_LENGTH = Integer.getInteger("Paper.maxSignLength", 80); // Paper - Limit client sign length
++    private final io.papermc.paper.event.packet.ClientTickEndEvent tickEndEvent; // Paper - add client tick end event
++    public final io.papermc.paper.connection.PaperPlayerGameConnection playerGameConnection; // Paper
++
      public ServerGamePacketListenerImpl(MinecraftServer server, Connection connection, ServerPlayer player, CommonListenerCookie cookie) {
--        super(server, connection, cookie);
-+        super(server, connection, cookie, player);
+         super(server, connection, cookie);
          this.restartClientLoadTimerAfterRespawn();
-         this.chunkSender = new PlayerChunkSender(connection.isMemoryConnection());
-         this.player = player;
+@@ -283,8 +_,38 @@
          player.connection = this;
          player.getTextFilter().join();
          this.signedMessageDecoder = SignedMessageChain.Decoder.unsigned(player.getUUID(), server::enforceSecureProfile);
 -        this.chatMessageChain = new FutureChain(server);
+-    }
 +        this.chatMessageChain = new FutureChain(server.chatExecutor); // CraftBukkit - async chat
-     }
++        this.playerGameConnection = new io.papermc.paper.connection.PaperPlayerGameConnection(this); // Paper
++        this.tickEndEvent = new io.papermc.paper.event.packet.ClientTickEndEvent(player.getBukkitEntity()); // Paper - add client tick end event
++    }
++
++    // Paper start - configuration phase API
++    @Override
++    public io.papermc.paper.connection.PlayerCommonConnection getApiConnection() {
++        return this.playerGameConnection;
++    }
++
++    @Override
++    public net.kyori.adventure.audience.Audience getAudience() {
++        return this.getCraftPlayer();
++    }
++    // Paper end - configuration phase API
 +
 +    // CraftBukkit start - add fields and methods
 +    private int lastTick = MinecraftServer.currentTick;
@@ -182,7 +217,13 @@
  
      @Override
      public void tick() {
-@@ -301,6 +_,7 @@
+@@ -297,10 +_,13 @@
+             this.keepConnectionAlive();
+             this.chatSpamThrottler.tick();
+             this.dropSpamThrottler.tick();
++            this.tabSpamThrottler.tick(); // Paper - configurable tab spam limits
++            this.recipeSpamPackets.tick(); // Paper - auto recipe limit
+             if (this.player.getLastActionTime() > 0L
                  && this.server.playerIdleTimeout() > 0
                  && Util.getMillis() - this.player.getLastActionTime() > TimeUnit.MINUTES.toMillis(this.server.playerIdleTimeout())
                  && !this.player.wonGame) {
@@ -190,6 +231,19 @@
                  this.disconnect(Component.translatable("multiplayer.disconnect.idling"));
              }
          }
+@@ -349,6 +_,12 @@
+             this.clientVehicleIsFloating = false;
+             this.aboveGroundVehicleTickCount = 0;
+         }
++        // Paper start - Prevent causing expired keys from impacting new joins
++        if (!this.hasLoggedExpiry && this.chatSession != null && this.chatSession.profilePublicKey().data().hasExpired()) {
++            LOGGER.info("Player profile key for {} has expired!", this.player.getPlainTextName());
++            this.hasLoggedExpiry = true;
++        }
++        // Paper end - Prevent causing expired keys from impacting new joins
+ 
+         return false;
+     }
 @@ -416,10 +_,26 @@
      @Override
      public void handlePlayerInput(ServerboundPlayerInputPacket packet) {
@@ -371,7 +425,7 @@
      private boolean noBlocksAround(Entity entity) {
          return entity.level()
              .getBlockStates(entity.getBoundingBox().inflate(0.0625).expandTowards(0.0, -0.55, 0.0))
-@@ -545,6 +_,7 @@
+@@ -545,13 +_,14 @@
              this.lastGoodZ = this.awaitingPositionFromClient.z;
              this.player.hasChangedDimension();
              this.awaitingPositionFromClient = null;
@@ -379,6 +433,14 @@
          }
      }
  
+     @Override
+     public void handleAcceptPlayerLoad(ServerboundPlayerLoadedPacket packet) {
+         PacketUtils.ensureRunningOnSameThread(packet, this, this.player.level());
+-        this.markClientLoaded();
++        this.markClientLoaded(false); // Paper - Add PlayerLoadedWorldEvent
+     }
+ 
+     @Override
 @@ -572,6 +_,7 @@
      @Override
      public void handleRecipeBookChangeSettingsPacket(ServerboundRecipeBookChangeSettingsPacket packet) {
@@ -752,7 +814,7 @@
 +        if (event.isCancelled() || !to.equals(event.getTo())) {
 +            set = Collections.emptySet(); // Can't relative teleport
 +            to = event.isCancelled() ? event.getFrom() : event.getTo();
-+            positionmoverotation = new PositionMoveRotation(CraftLocation.toVec3D(to), Vec3.ZERO, to.getYaw(), to.getPitch());
++            positionmoverotation = new PositionMoveRotation(CraftLocation.toVec3(to), Vec3.ZERO, to.getYaw(), to.getPitch());
 +        }
 +
 +        this.internalTeleport(positionmoverotation, set);
@@ -763,7 +825,7 @@
 +        this.teleport(dest.getX(), dest.getY(), dest.getZ(), dest.getYaw(), dest.getPitch());
 +    }
 +
-+    private void internalTeleport(double d0, double d1, double d2, float f, float f1) {
++    public void internalTeleport(double d0, double d1, double d2, float f, float f1) {
 +        this.teleport(d0, d1, d2, f, f1);
 +    }
 +
@@ -975,7 +1037,7 @@
                      return;
                  }
              }
-@@ -1451,6 +_,13 @@
+@@ -1451,19 +_,44 @@
  
      @Override
      public void onDisconnect(DisconnectionDetails details) {
@@ -987,11 +1049,21 @@
 +        }
 +        // CraftBukkit end
          LOGGER.info("{} lost connection: {}", this.player.getPlainTextName(), details.reason().getString());
-         this.removePlayerFromWorld();
+-        this.removePlayerFromWorld();
++        // Paper start - Fix kick event leave message not being sent
++        final net.kyori.adventure.text.Component quitMessage = details.quitMessage().map(io.papermc.paper.adventure.PaperAdventure::asAdventure).orElse(null);
++        this.removePlayerFromWorld(quitMessage);
++        // Paper end - Fix kick event leave message not being sent
          super.onDisconnect(details);
-@@ -1458,12 +_,21 @@
+     }
  
      private void removePlayerFromWorld() {
++        // Paper start - Fix kick event leave message not being sent
++        this.removePlayerFromWorld(null);
++    }
++
++    private void removePlayerFromWorld(net.kyori.adventure.text.@Nullable Component quitMessage) {
++        // Paper end - Fix kick event leave message not being sent
          this.chatMessageChain.close();
 +        // CraftBukkit start - Replace vanilla quit message handling with our own.
 +        /*
@@ -999,14 +1071,14 @@
          this.server
              .getPlayerList()
              .broadcastSystemMessage(Component.translatable("multiplayer.player.left", this.player.getDisplayName()).withStyle(ChatFormatting.YELLOW), false);
-+        */
++         */
          this.player.disconnect();
 -        this.server.getPlayerList().remove(this.player);
-+        var playerList = this.server.getPlayerList();
-+        playerList.remove(this.player);
-+        String quitMessage = playerList.quitMessage;
-+        if (YouerConfig.quit_message && (quitMessage != null) && (!quitMessage.isEmpty())) {
-+            playerList.broadcastMessage(CraftChatMessage.fromString(quitMessage));
++        // Paper start - Adventure
++        quitMessage = quitMessage == null ? this.server.getPlayerList().remove(this.player) : this.server.getPlayerList().remove(this.player, quitMessage); // Paper - pass in quitMessage to fix kick message not being used
++        if ((quitMessage != null) && !quitMessage.equals(net.kyori.adventure.text.Component.empty())) {
++            this.server.getPlayerList().broadcastSystemMessage(io.papermc.paper.adventure.PaperAdventure.asVanilla(quitMessage), false);
++            // Paper end - Adventure
 +        }
 +        // CraftBukkit end
          this.player.getTextFilter().leave();
@@ -1321,10 +1393,11 @@
              this.disconnect(Component.translatable("disconnect.spam"));
          }
      }
-@@ -1693,6 +_,37 @@
+@@ -1693,6 +_,42 @@
      public void handleAnimate(ServerboundSwingPacket packet) {
          PacketUtils.ensureRunningOnSameThread(packet, this, this.player.level());
          this.player.resetLastActionTime();
++        if (this.player.isImmobile()) return; // CraftBukkit
 +        // CraftBukkit start - Raytrace to look for 'rogue armswings'
 +        float f1 = this.player.getXRot();
 +        float f2 = this.player.getYRot();
@@ -1350,6 +1423,10 @@
 +            }
 +        }
 +
++        // Paper start - Add PlayerArmSwingEvent
++        io.papermc.paper.event.player.PlayerArmSwingEvent armSwingEvent = new io.papermc.paper.event.player.PlayerArmSwingEvent(this.getCraftPlayer(), org.bukkit.craftbukkit.CraftEquipmentSlot.getHand(packet.getHand())); // Paper - Add PlayerArmSwingEvent
++        this.cserver.getPluginManager().callEvent(armSwingEvent);
++        // Paper end - Add PlayerArmSwingEvent
 +        // Arm swing animation
 +        PlayerAnimationEvent event = new PlayerAnimationEvent(this.getCraftPlayer(), (packet.getHand() == InteractionHand.MAIN_HAND) ? PlayerAnimationType.ARM_SWING : PlayerAnimationType.OFF_ARM_SWING);
 +        this.cserver.getPluginManager().callEvent(event);
@@ -1830,6 +1907,21 @@
  
                      for (Entry<HashedStack> e : Int2ObjectMaps.fastIterable(packet.changedSlots())) {
                          this.player.containerMenu.setRemoteSlotUnsafe(e.getIntKey(), e.getValue());
+@@ -1963,6 +_,14 @@
+ 
+     @Override
+     public void handlePlaceRecipe(ServerboundPlaceRecipePacket packet) {
++        // Paper start - auto recipe limit
++        if (!org.bukkit.Bukkit.isPrimaryThread()) {
++            if (!this.recipeSpamPackets.isIncrementAndUnderThreshold()) {
++                this.disconnectAsync(net.minecraft.network.chat.Component.translatable("disconnect.spam"), org.bukkit.event.player.PlayerKickEvent.Cause.SPAM); // Paper - kick event cause // Paper - add proper async disconnect
++                return;
++            }
++        }
++        // Paper end - auto recipe limit
+         PacketUtils.ensureRunningOnSameThread(packet, this, this.player.level());
+         this.player.resetLastActionTime();
+         if (!this.player.isSpectator() && this.player.containerMenu.containerId == packet.containerId()) {
 @@ -1979,9 +_,23 @@
                                  return;
                              }
@@ -1906,7 +1998,25 @@
              if (validSlot && validData) {
                  this.player.inventoryMenu.getSlot(packet.slotNum()).setByPlayer(itemStack);
                  this.player.inventoryMenu.setRemoteSlot(packet.slotNum(), itemStack);
-@@ -2042,6 +_,7 @@
+@@ -2037,11 +_,24 @@
+ 
+     @Override
+     public void handleSignUpdate(ServerboundSignUpdatePacket packet) {
+-        List<String> lines = Stream.of(packet.getLines()).map(ChatFormatting::stripFormatting).collect(Collectors.toList());
++        // Paper start - Limit client sign length
++        String[] linesArray = packet.getLines();
++        for (int i = 0; i < linesArray.length; ++i) {
++            if (MAX_SIGN_LINE_LENGTH > 0 && linesArray[i].length() > MAX_SIGN_LINE_LENGTH) {
++                // This handles multibyte characters as 1
++                int offset = linesArray[i].codePoints().limit(MAX_SIGN_LINE_LENGTH).map(Character::charCount).sum();
++                if (offset < linesArray[i].length()) {
++                    linesArray[i] = linesArray[i].substring(0, offset); // this will break any filtering, but filtering is NYI as of 1.17
++                }
++            }
++        }
++        List<String> lines = Stream.of(linesArray).map(ChatFormatting::stripFormatting).collect(Collectors.toList());
++        // Paper end - Limit client sign length
+         this.filterTextPacket(lines).thenAcceptAsync(filteredLines -> this.updateSignText(packet, (List<FilteredText>)filteredLines), this.server);
      }
  
      private void updateSignText(ServerboundSignUpdatePacket packet, List<FilteredText> lines) {
@@ -1947,11 +2057,19 @@
                  .setupInboundProtocol(
                      ConfigurationProtocols.SERVERBOUND,
 -                    new ServerConfigurationPacketListenerImpl(this.server, this.connection, this.createCookie(this.player.clientInformation()))
-+                    new ServerConfigurationPacketListenerImpl(this.server, this.connection, this.createCookie(this.player.clientInformation(), this.connectionType), this.player) // CraftBukkit
++                    new ServerConfigurationPacketListenerImpl(this.server, this.connection, this.createCookie(this.player.clientInformation(), this.connectionType))
                  );
          }
      }
-@@ -2175,6 +_,7 @@
+@@ -2159,6 +_,7 @@
+ 
+     private void resetPlayerChatState(RemoteChatSession chatSession) {
+         this.chatSession = chatSession;
++        this.hasLoggedExpiry = false; // Paper - Prevent causing expired keys from impacting new joins
+         this.signedMessageDecoder = chatSession.createMessageDecoder(this.player.getUUID());
+         this.chatMessageChain
+             .append(
+@@ -2175,11 +_,13 @@
  
      @Override
      public void handleCustomPayload(ServerboundCustomPayloadPacket packet) {
@@ -1959,3 +2077,104 @@
      }
  
      @Override
+     public void handleClientTickEnd(ServerboundClientTickEndPacket packet) {
+         PacketUtils.ensureRunningOnSameThread(packet, this, this.player.level());
++        this.tickEndEvent.callEvent(); // Paper - add client tick end event
+         if (!this.receivedMovementThisTick) {
+             this.player.setKnownMovement(Vec3.ZERO);
+         }
+@@ -2211,14 +_,24 @@
+     }
+ 
+     public void tickClientLoadTimeout() {
+-        if (this.clientLoadedTimeoutTimer > 0) {
++        if (this.clientLoadedTimeoutTimer > 1) { // Paper - Add PlayerLoadedWorldEvent - only reduce till 1, let the below else-if call #markClientLoaded to trigger event and reduce to 0
+             this.clientLoadedTimeoutTimer--;
+-        }
++        } else if (this.clientLoadedTimeoutTimer == 1) this.markClientLoaded(true); // Paper - Add PlayerLoadedWorldEvent - decrement by calling #markClientLoaded which will set the value to 0 *and* call the event.
+     }
+ 
+     public void markClientLoaded() {
++        // Paper start - Add PlayerLoadedWorldEvent
++        this.markClientLoaded(false);
++    }
++
++    private void markClientLoaded(boolean timeout) {
++        if (!hasClientLoaded()) {
++            final io.papermc.paper.event.player.PlayerClientLoadedWorldEvent event = new io.papermc.paper.event.player.PlayerClientLoadedWorldEvent(this.player.getBukkitEntity(), timeout);
++            event.callEvent();
++        }
+         this.clientLoadedTimeoutTimer = 0;
+     }
++    // Paper end - Add PlayerLoadedWorldEvent
+ 
+     public void markClientUnloadedAfterDeath() {
+         this.waitingForRespawn = true;
+@@ -2228,4 +_,67 @@
+         this.waitingForRespawn = false;
+         this.clientLoadedTimeoutTimer = 60;
+     }
++
++    // Paper start - add utilities
++    public org.bukkit.craftbukkit.entity.CraftPlayer getCraftPlayer() {
++        return this.player == null ? null : this.player.getBukkitEntity();
++    }
++
++    @Override
++    public void disconnectAsync(final net.minecraft.network.DisconnectionDetails disconnectionInfo) {
++        if (this.cserver.isPrimaryThread()) {
++            this.disconnect(disconnectionInfo);
++            return;
++        }
++
++        this.connection.setReadOnly();
++        this.server.scheduleOnMain(() -> {
++            this.disconnect(disconnectionInfo);
++            if (this.player.quitReason == null) {
++                // cancelled
++                this.connection.enableAutoRead();
++            }
++        });
++    }
++
++    public final boolean isDisconnected() {
++        return (!this.player.joining && !this.connection.isConnected());
++    }
++
++    @Override
++    public void handleResourcePackResponse(final net.minecraft.network.protocol.common.ServerboundResourcePackPacket packet) {
++        super.handleResourcePackResponse(packet);
++        // Paper start - store last pack status
++        org.bukkit.event.player.PlayerResourcePackStatusEvent.Status packStatus = org.bukkit.event.player.PlayerResourcePackStatusEvent.Status.values()[packet.action().ordinal()];
++        this.connection.resourcePackStatus = packStatus;
++        this.cserver.getPluginManager().callEvent(new org.bukkit.event.player.PlayerResourcePackStatusEvent(this.getCraftPlayer(), packet.id(), packStatus)); // CraftBukkit
++        // Paper end - store last pack status
++    }
++
++    // Paper start - adventure
++    public void disconnect(final net.kyori.adventure.text.Component reason) {
++        this.disconnect(reason, org.bukkit.event.player.PlayerKickEvent.Cause.UNKNOWN);
++    }
++
++    public void disconnect(final net.kyori.adventure.text.Component reason, org.bukkit.event.player.PlayerKickEvent.Cause cause) {
++        this.disconnect(io.papermc.paper.adventure.PaperAdventure.asVanilla(reason), io.papermc.paper.connection.DisconnectionReason.game(cause));
++    }
++
++    public void disconnect(final Component reason, org.bukkit.event.player.PlayerKickEvent.Cause cause) {
++        this.disconnect(reason, io.papermc.paper.connection.DisconnectionReason.game(cause));
++    }
++
++    public void disconnectAsync(net.kyori.adventure.text.Component reason, org.bukkit.event.player.PlayerKickEvent.Cause cause) {
++        this.disconnectAsync(io.papermc.paper.adventure.PaperAdventure.asVanilla(reason), cause);
++    }
++
++    public void disconnectAsync(Component reason, org.bukkit.event.player.PlayerKickEvent.Cause cause) {
++        this.disconnectAsync(reason, io.papermc.paper.connection.DisconnectionReason.game(cause));
++    }
++
++    @Override
++    public io.papermc.paper.connection.PaperPlayerGameConnection paperConnection() {
++        return this.playerGameConnection;
++    }
++    // Paper end
+ }

@@ -65,7 +65,7 @@
      public static final Codec<ResourceKey<Level>> RESOURCE_KEY_CODEC = ResourceKey.codec(Registries.DIMENSION);
      public static final ResourceKey<Level> OVERWORLD = ResourceKey.create(Registries.DIMENSION, Identifier.withDefaultNamespace("overworld"));
      public static final ResourceKey<Level> NETHER = ResourceKey.create(Registries.DIMENSION, Identifier.withDefaultNamespace("the_nether"));
-@@ -130,6 +_,40 @@
+@@ -130,6 +_,47 @@
      private final DamageSources damageSources;
      private final PalettedContainerFactory palettedContainerFactory;
      private long subTickCount;
@@ -88,8 +88,15 @@
 +    public final it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap<SpawnCategory> ticksPerSpawnCategory = new it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap<>();
 +    public boolean populating;
 +    public final org.spigotmc.SpigotWorldConfig spigotConfig; // Spigot
++    // Paper start - add paper world config
++    private final io.papermc.paper.configuration.WorldConfiguration paperConfig;
++    public io.papermc.paper.configuration.WorldConfiguration paperConfig() {
++        return this.paperConfig;
++    }
++    // Paper end - add paper world config
 +
 +    public static BlockPos lastPhysicsProblem; // Spigot
++    public final Map<ServerExplosion.CacheKey, Float> explosionDensityCache = new java.util.HashMap<>(); // Paper - Optimize explosions
 +    private org.spigotmc.TickLimiter entityLimiter;
 +    private org.spigotmc.TickLimiter tileLimiter;
 +    private int tileTickPosition;
@@ -106,14 +113,16 @@
  
      protected Level(
          WritableLevelData levelData,
-@@ -139,8 +_,20 @@
+@@ -139,8 +_,22 @@
          boolean isClientSide,
          boolean isDebug,
          long biomeZoomSeed,
 -        int maxChainedNeighborUpdates
 +        int maxChainedNeighborUpdates, org.bukkit.generator.ChunkGenerator gen, org.bukkit.generator.BiomeProvider biomeProvider, org.bukkit.World.Environment env
++        , java.util.function.Function<org.spigotmc.SpigotWorldConfig, io.papermc.paper.configuration.WorldConfiguration> paperWorldConfigCreator // Paper - create paper world config
      ) {
 +        this.spigotConfig = new org.spigotmc.SpigotWorldConfig(((net.minecraft.world.level.storage.PrimaryLevelData) levelData).getLevelName()); // Spigot
++        this.paperConfig = paperWorldConfigCreator.apply(this.spigotConfig); // Paper - create paper world config
 +        this.generator = gen;
 +        this.world = new CraftWorld((ServerLevel) this, gen, biomeProvider, env);
 +
@@ -128,6 +137,143 @@
          this.levelData = levelData;
          this.dimensionTypeRegistration = dimensionTypeRegistration;
          this.dimension = dimension;
+@@ -164,6 +_,13 @@
+         return null;
+     }
+ 
++    // Paper start
++    public net.minecraft.world.phys.BlockHitResult.Type clipDirect(Vec3 start, Vec3 end, net.minecraft.world.phys.shapes.CollisionContext context) {
++        // To be patched over
++        return this.clip(new ClipContext(start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, context)).getType();
++    }
++    // Paper end
++
+     public boolean isInWorldBounds(BlockPos pos) {
+         return this.isInsideBuildHeight(pos) && isInWorldBoundsHorizontal(pos);
+     }
+@@ -172,6 +_,46 @@
+         return this.isInsideBuildHeight(pos) && isInValidBoundsHorizontal(pos);
+     }
+ 
++    // Paper start - Cancel hit for vanished players
++    // ret true if no collision
++    public final boolean checkEntityCollision(BlockState state, Entity source, net.minecraft.world.phys.shapes.CollisionContext context,
++                                              BlockPos pos, boolean checkCanSee) {
++        // Copied from CollisionGetter#isUnobstructed(BlockState, BlockPos, CollisionContext) & EntityGetter#isUnobstructed(Entity, VoxelShape)
++        net.minecraft.world.phys.shapes.VoxelShape shape = state.getCollisionShape(this, pos, context);
++        if (shape.isEmpty()) {
++            return true;
++        }
++
++        shape = shape.move((double) pos.getX(), (double) pos.getY(), (double) pos.getZ());
++        if (shape.isEmpty()) {
++            return true;
++        }
++
++        List<Entity> entities = this.getEntities(null, shape.bounds());
++        for (int i = 0, len = entities.size(); i < len; ++i) {
++            Entity entity = entities.get(i);
++
++            if (checkCanSee && source instanceof net.minecraft.server.level.ServerPlayer && entity instanceof net.minecraft.server.level.ServerPlayer
++                && !((net.minecraft.server.level.ServerPlayer) source).getBukkitEntity().canSee(((net.minecraft.server.level.ServerPlayer) entity).getBukkitEntity())) {
++                continue;
++            }
++
++            // !entity.isRemoved() && entity.blocksBuilding && (source == null || !entity.isPassengerOfSameVehicle(source))
++            // elide the last check since vanilla calls with source = null
++            // only we care about the source for the canSee check
++            if (entity.isRemoved() || !entity.blocksBuilding) {
++                continue;
++            }
++
++            if (net.minecraft.world.phys.shapes.Shapes.joinIsNotEmpty(shape, net.minecraft.world.phys.shapes.Shapes.create(entity.getBoundingBox()), net.minecraft.world.phys.shapes.BooleanOp.AND)) {
++                return false;
++            }
++        }
++
++        return true;
++    }
++    // Paper end - Cancel hit for vanished players
++
+     public static boolean isInSpawnableBounds(BlockPos pos) {
+         return !isOutsideSpawnableHeight(pos.getY()) && isInWorldBoundsHorizontal(pos);
+     }
+@@ -195,8 +_,73 @@
+     }
+ 
+     public LevelChunk getChunk(int chunkX, int chunkZ) {
+-        return (LevelChunk)this.getChunk(chunkX, chunkZ, ChunkStatus.FULL);
+-    }
++        // Paper start - Perf: make sure loaded chunks get the inlined variant of this function
++        net.minecraft.server.level.ServerChunkCache cps = ((ServerLevel)this).getChunkSource();
++        LevelChunk ifLoaded = cps.getChunkAtIfLoadedImmediately(chunkX, chunkZ);
++        if (ifLoaded != null) {
++            return ifLoaded;
++        }
++        return (LevelChunk) cps.getChunk(chunkX, chunkZ, ChunkStatus.FULL, true); // Paper - avoid a method jump
++        // Paper end - Perf: make sure loaded chunks get the inlined variant of this function
++    }
++
++    // Paper start - if loaded
++    @Nullable
++    @Override
++    public final ChunkAccess getChunkIfLoadedImmediately(int x, int z) {
++        return ((ServerLevel)this).chunkSource.getChunkAtIfLoadedImmediately(x, z);
++    }
++
++    @Override
++    @Nullable
++    public final BlockState getBlockStateIfLoaded(BlockPos pos) {
++        // CraftBukkit start - tree generation
++        if (this.captureTreeGeneration) {
++            CapturedBlockState previous = this.capturedBlockStates.get(pos);
++            if (previous != null) {
++                return previous.getHandle();
++            }
++        }
++        // CraftBukkit end
++        if (this.isOutsideBuildHeight(pos)) {
++            return Blocks.VOID_AIR.defaultBlockState();
++        } else {
++            ChunkAccess chunk = this.getChunkIfLoadedImmediately(pos.getX() >> 4, pos.getZ() >> 4);
++
++            return chunk == null ? null : chunk.getBlockState(pos);
++        }
++    }
++
++    @Override
++    @Nullable
++    public final FluidState getFluidIfLoaded(BlockPos pos) {
++        ChunkAccess chunk = this.getChunkIfLoadedImmediately(pos.getX() >> 4, pos.getZ() >> 4);
++
++        return chunk == null ? null : chunk.getFluidState(pos);
++    }
++
++    @Override
++    public final boolean hasChunkAt(BlockPos pos) {
++        return this.getChunkIfLoaded(pos.getX() >> 4, pos.getZ() >> 4) != null; // Paper - Perf: Optimize LevelReader.hasChunkAt(BlockPos)Z
++    }
++
++    public final boolean isLoadedAndInBounds(BlockPos pos) { // Paper - final for inline
++        return this.getWorldBorder().isWithinBounds(pos) && this.getChunkIfLoadedImmediately(pos.getX() >> 4, pos.getZ() >> 4) != null;
++    }
++
++    public @Nullable LevelChunk getChunkIfLoaded(int x, int z) { // Overridden in ServerLevel for ABI compat which has final
++        return ((ServerLevel) this).getChunkSource().getChunkAtIfLoadedImmediately(x, z);
++    }
++
++    public final @Nullable LevelChunk getChunkIfLoaded(BlockPos pos) {
++        return ((ServerLevel) this).getChunkSource().getChunkAtIfLoadedImmediately(pos.getX() >> 4, pos.getZ() >> 4);
++    }
++
++    //  reduces need to do isLoaded before getType
++    public final @Nullable BlockState getBlockStateIfLoadedAndInBounds(BlockPos pos) {
++        return this.getWorldBorder().isWithinBounds(pos) ? this.getBlockStateIfLoaded(pos) : null;
++    }
++    // Paper end
+ 
+     @Override
+     public @Nullable ChunkAccess getChunk(int chunkX, int chunkZ, ChunkStatus status, boolean loadOrGenerate) {
 @@ -213,8 +_,37 @@
          return this.setBlock(pos, blockState, updateFlags, 512);
      }
@@ -313,6 +459,45 @@
  
      public void updatePOIOnBlockStateChange(BlockPos pos, BlockState oldState, BlockState newState) {
      }
+@@ -276,16 +_,34 @@
+             return false;
+         } else {
+             FluidState fluidState = this.getFluidState(pos);
+-            if (!(blockState.getBlock() instanceof BaseFireBlock)) {
+-                this.levelEvent(2001, pos, Block.getId(blockState));
++            // Paper start - BlockDestroyEvent; while the above removeBlock method looks very similar
++            // they are NOT used with same intent and the above should not fire this event. The above method is more of a BlockSetToAirEvent,
++            // it doesn't imply destruction of a block that plays a sound effect / drops an item.
++            boolean playEffect = true;
++            BlockState effectType = blockState;
++            int xp = blockState.getBlock().getExpDrop(blockState, (ServerLevel) this, pos, ItemStack.EMPTY, true);
++            if (com.destroystokyo.paper.event.block.BlockDestroyEvent.getHandlerList().getRegisteredListeners().length > 0) {
++                com.destroystokyo.paper.event.block.BlockDestroyEvent event = new com.destroystokyo.paper.event.block.BlockDestroyEvent(org.bukkit.craftbukkit.block.CraftBlock.at(this, pos), fluidState.createLegacyBlock().asBlockData(), effectType.asBlockData(), xp, dropResources);
++                if (!event.callEvent()) {
++                    return false;
++                }
++                effectType = ((org.bukkit.craftbukkit.block.data.CraftBlockData) event.getEffectBlock()).getState();
++                playEffect = event.playEffect();
++                dropResources = event.willDrop();
++                xp = event.getExpToDrop();
++            }
++            // Paper end - BlockDestroyEvent
++            if (playEffect && !(blockState.getBlock() instanceof BaseFireBlock)) { // Paper - BlockDestroyEvent
++                this.levelEvent(2001, pos, Block.getId(effectType)); // Paper - BlockDestroyEvent
+             }
+ 
+             if (dropResources) {
+                 BlockEntity blockEntity = blockState.hasBlockEntity() ? this.getBlockEntity(pos) : null;
+-                Block.dropResources(blockState, this, pos, blockEntity, breaker, ItemStack.EMPTY);
++                Block.dropResources(blockState, this, pos, blockEntity, breaker, ItemStack.EMPTY, false); // Paper - Properly handle xp dropping
++                blockState.getBlock().popExperience((ServerLevel) this, pos, xp, breaker); // Paper - Properly handle xp dropping; custom amount
+             }
+ 
+-            boolean destroyed = this.setBlock(pos, fluidState.createLegacyBlock(), 3, updateLimit);
++            boolean destroyed = this.setBlock(pos, fluidState.createLegacyBlock(), Block.UPDATE_ALL, updateLimit);
+             if (destroyed) {
+                 this.gameEvent(GameEvent.BLOCK_DESTROY, pos, GameEvent.Context.of(breaker, blockState));
+             }
 @@ -297,7 +_,15 @@
      public void addDestroyBlockEffect(BlockPos pos, BlockState blockState) {
      }
@@ -408,6 +593,22 @@
          }
      }
  
+@@ -500,6 +_,15 @@
+         return this.shouldTickBlocksAt(ChunkPos.pack(pos));
+     }
+ 
++    // Paper start - Option to prevent armor stands from doing entity lookups
++    @Override
++    public boolean noCollision(@Nullable Entity entity, AABB box) {
++        if (entity instanceof net.minecraft.world.entity.decoration.ArmorStand && !entity.level().paperConfig().entities.armorStands.doCollisionEntityLookups)
++            return false;
++        return LevelAccessor.super.noCollision(entity, box);
++    }
++    // Paper end - Option to prevent armor stands from doing entity lookups
++
+     public void explode(@Nullable Entity source, double x, double y, double z, float r, Level.ExplosionInteraction blockInteraction) {
+         this.explode(
+             source,
 @@ -610,6 +_,10 @@
  
      @Override
@@ -561,3 +762,20 @@
  
          public static final Codec<Level.ExplosionInteraction> CODEC = StringRepresentable.fromEnum(Level.ExplosionInteraction::values);
          private final String id;
+@@ -1037,4 +_,16 @@
+             return this.id;
+         }
+     }
++
++    // Paper start - allow patching this logic
++    public final int getEntityCount() {
++        int ret = 0;
++        for (net.minecraft.world.entity.Entity entity : this.getEntities().getAll()) {
++            if (entity.getBukkitEntity().isValid()) {
++                ++ret;
++            }
++        }
++        return ret;
++    }
++    // Paper end - allow patching this logic
+ }
