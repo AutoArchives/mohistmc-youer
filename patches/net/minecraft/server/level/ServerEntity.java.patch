@@ -14,7 +14,24 @@
          this.level = level;
          this.synchronizer = synchronizer;
          this.entity = entity;
-@@ -90,19 +_,20 @@
+@@ -85,24 +_,37 @@
+         this.trackedDataValues = entity.getEntityData().getNonDefaultValues();
+     }
+ 
++    // Paper start - fix desync when a player is added to the tracker
++    private boolean forceStateResync;
++    public void onPlayerAdd() {
++        this.forceStateResync = true;
++    }
++    // Paper end - fix desync when a player is added to the tracker
++
+     public void sendChanges() {
++        // Paper start - optimise collisions
++        if (((ca.spottedleaf.moonrise.patches.chunk_system.entity.ChunkSystemEntity)this.entity).moonrise$isHardColliding()) {
++            this.teleportDelay = 9999;
++        }
++        // Paper end - optimise collisions
+         this.entity.updateDataBeforeSync();
          List<Entity> passengers = this.entity.getPassengers();
          if (!passengers.equals(this.lastPassengers)) {
              this.synchronizer
@@ -41,7 +58,30 @@
                          data.tickCarriedBy(player, itemStack, frame);
                          Packet<?> packet = data.getUpdatePacket(id, player);
                          if (packet != null) {
-@@ -216,6 +_,27 @@
+@@ -115,7 +_,7 @@
+             this.sendDirtyEntityData();
+         }
+ 
+-        if (this.tickCount % this.updateInterval == 0 || this.entity.needsSync || this.entity.getEntityData().isDirty()) {
++        if (this.forceStateResync || this.tickCount % this.updateInterval == 0 || this.entity.needsSync || this.entity.getEntityData().isDirty()) { // Paper - fix desync when a player is added to the tracker
+             byte yRotn = Mth.packDegrees(this.entity.getYRot());
+             byte xRotn = Mth.packDegrees(this.entity.getXRot());
+             boolean shouldSendRotation = Math.abs(yRotn - this.lastSentYRot) >= 1 || Math.abs(xRotn - this.lastSentXRot) >= 1;
+@@ -143,7 +_,7 @@
+                 long ya = this.positionCodec.encodeY(currentPosition);
+                 long za = this.positionCodec.encodeZ(currentPosition);
+                 boolean deltaTooBig = xa < -32768L || xa > 32767L || ya < -32768L || ya > 32767L || za < -32768L || za > 32767L;
+-                if (this.entity.getRequiresPrecisePosition()
++                if (this.forceStateResync || this.entity.getRequiresPrecisePosition() // Paper - fix desync when a player is added to the tracker
+                     || deltaTooBig
+                     || this.teleportDelay > 400
+                     || this.wasRiding
+@@ -212,10 +_,32 @@
+             }
+ 
+             this.entity.needsSync = false;
++            this.forceStateResync = false; // Paper - fix desync when a player is added to the tracker
+         }
  
          this.tickCount++;
          if (this.entity.hurtMarked) {

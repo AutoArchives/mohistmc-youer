@@ -10,24 +10,6 @@
  
  public class ImbueRecipe extends NormalCraftingRecipe {
      public static final MapCodec<ImbueRecipe> MAP_CODEC = RecordCodecBuilder.mapCodec(
-@@ -79,6 +_,17 @@
-         return result;
-     }
- 
-+    // CraftBukkit start
-+    @Override
-+    public org.bukkit.inventory.Recipe toBukkitRecipe(NamespacedKey id) {
-+        org.bukkit.craftbukkit.inventory.CraftItemStack result = org.bukkit.craftbukkit.inventory.CraftItemStack.asCraftMirror(this.result.create());
-+        org.bukkit.craftbukkit.inventory.CraftComplexRecipe recipe = new org.bukkit.craftbukkit.inventory.CraftComplexRecipe(id, result, this);
-+        recipe.setGroup(this.group());
-+        recipe.setCategory(org.bukkit.craftbukkit.inventory.CraftRecipe.getCategory(this.category()));
-+        return recipe;
-+    }
-+    // CraftBukkit end
-+
-     @Override
-     public RecipeSerializer<ImbueRecipe> getSerializer() {
-         return SERIALIZER;
 @@ -105,4 +_,15 @@
              )
          );

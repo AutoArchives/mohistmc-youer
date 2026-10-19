@@ -8,10 +8,13 @@
  import net.minecraft.world.level.entity.ChunkStatusUpdateListener;
  import net.minecraft.world.level.gamerules.GameRules;
  import net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator;
-@@ -152,6 +_,33 @@
+@@ -150,7 +_,34 @@
+     private final Queue<Runnable> unloadQueue = Queues.newConcurrentLinkedQueue();
+     private final AtomicInteger activeChunkWrites = new AtomicInteger();
      public int serverViewDistance;
-     private final WorldGenContext worldGenContext;
- 
+-    private final WorldGenContext worldGenContext;
++    public final WorldGenContext worldGenContext; // Paper - public
++
 +    // CraftBukkit start - recursion-safe executor for Chunk loadCallback() and unloadCallback()
 +    public final CallbackExecutor callbackExecutor = new CallbackExecutor();
 +    public static final class CallbackExecutor implements java.util.concurrent.Executor, Runnable {
@@ -38,10 +41,9 @@
 +        return this.pendingUnloads.get(ca.spottedleaf.moonrise.common.util.CoordinateUtils.getChunkKey(chunkX, chunkZ));
 +    }
 +    // Paper end
-+
+ 
      public ChunkMap(
          ServerLevel level,
-         LevelStorageSource.LevelStorageAccess levelStorage,
 @@ -179,13 +_,19 @@
          this.level = level;
          RegistryAccess registryAccess = level.registryAccess();
@@ -64,15 +66,40 @@
          this.mainThreadExecutor = mainThreadExecutor;
          ConsecutiveExecutor worldgen = new ConsecutiveExecutor(executor, "worldgen");
          this.chunkStatusListener = chunkStatusListener;
-@@ -212,6 +_,12 @@
+@@ -212,6 +_,37 @@
          this.chunksToEagerlySave.add(chunkPos.pack());
      }
  
-+    // Paper start
-+    public int getMobCountNear(final ServerPlayer player, final net.minecraft.world.entity.MobCategory mobCategory) {
-+        return -1;
++    // Paper start - Optional per player mob spawns
++    public void updatePlayerMobTypeMap(final Entity entity) {
++        if (!this.level.paperConfig().entities.spawning.perPlayerMobSpawns) {
++            return;
++        }
++
++        final int index = entity.getType().getCategory().ordinal();
++        // Youer - vanilla per-chunk player lookup (same source as LocalMobCapCalculator)
++        for (final ServerPlayer player : this.getPlayersCloseForSpawning(entity.chunkPosition())) {
++            ++player.mobCounts[index];
++        }
 +    }
-+    // Paper end
++
++    // Paper start - per player mob count backoff
++    public void updateFailurePlayerMobTypeMap(final int chunkX, final int chunkZ, final net.minecraft.world.entity.MobCategory mobCategory) {
++        if (!this.level.paperConfig().entities.spawning.perPlayerMobSpawns) {
++            return;
++        }
++        final int idx = mobCategory.ordinal();
++        // Youer - vanilla per-chunk player lookup (same source as LocalMobCapCalculator)
++        for (final ServerPlayer player : this.getPlayersCloseForSpawning(new ChunkPos(chunkX, chunkZ))) {
++            ++player.mobBackoffCounts[idx];
++        }
++    }
++    // Paper end - per player mob count backoff
++
++    public int getMobCountNear(final ServerPlayer player, final net.minecraft.world.entity.MobCategory mobCategory) {
++        return player.mobCounts[mobCategory.ordinal()] + player.mobBackoffCounts[mobCategory.ordinal()]; // Paper - per player mob count backoff
++    }
++    // Paper end - Optional per player mob spawns
 +
      protected ChunkGenerator generator() {
          return this.worldGenContext.generator();
@@ -216,7 +243,12 @@
              Optional<ChunkAccess> chunk = Optional.ofNullable(holder.getLatestChunk());
              Optional<LevelChunk> fullChunk = chunk.flatMap(
                  chunkAccess -> chunkAccess instanceof LevelChunk ? Optional.of((LevelChunk)chunkAccess) : Optional.empty()
-@@ -916,14 +_,14 @@
+@@ -912,18 +_,18 @@
+         return this.read(pos).thenApplyAsync(chunkTag -> chunkTag.map(this::upgradeChunkTag), Util.backgroundExecutor().forName("upgradeChunk"));
+     }
+ 
+-    private CompoundTag upgradeChunkTag(CompoundTag tag) {
++    public CompoundTag upgradeChunkTag(CompoundTag tag) { // Paper - rewrite chunk system - public
          return this.upgradeChunkTag(
              tag,
              -1,
@@ -363,10 +395,11 @@
          if (entity instanceof ServerPlayer player) {
              this.updatePlayerStatus(player, false);
  
-@@ -1291,6 +_,20 @@
+@@ -1291,15 +_,36 @@
          }
      }
  
+-    public class DistanceManager extends net.minecraft.server.level.DistanceManager {
 +    // Neo: Getter for players watching an entity.
 +    public List<ServerPlayer> getPlayersWatching(Entity entity) {
 +        var trackedEntity = entityMap.get(entity.getId());
@@ -381,9 +414,26 @@
 +        }
 +    }
 +
-     public class DistanceManager extends net.minecraft.server.level.DistanceManager {
++    public class DistanceManager extends net.minecraft.server.level.DistanceManager implements ca.spottedleaf.moonrise.patches.chunk_system.level.chunk.ChunkSystemDistanceManager { // Paper - rewrite chunk system
          protected DistanceManager(TicketStorage ticketStorage, Executor executor, Executor mainThreadExecutor) {
              Objects.requireNonNull(ChunkMap.this);
+             super(ticketStorage, executor, mainThreadExecutor);
+         }
+ 
++        // Paper start - rewrite chunk system
++        @Override
++        public final ChunkMap moonrise$getChunkMap() {
++            return ChunkMap.this;
++        }
++        // Paper end - rewrite chunk system
++
+         @Override
+         protected boolean isChunkToRemove(long node) {
+-            return ChunkMap.this.toDrop.contains(node);
++            throw new UnsupportedOperationException(); // Paper - rewrite chunk system
+         }
+ 
+         @Override
 @@ -1318,13 +_,12 @@
          private final Entity entity;
          private final int range;
@@ -426,7 +476,7 @@
              if (this.seenBy.remove(player.connection)) {
                  this.serverEntity.removePairing(player);
                  if (this.seenBy.isEmpty()) {
-@@ -1380,23 +_,47 @@
+@@ -1380,23 +_,48 @@
          }
  
          public void updatePlayer(ServerPlayer player) {
@@ -474,6 +524,7 @@
                          ChunkMap.this.level.debugSynchronizers().startTrackingEntity(player, this.entity);
 +                        }
 +                        // Paper end - entity tracking events
++                        this.serverEntity.onPlayerAdd(); // Paper - fix desync when a player is added to the tracker
                      }
                  } else {
                      this.removePlayer(player);

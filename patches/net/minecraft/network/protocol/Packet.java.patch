@@ -20,3 +20,39 @@
      default boolean isSkippable() {
          return false;
      }
+@@ -19,7 +_,34 @@
+         return false;
+     }
+ 
+-    static <B extends ByteBuf, T extends Packet<?>> StreamCodec<B, T> codec(StreamMemberEncoder<B, T> writer, StreamDecoder<B, T> reader) {
++    static <B extends ByteBuf, T extends Packet<?>> StreamCodec<B, T> codec(final StreamMemberEncoder<B, T> writer, final StreamDecoder<B, T> reader) {
+         return StreamCodec.ofMember(writer, reader);
+     }
++
++    // Paper start - Optimize network
++    /**
++     * @param player null if not at PLAY stage yet
++     */
++    default void onPacketDispatch(net.minecraft.server.level.@org.jspecify.annotations.Nullable ServerPlayer player) {
++    }
++
++    /**
++     * @param player null if not at PLAY stage yet
++     * @param future can be null if packet was cancelled
++     */
++    default void onPacketDispatchFinish(net.minecraft.server.level.@org.jspecify.annotations.Nullable ServerPlayer player, io.netty.channel.@org.jspecify.annotations.Nullable ChannelFuture future) {
++    }
++
++    default boolean hasFinishListener() {
++        return false;
++    }
++
++    default boolean isReady() {
++        return true;
++    }
++
++    default java.util.@org.jspecify.annotations.Nullable List<Packet<?>> getExtraPackets() {
++        return null;
++    }
++    // Paper end - Optimize network
+ }

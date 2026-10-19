@@ -52,17 +52,17 @@ public final class PaperHooks extends BaseChunkSystemHooks implements PlatformHo
 
     @Override
     public boolean hasCurrentlyLoadingChunk() {
-        return false;
+        return true; // NeoForge - bypass the future chain while a chunk is loading
     }
 
     @Override
     public LevelChunk getCurrentlyLoadingChunk(final GenerationChunkHolder holder) {
-        return null;
+        return holder.currentlyLoading;
     }
 
     @Override
     public void setCurrentlyLoading(final GenerationChunkHolder holder, final LevelChunk levelChunk) {
-
+        holder.currentlyLoading = levelChunk;
     }
 
     @Override
@@ -102,12 +102,12 @@ public final class PaperHooks extends BaseChunkSystemHooks implements PlatformHo
 
     @Override
     public void addToGetEntities(final Level world, final Entity entity, final AABB boundingBox, final Predicate<? super Entity> predicate, final List<Entity> into) {
-        final Collection<EnderDragonPart> parts = world.dragonParts();
+        final Collection<? extends net.neoforged.neoforge.entity.PartEntity<?>> parts = world.dragonParts();
         if (parts.isEmpty()) {
             return;
         }
 
-        for (final EnderDragonPart part : parts) {
+        for (final net.neoforged.neoforge.entity.PartEntity<?> part : parts) {
             if (part != entity && part.getBoundingBox().intersects(boundingBox) && (predicate == null || predicate.test(part))) {
                 into.add(part);
             }
@@ -121,11 +121,11 @@ public final class PaperHooks extends BaseChunkSystemHooks implements PlatformHo
             return;
         }
 
-        final Collection<EnderDragonPart> parts = world.dragonParts();
+        final Collection<? extends net.neoforged.neoforge.entity.PartEntity<?>> parts = world.dragonParts();
         if (parts.isEmpty()) {
             return;
         }
-        for (final EnderDragonPart part : parts) {
+        for (final net.neoforged.neoforge.entity.PartEntity<?> part : parts) {
             if (!part.getBoundingBox().intersects(boundingBox)) {
                 continue;
             }
@@ -157,6 +157,9 @@ public final class PaperHooks extends BaseChunkSystemHooks implements PlatformHo
         }
         if (type.shouldKeepDimensionActive()) {
             ret.add(ca.spottedleaf.moonrise.patches.chunk_system.ticket.ChunkSystemTicketType.COUNTER_TYPE_KEEP_DIMENSION_ACTIVE);
+        }
+        if (type.forceNaturalSpawning()) { // NeoForge
+            ret.add(ca.spottedleaf.moonrise.patches.chunk_system.ticket.ChunkSystemTicketType.COUNTER_TYPER_NATURAL_SPAWNING_FORCED);
         }
 
         return ret.toLongArray();

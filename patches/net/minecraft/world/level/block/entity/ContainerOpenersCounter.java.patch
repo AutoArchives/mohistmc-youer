@@ -8,10 +8,16 @@
  
      protected abstract void onOpen(final Level level, final BlockPos pos, final BlockState blockState);
  
-@@ -23,10 +_,36 @@
+@@ -23,10 +_,48 @@
  
      protected abstract void openerCountChanged(final Level level, final BlockPos pos, final BlockState blockState, int previous, int current);
  
++    // Paper start - delay open/close callbacks
++    public boolean delayCallbacks() {
++        return false;
++    }
++    // Paper end - delay open/close callbacks
++
 +    // CraftBukkit start
 +    public void onOpenAPI(Level level, BlockPos blockpos, BlockState blockstate) {
 +        onOpen(level, blockpos, blockstate);
@@ -29,6 +35,12 @@
      public abstract boolean isOwnContainer(final Player player);
  
      public void incrementOpeners(LivingEntity entity, Level level, BlockPos pos, BlockState blockState, double maxInteractionRange) {
++        // Paper start - delay open/close callbacks
++        if (this.delayCallbacks()) {
++            scheduleRecheck(level, pos, blockState, 1);
++            return;
++        }
++        // Paper end - delay open/close callbacks
 +        int oldPower = Math.max(0, Math.min(15, this.openCount)); // CraftBukkit - Get power before new viewer is added
          int previous = this.openCount++;
 +
@@ -45,10 +57,16 @@
          if (previous == 0) {
              this.onOpen(level, pos, blockState);
              level.gameEvent(entity, GameEvent.CONTAINER_OPEN, pos);
-@@ -38,7 +_,20 @@
+@@ -38,7 +_,26 @@
      }
  
      public void decrementOpeners(LivingEntity entity, Level level, BlockPos pos, BlockState blockState) {
++        // Paper start - delay open/close callbacks
++        if (this.delayCallbacks()) {
++            scheduleRecheck(level, pos, blockState, 1);
++            return;
++        }
++        // Paper end - delay open/close callbacks
 +        if (this.openCount == 0) return; // Paper - Prevent ContainerOpenersCounter openCount from going negative
 +        int oldPower = Math.max(0, Math.min(15, this.openCount)); // CraftBukkit - Get power before new viewer is added
          int previous = this.openCount--;
@@ -87,3 +105,17 @@
              boolean isOpen = openCount != 0;
              boolean wasOpen = prevCount != 0;
              if (isOpen && !wasOpen) {
+@@ -98,6 +_,12 @@
+     }
+ 
+     private static void scheduleRecheck(Level level, BlockPos blockPos, BlockState blockState) {
+-        level.scheduleTick(blockPos, blockState.getBlock(), 5);
++        // Paper start - delay open/close callbacks
++        scheduleRecheck(level, blockPos, blockState, 5);
++    }
++
++    private static void scheduleRecheck(final Level level, final BlockPos blockPos, final BlockState blockState, final int delay) {
++        level.scheduleTick(blockPos, blockState.getBlock(), delay);
++        // Paper end - delay open/close callbacks
+     }
+ }

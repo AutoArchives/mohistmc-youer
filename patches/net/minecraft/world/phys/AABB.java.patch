@@ -8,6 +8,15 @@
      public final double minX;
      public final double minY;
      public final double minZ;
+@@ -324,7 +_,7 @@
+         }
+     }
+ 
+-    private static @Nullable Direction getDirection(
++    public static @Nullable Direction getDirection( // Paper - optimise collisions - public
+         AABB aabb, Vec3 from, double[] scaleReference, @Nullable Direction direction, double dx, double dy, double dz
+     ) {
+         return getDirection(aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, aabb.maxY, aabb.maxZ, from, scaleReference, direction, dx, dy, dz);
 @@ -458,6 +_,14 @@
          return new AABB(
              center.x - sizeX / 2.0, center.y - sizeY / 2.0, center.z - sizeZ / 2.0, center.x + sizeX / 2.0, center.y + sizeY / 2.0, center.z + sizeZ / 2.0

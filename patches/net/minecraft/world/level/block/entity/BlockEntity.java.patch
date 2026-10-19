@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/level/block/entity/BlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/BlockEntity.java
-@@ -36,24 +_,37 @@
+@@ -36,24 +_,38 @@
  import net.minecraft.world.level.storage.TagValueOutput;
  import net.minecraft.world.level.storage.ValueInput;
  import net.minecraft.world.level.storage.ValueOutput;
@@ -12,6 +12,7 @@
  
 -public abstract class BlockEntity implements DebugValueSource, TypedInstance<BlockEntityType<?>>, net.neoforged.neoforge.common.extensions.IBlockEntityExtension {
 +public abstract class BlockEntity extends net.neoforged.neoforge.attachment.AttachmentHolder implements DebugValueSource, TypedInstance<BlockEntityType<?>>, net.neoforged.neoforge.common.extensions.IBlockEntityExtension {
++    static boolean ignoreBlockEntityUpdates; // Paper - Perf: Optimize Hoppers
      private static final Codec<BlockEntityType<?>> TYPE_CODEC = BuiltInRegistries.BLOCK_ENTITY_TYPE.byNameCodec();
      private static final Logger LOGGER = LogUtils.getLogger();
 +    @Deprecated // Neo: always use getType()
@@ -107,6 +108,14 @@
      }
  
      public void saveId(ValueOutput output) {
+@@ -205,6 +_,7 @@
+     }
+ 
+     public void setChanged() {
++        if (ignoreBlockEntityUpdates) return; // Paper - Perf: Optimize Hoppers
+         if (this.level != null) {
+             setChanged(this.level, this.worldPosition, this.blockState);
+         }
 @@ -239,10 +_,14 @@
  
      public void setRemoved() {

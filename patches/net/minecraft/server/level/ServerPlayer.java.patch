@@ -52,7 +52,7 @@
  import net.minecraft.world.level.gameevent.GameEvent;
  import net.minecraft.world.level.gamerules.GameRules;
  import net.minecraft.world.level.portal.TeleportTransition;
-@@ -199,6 +_,30 @@
+@@ -199,11 +_,36 @@
  import net.minecraft.world.scores.Scoreboard;
  import net.minecraft.world.scores.Team;
  import net.minecraft.world.scores.criteria.ObjectiveCriteria;
@@ -83,6 +83,13 @@
  import org.jspecify.annotations.Nullable;
  import org.slf4j.Logger;
  
+-public class ServerPlayer extends Player {
++public class ServerPlayer extends Player implements ca.spottedleaf.moonrise.patches.chunk_system.player.ChunkSystemServerPlayer { // Paper - rewrite chunk system
+     private static final Logger LOGGER = LogUtils.getLogger();
++    public long lastSave = MinecraftServer.currentTick; // Paper - Incremental chunk and player saving
+     private static final int NEUTRAL_MOB_DEATH_NOTIFICATION_RADII_XZ = 32;
+     private static final int NEUTRAL_MOB_DEATH_NOTIFICATION_RADII_Y = 10;
+     private static final int FLY_STAT_RECORDING_SPEED = 25;
 @@ -226,7 +_,7 @@
      private static final boolean DEFAULT_SEEN_CREDITS = false;
      private static final boolean DEFAULT_SPAWN_EXTRA_PARTICLES_ON_FALL = false;
@@ -158,7 +165,7 @@
          public void slotChanged(AbstractContainerMenu container, int slotIndex, ItemStack changedItem) {
              Slot slot = container.getSlot(slotIndex);
              if (!(slot instanceof ResultSlot)) {
-@@ -375,10 +_,53 @@
+@@ -375,10 +_,87 @@
          public void sendSystemMessage(Component message) {
              ServerPlayer.this.sendSystemMessage(message);
          }
@@ -185,6 +192,11 @@
 +    public boolean queueHealthUpdatePacket;
 +    public net.minecraft.network.protocol.game.@Nullable ClientboundSetHealthPacket queuedHealthUpdatePacket;
 +    // Paper end - cancellable death event
++    // Paper start - Optional per player mob spawns
++    public static final int MOBCATEGORY_TOTAL_ENUMS = net.minecraft.world.entity.MobCategory.values().length;
++    public final int[] mobCounts = new int[MOBCATEGORY_TOTAL_ENUMS];
++    // Paper end - Optional per player mob spawns
++    public final int[] mobBackoffCounts = new int[MOBCATEGORY_TOTAL_ENUMS]; // Paper - per player mob count backoff
 +    // Neo: Used to track partial TIME_SINCE_REST increases for dimensions in which clocks move at different speeds. No need to persist, at most Phantoms will spawn one tick too early for each save/load cycle.
 +    private float partialTimeSinceRestTick;
 +
@@ -208,11 +220,40 @@
 +    public boolean isRealPlayer; // Paper
 +    public com.destroystokyo.paper.event.entity.@Nullable PlayerNaturallySpawnCreaturesEvent playerNaturallySpawnedEvent; // Paper - PlayerNaturallySpawnCreaturesEvent
 +    public org.bukkit.event.player.PlayerQuitEvent.@Nullable QuitReason quitReason = null; // Paper - Add API for quit reason; there are a lot of changes to do if we change all methods leading to the event
++    // Paper start - rewrite chunk system
++    private ca.spottedleaf.moonrise.patches.chunk_system.player.RegionizedPlayerChunkLoader.PlayerChunkLoaderData chunkLoader;
++    private final ca.spottedleaf.moonrise.patches.chunk_system.player.RegionizedPlayerChunkLoader.ViewDistanceHolder viewDistanceHolder = new ca.spottedleaf.moonrise.patches.chunk_system.player.RegionizedPlayerChunkLoader.ViewDistanceHolder();
++
++    @Override
++    public final boolean moonrise$isRealPlayer() {
++        return this.isRealPlayer;
++    }
++
++    @Override
++    public final void moonrise$setRealPlayer(final boolean real) {
++        this.isRealPlayer = real;
++    }
++
++    @Override
++    public final ca.spottedleaf.moonrise.patches.chunk_system.player.RegionizedPlayerChunkLoader.PlayerChunkLoaderData moonrise$getChunkLoader() {
++        return this.chunkLoader;
++    }
++
++    @Override
++    public final void moonrise$setChunkLoader(final ca.spottedleaf.moonrise.patches.chunk_system.player.RegionizedPlayerChunkLoader.PlayerChunkLoaderData loader) {
++        this.chunkLoader = loader;
++    }
++
++    @Override
++    public final ca.spottedleaf.moonrise.patches.chunk_system.player.RegionizedPlayerChunkLoader.ViewDistanceHolder moonrise$getViewDistanceHolder() {
++        return this.viewDistanceHolder;
++    }
++    // Paper end - rewrite chunk system
 +    public boolean initialized = false;
  
      public ServerPlayer(MinecraftServer server, ServerLevel level, GameProfile gameProfile, ClientInformation clientInformation) {
          super(level, gameProfile);
-@@ -389,8 +_,24 @@
+@@ -389,14 +_,30 @@
          this.recipeBook = new ServerRecipeBook((id, output) -> server.getRecipeManager().listDisplaysForRecipe(id, output));
          this.stats = server.getPlayerList().getPlayerStats(this);
          this.advancements = server.getPlayerList().getPlayerAdvancements(this);
@@ -238,6 +279,13 @@
      }
  
      @Override
+     public BlockPos adjustSpawnLocation(ServerLevel level, BlockPos spawnSuggestion) {
+         CompletableFuture<Vec3> future = PlayerSpawnFinder.findSpawn(level, spawnSuggestion);
+-        this.server.managedBlock(future::isDone);
++        level.chunkSource.mainThreadProcessor.managedBlock(future::isDone); // Paper - rewrite chunk system
+         return BlockPos.containing(future.join());
+     }
+ 
 @@ -408,13 +_,36 @@
          this.seenCredits = input.getBooleanOr("seenCredits", false);
          input.read("recipeBook", ServerRecipeBook.Packed.CODEC)

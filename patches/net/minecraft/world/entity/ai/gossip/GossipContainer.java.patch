@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/entity/ai/gossip/GossipContainer.java
 +++ b/net/minecraft/world/entity/ai/gossip/GossipContainer.java
-@@ -24,6 +_,10 @@
+@@ -24,14 +_,26 @@
  import net.minecraft.util.ExtraCodecs;
  import net.minecraft.util.RandomSource;
  import net.minecraft.util.VisibleForDebug;
@@ -11,7 +11,9 @@
  
  public class GossipContainer {
      public static final Codec<GossipContainer> CODEC = GossipContainer.GossipEntry.CODEC
-@@ -32,6 +_,14 @@
+         .listOf()
+-        .xmap(GossipContainer::new, container -> container.unpack().toList());
++        .xmap(GossipContainer::new, GossipContainer::decompress); // Paper - Perf: Remove streams from hot code
      public static final int DISCARD_THRESHOLD = 2;
      public final Map<UUID, GossipContainer.EntityGossips> gossips = new HashMap<>();
  
@@ -26,6 +28,30 @@
      public GossipContainer() {
      }
  
+@@ -65,8 +_,22 @@
+         return this.gossips.entrySet().stream().flatMap(e -> e.getValue().unpack(e.getKey()));
+     }
+ 
++    // Paper start - Perf: Remove streams from hot code
++    private List<GossipContainer.GossipEntry> decompress() {
++        final List<GossipContainer.GossipEntry> entries = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>();
++        for (final Map.Entry<UUID, GossipContainer.EntityGossips> gossips : this.gossips.entrySet()) {
++            for (final GossipContainer.GossipEntry entry : gossips.getValue().decompress(gossips.getKey())) {
++                if (entry.weightedValue() != 0) {
++                    entries.add(entry);
++                }
++            }
++        }
++        return entries;
++    }
++    // Paper end - Perf: Remove streams from hot code
++
+     private Collection<GossipContainer.GossipEntry> selectGossipsForTransfer(RandomSource random, int maxCount) {
+-        List<GossipContainer.GossipEntry> entries = this.unpack().toList();
++        List<GossipContainer.GossipEntry> entries = this.decompress(); // Paper - Perf: Remove streams from hot code
+         if (entries.isEmpty()) {
+             return Collections.emptyList();
+         } else {
 @@ -106,8 +_,16 @@
      }
  
@@ -92,10 +118,31 @@
      public void remove(UUID target, GossipType type, int amountToRemove) {
          this.add(target, type, -amountToRemove);
      }
-@@ -179,6 +_,16 @@
-             return this.entries.object2IntEntrySet().stream().filter(e -> types.test(e.getKey())).mapToInt(e -> e.getIntValue() * e.getKey().weight).sum();
-         }
+@@ -176,8 +_,34 @@
+         private final Object2IntMap<GossipType> entries = new Object2IntOpenHashMap<>();
  
+         public int weightedValue(Predicate<GossipType> types) {
+-            return this.entries.object2IntEntrySet().stream().filter(e -> types.test(e.getKey())).mapToInt(e -> e.getIntValue() * e.getKey().weight).sum();
+-        }
++            // Paper start - Perf: Remove streams from hot code
++            int weight = 0;
++            for (Object2IntMap.Entry<GossipType> entry : this.entries.object2IntEntrySet()) {
++                if (types.test(entry.getKey())) {
++                    weight += entry.getIntValue() * entry.getKey().weight;
++                }
++            }
++            return weight;
++        }
++
++        public List<GossipContainer.GossipEntry> decompress(final UUID target) {
++            final List<GossipContainer.GossipEntry> entries = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>();
++            for (Object2IntMap.Entry<GossipType> entry : this.entries.object2IntEntrySet()) {
++                entries.add(new GossipContainer.GossipEntry(target, entry.getKey(), entry.getIntValue()));
++            }
++            return entries;
++        }
++        // Paper end - Perf: Remove streams from hot code
++
 +        // CraftBukkit start
 +        public int unweightedValue(Predicate<GossipType> predicate) {
 +            return this.entries.object2IntEntrySet().stream().filter((entry) -> {
@@ -105,10 +152,9 @@
 +            }).sum();
 +        }
 +        // CraftBukkit end
-+
+ 
          public Stream<GossipContainer.GossipEntry> unpack(UUID target) {
              return this.entries.object2IntEntrySet().stream().map(e -> new GossipContainer.GossipEntry(target, e.getKey(), e.getIntValue()));
-         }
 @@ -215,6 +_,44 @@
          public void remove(GossipType type) {
              this.entries.removeInt(type);

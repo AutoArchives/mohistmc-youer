@@ -202,12 +202,18 @@
          Validate.validState(this.state == ServerLoginPacketListenerImpl.State.KEY, "Unexpected key packet");
  
          final String digest;
-@@ -182,15 +_,12 @@
+@@ -177,20 +_,15 @@
+             }
+ 
+             SecretKey secretKey = packet.getSecretKey(serverPrivateKey);
+-            Cipher decryptCipher = Crypt.getCipher(2, secretKey);
+-            Cipher encryptCipher = Crypt.getCipher(1, secretKey);
              digest = new BigInteger(Crypt.digestData("", this.server.getKeyPair().getPublic(), secretKey)).toString(16);
              this.state = ServerLoginPacketListenerImpl.State.AUTHENTICATING;
-             this.connection.setEncryptionKey(decryptCipher, encryptCipher);
+-            this.connection.setEncryptionKey(decryptCipher, encryptCipher);
 -        } catch (CryptException var7) {
 -            throw new IllegalStateException("Protocol error", var7);
++            this.connection.setEncryptionKey(secretKey); // Paper - Use Velocity cipher
 +        } catch (CryptException e) {
 +            throw new IllegalStateException("Protocol error", e);
          }

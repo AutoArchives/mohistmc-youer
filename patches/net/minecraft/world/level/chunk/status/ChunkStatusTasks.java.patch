@@ -9,7 +9,15 @@
              context.generator()
                  .createStructures(
                      level.registryAccess(),
-@@ -189,18 +_,73 @@
+@@ -182,25 +_,80 @@
+             } else {
+                 levelChunk = new LevelChunk(level, protoChunk, lc -> {
+                     try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(chunk.problemPath(), LOGGER)) {
+-                        postLoadProtoChunk(level, TagValueInput.create(reporter, level.registryAccess(), protoChunk.getEntities()));
++                        postLoadProtoChunk(level, TagValueInput.create(reporter, level.registryAccess(), protoChunk.getEntities()), protoChunk.getPos()); // Paper - rewrite chunk system
+                     }
+                 });
+                 holder.replaceProtoChunk(new ImposterProtoChunk(levelChunk, false));
              }
  
              levelChunk.setFullStatus(holder::getFullStatus);
@@ -33,7 +41,8 @@
          }, context.mainThreadExecutor());
      }
  
-     public static void postLoadProtoChunk(ServerLevel level, ValueInput.ValueInputList entities) {
+-    public static void postLoadProtoChunk(ServerLevel level, ValueInput.ValueInputList entities) {
++    public static void postLoadProtoChunk(final ServerLevel level, final ValueInput.ValueInputList entities, final ChunkPos pos) { // Paper - rewrite chunk system - add ChunkPos param
          if (!entities.isEmpty()) {
 -            level.addWorldGenChunkEntities(EntityType.loadEntitiesRecursive(entities, level, EntitySpawnReason.LOAD));
 -        }
@@ -41,7 +50,7 @@
 +            // Paper start - duplicate uuid resolving
 +            level.addWorldGenChunkEntities(EntityType.loadEntitiesRecursive(entities, level, EntitySpawnReason.LOAD).filter((entity) -> {
 +                return !checkDupeUUID(level, entity);
-+            }));
++            }), pos); // Paper - rewrite chunk system
 +            // Paper end - duplicate uuid resolving
 +        }
 +    }

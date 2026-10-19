@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/level/chunk/storage/SimpleRegionStorage.java
 +++ b/net/minecraft/world/level/chunk/storage/SimpleRegionStorage.java
-@@ -14,8 +_,12 @@
+@@ -14,27 +_,45 @@
  import net.minecraft.nbt.CompoundTag;
  import net.minecraft.nbt.NbtUtils;
  import net.minecraft.nbt.Tag;
@@ -12,8 +12,46 @@
 +import net.minecraft.world.level.chunk.status.ChunkStatus;
  import org.jspecify.annotations.Nullable;
  
- public class SimpleRegionStorage implements AutoCloseable {
-@@ -42,17 +_,53 @@
+-public class SimpleRegionStorage implements AutoCloseable {
+-    private final IOWorker worker;
++public class SimpleRegionStorage implements ca.spottedleaf.moonrise.patches.chunk_system.storage.ChunkSystemSimpleRegionStorage, AutoCloseable { // Paper - rewrite chunk system
++    private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger(); // Paper - rewrite chunk system
++    private final RegionFileStorage storage; // Paper - rewrite chunk system
+     private final DataFixer fixerUpper;
+     private final DataFixTypes dataFixType;
+ 
++    // Paper start - rewrite chunk system
++    @Override
++    public final RegionFileStorage moonrise$getRegionStorage() {
++        return this.storage;
++    }
++    // Paper end - rewrite chunk system
++
+     public SimpleRegionStorage(RegionStorageInfo info, Path folder, DataFixer fixerUpper, boolean syncWrites, DataFixTypes dataFixType) {
+         this.fixerUpper = fixerUpper;
+         this.dataFixType = dataFixType;
+-        this.worker = new IOWorker(info, folder, syncWrites);
++        this.storage = new IOWorker(info, folder, syncWrites).storage; // Paper - rewrite chunk system
+     }
+ 
+     public boolean isOldChunkAround(ChunkPos pos, int range) {
+-        return this.worker.isOldChunkAround(pos, range);
++        return true; // Paper - rewrite chunk system
+     }
+ 
+     public CompletableFuture<Optional<CompoundTag>> read(ChunkPos pos) {
+-        return this.worker.loadAsync(pos);
++        // Paper start - rewrite chunk system
++        try {
++            return CompletableFuture.completedFuture(Optional.ofNullable(this.storage.read(pos)));
++        } catch (final Throwable throwable) {
++            return CompletableFuture.failedFuture(throwable);
++        }
++        // Paper end - rewrite chunk system
+     }
+ 
+     public CompletableFuture<Void> write(ChunkPos pos, CompoundTag value) {
+@@ -42,17 +_,60 @@
      }
  
      public CompletableFuture<Void> write(ChunkPos pos, Supplier<CompoundTag> supplier) {
@@ -30,7 +68,14 @@
 +            }
 +            return nbt;
 +        };
-+        return this.worker.store(pos, guardedPosCheck);
++        // Paper - rewrite chunk system
++        try {
++            this.storage.write(pos, guardedPosCheck.get());
++            return CompletableFuture.completedFuture(null);
++        } catch (final Throwable throwable) {
++            return CompletableFuture.failedFuture(throwable);
++        }
++        // Paper end - rewrite chunk system
 +        // Paper end - guard against possible chunk pos desync
 +    }
 +
@@ -70,3 +115,47 @@
                  removeDatafixingContext(chunkTag);
                  NbtUtils.addDataVersion(chunkTag, targetVersion);
                  return chunkTag;
+@@ -87,20 +_,38 @@
+         chunkTag.remove("__context");
+     }
+ 
+-    public CompletableFuture<Void> synchronize(boolean flush) {
+-        return this.worker.synchronize(flush);
++    public CompletableFuture<Void> synchronize(final boolean flush) {
++        // Paper start - rewrite chunk system
++        try {
++            this.storage.flush();
++            return CompletableFuture.completedFuture(null);
++        } catch (final IOException ex) {
++            LOGGER.error("Failed to flush chunk storage", ex);
++            return CompletableFuture.failedFuture(ex);
++        }
++        // Paper end - rewrite chunk system
+     }
+ 
+     @Override
+     public void close() throws IOException {
+-        this.worker.close();
++        this.storage.close(); // Paper - rewrite chunk system
+     }
+ 
+     public ChunkScanAccess chunkScanner() {
+-        return this.worker;
++        // Paper start - rewrite chunk system
++        // TODO ChunkMap implementation?
++        return (chunkPos, streamTagVisitor) -> {
++            try {
++                this.storage.scanChunk(chunkPos, streamTagVisitor);
++                return java.util.concurrent.CompletableFuture.completedFuture(null);
++            } catch (IOException e) {
++                throw new RuntimeException(e);
++            }
++        };
++        // Paper end - rewrite chunk system
+     }
+ 
+     public RegionStorageInfo storageInfo() {
+-        return this.worker.storageInfo();
++        return this.storage.info(); // Paper - rewrite chunk system
+     }
+ }

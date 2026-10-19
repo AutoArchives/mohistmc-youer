@@ -28,3 +28,70 @@
      }
  
      @Override
+@@ -266,6 +_,39 @@
+         return relativeState.isFaceSturdy(level, relativePos, Direction.UP) || relativeState.is(Blocks.HOPPER);
+     }
+ 
++    // Paper start - Optimize redstone
++    io.papermc.paper.redstone.RedstoneWireTurbo turbo = new io.papermc.paper.redstone.RedstoneWireTurbo(this);
++
++    private void updateSurroundingRedstone(Level worldIn, BlockPos pos, BlockState state, @Nullable Orientation orientation, boolean blockAdded) {
++        if (worldIn.paperConfig().misc.redstoneImplementation == io.papermc.paper.configuration.WorldConfiguration.Misc.RedstoneImplementation.EIGENCRAFT) {
++            // orientation gives the source pos, which the turbo uses to find the direction of information flow
++            BlockPos source = null;
++            if (orientation != null) {
++                source = pos.relative(orientation.getFront().getOpposite());
++            }
++            turbo.updateSurroundingRedstone(worldIn, pos, state, source);
++            return;
++        }
++        updatePowerStrength(worldIn, pos, state, orientation, blockAdded);
++    }
++
++    public BlockState calculateCurrentChanges(Level level, BlockPos pos, BlockState state) {
++        int oldPower = state.getValue(POWER);
++        int newPower = ((DefaultRedstoneWireEvaluator) evaluator).calculateTargetStrength(level, pos);
++        if (oldPower != newPower) {
++            if (level.getBlockState(pos) == state) {
++                newPower = org.bukkit.craftbukkit.event.CraftEventFactory.callRedstoneChange(level, pos, oldPower, newPower).getNewCurrent();
++                state = state.setValue(POWER, newPower);
++                // suppress shape updates and emit those manually to bypass the neighbor update stack
++                if (level.setBlock(pos, state, Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_CLIENTS)) {
++                    turbo.updateNeighborShapes(level, pos, state);
++                }
++            }
++        }
++        return state;
++    }
++    // Paper end
++
+     private void updatePowerStrength(
+         Level level, BlockPos pos, BlockState state, @Nullable Orientation orientation, boolean shapeUpdateWiresAroundInitialPosition
+     ) {
+@@ -296,7 +_,7 @@
+     @Override
+     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+         if (!oldState.is(state.getBlock()) && !level.isClientSide()) {
+-            this.updatePowerStrength(level, pos, state, null, true);
++            this.updateSurroundingRedstone(level, pos, state, null, true); // Paper - Optimize redstone
+ 
+             for (Direction direction : Direction.Plane.VERTICAL) {
+                 level.updateNeighborsAt(pos.relative(direction), this);
+@@ -313,7 +_,7 @@
+                 level.updateNeighborsAt(pos.relative(direction), this);
+             }
+ 
+-            this.updatePowerStrength(level, pos, state, null, false);
++            this.updateSurroundingRedstone(level, pos, state, null, false); // Paper - Optimize redstone
+             this.updateNeighborsOfNeighboringWires(level, pos);
+         }
+     }
+@@ -338,7 +_,7 @@
+         if (!level.isClientSide()) {
+             if (block != this || !useExperimentalEvaluator(level)) {
+                 if (state.canSurvive(level, pos)) {
+-                    this.updatePowerStrength(level, pos, state, orientation, false);
++                    this.updateSurroundingRedstone(level, pos, state, orientation, false); // Paper - Optimize redstone
+                 } else {
+                     dropResources(state, level, pos);
+                     level.removeBlock(pos, false);

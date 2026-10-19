@@ -34,12 +34,14 @@
          }
      }
  
-@@ -136,7 +_,7 @@
+@@ -136,8 +_,8 @@
                          this.lightEngine.updateSectionStatus(pos, isEmpty);
                      }
  
 -                    if (LightEngine.hasDifferentLightProperties(oldState, state)) {
+-                        this.skyLightSources.update(this, localX, y, localZ);
 +                    if (LightEngine.hasDifferentLightProperties(this, pos, oldState, state)) {
-                         this.skyLightSources.update(this, localX, y, localZ);
++                        // Paper - rewrite chunk system
                          this.lightEngine.checkBlock(pos);
                      }
+                 }

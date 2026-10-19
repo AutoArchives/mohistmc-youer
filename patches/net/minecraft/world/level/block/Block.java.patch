@@ -106,6 +106,21 @@
          } else if (occluder == Shapes.empty()) {
              return true;
          } else {
+@@ -338,11 +_,11 @@
+         return isShapeFullBlock(faceShape);
+     }
+ 
+-    public static boolean isShapeFullBlock(VoxelShape shape) {
+-        return SHAPE_FULL_BLOCK_CACHE.getUnchecked(shape);
++    public static boolean isShapeFullBlock(final VoxelShape shape) {
++        return ((ca.spottedleaf.moonrise.patches.collisions.shape.CollisionVoxelShape)shape).moonrise$isFullBlock(); // Paper - optimise collisions
+     }
+ 
+-    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
++    public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {
+     }
+ 
+     public void destroy(LevelAccessor level, BlockPos pos, BlockState state) {
 @@ -367,24 +_,57 @@
          return state.getDrops(params);
      }

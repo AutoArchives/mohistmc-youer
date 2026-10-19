@@ -127,7 +127,7 @@
                      blockState.attack(this.level, pos, this.player);
                      progress = blockState.getDestroyProgress(this.player, this.player.level(), pos);
                  }
-@@ -236,10 +_,16 @@
+@@ -236,16 +_,23 @@
                  this.debugLogging(pos, true, sequence, "stopped destroying");
              } else if (action == ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK) {
                  this.isDestroyingBlock = false;
@@ -146,6 +146,13 @@
                  }
  
                  this.level.destroyBlockProgress(this.player.getId(), pos, -1);
+                 this.debugLogging(pos, true, sequence, "aborted destroying");
+             }
+         }
++        this.level.chunkPacketBlockController.onPlayerLeftClickBlock(this, pos, action, direction, maxY, sequence); // Paper - Anti-Xray
+     }
+ 
+     public void destroyAndAck(BlockPos pos, int sequence, String exitId) {
 @@ -258,8 +_,10 @@
      }
  

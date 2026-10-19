@@ -8,17 +8,19 @@
      private final MinecraftServer server;
      public volatile boolean running;
      private final List<ChannelFuture> channels = Collections.synchronizedList(Lists.newArrayList());
-@@ -49,9 +_,33 @@
+@@ -49,9 +_,39 @@
          this.running = true;
      }
  
 +    // Paper start - prevent blocking on adding a new connection while the server is ticking
 +    private final java.util.Queue<Connection> pending = new java.util.concurrent.ConcurrentLinkedQueue<>();
++    private static final boolean disableFlushConsolidation = Boolean.getBoolean("Paper.disableFlushConsolidate"); // Paper - Optimize network
 +
 +    private final void addPending() {
 +        Connection connection;
 +        while ((connection = this.pending.poll()) != null) {
 +            this.connections.add(connection);
++            connection.isPending = false; // Paper - Optimize network
 +        }
 +    }
 +    // Paper end - prevent blocking on adding a new connection while the server is ticking
@@ -40,14 +42,19 @@
 +                LOGGER.warn("Using HAProxy, please ensure the server port is adequately firewalled.");
 +            }
 +            // Paper end - Warn people with console access that HAProxy is in use.
++            // Paper start - Use Velocity cipher
++            ServerConnectionListener.LOGGER.info("Paper: Using " + com.velocitypowered.natives.util.Natives.compress.getLoadedVariant() + " compression from Velocity.");
++            ServerConnectionListener.LOGGER.info("Paper: Using " + com.velocitypowered.natives.util.Natives.cipher.getLoadedVariant() + " cipher from Velocity.");
++            // Paper end - Use Velocity cipher
              this.channels
                  .add(
                      new ServerBootstrap()
-@@ -69,7 +_,7 @@
+@@ -69,7 +_,8 @@
                                      } catch (ChannelException var5) {
                                      }
  
 -                                    ChannelPipeline pipeline = channel.pipeline().addLast("timeout", new ReadTimeoutHandler(30));
++                                    if (!disableFlushConsolidation) channel.pipeline().addFirst(new io.netty.handler.flush.FlushConsolidationHandler()); // Paper - Optimize network
 +                                    ChannelPipeline pipeline = channel.pipeline().addLast("timeout", new ReadTimeoutHandler(READ_TIMEOUT));
                                      if (ServerConnectionListener.this.server.repliesToStatus()) {
                                          pipeline.addLast("legacy_query", new LegacyQueryHandler(ServerConnectionListener.this.getServer()));

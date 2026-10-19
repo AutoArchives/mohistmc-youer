@@ -12,3 +12,25 @@
              setAgeLocked(this, this::isAgeLocked, player, itemInHand, mob -> this.setAgeLockedData());
              return InteractionResult.SUCCESS;
          } else {
+@@ -181,6 +_,21 @@
+ 
+         super.onSyncedDataUpdated(accessor);
+     }
++
++    // Paper start - EAR 2
++    @Override
++    public void inactiveTick() {
++        super.inactiveTick();
++        if (this.isAlive()) {
++            int age = this.getAge();
++            if (this.canAgeUp()) {
++                this.setAge(++age);
++            } else if (age > 0) {
++                this.setAge(--age);
++            }
++        }
++    }
++    // Paper end - EAR 2
+ 
+     @Override
+     public void aiStep() {

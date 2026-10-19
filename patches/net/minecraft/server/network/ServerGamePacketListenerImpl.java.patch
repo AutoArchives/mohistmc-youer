@@ -321,7 +321,15 @@
                      LOGGER.warn(
                          "{} (vehicle of {}) moved too quickly! {},{},{}", vehicle.getPlainTextName(), this.player.getPlainTextName(), xDist, yDist, zDist
                      );
-@@ -485,25 +_,78 @@
+@@ -475,6 +_,7 @@
+                 }
+ 
+                 vehicle.move(MoverType.PLAYER, new Vec3(xDist, yDist, zDist));
++                final boolean didCollide = targetX != vehicle.getX() || targetY != vehicle.getY() || targetZ != vehicle.getZ(); // Paper - needed here as the difference in Y can be reset
+                 double oyDist = yDist;
+                 xDist = targetX - vehicle.getX();
+                 yDist = targetY - vehicle.getY();
+@@ -485,25 +_,87 @@
                  zDist = targetZ - vehicle.getZ();
                  movedDist = xDist * xDist + yDist * yDist + zDist * zDist;
                  boolean fail = false;
@@ -331,7 +339,17 @@
                      LOGGER.warn("{} (vehicle of {}) moved wrongly! {}", vehicle.getPlainTextName(), this.player.getPlainTextName(), Math.sqrt(movedDist));
                  }
  
-                 if (fail && level.noCollision(vehicle, oldAABB) || this.isEntityCollidingWithAnythingNew(level, vehicle, oldAABB, targetX, targetY, targetZ)) {
+-                if (fail && level.noCollision(vehicle, oldAABB) || this.isEntityCollidingWithAnythingNew(level, vehicle, oldAABB, targetX, targetY, targetZ)) {
++                // Paper start - optimise out extra getCubes
++                boolean teleportBack = fail;
++                if (!teleportBack) {
++                    final AABB newBox = vehicle.getBoundingBox();
++                    if (didCollide || !oldAABB.equals(newBox)) {
++                        teleportBack = this.hasNewCollision(level, vehicle, oldAABB, newBox);
++                    } // else: no collision at all detected
++                }
++                if (teleportBack) {
++                // Paper end - optimise out extra getCubes
                      vehicle.absSnapTo(oldX, oldY, oldZ, targetYRot, targetXRot);
 +                    resyncPlayerWithVehicle(vehicle); // Neo - Resync player position on vehicle moving
                      this.send(ClientboundMoveVehiclePacket.fromEntity(vehicle));
@@ -401,7 +419,7 @@
                  this.clientVehicleIsFloating = oyDist >= -0.03125
                      && !vehicleRestsOnSomething
                      && !this.server.allowFlight()
-@@ -517,6 +_,23 @@
+@@ -517,10 +_,50 @@
          }
      }
  
@@ -423,8 +441,38 @@
 +    }
 +
      private boolean noBlocksAround(Entity entity) {
-         return entity.level()
-             .getBlockStates(entity.getBoundingBox().inflate(0.0625).expandTowards(0.0, -0.55, 0.0))
+-        return entity.level()
+-            .getBlockStates(entity.getBoundingBox().inflate(0.0625).expandTowards(0.0, -0.55, 0.0))
+-            .allMatch(BlockBehaviour.BlockStateBase::isAir);
++        // Paper start - stop using streams
++        final AABB box = entity.getBoundingBox().inflate(0.0625).expandTowards(0.0, -0.55, 0.0);
++        final int minX = Mth.floor(box.minX);
++        final int minY = Mth.floor(box.minY);
++        final int minZ = Mth.floor(box.minZ);
++        final int maxX = Mth.floor(box.maxX);
++        final int maxY = Mth.floor(box.maxY);
++        final int maxZ = Mth.floor(box.maxZ);
++
++        final Level level = entity.level();
++        final BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
++
++        for (int y = minY; y <= maxY; ++y) {
++            for (int z = minZ; z <= maxZ; ++z) {
++                for (int x = minX; x <= maxX; ++x) {
++                    pos.set(x, y, z);
++                    final BlockState blockState = level.getBlockStateIfLoaded(pos);
++                    if (blockState != null && !blockState.isAir()) {
++                        return false;
++                    }
++                }
++            }
++        }
++
++        return true;
++        // Paper end - stop using streams
+     }
+ 
+     @Override
 @@ -545,13 +_,14 @@
              this.lastGoodZ = this.awaitingPositionFromClient.z;
              this.player.hasChangedDimension();
@@ -778,6 +826,47 @@
  
              return true;
          } else {
+@@ -1231,6 +_,40 @@
+         }
+     }
+ 
++    // Paper start - optimise out extra getCubes
++    private boolean hasNewCollision(final ServerLevel level, final Entity entity, final AABB oldBox, final AABB newBox) {
++        final List<AABB> collisionsBB = new java.util.ArrayList<>();
++        final List<VoxelShape> collisionsVoxel = new java.util.ArrayList<>();
++        ca.spottedleaf.moonrise.patches.collisions.CollisionUtil.getCollisions(
++            level,
++            entity,
++            newBox,
++            collisionsVoxel,
++            collisionsBB,
++            ca.spottedleaf.moonrise.patches.collisions.CollisionUtil.COLLISION_FLAG_COLLIDE_WITH_UNLOADED_CHUNKS
++                | ca.spottedleaf.moonrise.patches.collisions.CollisionUtil.COLLISION_FLAG_CHECK_BORDER,
++            null,
++            null
++        );
++
++        for (int i = 0, len = collisionsBB.size(); i < len; ++i) {
++            final AABB box = collisionsBB.get(i);
++            if (!ca.spottedleaf.moonrise.patches.collisions.CollisionUtil.voxelShapeIntersect(box, oldBox)) {
++                return true;
++            }
++        }
++
++        for (int i = 0, len = collisionsVoxel.size(); i < len; ++i) {
++            final VoxelShape voxel = collisionsVoxel.get(i);
++            if (!ca.spottedleaf.moonrise.patches.collisions.CollisionUtil.voxelShapeIntersectNoEmpty(voxel, oldBox)) {
++                return true;
++            }
++        }
++
++        return false;
++    }
++    // Paper end - optimise out extra getCubes
++
+     private boolean isEntityCollidingWithAnythingNew(LevelReader level, Entity entity, AABB oldAABB, double newX, double newY, double newZ) {
+         AABB newAABB = entity.getBoundingBox().move(newX - entity.getX(), newY - entity.getY(), newZ - entity.getZ());
+         Iterable<VoxelShape> newCollisions = level.getPreMoveCollisions(entity, newAABB.deflate(1.0E-5F), oldAABB.getBottomCenter());
 @@ -1246,10 +_,62 @@
      }
  

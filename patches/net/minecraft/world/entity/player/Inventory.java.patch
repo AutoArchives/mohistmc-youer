@@ -170,6 +170,22 @@
          ItemStack tmp = this.items.get(this.selected);
          this.items.set(this.selected, this.items.get(slot));
          this.items.set(slot, tmp);
+@@ -145,12 +_,12 @@
+         return !item.isDamaged() && !item.isEnchanted() && !item.has(DataComponents.CUSTOM_NAME);
+     }
+ 
+-    public int findSlotMatchingCraftingIngredient(Holder<Item> item, ItemStack existingItem) {
++    public int findSlotMatchingCraftingIngredient(io.papermc.paper.inventory.recipe.ItemOrExact item, ItemStack existingItem) { // Paper - Improve exact choice recipe ingredients
+         for (int i = 0; i < this.items.size(); i++) {
+             ItemStack inventoryItemStack = this.items.get(i);
+             if (!inventoryItemStack.isEmpty()
+-                && inventoryItemStack.is(item)
+-                && isUsableForCrafting(inventoryItemStack)
++                && item.matches(inventoryItemStack) // Paper - Improve exact choice recipe ingredients
++                && (!(item instanceof io.papermc.paper.inventory.recipe.ItemOrExact.Item) || Inventory.isUsableForCrafting(inventoryItemStack)) // Paper - Improve exact choice recipe ingredients
+                 && (existingItem.isEmpty() || ItemStack.isSameItemSameComponents(existingItem, inventoryItemStack))) {
+                 return i;
+             }
 @@ -290,6 +_,8 @@
              } catch (Throwable var6) {
                  CrashReport report = CrashReport.forThrowable(var6, "Adding item to inventory");

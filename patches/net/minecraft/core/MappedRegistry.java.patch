@@ -1,6 +1,6 @@
 --- a/net/minecraft/core/MappedRegistry.java
 +++ b/net/minecraft/core/MappedRegistry.java
-@@ -30,20 +_,28 @@
+@@ -30,27 +_,48 @@
  import net.minecraft.util.Util;
  import org.jspecify.annotations.Nullable;
  
@@ -35,6 +35,27 @@
  
      @Override
      public Stream<HolderSet.Named<T>> listTags() {
+         return this.getTags();
+     }
+ 
+-    public MappedRegistry(ResourceKey<? extends Registry<T>> key, Lifecycle lifecycle) {
++    // Paper start - fluid method optimisations
++    private void injectFluidRegister(
++        final ResourceKey<?> resourceKey,
++        final T object
++    ) {
++        if (resourceKey.registryKey() == (Object)net.minecraft.core.registries.Registries.FLUID) {
++            for (final net.minecraft.world.level.material.FluidState possibleState : ((net.minecraft.world.level.material.Fluid)object).getStateDefinition().getPossibleStates()) {
++                ((ca.spottedleaf.moonrise.patches.fluid.FluidFluidState)(Object)possibleState).moonrise$initCaches();
++            }
++        }
++    }
++    // Paper end - fluid method optimisations
++
++    public MappedRegistry(final ResourceKey<? extends Registry<T>> key, final Lifecycle lifecycle) {
+         this(key, lifecycle, false);
+     }
+ 
 @@ -86,9 +_,17 @@
  
      @Override
@@ -53,7 +74,7 @@
          if (this.byLocation.containsKey(key.identifier())) {
              throw (IllegalStateException)Util.pauseInIde(new IllegalStateException("Adding duplicate key '" + key + "' to registry"));
          } else if (this.byValue.containsKey(value)) {
-@@ -104,16 +_,19 @@
+@@ -104,16 +_,20 @@
                  holder.bindKey(key);
              } else {
                  holder = this.byKey.computeIfAbsent(key, k -> Holder.Reference.createStandAlone(this, (ResourceKey<T>)k));
@@ -70,6 +91,7 @@
              this.registrationInfos.put(key, registrationInfo);
              this.registryLifecycle = this.registryLifecycle.add(registrationInfo.lifecycle());
 +            this.temporaryUnfrozenMap.put(key.identifier(), value); // Paper - support pre-filling in registry mod API
++        this.injectFluidRegister(key, value); // Paper - fluid method optimisations
 +            this.addCallbacks.forEach(addCallback -> addCallback.onAdd(this, newId, key, value));
              return holder;
          }

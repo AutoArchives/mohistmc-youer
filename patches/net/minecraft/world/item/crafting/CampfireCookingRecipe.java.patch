@@ -19,7 +19,7 @@
 +    // CraftBukkit start
 +    @Override
 +    public org.bukkit.inventory.Recipe toBukkitRecipe(NamespacedKey id) {
-+        CraftItemStack result = CraftItemStack.asCraftMirror(this.result());
++        CraftItemStack result = CraftItemStack.asCraftMirror(this.result().create());
 +
 +        CraftCampfireRecipe recipe = new CraftCampfireRecipe(id, result, CraftRecipe.toChoice(this.input()), this.experience(), this.cookingTime());
 +        recipe.setGroup(this.group());

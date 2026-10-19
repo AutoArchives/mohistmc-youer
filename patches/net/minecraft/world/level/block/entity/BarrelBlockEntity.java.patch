@@ -7,7 +7,7 @@
  import java.util.List;
  import java.util.Objects;
  import net.minecraft.core.BlockPos;
-@@ -22,8 +_,45 @@
+@@ -22,14 +_,58 @@
  import net.minecraft.world.level.block.state.BlockState;
  import net.minecraft.world.level.storage.ValueInput;
  import net.minecraft.world.level.storage.ValueOutput;
@@ -53,3 +53,16 @@
      private static final Component DEFAULT_NAME = Component.translatable("container.barrel");
      private NonNullList<ItemStack> items = NonNullList.withSize(27, ItemStack.EMPTY);
      public final ContainerOpenersCounter openersCounter = new ContainerOpenersCounter() {
+         {
+             Objects.requireNonNull(BarrelBlockEntity.this);
+         }
++
++        // Paper start - delay open/close callbacks
++        @Override
++        public boolean delayCallbacks() {
++            return true;
++        }
++        // Paper end - delay open/close callbacks
+ 
+         @Override
+         protected void onOpen(Level level, BlockPos pos, BlockState state) {

@@ -8,16 +8,17 @@
  import java.util.Objects;
  import java.util.Optional;
  import java.util.function.Predicate;
-@@ -21,54 +_,153 @@
+@@ -21,54 +_,155 @@
  import net.minecraft.world.item.Items;
  import net.minecraft.world.item.crafting.display.SlotDisplay;
  import net.minecraft.world.level.ItemLike;
 +import org.jspecify.annotations.Nullable;
  
- public final class Ingredient implements Predicate<ItemStack>, StackedContents.IngredientInfo<Holder<Item>> {
+-public final class Ingredient implements Predicate<ItemStack>, StackedContents.IngredientInfo<Holder<Item>> {
 -    public static final StreamCodec<RegistryFriendlyByteBuf, Ingredient> CONTENTS_STREAM_CODEC = ByteBufCodecs.holderSet(Registries.ITEM)
 -        .map(Ingredient::new, i -> i.values);
 -    public static final StreamCodec<RegistryFriendlyByteBuf, Optional<Ingredient>> OPTIONAL_CONTENTS_STREAM_CODEC = ByteBufCodecs.holderSet(Registries.ITEM)
++public final class Ingredient implements Predicate<ItemStack>, StackedContents.IngredientInfo<io.papermc.paper.inventory.recipe.ItemOrExact> { // Paper - Improve exact choice recipe ingredients
 +    public static final StreamCodec<RegistryFriendlyByteBuf, Ingredient> CONTENTS_STREAM_CODEC = net.neoforged.neoforge.common.crafting.IngredientCodecs.streamCodec(ByteBufCodecs.holderSet(Registries.ITEM)
 +        .map(Ingredient::new, i -> i.getValuesForSync()));
 +    public static final StreamCodec<RegistryFriendlyByteBuf, Optional<Ingredient>> OPTIONAL_CONTENTS_STREAM_CODEC = net.neoforged.neoforge.common.crafting.IngredientCodecs.optionalStreamCodec(ByteBufCodecs.holderSet(Registries.ITEM)
@@ -35,20 +36,23 @@
 +    private java.util.@org.jspecify.annotations.Nullable List<Holder<Item>> customIngredientValues;
 +
 +    // CraftBukkit start
-+    @Nullable
-+    private List<ItemStack> itemStacks;
++    private java.util.@Nullable Set<ItemStack> itemStacks; // Paper - Improve exact choice recipe ingredients
 +
 +    public boolean isExact() {
 +        return this.itemStacks != null;
 +    }
 +
-+    public List<ItemStack> itemStacks() {
++    public java.util.Set<ItemStack> itemStacks() { // Paper - Improve exact choice recipe ingredients
 +        return this.itemStacks;
 +    }
 +
 +    public static Ingredient ofStacks(List<ItemStack> stacks) {
 +        Ingredient recipe = Ingredient.of(stacks.stream().map(ItemStack::getItem));
-+        recipe.itemStacks = stacks;
++        // Paper start - Improve exact choice recipe ingredients
++        recipe.itemStacks = net.minecraft.world.item.ItemStackLinkedSet.createTypeAndComponentsSet();
++        recipe.itemStacks.addAll(stacks);
++        recipe.itemStacks = java.util.Collections.unmodifiableSet(recipe.itemStacks);
++        // Paper end - Improve exact choice recipe ingredients
 +        return recipe;
 +    }
 +    // CraftBukkit end
@@ -102,24 +106,25 @@
 +        }
 +        // CraftBukkit start
 +        if (this.isExact()) {
-+            for (ItemStack itemstack1 : this.itemStacks()) {
-+                if (itemstack1.getItem() == input.getItem() && ItemStack.isSameItemSameComponents(input, itemstack1)) {
-+                    return true;
-+                }
-+            }
-+
-+            return false;
++            return this.itemStacks.contains(input); // Paper - Improve exact choice recipe ingredients (hashing FTW!)
 +        }
 +        // CraftBukkit end
          return input.is(this.values);
      }
  
-     public boolean acceptsItem(Holder<Item> item) {
-+        if (this.customIngredient != null) {
-+            return updateCustomIngredientValues().contains(item);
-+        }
-         return this.values.contains(item);
+-    public boolean acceptsItem(Holder<Item> item) {
+-        return this.values.contains(item);
++    // Paper start - Improve exact choice recipe ingredients
++    @Override
++    public boolean acceptsItem(final io.papermc.paper.inventory.recipe.ItemOrExact itemOrExact) {
++        return switch (itemOrExact) {
++            case io.papermc.paper.inventory.recipe.ItemOrExact.Item(final Holder<Item> item) ->
++                this.customIngredient != null ? updateCustomIngredientValues().contains(item) : !this.isExact() && this.values.contains(item); // NeoForge - keep custom ingredient support
++            case io.papermc.paper.inventory.recipe.ItemOrExact.Exact(final ItemStack exact) ->
++                this.isExact() && this.itemStacks.contains(exact);
++        };
      }
++    // Paper end - Improve exact choice recipe ingredients
  
      @Override
      public boolean equals(Object o) {
@@ -176,13 +181,18 @@
      }
  
      public static Ingredient of(ItemLike itemLike) {
-@@ -88,6 +_,9 @@
+@@ -88,6 +_,14 @@
      }
  
      public SlotDisplay display() {
 +        if (this.customIngredient != null) {
 +            return this.customIngredient.display();
 +        }
++        // Paper start - show exact ingredients in recipe book
++        if (this.isExact()) {
++            return new SlotDisplay.Composite(this.itemStacks().stream().map(ItemStackTemplate::fromNonEmptyStack).<SlotDisplay>map(SlotDisplay.ItemStackSlotDisplay::new).toList());
++        }
++        // Paper end - show exact ingredients in recipe book
          return (SlotDisplay)this.values
              .unwrap()
              .map(SlotDisplay.TagSlotDisplay::new, l -> new SlotDisplay.Composite(l.stream().map(Ingredient::displayForSingleItem).toList()));

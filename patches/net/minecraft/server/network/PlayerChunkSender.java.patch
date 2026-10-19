@@ -12,14 +12,19 @@
          }
      }
  
-@@ -74,13 +_,21 @@
+@@ -73,14 +_,25 @@
+         }
      }
  
-     private static void sendChunk(ServerGamePacketListenerImpl connection, ServerLevel level, LevelChunk chunk) {
+-    private static void sendChunk(ServerGamePacketListenerImpl connection, ServerLevel level, LevelChunk chunk) {
 -        connection.send(new ClientboundLevelChunkWithLightPacket(chunk, level.getLightEngine(), null, null));
++    public static void sendChunk(ServerGamePacketListenerImpl connection, ServerLevel level, LevelChunk chunk) { // Paper - public
++        // Paper start - Anti-Xray
++        final boolean shouldModify = level.chunkPacketBlockController.shouldModify(connection.player, chunk);
 +        connection.send(chunk.getAuxLightManager(chunk.getPos()).sendLightDataTo(
-+                new ClientboundLevelChunkWithLightPacket(chunk, level.getLightEngine(), null, null)
++                new ClientboundLevelChunkWithLightPacket(chunk, level.getLightEngine(), null, null, shouldModify)
 +        ));
++        // Paper end - Anti-Xray
 +        // Paper start - PlayerChunkLoadEvent
 +        if (io.papermc.paper.event.packet.PlayerChunkLoadEvent.getHandlerList().getRegisteredListeners().length > 0) {
 +            new io.papermc.paper.event.packet.PlayerChunkLoadEvent(new org.bukkit.craftbukkit.CraftChunk(chunk), connection.getPlayer().getBukkitEntity()).callEvent();

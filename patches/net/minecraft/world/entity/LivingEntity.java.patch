@@ -1519,6 +1519,21 @@
              this.setDeltaMovement(this.getDeltaMovement().multiply(0.6, 1.0, 0.6));
          }
      }
+@@ -2663,6 +_,14 @@
+     protected void playAttackSound() {
+     }
+ 
++    // Paper start - EAR 2
++    @Override
++    public void inactiveTick() {
++        super.inactiveTick();
++        ++this.noActionTime; // Above all the floats
++    }
++    // Paper end - EAR 2
++
+     @Override
+     public void tick() {
+         super.tick();
 @@ -2849,6 +_,10 @@
          }
      }

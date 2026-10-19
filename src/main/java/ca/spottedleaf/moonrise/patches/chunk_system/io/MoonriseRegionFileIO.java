@@ -1272,12 +1272,10 @@ public final class MoonriseRegionFileIO {
             try {
                 this.regionDataController.finishWrite(this.chunkX, this.chunkZ, writeData);
                 // Paper start - flush regionfiles on save
-                if (this.world.paperConfig().chunks.flushRegionsOnSave) {
-                    final RegionFile regionFile = this.regionDataController.getCache().moonrise$getRegionFileIfLoaded(this.chunkX, this.chunkZ);
-                    if (regionFile != null) {
-                        regionFile.flush();
-                    } // else: evicted from cache, which should have called flush
-                }
+                final RegionFile regionFile = this.regionDataController.getCache().moonrise$getRegionFileIfLoaded(this.chunkX, this.chunkZ);
+                if (regionFile != null) {
+                    regionFile.flush();
+                } // else: evicted from cache, which should have called flush
                 // Paper end - flush regionfiles on save
             } catch (final Throwable thr) {
                 failedWrite = thr instanceof IOException;

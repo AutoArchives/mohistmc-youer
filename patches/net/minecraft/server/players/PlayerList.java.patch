@@ -284,7 +284,7 @@
 +                .getOrThrow(net.minecraft.world.level.biome.Biomes.PLAINS);
 +            player.connection.send(new net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket(
 +                new net.minecraft.world.level.chunk.EmptyLevelChunk(level, player.chunkPosition(), plains),
-+                level.getLightEngine(), (java.util.BitSet)null, (java.util.BitSet) null)
++                level.getLightEngine(), (java.util.BitSet)null, (java.util.BitSet) null, true) // Paper - Anti-Xray
 +            );
 +        }
 +        // Paper end - Send empty chunk
@@ -340,7 +340,7 @@
              }
  
              @Override
-@@ -291,85 +_,181 @@
+@@ -291,85 +_,182 @@
          }
      }
  
@@ -358,6 +358,7 @@
      protected void save(ServerPlayer player) {
 +        if (!player.getBukkitEntity().isPersistent()) return; // CraftBukkit
 +        if (player.connection == null) return;
++        player.lastSave = MinecraftServer.currentTick; // Paper - Incremental chunk and player saving
          this.playerIo.save(player);
 -        ServerStatsCounter stats = this.stats.get(player.getUUID());
 +        ServerStatsCounter stats = player.getStats(); // CraftBukkit
@@ -930,14 +931,28 @@
              if (player != except && player.level().dimension() == dimension) {
                  double xd = x - player.getX();
                  double yd = y - player.getY();
-@@ -613,9 +_,11 @@
+@@ -613,9 +_,23 @@
      }
  
      public void saveAll() {
+-        for (int i = 0; i < this.players.size(); i++) {
+-            this.save(this.players.get(i));
++        this.saveAll(-1); // Paper - Incremental chunk and player saving
++    }
++    public void saveAll(final int interval) {
 +        io.papermc.paper.util.MCUtil.ensureMain("Save Players" , () -> { // Paper - Ensure main
-         for (int i = 0; i < this.players.size(); i++) {
-             this.save(this.players.get(i));
++        // Paper start - Incremental chunk and player saving
++        int numSaved = 0;
++        final long now = MinecraftServer.currentTick;
++        for (final ServerPlayer player : this.players) {
++            if (interval == -1 || now - player.lastSave >= interval) {
++                this.save(player);
++                if (interval != -1 && ++numSaved >= io.papermc.paper.configuration.GlobalConfiguration.get().playerAutoSave.maxPerTick()) {
++                    break;
++                }
++            }
          }
++        // Paper end - Incremental chunk and player saving
 +        return null; }); // Paper - ensure main
      }
  
@@ -950,8 +965,8 @@
 +        player.connection.send(level.clockManager().createFullSyncPacket(player)); // Paper - per-world time; per-player time
          player.connection.send(new ClientboundSetDefaultSpawnPositionPacket(level.getRespawnData()));
 +        // Paper start - view distances
-+        player.connection.send(new ClientboundSetChunkCacheRadiusPacket(io.papermc.paper.FeatureHooks.getViewDistance(level)));
-+        player.connection.send(new ClientboundSetSimulationDistancePacket(io.papermc.paper.FeatureHooks.getSimulationDistance(level)));
++        //player.connection.send(new ClientboundSetChunkCacheRadiusPacket(io.papermc.paper.FeatureHooks.getViewDistance(level))); // Paper - rewrite chunk system
++        //player.connection.send(new ClientboundSetSimulationDistancePacket(io.papermc.paper.FeatureHooks.getSimulationDistance(level))); // Paper - rewrite chunk system
 +        // Paper end - view distances
          if (level.isRaining()) {
 -            player.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.START_RAINING, 0.0F));
@@ -1110,7 +1125,7 @@
  
      private Path locateStatsFile(GameProfile gameProfile) {
          Path statFolder = this.server.getWorldPath(LevelResource.PLAYER_STATS_DIR);
-@@ -783,13 +_,15 @@
+@@ -783,20 +_,22 @@
  
      public PlayerAdvancements getPlayerAdvancements(ServerPlayer player) {
          UUID uuid = player.getUUID();
@@ -1128,6 +1143,23 @@
          result.setPlayer(player);
          return result;
      }
+ 
+     public void setViewDistance(int viewDistance) {
+         this.viewDistance = viewDistance;
+-        this.broadcastAll(new ClientboundSetChunkCacheRadiusPacket(viewDistance));
++        //this.broadcastAll(new ClientboundSetChunkCacheRadiusPacket(viewDistance)); // Paper - rewrite chunk system
+ 
+         for (ServerLevel level : this.server.getAllLevels()) {
+             level.getChunkSource().setViewDistance(viewDistance);
+@@ -805,7 +_,7 @@
+ 
+     public void setSimulationDistance(int simulationDistance) {
+         this.simulationDistance = simulationDistance;
+-        this.broadcastAll(new ClientboundSetSimulationDistancePacket(simulationDistance));
++        //this.broadcastAll(new ClientboundSetSimulationDistancePacket(simulationDistance)); // Paper - rewrite chunk system
+ 
+         for (ServerLevel level : this.server.getAllLevels()) {
+             level.getChunkSource().setSimulationDistance(simulationDistance);
 @@ -813,7 +_,7 @@
      }
  

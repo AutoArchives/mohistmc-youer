@@ -1,5 +1,14 @@
 --- a/net/minecraft/world/level/levelgen/NoiseBasedChunkGenerator.java
 +++ b/net/minecraft/world/level/levelgen/NoiseBasedChunkGenerator.java
+@@ -85,7 +_,7 @@
+         return CompletableFuture.supplyAsync(() -> {
+             this.doCreateBiomes(blender, randomState, structureManager, protoChunk);
+             return protoChunk;
+-        }, Util.backgroundExecutor().forName("init_biomes"));
++        }, Runnable::run); // Paper - rewrite chunk system
+     }
+ 
+     private void doCreateBiomes(Blender blender, RandomState randomState, StructureManager structureManager, ChunkAccess protoChunk) {
 @@ -264,7 +_,7 @@
      @Override
      public void buildSurface(WorldGenRegion region, StructureManager structureManager, RandomState randomState, ChunkAccess protoChunk) {

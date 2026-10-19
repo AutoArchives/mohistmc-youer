@@ -1,0 +1,51 @@
+--- a/net/minecraft/client/multiplayer/ClientHandshakePacketListenerImpl.java
++++ b/net/minecraft/client/multiplayer/ClientHandshakePacketListenerImpl.java
+@@ -113,16 +_,13 @@
+     public void handleHello(ClientboundHelloPacket packet) {
+         this.switchState(ClientHandshakePacketListenerImpl.State.AUTHORIZING);
+ 
+-        Cipher decryptCipher;
+-        Cipher encryptCipher;
+         String digest;
+         ServerboundKeyPacket setKeyPacket;
++        SecretKey secretKey; // Paper - Use Velocity cipher
+         try {
+-            SecretKey secretKey = Crypt.generateSecretKey();
++            secretKey = Crypt.generateSecretKey(); // Paper - Use Velocity cipher
+             PublicKey publicKey = packet.getPublicKey();
+             digest = new BigInteger(Crypt.digestData(packet.getServerId(), publicKey, secretKey)).toString(16);
+-            decryptCipher = Crypt.getCipher(2, secretKey);
+-            encryptCipher = Crypt.getCipher(1, secretKey);
+             byte[] challenge = packet.getChallenge();
+             setKeyPacket = new ServerboundKeyPacket(secretKey, publicKey, challenge);
+         } catch (Exception var9) {
+@@ -141,17 +_,25 @@
+                     LOGGER.warn(error.getString());
+                 }
+ 
+-                this.setEncryption(setKeyPacket, decryptCipher, encryptCipher);
++                this.setEncryption(setKeyPacket, secretKey); // Paper - Use Velocity cipher
+             });
+         } else {
+-            this.setEncryption(setKeyPacket, decryptCipher, encryptCipher);
++            this.setEncryption(setKeyPacket, secretKey); // Paper - Use Velocity cipher
+         }
+     }
+ 
+-    private void setEncryption(ServerboundKeyPacket setKeyPacket, Cipher decryptCipher, Cipher encryptCipher) {
++    // Paper start - Use Velocity cipher
++    private void setEncryption(ServerboundKeyPacket setKeyPacket, SecretKey secretKey) {
+         this.switchState(ClientHandshakePacketListenerImpl.State.ENCRYPTING);
+-        this.connection.send(setKeyPacket, PacketSendListener.thenRun(() -> this.connection.setEncryptionKey(decryptCipher, encryptCipher)));
++        this.connection.send(setKeyPacket, PacketSendListener.thenRun(() -> {
++            try {
++                this.connection.setEncryptionKey(secretKey);
++            } catch (final net.minecraft.util.CryptException e) {
++                throw new IllegalStateException("Protocol error", e);
++            }
++        }));
+     }
++    // Paper end - Use Velocity cipher
+ 
+     private @Nullable Component authenticateServer(String digest) {
+         try {
