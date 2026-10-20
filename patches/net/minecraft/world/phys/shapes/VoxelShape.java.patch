@@ -584,6 +584,116 @@
          return this.move(delta.x, delta.y, delta.z);
      }
  
+@@ -82,21 +_,97 @@
+         return this.move(delta.getX(), delta.getY(), delta.getZ());
+     }
+ 
+-    public VoxelShape move(double dx, double dy, double dz) {
+-        return (VoxelShape)(this.isEmpty()
+-            ? Shapes.empty()
+-            : new ArrayVoxelShape(
+-                this.shape,
+-                new OffsetDoubleList(this.getCoords(Direction.Axis.X), dx),
+-                new OffsetDoubleList(this.getCoords(Direction.Axis.Y), dy),
+-                new OffsetDoubleList(this.getCoords(Direction.Axis.Z), dz)
+-            ));
++    public VoxelShape move(final double dx, final double dy, final double dz) {
++        // Paper start - optimise collisions
++        if (this.isEmpty) {
++            return Shapes.empty();
++        }
++
++        final ArrayVoxelShape ret = new ArrayVoxelShape(
++            this.shape,
++            offsetList(this.rootCoordinatesX, this.offsetX + dx),
++            offsetList(this.rootCoordinatesY, this.offsetY + dy),
++            offsetList(this.rootCoordinatesZ, this.offsetZ + dz)
++        );
++
++        final ca.spottedleaf.moonrise.patches.collisions.shape.CachedToAABBs cachedToAABBs = this.cachedToAABBs;
++        if (cachedToAABBs != null) {
++            ((VoxelShape)(Object)ret).cachedToAABBs = ca.spottedleaf.moonrise.patches.collisions.shape.CachedToAABBs.offset(cachedToAABBs, dx, dy, dz);
++        }
++
++        return ret;
++        // Paper end - optimise collisions
+     }
+ 
+     public VoxelShape optimize() {
+-        VoxelShape[] result = new VoxelShape[]{Shapes.empty()};
+-        this.forAllBoxes((x1, y1, z1, x2, y2, z2) -> result[0] = Shapes.joinUnoptimized(result[0], Shapes.box(x1, y1, z1, x2, y2, z2), BooleanOp.OR));
+-        return result[0];
++        // Paper start - optimise collisions
++        if (this.isEmpty) {
++            return Shapes.empty();
++        }
++
++        if (this.singleAABBRepresentation != null) {
++            // note: the isFullBlock() is fuzzy, and Shapes.create() is also fuzzy which would return block()
++            return this.moonrise$isFullBlock() ? Shapes.block() : (VoxelShape)(Object)this;
++        }
++
++        final java.util.List<AABB> aabbs = this.toAabbs();
++
++        if (aabbs.isEmpty()) {
++            // We are a SliceShape, which does not properly fill isEmpty for every case
++            return Shapes.empty();
++        }
++
++        if (aabbs.size() == 1) {
++            final AABB singleAABB = aabbs.get(0);
++            final VoxelShape ret = Shapes.create(singleAABB);
++
++            // forward AABB cache
++            if (((VoxelShape)(Object)ret).cachedToAABBs == null) {
++                ((VoxelShape)(Object)ret).cachedToAABBs = this.cachedToAABBs;
++            }
++
++            return ret;
++        } else {
++            // reduce complexity of joins by splitting the merges (old complexity: n^2, new: nlogn)
++
++            // set up flat array so that this merge is done in-place
++            final VoxelShape[] tmp = new VoxelShape[aabbs.size()];
++
++            // initialise as unmerged
++            for (int i = 0, len = aabbs.size(); i < len; ++i) {
++                tmp[i] = Shapes.create(aabbs.get(i));
++            }
++
++            int size = aabbs.size();
++            while (size > 1) {
++                int newSize = 0;
++                for (int i = 0; i < size; i += 2) {
++                    final int next = i + 1;
++                    if (next >= size) {
++                        // nothing to merge with, so leave it for next iteration
++                        tmp[newSize++] = tmp[i];
++                        break;
++                    } else {
++                        // merge with adjacent
++                        final VoxelShape first = tmp[i];
++                        final VoxelShape second = tmp[next];
++
++                        tmp[newSize++] = Shapes.joinUnoptimized(first, second, BooleanOp.OR);
++                    }
++                }
++                size = newSize;
++            }
++
++            final VoxelShape ret = tmp[0];
++
++            // forward AABB cache
++            if (((VoxelShape)(Object)ret).cachedToAABBs == null) {
++                ((VoxelShape)(Object)ret).cachedToAABBs = this.cachedToAABBs;
++            }
++
++            return ret;
++        }
++        // Paper end - optimise collisions
+     }
+ 
+     public void forAllEdges(Shapes.DoubleLineConsumer consumer) {
 @@ -133,9 +_,24 @@
      }
  

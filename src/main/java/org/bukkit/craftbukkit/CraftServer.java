@@ -1,6 +1,5 @@
 package org.bukkit.craftbukkit;
 
-import ca.spottedleaf.moonrise.common.time.TickData;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
@@ -301,7 +300,6 @@ public final class CraftServer implements Server {
     public static Exception excessiveVelEx;
     private final io.papermc.paper.logging.SysoutCatcher sysoutCatcher = new io.papermc.paper.logging.SysoutCatcher();
     private final io.papermc.paper.potion.PaperPotionBrewer potionBrewer;
-    public final io.papermc.paper.SparksFly spark;
     private final ServerConfiguration serverConfig = new PaperServerConfiguration();
 
     // Paper start - Folia region threading API
@@ -482,8 +480,52 @@ public final class CraftServer implements Server {
         }
         this.potionBrewer = new io.papermc.paper.potion.PaperPotionBrewer(console); // Paper - custom potion mixes
         datapackManager = new io.papermc.paper.datapack.PaperDatapackManager(console.getPackRepository()); // Paper
-        this.spark = new io.papermc.paper.SparksFly(this); // Paper - spark
     }
+
+    // Youer start
+    public void initConfig() {
+        this.configuration = YamlConfiguration.loadConfiguration(this.getConfigFile());
+        this.configuration.options().copyDefaults(true);
+        YamlConfiguration configurationDefaults = YamlConfiguration.loadConfiguration(new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream("configurations/bukkit.yml"), StandardCharsets.UTF_8));
+        this.configuration.setDefaults(configurationDefaults);
+        this.configuration.options().setHeader(configurationDefaults.options().getHeader());
+        ConfigurationSection legacyAlias = null;
+        if (!this.configuration.isString("aliases")) {
+            legacyAlias = this.configuration.getConfigurationSection("aliases");
+            this.configuration.set("aliases", "now-in-commands.yml");
+        }
+        this.saveConfig();
+        if (this.getCommandsConfigFile().isFile()) {
+            legacyAlias = null;
+        }
+        this.commandsConfiguration = YamlConfiguration.loadConfiguration(this.getCommandsConfigFile());
+        this.commandsConfiguration.options().copyDefaults(true);
+        final YamlConfiguration commandsDefaults = YamlConfiguration.loadConfiguration(new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream("configurations/commands.yml"), StandardCharsets.UTF_8));
+        if (this.commandsConfiguration.contains("aliases")) commandsDefaults.set("aliases", null);
+        this.commandsConfiguration.setDefaults(commandsDefaults);
+        this.commandsConfiguration.options().setHeader(commandsDefaults.options().getHeader());
+        this.saveCommandsConfig();
+
+        if (legacyAlias != null) {
+            ConfigurationSection aliases = this.commandsConfiguration.createSection("aliases");
+            for (String key : legacyAlias.getKeys(false)) {
+                List<String> commands = new ArrayList<>();
+
+                if (legacyAlias.isList(key)) {
+                    for (String command : legacyAlias.getStringList(key)) {
+                        commands.add(command + " $1-");
+                    }
+                } else {
+                    commands.add(legacyAlias.getString(key) + " $1-");
+                }
+
+                aliases.set(key, commands);
+            }
+        }
+
+        this.saveCommandsConfig();
+    }
+    // Youer end
 
     public boolean getCommandBlockOverride(String command) {
         return this.overrideAllCommandBlockCommands || this.commandsConfiguration.getStringList("command-block-overrides").contains(command);
@@ -908,6 +950,17 @@ public final class CraftServer implements Server {
         return new ArrayList<World>(this.worlds.values());
     }
 
+    // Youer start
+    @Override
+    public Set<String> getWorldsByName() {
+        return new HashSet<>(this.worlds.keySet());
+    }
+
+    public void removeWorld(ServerLevel handle) {
+        this.worlds.remove(handle.getWorld().getName().toLowerCase(Locale.ROOT));
+    }
+    // Youer end
+
     @Override
     public boolean isTickingWorlds() {
         return console.isIteratingOverLevels;
@@ -1021,7 +1074,6 @@ public final class CraftServer implements Server {
         this.reloadData();
         org.spigotmc.SpigotConfig.registerCommands(); // Spigot
         io.papermc.paper.command.PaperCommands.registerCommands(this.console); // Paper
-        this.spark.registerCommandBeforePlugins(this); // Paper - spark
         this.overrideAllCommandBlockCommands = this.commandsConfiguration.getStringList("command-block-overrides").contains("*");
         this.ignoreVanillaPermissions = this.commandsConfiguration.getBoolean("ignore-vanilla-permissions");
 
@@ -1050,7 +1102,6 @@ public final class CraftServer implements Server {
         this.loadPlugins();
         this.enablePlugins(PluginLoadOrder.STARTUP);
         this.enablePlugins(PluginLoadOrder.POSTWORLD);
-        this.spark.registerCommandAfterPlugins(this); // Paper - spark
         // Paper start - brigadier command API
         io.papermc.paper.command.brigadier.PaperCommands.INSTANCE.setValid(); // to clear invalid state for event fire below
         io.papermc.paper.plugin.lifecycle.event.LifecycleEventRunner.INSTANCE.callReloadableRegistrarEvent(io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents.COMMANDS, io.papermc.paper.command.brigadier.PaperCommands.INSTANCE, org.bukkit.plugin.Plugin.class, io.papermc.paper.plugin.lifecycle.event.registrar.ReloadableRegistrarEvent.Cause.RELOAD); // call commands event for regular plugins
@@ -1117,7 +1168,7 @@ public final class CraftServer implements Server {
     }
 
     @SuppressWarnings({ "unchecked", "finally" })
-    private void loadCustomPermissions() {
+    public void loadCustomPermissions() { // Youer - public
         File file = new File(this.configuration.getString("settings.permissions-file"));
         FileInputStream stream;
 
@@ -1203,7 +1254,7 @@ public final class CraftServer implements Server {
         };
 
         final ResourceKey<net.minecraft.world.level.Level> dimensionKey = PaperWorldLoader.dimensionKey(creator.key());
-        WorldLoader.DataLoadContext context = this.console.worldLoaderContext;
+        WorldLoader.DataLoadContext context = this.console.worldLoader;
         RegistryAccess.Frozen registryAccess = context.datapackDimensions();
         net.minecraft.core.Registry<LevelStem> contextLevelStemRegistry = registryAccess.lookupOrThrow(Registries.LEVEL_STEM);
         final LevelStem configuredStem = this.console.registryAccess().lookupOrThrow(Registries.LEVEL_STEM).getValue(actualDimension);
@@ -1283,19 +1334,20 @@ public final class CraftServer implements Server {
             this.console,
             this.console.executor,
             this.console.storageSource,
-            genSettingsFinal,
+            primaryLevelData,
             dimensionKey,
             customStem,
             primaryLevelData.isDebugWorld(),
             biomeZoomSeed,
             creator.environment() == Environment.NORMAL ? list : ImmutableList.of(),
             true,
-            actualDimension,
+            savedDataStorage,
+            genSettingsFinal,
             creator.environment(),
             chunkGenerator,
             biomeProvider,
-            savedDataStorage,
-            loadedWorldData
+            loadedWorldData.bukkitName(),
+            actualDimension
         );
 
         if (!(this.worlds.containsKey(name.toLowerCase(Locale.ROOT)))) {
@@ -1303,11 +1355,11 @@ public final class CraftServer implements Server {
         }
 
         this.console.addLevel(serverLevel);
-        this.console.initWorld(serverLevel, creator);
+        this.console.initWorld(serverLevel, primaryLevelData, this.console.getWorldData(), genSettingsFinal.options());
 
         serverLevel.setSpawnSettings(true);
 
-        this.getServer().prepareLevel(serverLevel);
+        this.getServer().prepareLevels(serverLevel);
 
         return serverLevel.getWorld();
     }
@@ -2692,14 +2744,12 @@ public final class CraftServer implements Server {
 
     @Override
     public long[] getTickTimes() {
-        final TickData.MSPTData reportData = this.getServer().getMSPTData5s();
-        return reportData == null ? new long[0] : reportData.rawData().clone();
+        return this.getServer().getTickTimesNanos().clone();
     }
 
     @Override
     public double getAverageTickTime() {
-        final TickData.MSPTData reportData = this.getServer().getMSPTData5s();
-        return reportData == null ? 0.0 : reportData.avg();
+        return this.getServer().getAverageTickTimeNanos() / 1.0E6;
     }
 
     private final org.bukkit.Server.Spigot spigot = new org.bukkit.Server.Spigot() {

@@ -2750,15 +2750,26 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
     private final int id;
     private final Constructor<? extends MaterialData> ctor;
     private static final Map<String, Material> BY_NAME = Maps.newHashMap();
+    public static final Map<String, Material> BY_KEY = Maps.newHashMap(); // Youer
     public final Class<?> data;
+    public boolean isModBlock = false; // Youer
+    public boolean isModItem = false; // Youer
     private final boolean legacy;
-    private final NamespacedKey key;
+    private NamespacedKey key; // Youer - mutable for dynamically registered mod materials
     private final Supplier<ItemType> itemType;
     private final Supplier<BlockType> blockType;
 
     private Material(final int id) {
         this(id, MaterialData.class);
     }
+
+    // Youer start - constructor used to set if the Material is a block or not
+    private Material(final int id, boolean isForgeBlock, boolean isForgeItem) {
+        this(id);
+        this.isModBlock = isForgeBlock;
+        this.isModItem = isForgeItem;
+    }
+    // Youer end
 
     private Material(final int id, final Class<?> data) {
         this.id = id;
@@ -3707,4 +3718,32 @@ public enum Material implements Keyed, Translatable, net.kyori.adventure.transla
         return this.asItemType().getDefaultDataTypes();
     }
     // Paper end - data component API
+
+    // Youer start
+    public static Material addMaterial(String materialName, int id, boolean isBlock, boolean isItem, net.minecraft.resources.Identifier resourceLocation) {
+        if (isBlock) {
+            Material material = BY_NAME.get(materialName);
+            if (material != null) {
+                material.isModBlock = true;
+            } else {
+                material = com.mohistmc.dynamicenum.MohistDynamEnum.addEnum(Material.class, materialName, java.util.List.of(Integer.TYPE, Boolean.TYPE, Boolean.TYPE), java.util.List.of(id, isBlock, isItem));
+            }
+            BY_NAME.put(materialName, material);
+            material.key = org.bukkit.craftbukkit.util.CraftNamespacedKey.fromMinecraft(resourceLocation);
+            BY_KEY.put(resourceLocation.toString(), material);
+            return material;
+        } else { // Forge Items
+            Material material = com.mohistmc.dynamicenum.MohistDynamEnum.addEnum(Material.class, materialName, java.util.List.of(Integer.TYPE, Boolean.TYPE, Boolean.TYPE), java.util.List.of(id, isBlock, isItem));
+            BY_NAME.put(materialName, material);
+            material.key = org.bukkit.craftbukkit.util.CraftNamespacedKey.fromMinecraft(resourceLocation);
+            material.isModItem = true;
+            BY_KEY.put(resourceLocation.toString(), material);
+            return material;
+        }
+    }
+
+    public ItemStack buildItem() {
+        return new ItemStack(this);
+    }
+    // Youer end
 }

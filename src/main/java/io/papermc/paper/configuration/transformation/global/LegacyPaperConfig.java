@@ -18,7 +18,7 @@ import org.spongepowered.configurate.transformation.TransformAction;
 import static org.spongepowered.configurate.NodePath.path;
 
 public final class LegacyPaperConfig {
-    private static final Logger LOGGER = LogUtils.getClassLogger();
+    private static final Logger LOGGER = LogUtils.getLogger();
 
     private LegacyPaperConfig() {
     }

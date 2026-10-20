@@ -144,6 +144,21 @@ public class DummyGeneratorAccess implements WorldGenLevel {
     }
 
     @Override
+    public ChunkAccess getChunkIfLoadedImmediately(int x, int z) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public BlockState getBlockStateIfLoaded(BlockPos blockpos) {
+        return Blocks.AIR.defaultBlockState();
+    }
+
+    @Override
+    public FluidState getFluidIfLoaded(BlockPos blockpos) {
+        return Fluids.EMPTY.defaultFluidState();
+    }
+
+    @Override
     public int getHeight(Heightmap.Types types, int i, int i1) {
         throw new UnsupportedOperationException("Not supported yet.");
     }

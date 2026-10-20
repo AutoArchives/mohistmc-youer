@@ -392,4 +392,10 @@ public interface UnsafeValues {
      * @return the deserialized {@code ItemStack}
      */
     @NotNull ItemStack deserializeItemHover(HoverEvent.@NotNull ShowItem itemHover);
+
+    @org.jetbrains.annotations.ApiStatus.Internal
+    org.bukkit.entity.Villager.ReputationType createReputationType(String key);
+
+    @org.jetbrains.annotations.ApiStatus.Internal
+    org.bukkit.entity.Villager.ReputationEvent createReputationEvent(String key);
 }

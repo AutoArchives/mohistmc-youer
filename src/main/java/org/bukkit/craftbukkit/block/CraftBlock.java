@@ -69,7 +69,7 @@ public class CraftBlock implements Block {
     private final net.minecraft.world.level.LevelAccessor level;
     private final BlockPos position;
 
-    private CraftBlock(LevelAccessor level, BlockPos position) {
+    protected CraftBlock(LevelAccessor level, BlockPos position) { // Youer - protected
         this.level = level;
         this.position = position.immutable();
     }

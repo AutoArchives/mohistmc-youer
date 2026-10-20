@@ -17,7 +17,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 public class MixinFix {
 
     public static boolean fixPlace(BlockItem blockItem, ServerLevel level, ServerPlayer player, BlockPlaceContext blockplacecontext, BlockPos blockpos, BlockState place$blockstateCB) {
-        BlockPlaceEvent placeEvent = CraftEventFactory.callBlockPlaceEvent(level, player, blockplacecontext.getHand(), place$blockstateCB, blockpos.getX(), blockpos.getY(), blockpos.getZ());
+        BlockPlaceEvent placeEvent = CraftEventFactory.callBlockPlaceEvent(level, player, blockplacecontext.getHand(), place$blockstateCB, blockpos);
         if (placeEvent != null && (placeEvent.isCancelled() || !placeEvent.canBuild())) {
             place$blockstateCB.update(true, false);
 

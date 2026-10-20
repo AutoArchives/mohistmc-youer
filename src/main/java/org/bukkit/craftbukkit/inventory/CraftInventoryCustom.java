@@ -44,6 +44,10 @@ public class CraftInventoryCustom extends CraftInventory {
         super(new MinecraftInventory(owner, size, title));
     }
 
+    public CraftInventoryCustom(InventoryHolder owner, NonNullList<ItemStack> items) { // Youer
+        super(new MinecraftInventory(owner, items));
+    }
+
     public String getTitle() {
         if (this.inventory instanceof MinecraftInventory minecraftInventory) {
             return minecraftInventory.getTitle();
@@ -90,6 +94,15 @@ public class CraftInventoryCustom extends CraftInventory {
 
         public MinecraftInventory(InventoryHolder owner, int size) {
             this(owner, size, "Chest");
+        }
+
+        public MinecraftInventory(InventoryHolder owner, NonNullList<ItemStack> items) { // Youer
+            this.items = items;
+            this.title = "Chest";
+            this.adventure$title = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(this.title);
+            this.viewers = new ArrayList<>();
+            this.owner = owner;
+            this.type = InventoryType.CHEST;
         }
 
         public MinecraftInventory(InventoryHolder owner, int size, String title) {

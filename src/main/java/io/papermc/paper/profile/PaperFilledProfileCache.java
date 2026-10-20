@@ -28,7 +28,7 @@ import org.slf4j.Logger;
  */
 @NullMarked
 public final class PaperFilledProfileCache {
-    private static final Logger LOGGER = LogUtils.getClassLogger();
+    private static final Logger LOGGER = LogUtils.getLogger();
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
     private final Map<String, GameProfile> byName = new HashMap<>();

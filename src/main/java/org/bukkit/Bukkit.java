@@ -794,6 +794,18 @@ public final class Bukkit {
      *
      * @return a list of worlds
      */
+    // Youer start
+    /**
+     * Gets a set of all world names on this server.
+     *
+     * @return a set of world names
+     */
+    @NotNull
+    public static Set<String> getWorldsByName() {
+        return server.getWorldsByName();
+    }
+    // Youer end
+
     @NotNull
     public static List<World> getWorlds() {
         return server.getWorlds();

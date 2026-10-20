@@ -724,6 +724,16 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
     @NotNull
     public List<World> getWorlds();
 
+    // Youer start
+    /**
+     * Gets a set of all world names on this server.
+     *
+     * @return a set of world names
+     */
+    @NotNull
+    public Set<String> getWorldsByName();
+    // Youer end
+
     // Paper start
     /**
      * Gets whether the worlds are being ticked right now.

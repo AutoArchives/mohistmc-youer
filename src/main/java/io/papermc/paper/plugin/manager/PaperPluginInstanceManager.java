@@ -343,8 +343,12 @@ class PaperPluginInstanceManager {
 
         for (final Appender appender : context.getConfiguration().getAppenders().values()) {
             if (appender instanceof AsyncAppender asyncAppender) {
-                final boolean flushed = asyncAppender.flush(100, TimeUnit.MILLISECONDS);
-                if (!flushed) {
+                // Standard log4j has no flush(long, TimeUnit); wait for the queue to drain instead
+                final long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(100);
+                while (asyncAppender.getQueueSize() > 0 && System.nanoTime() < deadline) {
+                    Thread.onSpinWait();
+                }
+                if (asyncAppender.getQueueSize() > 0) {
                     this.server.getLogger().log(Level.WARNING, "Failed to flush log messages before plugin unload.");
                 }
             }

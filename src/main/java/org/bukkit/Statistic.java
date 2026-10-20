@@ -98,7 +98,7 @@ public enum Statistic implements Keyed {
     // End generate - StatisticType
 
     private final Type type;
-    private final NamespacedKey key;
+    public NamespacedKey key; // Youer - mutable for dynamically registered mod statistics
 
     private Statistic() {
         this(Type.UNTYPED);

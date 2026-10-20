@@ -11,14 +11,13 @@ import org.bukkit.inventory.Inventory;
 public class InventoryAPI {
 
     public static boolean isMods(Inventory bukkit) {
-        return bukkit.getType().isMods();
+        return ((CraftInventory) bukkit).getInventory() instanceof YouerModsInventory;
     }
 
     public static String getModsInvName(Inventory bukkit) {
         if (((CraftInventory) bukkit).getInventory() instanceof YouerModsInventory mohistModsInventory) {
             return mohistModsInventory.getContainer().getClass().getSimpleName();
         }
-        bukkit.getType().setMods(false);
         return ((CraftInventory) bukkit).getInventory().getClass().getSimpleName();
     }
 }

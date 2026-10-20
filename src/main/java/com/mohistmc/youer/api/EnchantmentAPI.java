@@ -26,7 +26,7 @@ public class EnchantmentAPI {
     public static List<Enchantment> getNMS(org.bukkit.inventory.ItemStack itemStack) {
         if (has(itemStack)) {
             Map<org.bukkit.enchantments.Enchantment, Integer> map = itemStack.getEnchantments();
-            return map.keySet().stream().map(CraftEnchantment::bukkitToMinecraft).collect(Collectors.toList());
+            return map.keySet().stream().map(enchantment -> CraftEnchantment.bukkitToMinecraftHolder(enchantment).value()).collect(Collectors.toList());
         }
         return Collections.emptyList();
     }

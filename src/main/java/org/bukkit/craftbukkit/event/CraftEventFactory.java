@@ -21,6 +21,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.commands.CommandSourceStack;
@@ -223,6 +224,7 @@ import org.bukkit.event.entity.SpawnerSpawnEvent;
 import org.bukkit.event.entity.StriderTemperatureChangeEvent;
 import org.bukkit.event.entity.TrialSpawnerSpawnEvent;
 import org.bukkit.event.entity.VillagerCareerChangeEvent;
+import org.bukkit.event.entity.VillagerReputationChangeEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.PrepareAnvilEvent;
@@ -1927,6 +1929,10 @@ public class CraftEventFactory {
         return event;
     }
 
+    public static boolean handleBlockFormEvent(Level level, BlockPos pos, net.minecraft.world.level.block.state.BlockState state) {
+        return CraftEventFactory.handleBlockFormEvent(level, pos, state, net.minecraft.world.level.block.Block.UPDATE_ALL);
+    }
+
     public static boolean handleBlockFormEvent(Level level, BlockPos pos, net.minecraft.world.level.block.state.BlockState state, @net.minecraft.world.level.block.Block.UpdateFlags int flags) {
         return CraftEventFactory.handleBlockFormEvent(level, pos, state, flags, null);
     }
@@ -2433,6 +2439,13 @@ public class CraftEventFactory {
             return false;
         }
         return true;
+    }
+
+    public static VillagerReputationChangeEvent callVillagerReputationChangeEvent(net.minecraft.world.entity.npc.villager.Villager villager, UUID targetUuid, org.bukkit.entity.Villager.ReputationEvent reason, org.bukkit.entity.Villager.ReputationType reputationType, int oldValue, int newValue, int maxValue) {
+        VillagerReputationChangeEvent event = new VillagerReputationChangeEvent((org.bukkit.entity.Villager) villager.getBukkitEntity(), targetUuid, reason, reputationType, oldValue, newValue, maxValue);
+
+        Bukkit.getPluginManager().callEvent(event);
+        return event;
     }
 
     public static ClockTimeSkipEvent createTimeSkipEvent(final CommandSourceStack source, final long skipAmount) {

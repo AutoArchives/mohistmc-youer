@@ -1,6 +1,5 @@
 package io.papermc.paper.plugin.manager;
 
-import co.aikar.timings.TimedEventExecutor;
 import com.destroystokyo.paper.event.server.ServerExceptionEvent;
 import com.destroystokyo.paper.exception.ServerEventException;
 import com.google.common.collect.Sets;

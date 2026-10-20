@@ -76,4 +76,8 @@ public final class CapturedBlockState extends CraftBlockState {
     public static CapturedBlockState getTreeBlockState(Level world, BlockPos pos, @net.minecraft.world.level.block.Block.UpdateFlags int flags) {
         return new CapturedBlockState(CraftBlock.at(world, pos), flags, true);
     }
+
+    public static CapturedBlockState getBlockState(Level world, BlockPos pos, @net.minecraft.world.level.block.Block.UpdateFlags int flags) {
+        return new CapturedBlockState(CraftBlock.at(world, pos), flags, false);
+    }
 }

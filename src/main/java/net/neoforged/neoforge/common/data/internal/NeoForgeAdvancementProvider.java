@@ -322,6 +322,11 @@ public class NeoForgeAdvancementProvider extends AdvancementProvider {
                                         }
                                     }, lookup.registryLifecycle()));
                         }
+
+                        @Override
+                        public HolderLookup.Provider lookupForValueCopyViaBuilders() {
+                            return registries;
+                        }
                     });
                 }
             };

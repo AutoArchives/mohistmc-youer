@@ -162,10 +162,10 @@ public final class CraftMagicNumbers implements UnsafeValues {
     }
 
     // ========================================================================
-    private static final Map<Block, Material> BLOCK_MATERIAL = new HashMap<>();
-    private static final Map<Item, Material> ITEM_MATERIAL = new HashMap<>();
-    private static final Map<Material, Item> MATERIAL_ITEM = new HashMap<>();
-    private static final Map<Material, Block> MATERIAL_BLOCK = new HashMap<>();
+    public static final Map<Block, Material> BLOCK_MATERIAL = new HashMap<>();
+    public static final Map<Item, Material> ITEM_MATERIAL = new HashMap<>();
+    public static final Map<Material, Item> MATERIAL_ITEM = new HashMap<>();
+    public static final Map<Material, Block> MATERIAL_BLOCK = new HashMap<>();
 
     static {
         for (Block block : BuiltInRegistries.BLOCK) {
@@ -878,5 +878,17 @@ public final class CraftMagicNumbers implements UnsafeValues {
         return CraftItemStack.asBukkitCopy(net.minecraft.network.chat.HoverEvent.ShowItem.CODEC.codec()
             .parse(ops, encoded).getOrThrow(IllegalStateException::new)
             .item());
+    }
+
+    @Override
+    public org.bukkit.entity.Villager.ReputationType createReputationType(String key) {
+        return Optional.ofNullable(org.bukkit.craftbukkit.entity.CraftVillager.CraftReputationType.BY_ID.get(key))
+                .orElseThrow(() -> new IllegalArgumentException("Invalid ReputationType key: " + key));
+    }
+
+    @Override
+    public org.bukkit.entity.Villager.ReputationEvent createReputationEvent(String key) {
+        return Optional.ofNullable(net.minecraft.world.entity.ai.village.ReputationEventType.BY_ID.get(key)).map(org.bukkit.craftbukkit.entity.CraftVillager.CraftReputationEvent::new)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid ReputationEvent key: " + key));
     }
 }

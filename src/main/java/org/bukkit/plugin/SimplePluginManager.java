@@ -949,8 +949,7 @@ public final class SimplePluginManager implements PluginManager {
 
     @Override
     public boolean useTimings() {
-        if (true) {return this.paperPluginManager.useTimings();} // Paper
-        return co.aikar.timings.Timings.isTimingsEnabled(); // Spigot
+        return this.paperPluginManager.useTimings(); // Paper
     }
 
     /**
@@ -960,7 +959,6 @@ public final class SimplePluginManager implements PluginManager {
      */
     @Deprecated(forRemoval = true)
     public void useTimings(boolean use) {
-        co.aikar.timings.Timings.setTimingsEnabled(use); // Paper
     }
 
     // Paper start

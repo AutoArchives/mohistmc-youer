@@ -1,7 +1,6 @@
 package io.papermc.paper.plugin.provider.source;
 
 import com.mojang.logging.LogUtils;
-import io.papermc.paper.SparksFly;
 import io.papermc.paper.plugin.PluginInitializerManager;
 import io.papermc.paper.plugin.configuration.PluginMeta;
 import io.papermc.paper.plugin.entrypoint.EntrypointHandler;
@@ -26,7 +25,7 @@ import org.slf4j.Logger;
  */
 public class FileProviderSource implements ProviderSource<Path, Path> {
 
-    private static final Logger LOGGER = LogUtils.getClassLogger();
+    private static final Logger LOGGER = LogUtils.getLogger();
     private final Function<Path, String> contextChecker;
 
     public FileProviderSource(Function<Path, String> contextChecker) {
@@ -76,10 +75,6 @@ public class FileProviderSource implements ProviderSource<Path, Path> {
         }
 
         final PluginMeta config = type.getConfig(file);
-        if ((config.getName().equals("spark") && config.getMainClass().equals("me.lucko.spark.bukkit.BukkitSparkPlugin")) && !SparksFly.isPluginPreferred()) {
-            LOGGER.info("The spark plugin will not be loaded as this server bundles the spark profiler.");
-            return;
-        }
 
         type.register(entrypointHandler, file, context);
     }
